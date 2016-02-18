@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=RockPool
+Exec=rockpool
+Icon=rockpool
+Type=Application
+X-Nemo-Application-Type=silica-qt5
+

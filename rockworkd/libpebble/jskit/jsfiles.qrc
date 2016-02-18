@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>typedarray.js</file>
+        <file>jskitsetup.js</file>
+        <file>cacheLocalStorage.js</file>
+    </qresource>
+</RCC>

@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>testui/Main.qml</file>
+        <file>testui/PebbleController.qml</file>
+    </qresource>
+</RCC>

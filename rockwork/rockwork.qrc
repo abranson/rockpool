@@ -1,0 +1,27 @@
+<RCC>
+    <qresource prefix="/">
+    	<file>artwork/back-cover.png</file>
+        <file>artwork/bianca-black.png</file>
+        <file>artwork/bianca-silver.png</file>
+        <file>artwork/black-20mm-hole.png</file>
+        <file>artwork/bobby-black.png</file>
+        <file>artwork/bobby-gold.png</file>
+        <file>artwork/bobby-silver.png</file>
+        <file>artwork/snowy-black.png</file>
+        <file>artwork/snowy-red.png</file>
+        <file>artwork/snowy-white.png</file>
+        <file>artwork/spalding-14mm-black.png</file>
+        <file>artwork/spalding-14mm-rose-gold.png</file>
+        <file>artwork/spalding-14mm-silver.png</file>
+        <file>artwork/spalding-20mm-black.png</file>
+        <file>artwork/spalding-20mm-silver.png</file>
+        <file>artwork/tintin-black.png</file>
+        <file>artwork/tintin-blue.png</file>
+        <file>artwork/tintin-green.png</file>
+        <file>artwork/tintin-grey.png</file>
+        <file>artwork/tintin-orange.png</file>
+        <file>artwork/tintin-pink.png</file>
+        <file>artwork/tintin-red.png</file>
+        <file>artwork/tintin-white.png</file>
+    </qresource>
+</RCC>

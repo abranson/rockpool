@@ -1,0 +1,11 @@
+[Unit]
+Description=Rockpool daemon
+Requires=dbus.socket bluetooth.target
+After=pre-user-session.target lipstick.service dbus.socket bluetooth.target
+
+[Service]
+ExecStart=/usr/bin/rockpoold
+Restart=always
+
+[Install]
+WantedBy=user-session.target
