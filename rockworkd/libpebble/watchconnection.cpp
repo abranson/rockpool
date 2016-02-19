@@ -32,7 +32,7 @@ UploadManager *WatchConnection::uploadManager() const
 
 void WatchConnection::scheduleReconnect()
 {
-    if (m_connectionAttempts < 2) {
+    if (m_connectionAttempts == 0) {
         reconnect();
     } else if (m_connectionAttempts < 25) {
         qDebug() << "Attempting to reconnect in 10 seconds";
@@ -61,10 +61,8 @@ void WatchConnection::reconnect()
             qDebug() << "Already connected.";
             return;
         }
-        m_socket->deleteLater();
+        delete m_socket;
     }
-
-    m_connectionAttempts++;
 
     m_socket = new QBluetoothSocket(QBluetoothServiceInfo::RfcommProtocol, this);
     connect(m_socket, &QBluetoothSocket::connected, this, &WatchConnection::pebbleConnected);
@@ -73,6 +71,7 @@ void WatchConnection::reconnect()
     connect(m_socket, &QBluetoothSocket::disconnected, this, &WatchConnection::pebbleDisconnected);
     //connect(socket, SIGNAL(bytesWritten(qint64)), SLOT(onBytesWritten(qint64)));
 
+    m_connectionAttempts++;
 
     // FIXME: Assuming port 1 (with Pebble)
     m_socket->connectToService(m_pebbleAddress, 1);
@@ -142,11 +141,8 @@ void WatchConnection::pebbleConnected()
 void WatchConnection::pebbleDisconnected()
 {
     qDebug() << "Disconnected";
+    //m_socket->close();
     emit watchDisconnected();
-    QBluetoothSocket *socket = qobject_cast<QBluetoothSocket *>(sender());
-    if (!socket) return;
-
-    socket->deleteLater();
     if (!m_reconnectTimer.isActive()) {
         scheduleReconnect();
     }
@@ -156,6 +152,7 @@ void WatchConnection::socketError(QBluetoothSocket::SocketError error)
 {
     Q_UNUSED(error); // We seem to get UnknownError anyways all the time
     qDebug() << "SocketError" << error;
+    m_socket->close();
     emit watchConnectionFailed();
     if (!m_reconnectTimer.isActive()) {
         scheduleReconnect();
