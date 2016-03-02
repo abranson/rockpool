@@ -2,12 +2,13 @@
 #define ORGANIZERADAPTER_H
 
 #include "libpebble/calendarevent.h"
-
 #include <QObject>
-
+#include <QTimer>
 #include <QOrganizerManager>
 #include <QOrganizerAbstractRequest>
 #include <QOrganizerEvent>
+#include <extendedcalendar.h>
+#include <extendedstorage.h>
 
 QTORGANIZER_USE_NAMESPACE
 
@@ -20,7 +21,7 @@ struct CalendarInfo
         : name(name), notebookUID(notebookUID) {}
 };
 
-class OrganizerAdapter : public QObject
+class OrganizerAdapter : public QObject, public mKCal::ExtendedStorageObserver
 {
     Q_OBJECT
 public:
@@ -30,15 +31,24 @@ public:
     QString normalizeCalendarName(QString name);
 
 public slots:
+    void scheduleRefresh();
+
+protected:
+    void storageModified(mKCal::ExtendedStorage *storage, const QString &info) Q_DECL_OVERRIDE;
+    void storageProgress(mKCal::ExtendedStorage *storage, const QString &info) Q_DECL_OVERRIDE;
+    void storageFinished(mKCal::ExtendedStorage *storage, bool error, const QString &info) Q_DECL_OVERRIDE;
+
+private slots:
     void refresh();
 
 signals:
     void itemsChanged(const QList<CalendarEvent> &items);
 
 private:
-    QOrganizerManager *m_manager;
     QList<CalendarEvent> m_items;
-    QList<CalendarInfo> m_calendars;
+    mKCal::ExtendedCalendar::Ptr _calendar;
+    mKCal::ExtendedStorage::Ptr _calendarStorage;
+    QTimer *_refreshTimer;
 };
 
 #endif // ORGANIZERADAPTER_H

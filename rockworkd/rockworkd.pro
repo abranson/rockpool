@@ -12,7 +12,7 @@ CONFIG += link_pkgconfig
 INCLUDEPATH += $$[QT_HOST_PREFIX]/include/quazip/
 LIBS += -lquazip
 
-PKGCONFIG += libmkcal-qt5 libkcalcoren-qt5
+PKGCONFIG += qt5-boostable libmkcal-qt5 libkcalcoren-qt5 dbus-1
 INCLUDEPATH += /usr/include/mkcal-qt5 /usr/include/kcalcoren-qt5
 
 SOURCES += main.cpp \
@@ -57,7 +57,6 @@ SOURCES += main.cpp \
     libpebble/notification.cpp \
     platformintegration/sailfish/organizeradapter.cpp \
     libpebble/calendarevent.cpp \
-    platformintegration/sailfish/syncmonitorclient.cpp \
     libpebble/appmetadata.cpp \
     libpebble/appdownloader.cpp \
     libpebble/screenshotendpoint.cpp \
@@ -111,7 +110,6 @@ HEADERS += \
     libpebble/notification.h \
     platformintegration/sailfish/organizeradapter.h \
     libpebble/calendarevent.h \
-    platformintegration/sailfish/syncmonitorclient.h \
     libpebble/appmetadata.h \
     libpebble/appdownloader.h \
     libpebble/enums.h \

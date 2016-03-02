@@ -45,7 +45,6 @@ private slots:
 
 private:
     QDBusInterface *m_iface;
-
     QString m_mprisService;
     MusicMetaData m_musicMetaData;
     QDBusConnection *_pulseBus;
@@ -53,8 +52,6 @@ private:
 
     VoiceCallManager *m_voiceCallManager;
     OrganizerAdapter *m_organizerAdapter;
-    SyncMonitorClient *m_syncMonitorClient;
-    QTimer m_syncTimer;
 };
 
 #endif // SAILFISHPLATFORM_H

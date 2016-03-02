@@ -56,6 +56,7 @@ void VoiceCallManager::initialize(bool notifyError)
 
     numberFilter.setDetailType(QContactDetail::TypePhoneNumber, QContactPhoneNumber::FieldNumber);
     numberFilter.setMatchFlags(QContactFilter::MatchPhoneNumber);
+    connect(this, SIGNAL(error(const QString &)), SLOT(onVoiceError(const QString &)));
 
     delete d->interface;
     d->interface = new QDBusInterface("org.nemomobile.voicecall",

@@ -80,6 +80,7 @@ desktop-file-install --delete-original       \
 
 %post
 # >> post
+grep -q "^/usr/bin/rockpoold" /usr/share/mapplauncherd/privileges || echo "/usr/bin/rockpoold,cehlmnpu" >> /usr/share/mapplauncherd/privileges
 su nemo -c 'systemctl --user daemon-reload'
 su nemo -c 'systemctl --user try-restart rockpoold.service'
 update-desktop-database

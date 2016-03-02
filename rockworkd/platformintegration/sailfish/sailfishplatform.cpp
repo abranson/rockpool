@@ -15,11 +15,13 @@ SailfishPlatform::SailfishPlatform(QObject *parent):
     _pulseBus(NULL),
     _maxVolume(0)
 {
+
     // Notifications
     QDBusConnection::sessionBus().registerObject("/org/freedesktop/Notifications", this, QDBusConnection::ExportAllSlots);
     m_iface = new QDBusInterface("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus");
-    m_iface->call("AddMatch", "interface='org.freedesktop.Notifications',member='Notify',type='method_call',eavesdrop='true'");
-    m_iface->call("AddMatch", "interface='org.freedesktop.Notifications',member='CloseNotification',type='method_call',eavesdrop='true'");
+    m_iface->call("AddMatch", "type='method_call',interface='org.freedesktop.Notifications',member='Notify',eavesdrop='true'");
+    m_iface->call("AddMatch", "type='method_return',sender='org.freedesktop.Notifications',eavesdrop='true'");
+    m_iface->call("AddMatch", "type='signal',sender='org.freedesktop.Notifications',path='/org/freedesktop/Notifications',interface='org.freedesktop.Notifications',member='NotificationClosed'");
 
     // Music
     QDBusConnectionInterface *iface = QDBusConnection::sessionBus().interface();
@@ -59,17 +61,10 @@ SailfishPlatform::SailfishPlatform(QObject *parent):
     m_voiceCallManager = new VoiceCallManager(this);
 
     connect(m_voiceCallManager, SIGNAL(activeVoiceCallChanged()), SLOT(onActiveVoiceCallChanged()));
-    connect(m_voiceCallManager, SIGNAL(error(const QString &)), SLOT(VoiceCallManager::onVoiceError(const QString &)));
 
     // Organizer
     m_organizerAdapter = new OrganizerAdapter(this);
-    m_organizerAdapter->refresh();
     connect(m_organizerAdapter, &OrganizerAdapter::itemsChanged, this, &SailfishPlatform::organizerItemsChanged);
-    m_syncMonitorClient = new SyncMonitorClient(this);
-    connect(m_syncMonitorClient, &SyncMonitorClient::stateChanged, [this]() { if (m_syncMonitorClient->state() == "idle") m_organizerAdapter->refresh();});
-    m_syncTimer.start(1000 * 60 * 60);
-    connect(&m_syncTimer, &QTimer::timeout, [this]() { m_syncMonitorClient->sync({"calendar"});});
-    m_syncMonitorClient->sync({"calendar"});
 }
 
 QDBusInterface *SailfishPlatform::interface() const

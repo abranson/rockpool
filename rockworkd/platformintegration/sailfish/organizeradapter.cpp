@@ -4,38 +4,29 @@
 #include <QDebug>
 #include <QOrganizerEventOccurrence>
 #include <QOrganizerItemDetail>
-#   include <extendedcalendar.h>
-#   include <extendedstorage.h>
+#include <extendedcalendar.h>
+#include <extendedstorage.h>
+#include <attendee.h>
 
 QTORGANIZER_USE_NAMESPACE
 
 #define MANAGER           "eds"
 #define MANAGER_FALLBACK  "memory"
 
-OrganizerAdapter::OrganizerAdapter(QObject *parent) : QObject(parent)
+OrganizerAdapter::OrganizerAdapter(QObject *parent) : QObject(parent),
+    _calendar(new mKCal::ExtendedCalendar(KDateTime::Spec::LocalZone())),
+    _calendarStorage(_calendar->defaultStorage(_calendar)),
+    _refreshTimer(new QTimer(this))
 {
-    QString envManager(qgetenv("ALARM_BACKEND"));
-    if (envManager.isEmpty())
-        envManager = MANAGER;
-    if (!QOrganizerManager::availableManagers().contains(envManager)) {
-        envManager = MANAGER_FALLBACK;
-    }
-    m_manager = new QOrganizerManager(envManager);
-    m_manager->setParent(this);
-    connect(m_manager, &QOrganizerManager::dataChanged, this, &OrganizerAdapter::refresh);
+    _refreshTimer->setSingleShot(true);
+    _refreshTimer->setInterval(2000);
+    connect(_refreshTimer, &QTimer::timeout,
+            this, &OrganizerAdapter::refresh);
 
-    // This is the snippet from Fahrplan that enumerates the calendars, but here it doesn't seem to have permission to access the db
-    mKCal::ExtendedCalendar::Ptr calendar = mKCal::ExtendedCalendar::Ptr ( new mKCal::ExtendedCalendar( QLatin1String( "UTC" ) ) );
-    mKCal::ExtendedStorage::Ptr storage = mKCal::ExtendedCalendar::defaultStorage( calendar );
-    if (storage->open()) {
-        mKCal::Notebook::List notebooks = storage->notebooks();
-        qDebug()<< "Notebooks: " + notebooks.count();
-        for (int ii = 0; ii < notebooks.count(); ++ii) {
-            if (!notebooks.at(ii)->isReadOnly()) {
-                m_calendars << CalendarInfo(normalizeCalendarName(notebooks.at(ii)->name()), notebooks.at(ii)->uid());
-                qDebug()<< "Notebook: " << notebooks.at(ii)->name() << notebooks.at(ii)->uid();
-            }
-        }
+    if (_calendarStorage->open()) {
+        scheduleRefresh();
+    } else {
+        qWarning() << "Cannot open calendar database";
     }
 }
 
@@ -48,41 +39,52 @@ QString OrganizerAdapter::normalizeCalendarName(QString name)
     return name;
 }
 
+void OrganizerAdapter::scheduleRefresh()
+{
+    if (!_refreshTimer->isActive()) {
+        _refreshTimer->start();
+    }
+}
+
 void OrganizerAdapter::refresh()
 {
     QList<CalendarEvent> items;
-    foreach (const QOrganizerItem &item, m_manager->items()) {
-        QOrganizerEvent organizerEvent(item);
-        if (organizerEvent.displayLabel().isEmpty()) {
-            continue;
-        }
+
+    QDate today = QDate::currentDate();
+    QDate endDate = today.addDays(7);
+    _calendarStorage->loadRecurringIncidences();
+    _calendarStorage->load(today, endDate);
+
+    auto events = _calendar->rawExpandedEvents(today, endDate, true, true);
+    for (const auto &expanded : events) {
+        const QDateTime &start = expanded.first.dtStart;
+        const QDateTime &end = expanded.first.dtEnd;
+        KCalCore::Incidence::Ptr incidence = expanded.second;
+
         CalendarEvent event;
-        event.setId(organizerEvent.id().toString());
-        event.setTitle(organizerEvent.displayLabel());
-        event.setDescription(organizerEvent.description());
-        event.setStartTime(organizerEvent.startDateTime());
-        event.setEndTime(organizerEvent.endDateTime());
-        event.setLocation(organizerEvent.location());
-        event.setComment(organizerEvent.comments().join(";"));
-        QStringList attendees;
-        foreach (const QOrganizerItemDetail &attendeeDetail, organizerEvent.details(QOrganizerItemDetail::TypeEventAttendee)) {
-            attendees.append(attendeeDetail.value(QOrganizerItemDetail::TypeEventAttendee + 1).toString());
+        event.setId(incidence->uid());
+        event.setTitle(incidence->summary());
+        event.setDescription(incidence->description());
+        event.setStartTime(start);
+        event.setEndTime(end);
+        event.setIsAllDay(incidence->allDay());
+        if (!incidence->location().isEmpty()) {
+            event.setLocation(incidence->location());
         }
-        event.setGuests(attendees);
-        event.setRecurring(organizerEvent.recurrenceRules().count() > 0);
+        mKCal::Notebook::Ptr notebook = _calendarStorage->notebook(_calendar->notebook(incidence));
+        if (notebook) {
+            event.setCalendar(normalizeCalendarName(notebook->name()));
+        }
+        event.setComment(incidence->comments().join(";"));
+
+//        QStringList attendees;
+//        foreach (const KCalCore::Attendee &attendee, incidence->attendees()) {
+//            attendees.append(attendee->fullName);
+//        }
+//        event.setGuests(attendees);
+        event.setRecurring(event.recurring());
 
         items.append(event);
-
-        quint64 startTimestamp = QDateTime::currentMSecsSinceEpoch();
-        startTimestamp -= (1000 * 60 * 60 * 24 * 7);
-
-        foreach (const QOrganizerItem &occurranceItem, m_manager->itemOccurrences(item, QDateTime::fromMSecsSinceEpoch(startTimestamp), QDateTime::currentDateTime().addDays(7))) {
-            QOrganizerEventOccurrence organizerOccurrance(occurranceItem);
-            event.setId(organizerOccurrance.id().toString());
-            event.setStartTime(organizerOccurrance.startDateTime());
-            event.setEndTime(organizerOccurrance.endDateTime());
-            items.append(event);
-        }
     }
 
     if (m_items != items) {
@@ -90,6 +92,28 @@ void OrganizerAdapter::refresh()
         emit itemsChanged(m_items);
     }
 
+}
+
+void OrganizerAdapter::storageModified(mKCal::ExtendedStorage *storage, const QString &info)
+{
+    Q_UNUSED(storage);
+    qDebug() << "Storage modified:" << info;
+    scheduleRefresh();
+}
+
+void OrganizerAdapter::storageProgress(mKCal::ExtendedStorage *storage, const QString &info)
+{
+    Q_UNUSED(storage);
+    Q_UNUSED(info);
+    // Nothing to do
+}
+
+void OrganizerAdapter::storageFinished(mKCal::ExtendedStorage *storage, bool error, const QString &info)
+{
+    Q_UNUSED(storage);
+    Q_UNUSED(error);
+    Q_UNUSED(info);
+    // Nothing to do
 }
 
 QList<CalendarEvent> OrganizerAdapter::items() const
