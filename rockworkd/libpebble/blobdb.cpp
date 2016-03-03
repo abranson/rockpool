@@ -51,7 +51,7 @@ void BlobDB::insertNotification(const Notification &notification)
     case Notification::NotificationTypeFacebook:
         iconId = TimelineAttribute::IconIDFacebook;
         color = TimelineAttribute::ColorBlue;
-        muteName = "facebook";
+        muteName = "Facebook";
         break;
     case Notification::NotificationTypeGMail:
         iconId = TimelineAttribute::IconIDGMail;
@@ -95,12 +95,12 @@ void BlobDB::insertNotification(const Notification &notification)
         break;
     case Notification::NotificationTypeSMS:
         muteName = "SMS";
-        iconId = TimelineAttribute::IconIDDefaultBell;
+        iconId = TimelineAttribute::IconIDSMS;
         break;
     case Notification::NotificationTypeEmail:
     default:
-        muteName = "e mails";
-        iconId = TimelineAttribute::IconIDDefaultBell;
+        muteName = "e-mails";
+        iconId = TimelineAttribute::IconIDEmail;
         break;
     }
 
@@ -116,6 +116,15 @@ void BlobDB::insertNotification(const Notification &notification)
 
     TimelineAttribute bodyAttribute(TimelineAttribute::TypeBody, notification.body().remove(QRegExp("<[^>]*>")).toUtf8());
     timelineItem.appendAttribute(bodyAttribute);
+
+    TimelineAttribute tinyIconAttribute(TimelineAttribute::TypeTinyIcon, iconId);
+    timelineItem.appendAttribute(tinyIconAttribute);
+
+    TimelineAttribute smallIconAttribute(TimelineAttribute::TypeSmallIcon, iconId);
+    timelineItem.appendAttribute(smallIconAttribute);
+
+    TimelineAttribute largeIconAttribute(TimelineAttribute::TypeLargeIcon, iconId);
+    timelineItem.appendAttribute(largeIconAttribute);
 
     TimelineAttribute iconAttribute(TimelineAttribute::TypeTinyIcon, iconId);
     timelineItem.appendAttribute(iconAttribute);

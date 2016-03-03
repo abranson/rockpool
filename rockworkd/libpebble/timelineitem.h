@@ -15,6 +15,7 @@ public:
         TypeSubtitle = 0x02,
         TypeBody = 0x03,
         TypeTinyIcon = 0x04,
+        TypeSmallIcon = 0x05,
         TypeLargeIcon = 0x06,
         TypeFieldNames = 0x19,
         TypeFieldValues = 0x1a,
@@ -31,12 +32,14 @@ public:
         IconIDTelegram = 0x07,
         IconIDHangout = 0x08,
         IconIDGMail = 0x09,
-        IconIDFlash = 0x0a, // TODO: what service is this?
+        IconIDFacebookMsg = 0x0a,
         IconIDFacebook = 0x0b,
         IconIDMusic = 0x0c,
         IconIDAlarm = 0x0d,
         IconIDWeather = 0x0e,
-        IconIDGuess = 0x31
+        IconIDGuess = 0x31,
+        IconIDEmail = 0x13,
+        IconIDSMS = 0x2d
     };
 
     enum Color {

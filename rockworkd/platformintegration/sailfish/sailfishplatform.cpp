@@ -139,38 +139,38 @@ uint SailfishPlatform::Notify(const QString &app_name, uint replaces_id, const Q
     Notification n(app_name);
     if (owner == "twitter-notifications-client") {
         n.setType(Notification::NotificationTypeTwitter);
-        n.setSourceName("Twitter");
+        n.setSender("Twitter");
     } else if (category == "x-nemo.email") {
         if (app_name.toLower().contains("gmail")) {
             n.setType(Notification::NotificationTypeGMail);
-            n.setSourceName("GMail");
+            n.setSender("GMail");
         }
         else {
             n.setType(Notification::NotificationTypeEmail);
-            n.setSubject(app_name);
+            n.setSender(app_name);
         }
     } else if (owner == "facebook-notifications-client") {
         n.setType(Notification::NotificationTypeFacebook);
-        n.setSourceName("Facebook");
+        n.setSender("Facebook");
     } else if (hints.value("x-nemo-origin-package").toString() == "org.telegram.messenger"
                || category.startsWith("harbour.sailorgram")) {
         n.setType(Notification::NotificationTypeTelegram);
-        n.setSourceName("Telegram");
+        n.setSender("Telegram");
     } else if (hints.value("x-nemo-origin-package").toString() == "com.google.android.apps.babel"
                || owner == "harbour-hangish") {
         n.setType(Notification::NotificationTypeHangout);
-        n.setSourceName("Hangouts");
+        n.setSender("Hangouts");
     } else if (hints.value("x-nemo-origin-package").toString() == "com.whatsapp"
                || owner.toLower().contains("whatsup")) {
         n.setType(Notification::NotificationTypeWhatsApp);
-        n.setSourceName("Whatsapp");
+        n.setSender("Whatsapp");
     } else if (app_name.contains("indicator-datetime")) {
         n.setType(Notification::NotificationTypeReminder);
-        n.setSourceName("reminders");
+        n.setSender("reminders");
     } else {
         n.setType(Notification::NotificationTypeGeneric);
     }
-    n.setSender(summary);
+    n.setSubject(summary);
     n.setBody(body);
     foreach (const QString &action, actions) {
         if (action == "default") {

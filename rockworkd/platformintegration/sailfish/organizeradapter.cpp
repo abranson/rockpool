@@ -6,7 +6,6 @@
 #include <QOrganizerItemDetail>
 #include <extendedcalendar.h>
 #include <extendedstorage.h>
-#include <attendee.h>
 
 QTORGANIZER_USE_NAMESPACE
 
@@ -77,11 +76,11 @@ void OrganizerAdapter::refresh()
         }
         event.setComment(incidence->comments().join(";"));
 
-//        QStringList attendees;
-//        foreach (const KCalCore::Attendee &attendee, incidence->attendees()) {
-//            attendees.append(attendee->fullName);
-//        }
-//        event.setGuests(attendees);
+        QStringList attendees;
+        foreach (const QSharedPointer<KCalCore::Attendee> attendee, incidence->attendees()) {
+            attendees.append(attendee->fullName());
+        }
+        event.setGuests(attendees);
         event.setRecurring(event.recurring());
 
         items.append(event);
