@@ -1,7 +1,7 @@
 Name: rockpool
 Summary: Support for Pebble watches in SailfishOS
 Version: 0.1
-Release: 1
+Release: 2
 Group: Qt/Qt
 URL: http://getpebble.com/
 License: GPL3
@@ -23,6 +23,7 @@ PkgConfigBR:
 - Qt5Network
 - Qt5Location
 - Qt5Organizer
+- qt5-boostable
 - mlite5
 - sailfishapp >= 0.0.10
 - icu-i18n

@@ -1,12 +1,11 @@
 #include <QCoreApplication>
-
 #include "core.h"
 
 #ifdef ENABLE_TESTING
 #include <QGuiApplication>
 #endif
 
-int main(int argc, char *argv[])
+Q_DECL_EXPORT int main(int argc, char *argv[])
 {
 
 #ifdef ENABLE_TESTING
