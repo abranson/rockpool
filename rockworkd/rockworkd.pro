@@ -12,7 +12,7 @@ CONFIG += link_pkgconfig
 INCLUDEPATH += $$[QT_HOST_PREFIX]/include/quazip/
 LIBS += -lquazip
 
-PKGCONFIG += qt5-boostable libmkcal-qt5 libkcalcoren-qt5 dbus-1
+PKGCONFIG += qt5-boostable libmkcal-qt5 libkcalcoren-qt5 dbus-1 mpris-qt5
 INCLUDEPATH += /usr/include/mkcal-qt5 /usr/include/kcalcoren-qt5
 
 SOURCES += main.cpp \
@@ -65,7 +65,8 @@ SOURCES += main.cpp \
     libpebble/watchlogendpoint.cpp \
     libpebble/ziphelper.cpp \
     libpebble/healthparams.cpp \
-    libpebble/dataloggingendpoint.cpp
+    libpebble/dataloggingendpoint.cpp \
+    platformintegration/sailfish/musiccontroller.cpp
 
 HEADERS += \
     libpebble/watchconnection.h \
@@ -119,7 +120,8 @@ HEADERS += \
     libpebble/watchlogendpoint.h \
     libpebble/ziphelper.h \
     libpebble/healthparams.h \
-    libpebble/dataloggingendpoint.h
+    libpebble/dataloggingendpoint.h \
+    platformintegration/sailfish/musiccontroller.h
 
 testing: {
     SOURCES += platformintegration/testing/testingplatform.cpp

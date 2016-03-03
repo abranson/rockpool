@@ -24,6 +24,7 @@ PkgConfigBR:
 - Qt5Location
 - Qt5Organizer
 - qt5-boostable
+- mpris-qt5
 - mlite5
 - sailfishapp >= 0.0.10
 - icu-i18n

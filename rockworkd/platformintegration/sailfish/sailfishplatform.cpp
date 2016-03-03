@@ -4,16 +4,14 @@
 #include "voicecallmanager.h"
 #include "organizeradapter.h"
 #include "syncmonitorclient.h"
+#include "musiccontroller.h"
 
 #include <QDBusConnection>
-#include <QDBusConnectionInterface>
 #include <QDebug>
 #include <QSettings>
 
 SailfishPlatform::SailfishPlatform(QObject *parent):
-    PlatformInterface(parent),
-    _pulseBus(NULL),
-    _maxVolume(0)
+    PlatformInterface(parent)
 {
 
     // Notifications
@@ -23,44 +21,13 @@ SailfishPlatform::SailfishPlatform(QObject *parent):
     m_iface->call("AddMatch", "type='method_return',sender='org.freedesktop.Notifications',eavesdrop='true'");
     m_iface->call("AddMatch", "type='signal',sender='org.freedesktop.Notifications',path='/org/freedesktop/Notifications',interface='org.freedesktop.Notifications',member='NotificationClosed'");
 
-    // Music
-    QDBusConnectionInterface *iface = QDBusConnection::sessionBus().interface();
-    const QStringList &services = iface->registeredServiceNames();
-    foreach (QString service, services) {
-        if (service.startsWith("org.mpris.MediaPlayer2.")) {
-            qDebug() << "have mpris service" << service;
-            m_mprisService = service;
-            fetchMusicMetadata();
-            QDBusConnection::sessionBus().connect(m_mprisService, "/org/mpris/MediaPlayer2", "", "PropertiesChanged", this, SLOT(mediaPropertiesChanged(QString,QVariantMap,QStringList)));
-            break;
-        }
-    }
-
-    QDBusMessage call = QDBusMessage::createMethodCall("org.PulseAudio1", "/org/pulseaudio/server_lookup1", "org.freedesktop.DBus.Properties", "Get" );
-    call << "org.PulseAudio.ServerLookup1" << "Address";
-    QDBusReply<QDBusVariant> lookupReply = QDBusConnection::sessionBus().call(call);
-    if (lookupReply.isValid()) {
-        //
-        qDebug() << "PulseAudio Bus address: " << lookupReply.value().variant().toString();
-        _pulseBus = new QDBusConnection(QDBusConnection::connectToPeer(lookupReply.value().variant().toString(), "org.PulseAudio1"));
-    }
-    // Query max volume
-    call = QDBusMessage::createMethodCall("com.Meego.MainVolume2", "/com/meego/mainvolume2",
-                                                       "org.freedesktop.DBus.Properties", "Get");
-    call << "com.Meego.MainVolume2" << "StepCount";
-    QDBusReply<QDBusVariant> volumeMaxReply = _pulseBus->call(call);
-    if (volumeMaxReply.isValid()) {
-        _maxVolume = volumeMaxReply.value().variant().toUInt();
-        qDebug() << "Max volume: " << _maxVolume;
-    }
-    else {
-        qWarning() << "Could not read volume max, cannot adjust volume: " << volumeMaxReply.error().message();
-    }
-
     // Calls
     m_voiceCallManager = new VoiceCallManager(this);
-
     connect(m_voiceCallManager, SIGNAL(activeVoiceCallChanged()), SLOT(onActiveVoiceCallChanged()));
+
+    // Music
+    m_musicController = new watchfish::MusicController(this);
+    connect(m_musicController, SIGNAL(metadataChanged()), SLOT(fetchMusicMetadata()));
 
     // Organizer
     m_organizerAdapter = new OrganizerAdapter(this);
@@ -206,67 +173,24 @@ uint SailfishPlatform::Notify(const QString &app_name, uint replaces_id, const Q
 
 void SailfishPlatform::sendMusicControlCommand(MusicControlButton controlButton)
 {
-    QString method;
     switch (controlButton) {
     case MusicControlPlayPause:
-        method = "PlayPause";
+        m_musicController->playPause();
         break;
     case MusicControlSkipBack:
-        method = "Previous";
+        m_musicController->previous();
         break;
     case MusicControlSkipNext:
-        method = "Next";
+        m_musicController->next();
+        break;
+    case MusicControlVolumeUp:
+        m_musicController->volumeUp();
+        break;
+    case MusicControlVolumeDown:
+        m_musicController->volumeDown();
         break;
     default:
         ;
-    }
-
-    if (!method.isEmpty()) {
-        QDBusMessage call = QDBusMessage::createMethodCall(m_mprisService, "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player", method);
-        QDBusError err = QDBusConnection::sessionBus().call(call);
-
-        if (err.isValid()) {
-            qWarning() << "Error calling mpris method on" << m_mprisService << ":" << err.message();
-        }
-        return;
-    }
-
-    if (controlButton == MusicControlVolumeUp || controlButton == MusicControlVolumeDown) {
-        QDBusMessage call = QDBusMessage::createMethodCall("com.Meego.MainVolume2", "/com/meego/mainvolume2",
-                                                       "org.freedesktop.DBus.Properties", "Get");
-        call << "com.Meego.MainVolume2" << "CurrentStep";
-
-        QDBusReply<QDBusVariant> volumeReply = _pulseBus->call(call);
-        if (volumeReply.isValid()) {
-            // Decide the new value for volume, taking limits into account
-            uint volume = volumeReply.value().variant().toUInt();
-            uint newVolume;
-            qDebug() << "Current volume: " << volumeReply.value().variant().toUInt();
-            if (controlButton == MusicControlVolumeUp && volume < _maxVolume-1 ) {
-                newVolume = volume + 1;
-            }
-            else if (controlButton == MusicControlVolumeDown && volume > 0) {
-                newVolume = volume - 1;
-            }
-            else {
-            qDebug() << "Volume already at limit";
-            newVolume = volume;
-            }
-
-            // If we have a new volume level, change it
-            if (newVolume != volume) {
-                qDebug() << "Setting volume: " << newVolume;
-
-                call = QDBusMessage::createMethodCall("com.Meego.MainVolume2", "/com/meego/mainvolume2",
-                                                      "org.freedesktop.DBus.Properties", "Set");
-                call << "com.Meego.MainVolume2" << "CurrentStep" << QVariant::fromValue(QDBusVariant(newVolume));
-
-                QDBusError err = _pulseBus->call(call);
-                if (err.isValid()) {
-                    qWarning() << err.message();
-                }
-            }
-        }
     }
 }
 
@@ -321,28 +245,11 @@ void SailfishPlatform::actionTriggered(const QString &actToken)
 
 void SailfishPlatform::fetchMusicMetadata()
 {
-    if (!m_mprisService.isEmpty()) {
-        QDBusMessage call = QDBusMessage::createMethodCall(m_mprisService, "/org/mpris/MediaPlayer2", "org.freedesktop.DBus.Properties", "Get");
-        call << "org.mpris.MediaPlayer2.Player" << "Metadata";
-        QDBusPendingCall pcall = QDBusConnection::sessionBus().asyncCall(call);
-        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(pcall, this);
-        connect(watcher, &QDBusPendingCallWatcher::finished, this, &SailfishPlatform::fetchMusicMetadataFinished);
-    }
-}
-
-void SailfishPlatform::fetchMusicMetadataFinished(QDBusPendingCallWatcher *watcher)
-{
-    watcher->deleteLater();
-    QDBusReply<QDBusVariant> reply = watcher->reply();
-    if (reply.isValid()) {
-        QVariantMap curMetadata = qdbus_cast<QVariantMap>(reply.value().variant().value<QDBusArgument>());
-        m_musicMetaData.artist = curMetadata.value("xesam:artist").toString();
-        m_musicMetaData.album = curMetadata.value("xesam:album").toString();
-        m_musicMetaData.title = curMetadata.value("xesam:title").toString();
-        emit musicMetadataChanged(m_musicMetaData);
-    } else {
-        qWarning() << reply.error().message();
-    }
+    m_musicMetaData.artist = m_musicController->artist();
+    m_musicMetaData.album = m_musicController->album();
+    m_musicMetaData.title = m_musicController->title();
+    m_musicMetaData.duration = m_musicController->duration();
+    emit musicMetadataChanged(m_musicMetaData);
 }
 
 void SailfishPlatform::mediaPropertiesChanged(const QString &interface, const QVariantMap &changedProps, const QStringList &invalidatedProps)

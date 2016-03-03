@@ -5,10 +5,11 @@ MusicMetaData::MusicMetaData()
 
 }
 
-MusicMetaData::MusicMetaData(const QString &artist, const QString &album, const QString &title):
+MusicMetaData::MusicMetaData(const QString &artist, const QString &album, const QString &title, const int duration):
     artist(artist),
     album(album),
-    title(title)
+    title(title),
+    duration(duration)
 {
 
 }

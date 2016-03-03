@@ -5,6 +5,7 @@
 #include "libpebble/enums.h"
 #include "voicecallmanager.h"
 #include "voicecallhandler.h"
+#include "musiccontroller.h"
 
 #include <QDBusInterface>
 #include <QDBusContext>
@@ -12,7 +13,7 @@
 class QDBusPendingCallWatcher;
 class VoiceCallManager;
 class OrganizerAdapter;
-class SyncMonitorClient;
+class watchfish::MusicController;
 
 class SailfishPlatform : public PlatformInterface, public QDBusContext
 {
@@ -38,20 +39,16 @@ public slots:
 
 private slots:
     void fetchMusicMetadata();
-    void fetchMusicMetadataFinished(QDBusPendingCallWatcher *watcher);
     void mediaPropertiesChanged(const QString &interface, const QVariantMap &changedProps, const QStringList &invalidatedProps);
     void onActiveVoiceCallChanged();
     void onActiveVoiceCallStatusChanged();
 
 private:
     QDBusInterface *m_iface;
-    QString m_mprisService;
     MusicMetaData m_musicMetaData;
-    QDBusConnection *_pulseBus;
-    uint _maxVolume;
-
     VoiceCallManager *m_voiceCallManager;
     OrganizerAdapter *m_organizerAdapter;
+    watchfish::MusicController *m_musicController;
 };
 
 #endif // SAILFISHPLATFORM_H

@@ -34,6 +34,7 @@ BuildRequires:  pkgconfig(Qt5Network)
 BuildRequires:  pkgconfig(Qt5Location)
 BuildRequires:  pkgconfig(Qt5Organizer)
 BuildRequires:  pkgconfig(qt5-boostable)
+BuildRequires:  pkgconfig(mpris-qt5)
 BuildRequires:  pkgconfig(mlite5)
 BuildRequires:  pkgconfig(sailfishapp) >= 0.0.10
 BuildRequires:  pkgconfig(icu-i18n)
