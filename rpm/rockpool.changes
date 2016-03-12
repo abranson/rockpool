@@ -1,2 +1,11 @@
-* Thu Feb 18 2016 Andrew Branson <github@andrewbranson.net> 0.1
+* Sat Mar 12 2016 Andrew Branson <github@andrewbranson.net> 0.2-1
+- Improved notifications. Can now be closed on the phone by dismissing on the watch.
+- New icon (thanks to Greg Goncharov!)
+
+* Thu Mar 03 2016 Andrew Branson <github@andrewbranson.net> 0.1-2
+- Added calendar support, pushing upcoming events to the pebble timeline
+- Added new notification types, detecting hangouts, telegram and whatsapp messages.
+- Improved music control
+
+* Thu Feb 18 2016 Andrew Branson <github@andrewbranson.net> 0.1-1
 - Initial overlay of Rockwork with some Pebbled changes
