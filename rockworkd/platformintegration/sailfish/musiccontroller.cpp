@@ -300,11 +300,12 @@ void MusicController::volumeUp()
 void MusicController::volumeDown()
 {
     uint curVolume = this->volume();
-    uint newVolume = curVolume - 1;
-    if (newVolume < 0) {
+    if (curVolume == 0) {
         qDebug() << "Cannot decrease volume beyond 0";
         return;
     }
+    uint newVolume = curVolume - 1;
+
     setVolume(newVolume);
 }
 
