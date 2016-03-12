@@ -66,7 +66,9 @@ SOURCES += main.cpp \
     libpebble/ziphelper.cpp \
     libpebble/healthparams.cpp \
     libpebble/dataloggingendpoint.cpp \
-    platformintegration/sailfish/musiccontroller.cpp
+    platformintegration/sailfish/musiccontroller.cpp \
+    platformintegration/sailfish/notificationmonitor.cpp \
+    platformintegration/sailfish/notifications.cpp
 
 HEADERS += \
     libpebble/watchconnection.h \
@@ -103,13 +105,14 @@ HEADERS += \
     dbusinterface.h \
 # Platform integration part
     platformintegration/sailfish/sailfishplatform.h \
-#   platformintegration/sailfish/callchannelobserver.h \
     platformintegration/sailfish/voicecallmanager.h \
     platformintegration/sailfish/voicecallhandler.h \
+    platformintegration/sailfish/organizeradapter.h \
+    platformintegration/sailfish/musiccontroller.h \
+    platformintegration/sailfish/notificationmonitor.h \
     libpebble/blobdb.h \
     libpebble/timelineitem.h \
     libpebble/notification.h \
-    platformintegration/sailfish/organizeradapter.h \
     libpebble/calendarevent.h \
     libpebble/appmetadata.h \
     libpebble/appdownloader.h \
@@ -121,7 +124,7 @@ HEADERS += \
     libpebble/ziphelper.h \
     libpebble/healthparams.h \
     libpebble/dataloggingendpoint.h \
-    platformintegration/sailfish/musiccontroller.h
+    platformintegration/sailfish/notifications.h
 
 testing: {
     SOURCES += platformintegration/testing/testingplatform.cpp
