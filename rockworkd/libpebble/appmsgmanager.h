@@ -21,7 +21,7 @@ public:
     };
     enum LauncherMessage {
         LauncherActionStart = 1,
-        LauncherActionStop = 0
+        LauncherActionStop = 2
     };
 
     explicit AppMsgManager(Pebble *pebble, AppManager *apps, WatchConnection *connection);

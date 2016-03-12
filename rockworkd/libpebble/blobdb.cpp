@@ -8,6 +8,8 @@
 #include <QDir>
 #include <QSettings>
 
+#include <libintl.h>
+
 BlobDB::BlobDB(Pebble *pebble, WatchConnection *connection):
     QObject(pebble),
     m_pebble(pebble),
@@ -40,71 +42,75 @@ BlobDB::BlobDB(Pebble *pebble, WatchConnection *connection):
 
 void BlobDB::insertNotification(const Notification &notification)
 {
-    TimelineAttribute::IconID iconId = TimelineAttribute::IconIDDefaultBell;
+    qDebug() << "inserting notification into blobdb:" << notification.type();
+    TimelineAttribute::IconID iconId = TimelineAttribute::IconIDNotificationGeneric;
     TimelineAttribute::Color color = TimelineAttribute::ColorRed;
     QString muteName;
     switch (notification.type()) {
-    case Notification::NotificationTypeAlarm:
-        iconId = TimelineAttribute::IconIDAlarm;
-        muteName = "Alarms";
-        break;
     case Notification::NotificationTypeFacebook:
-        iconId = TimelineAttribute::IconIDFacebook;
+        iconId = TimelineAttribute::IconIDNotificationFacebook;
         color = TimelineAttribute::ColorBlue;
         muteName = "Facebook";
         break;
+    case Notification::NotificationTypeFlag:
+        iconId = TimelineAttribute::IconIDNotificationFlag;
+        break;
+    case Notification::NotificationTypeGeneric:
+        iconId = TimelineAttribute::IconIDNotificationGeneric;
+        break;
     case Notification::NotificationTypeGMail:
-        iconId = TimelineAttribute::IconIDGMail;
+        iconId = TimelineAttribute::IconIDNotificationGMail;
         muteName = "GMail";
         break;
     case Notification::NotificationTypeHangout:
-        iconId = TimelineAttribute::IconIDHangout;
+        iconId = TimelineAttribute::IconIDNotificationGoogleHangouts;
         color = TimelineAttribute::ColorGreen;
-        muteName = "Hangout";
+        muteName = "Google Hangout";
         break;
     case Notification::NotificationTypeMissedCall:
-        iconId = TimelineAttribute::IconIDDefaultMissedCall;
-        muteName = "call notifications";
+        iconId = TimelineAttribute::IconIDTimelineMissedCall;
+        muteName = gettext("call notifications");
         break;
     case Notification::NotificationTypeMusic:
-        iconId = TimelineAttribute::IconIDMusic;
-        muteName = "music";
+        iconId = TimelineAttribute::IconIDAudioCasette;
         break;
     case Notification::NotificationTypeReminder:
-        iconId = TimelineAttribute::IconIDReminder;
-        muteName = "reminders";
+        iconId = TimelineAttribute::IconIDTimelineCalendar;
+        // TRANSLATORS: notifications for calendar reminders
+        muteName = gettext("reminders");
         break;
     case Notification::NotificationTypeTelegram:
-        iconId = TimelineAttribute::IconIDTelegram;
+        iconId = TimelineAttribute::IconIDNotificationTelegram;
         color = TimelineAttribute::ColorLightBlue;
         muteName = "Telegram";
         break;
     case Notification::NotificationTypeTwitter:
-        iconId = TimelineAttribute::IconIDTwitter;
+        iconId = TimelineAttribute::IconIDNotificationTwitter;
         color = TimelineAttribute::ColorBlue2;
         muteName = "Twitter";
         break;
     case Notification::NotificationTypeWeather:
-        iconId = TimelineAttribute::IconIDWeather;
-        muteName = "Weather";
+        iconId = TimelineAttribute::IconIDTimelineWeather;
+        muteName = gettext("weather notifications");
         break;
     case Notification::NotificationTypeWhatsApp:
-        iconId = TimelineAttribute::IconIDWhatsApp;
+        iconId = TimelineAttribute::IconIDNotificationWhatsapp;
         color = TimelineAttribute::ColorGreen;
         muteName = "WhatsApp";
         break;
     case Notification::NotificationTypeSMS:
-        muteName = "SMS";
-        iconId = TimelineAttribute::IconIDSMS;
+        muteName = gettext("SMS");
+        iconId = TimelineAttribute::IconIDGenericSMS;
         break;
     case Notification::NotificationTypeEmail:
-    default:
-        muteName = "e-mails";
-        iconId = TimelineAttribute::IconIDEmail;
+        muteName = gettext("e mails");
+        iconId = TimelineAttribute::IconIDGenericEmail;
         break;
+    default:
+        iconId = TimelineAttribute::IconIDNotificationGeneric;
     }
 
-    QUuid itemUuid = QUuid::createUuid();
+    QUuid itemUuid = notification.uuid();
     TimelineItem timelineItem(itemUuid, TimelineItem::TypeNotification);
     timelineItem.setFlags(TimelineItem::FlagSingleEvent);
 
@@ -133,18 +139,21 @@ void BlobDB::insertNotification(const Notification &notification)
     timelineItem.appendAttribute(colorAttribute);
 
     TimelineAction dismissAction(0, TimelineAction::TypeDismiss);
-    TimelineAttribute dismissAttribute(TimelineAttribute::TypeTitle, "Dismiss");
+    TimelineAttribute dismissAttribute(TimelineAttribute::TypeTitle, gettext("Dismiss"));
     dismissAction.appendAttribute(dismissAttribute);
     timelineItem.appendAction(dismissAction);
 
-    TimelineAction muteAction(1, TimelineAction::TypeGeneric);
-    TimelineAttribute muteActionAttribute(TimelineAttribute::TypeTitle, "Mute " + muteName.toUtf8());
-    muteAction.appendAttribute(muteActionAttribute);
-    timelineItem.appendAction(muteAction);
+    if (!muteName.isEmpty()) {
+        TimelineAction muteAction(1, TimelineAction::TypeGeneric);
+
+        TimelineAttribute muteActionAttribute(TimelineAttribute::TypeTitle, QString::fromUtf8(gettext("Mute %1")).arg(muteName).toUtf8());
+        muteAction.appendAttribute(muteActionAttribute);
+        timelineItem.appendAction(muteAction);
+    }
 
     if (!notification.actToken().isEmpty()) {
         TimelineAction actAction(2, TimelineAction::TypeGeneric);
-        TimelineAttribute actActionAttribute(TimelineAttribute::TypeTitle, "Open on phone");
+        TimelineAttribute actActionAttribute(TimelineAttribute::TypeTitle, gettext("Open on phone"));
         actAction.appendAttribute(actActionAttribute);
         timelineItem.appendAction(actAction);
     }

@@ -61,7 +61,7 @@
     return Object(v);
   }
   function ToInt32(v) { return v >> 0; }
-  function ToUint32(v) { return v >>> 0; }
+  function ToUint32(v) { return v >> 0; } //ROCKWORK HACK ALERT: it appears that QT doesn't do the >>> properly, using >> here instead (should be close enough)
 
   // Snapshot intrinsics
   var LN2 = Math.LN2,
@@ -135,23 +135,21 @@
 
   function packU8Clamped(n) { n = round(Number(n)); return [n < 0 ? 0 : n > 0xff ? 0xff : n & 0xff]; }
 
-  function packI16(n) { return [(n >> 8) & 0xff, n & 0xff]; }
-  function unpackI16(bytes) { return as_signed(bytes[0] << 8 | bytes[1], 16); }
+  function packI16(n) { return [n & 0xff, (n >> 8) & 0xff]; }
+  function unpackI16(bytes) { return as_signed(bytes[1] << 8 | bytes[0], 16); }
 
-  function packU16(n) { return [(n >> 8) & 0xff, n & 0xff]; }
-  function unpackU16(bytes) { return as_unsigned(bytes[0] << 8 | bytes[1], 16); }
+  function packU16(n) { return [n & 0xff, (n >> 8) & 0xff]; }
+  function unpackU16(bytes) { return as_unsigned(bytes[1] << 8 | bytes[0], 16); }
 
-  function packI32(n) { return [(n >> 24) & 0xff, (n >> 16) & 0xff, (n >> 8) & 0xff, n & 0xff]; }
-  function unpackI32(bytes) { return as_signed(bytes[0] << 24 | bytes[1] << 16 | bytes[2] << 8 | bytes[3], 32); }
+  function packI32(n) { return [n & 0xff, (n >> 8) & 0xff, (n >> 16) & 0xff, (n >> 24) & 0xff]; }
+  function unpackI32(bytes) { return as_signed(bytes[3] << 24 | bytes[2] << 16 | bytes[1] << 8 | bytes[0], 32); }
 
-  function packU32(n) { return [(n >> 24) & 0xff, (n >> 16) & 0xff, (n >> 8) & 0xff, n & 0xff]; }
-  function unpackU32(bytes) { return as_unsigned(bytes[0] << 24 | bytes[1] << 16 | bytes[2] << 8 | bytes[3], 32); }
+  function packU32(n) { return [n & 0xff, (n >> 8) & 0xff, (n >> 16) & 0xff, (n >> 24) & 0xff]; }
+  function unpackU32(bytes) { return as_unsigned(bytes[3] << 24 | bytes[2] << 16 | bytes[1] << 8 | bytes[0], 32); }
 
   function packIEEE754(v, ebits, fbits) {
 
-    var bias = (1 << (ebits - 1)) - 1,
-        s, e, f, ln,
-        i, bits, str, bytes;
+    var bias = (1 << (ebits - 1)) - 1;
 
     function roundToEven(n) {
       var w = floor(n), f = n - w;
@@ -163,6 +161,7 @@
     }
 
     // Compute sign, exponent, fraction
+    var s, e, f;
     if (v !== v) {
       // NaN
       // http://dev.w3.org/2006/webapi/WebIDL/#es-type-mapping
@@ -176,20 +175,28 @@
       v = abs(v);
 
       if (v >= pow(2, 1 - bias)) {
+        // Normalized
         e = min(floor(log(v) / LN2), 1023);
-        f = roundToEven(v / pow(2, e) * pow(2, fbits));
-        if (f / pow(2, fbits) >= 2) {
-          e = e + 1;
-          f = 1;
+        var significand = v / pow(2, e);
+        if (significand < 1) {
+          e -= 1;
+          significand *= 2;
         }
-        if (e > bias) {
+        if (significand >= 2) {
+          e += 1;
+          significand /= 2;
+        }
+        var d = pow(2, fbits);
+        f = roundToEven(significand * d) - d;
+        e += bias;
+        if (f / d >= 1) {
+          e += 1;
+          f = 0;
+        }
+        if (e > 2 * bias) {
           // Overflow
           e = (1 << ebits) - 1;
           f = 0;
-        } else {
-          // Normalized
-          e = e + bias;
-          f = f - pow(2, fbits);
         }
       } else {
         // Denormalized
@@ -199,17 +206,17 @@
     }
 
     // Pack sign, exponent, fraction
-    bits = [];
+    var bits = [], i;
     for (i = fbits; i; i -= 1) { bits.push(f % 2 ? 1 : 0); f = floor(f / 2); }
     for (i = ebits; i; i -= 1) { bits.push(e % 2 ? 1 : 0); e = floor(e / 2); }
     bits.push(s ? 1 : 0);
     bits.reverse();
-    str = bits.join('');
+    var str = bits.join('');
 
     // Bits to bytes
-    bytes = [];
+    var bytes = [];
     while (str.length) {
-      bytes.push(parseInt(str.substring(0, 8), 2));
+      bytes.unshift(parseInt(str.substring(0, 8), 2));
       str = str.substring(8);
     }
     return bytes;
@@ -220,8 +227,8 @@
     var bits = [], i, j, b, str,
         bias, s, e, f;
 
-    for (i = bytes.length; i; i -= 1) {
-      b = bytes[i - 1];
+    for (i = 0; i < bytes.length; ++i) {
+      b = bytes[i];
       for (j = 8; j; j -= 1) {
         bits.push(b % 2 ? 1 : 0); b = b >> 1;
       }

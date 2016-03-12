@@ -110,7 +110,59 @@ void JSKitManager::handleAppMessage(const QUuid &uuid, const QVariantMap &msg)
 
         if (m_engine) {
             QJSValue eventObj = m_engine->newObject();
-            eventObj.setProperty("payload", m_engine->toScriptValue(msg));
+            QJSValue payload = m_engine->newObject();
+
+            //These variables are up here to avoid cross initialization
+            QByteArray byteArray;
+            QJSValue array;
+
+            QMapIterator<QString, QVariant> it(msg);
+            while (it.hasNext()) {
+                it.next();
+
+                switch (int(it.value().type())) {
+                case QMetaType::Char:
+                case QMetaType::UChar:
+                case QMetaType::SChar:
+                    payload.setProperty(it.key(), m_engine->toScriptValue(it.value().value<char>()));
+                    break;
+                case QMetaType::Int:
+                case QMetaType::Short:
+                case QMetaType::UShort:
+                    payload.setProperty(it.key(), m_engine->toScriptValue(it.value().toInt()));
+                    break;
+                case QMetaType::UInt:
+                    payload.setProperty(it.key(), m_engine->toScriptValue(it.value().toUInt()));
+                    break;
+                case QMetaType::Bool:
+                    payload.setProperty(it.key(), m_engine->toScriptValue(it.value().toBool()));
+                    break;
+                case QMetaType::Float:
+                case QMetaType::Double:
+                    payload.setProperty(it.key(), m_engine->toScriptValue(it.value().toDouble()));
+                    break;
+                case QMetaType::QByteArray:
+                    byteArray = it.value().toByteArray();
+
+                    array = m_engine->newArray(byteArray.size());
+                    for (int i = 0; i < byteArray.size(); i++) {
+                        array.setProperty(i, m_engine->toScriptValue<int>(byteArray[i]));
+                    }
+
+                    payload.setProperty(it.key(), array);
+
+                    break;
+                case QMetaType::QString:
+                    payload.setProperty(it.key(), m_engine->toScriptValue(it.value().toString()));
+                    break;
+                default:
+                    qWarning() << "JSKitManager::handleAppMessage" << "Unknown dict item type:" << it.value().typeName();
+                    break;
+                }
+            }
+
+            //eventObj.setProperty("payload", m_engine->toScriptValue(msg));
+            eventObj.setProperty("payload", payload);
 
             m_jspebble->invokeCallbacks("appmessage", QJSValueList({eventObj}));
 

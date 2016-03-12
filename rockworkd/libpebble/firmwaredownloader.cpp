@@ -166,11 +166,13 @@ void FirmwareDownloader::checkForNewFirmware()
 
     QString url("https://pebblefw.s3.amazonaws.com/pebble/%1/%2/latest.json");
     url = url.arg(platformString).arg("release-v3.8");
+    qDebug() << "fetching firmware info:" << url;
     QNetworkRequest request(url);
     QNetworkReply *reply = m_nam->get(request);
     connect(reply, &QNetworkReply::finished, [this, reply]() {
         QJsonParseError error;
         QJsonDocument jsonDoc = QJsonDocument::fromJson(reply->readAll(), &error);
+        qDebug() << "firmware info reply:" << jsonDoc.toJson();
         if (error.error != QJsonParseError::NoError) {
             qWarning() << "Error parsing firmware fetch reply" << jsonDoc.toJson(QJsonDocument::Indented);
             return;
@@ -181,12 +183,16 @@ void FirmwareDownloader::checkForNewFirmware()
             return;
         }
 
+        qDebug() << "current:" << m_pebble->softwareVersion() << "candidate:" << resultMap.value("normal").toMap().value("friendlyVersion").toString();
+
+        FirmwareVersion baseline("v3.0.0");
+        FirmwareVersion current(m_pebble->softwareVersion());
+        FirmwareVersion candidate(resultMap.value("normal").toMap().value("friendlyVersion").toString());
 
         QVariantMap targetFirmware;
-        if (resultMap.contains("3.x-migration") && m_pebble->softwareVersion() < "v3.0.0") {
+        if (resultMap.contains("3.x-migration") && baseline > current) {
             targetFirmware = resultMap.value("3.x-migration").toMap();
-        } else if (m_pebble->softwareVersion() >= "v3.0.0" &&
-                   resultMap.value("normal").toMap().value("friendlyVersion").toString() > m_pebble->softwareVersion()){
+        } else if (current > baseline && candidate > current){
             targetFirmware = resultMap.value("normal").toMap();
         }
 

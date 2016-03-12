@@ -80,6 +80,7 @@ void AppMsgManager::send(const QUuid &uuid, const QVariantMap &data, const std::
     PendingTransaction trans;
     trans.uuid = uuid;
     trans.transactionId = ++_lastTransactionId;
+    //TODO check for byte arrays and byte arrays with strings (https://developer.pebble.com/guides/pebble-apps/pebblekit-js/js-app-comm/#appmessage-objects-in-javascript)
     trans.dict = mapAppKeys(uuid, data);
     trans.ackCallback = ackCallback;
     trans.nackCallback = nackCallback;

@@ -75,6 +75,11 @@ void WatchDataWriter::writeDict(const QMap<int, QVariant> &d)
             writeLE<quint16>(sizeof(char));
             writeLE<char>(it.value().value<char>());
             break;
+        case QMetaType::SChar:
+            writeLE<quint8>(WatchConnection::DictItemTypeInt);
+            writeLE<quint16>(sizeof(signed char));
+            writeLE<signed char>(it.value().value<signed char>());
+            break;
         case QMetaType::UShort:
             writeLE<quint8>(WatchConnection::DictItemTypeInt);
             writeLE<quint16>(sizeof(short));
