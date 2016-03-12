@@ -57,7 +57,7 @@ QList<CalendarEvent> TestingPlatform::organizerItems() const
     return QList<CalendarEvent>();
 }
 
-void TestingPlatform::actionTriggered(const QString &actToken)
+void TestingPlatform::actionTriggered(const QUuid &uuid, const QString &actToken)
 {
     qDebug() << "action triggered" << actToken;
 }

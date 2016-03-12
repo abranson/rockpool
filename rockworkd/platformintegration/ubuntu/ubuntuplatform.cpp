@@ -192,7 +192,7 @@ QList<CalendarEvent> UbuntuPlatform::organizerItems() const
     return m_organizerAdapter->items();
 }
 
-void UbuntuPlatform::actionTriggered(const QString &actToken)
+void UbuntuPlatform::actionTriggered(const QUuid &uuid, const QString &actToken)
 {
     url_dispatch_send(actToken.toStdString().c_str(), [] (const gchar *, gboolean, gpointer) {}, nullptr);
 }

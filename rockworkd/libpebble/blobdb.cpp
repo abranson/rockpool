@@ -114,6 +114,8 @@ void BlobDB::insertNotification(const Notification &notification)
     TimelineItem timelineItem(itemUuid, TimelineItem::TypeNotification);
     timelineItem.setFlags(TimelineItem::FlagSingleEvent);
 
+    timelineItem.setParentId(QUuid("ed429c16-f674-4220-95da-454f303f15e2"));
+
     TimelineAttribute titleAttribute(TimelineAttribute::TypeTitle, notification.sender().remove(QRegExp("<[^>]*>")).left(64).toUtf8());
     timelineItem.appendAttribute(titleAttribute);
 
@@ -234,6 +236,16 @@ void BlobDB::insertReminder()
     TimelineAttribute dismissAttribute(TimelineAttribute::TypeTitle, "Dismiss");
     dismissAction.appendAttribute(dismissAttribute);
     item.appendAction(dismissAction);
+
+    TimelineAction openPinAction(0, TimelineAction::TypeOpenPin);
+    TimelineAttribute openPinAttribute(TimelineAttribute::TypeTitle, "More");
+    openPinAction.appendAttribute(openPinAttribute);
+    item.appendAction(openPinAction);
+
+    TimelineAction muteAction(0, TimelineAction::TypeGeneric);
+    TimelineAttribute muteAttribute(TimelineAttribute::TypeTitle, "Mute");
+    muteAction.appendAttribute(muteAttribute);
+    item.appendAction(muteAction);
 
     insert(BlobDB::BlobDBIdReminder, item);
     //    qDebug() << "adding timeline item" << ddd.toHex();
@@ -463,7 +475,7 @@ void BlobDB::actionInvoked(const QByteArray &actionReply)
     Q_UNUSED(actionType)
     Q_UNUSED(param)
 
-    qDebug() << "Action invoked" << actionId << actionReply.toHex();
+    qDebug() << "Action invoked" << actionId << actionReply.toHex() << param;
 
     Status status = StatusError;
     QList<TimelineAttribute> attributes;
@@ -474,11 +486,20 @@ void BlobDB::actionInvoked(const QByteArray &actionReply)
         status = StatusError;
     } else {
         switch (actionId) {
+        case 0: { // Dismiss
+            TimelineAttribute textAttribute(TimelineAttribute::TypeSubtitle, "Dismissed!");
+            attributes.append(textAttribute);
+            TimelineAttribute iconAttribute(TimelineAttribute::TypeLargeIcon, TimelineAttribute::IconIDResultDismissed);
+            attributes.append(iconAttribute);
+            emit removeNotification(notification.uuid());
+            status = StatusSuccess;
+            break;
+        }
         case 1: { // Mute source
             TimelineAttribute textAttribute(TimelineAttribute::TypeSubtitle, "Muted!");
             attributes.append(textAttribute);
-//            TimelineAttribute iconAttribute(TimelineAttribute::TypeLargeIcon, TimelineAttribute::IconIDTelegram);
-//            attributes.append(iconAttribute);
+            TimelineAttribute iconAttribute(TimelineAttribute::TypeLargeIcon, TimelineAttribute::IconIDResultMute);
+            attributes.append(iconAttribute);
             emit muteSource(sourceId);
             status = StatusSuccess;
             break;
@@ -486,9 +507,19 @@ void BlobDB::actionInvoked(const QByteArray &actionReply)
         case 2: { // Open on phone
             TimelineAttribute textAttribute(TimelineAttribute::TypeSubtitle, "Opened!");
             attributes.append(textAttribute);
+            TimelineAttribute iconAttribute(TimelineAttribute::TypeLargeIcon, TimelineAttribute::IconIDResultSent);
+            attributes.append(iconAttribute);
             qDebug() << "opening" << notification.actToken();
-            emit actionTriggered(notification.actToken());
+            emit actionTriggered(notification.uuid(), notification.actToken());
             status = StatusSuccess;
+            break;
+        }
+        default: { // Dunno lol
+            TimelineAttribute textAttribute(TimelineAttribute::TypeSubtitle, "Action failed!");
+            attributes.append(textAttribute);
+            TimelineAttribute iconAttribute(TimelineAttribute::TypeLargeIcon, TimelineAttribute::IconIDResultFailed);
+            attributes.append(iconAttribute);
+            status = StatusError;
         }
         }
     }

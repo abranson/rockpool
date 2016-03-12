@@ -6,6 +6,7 @@
 #include "voicecallmanager.h"
 #include "voicecallhandler.h"
 #include "musiccontroller.h"
+#include "notificationmonitor.h"
 
 #include <QDBusInterface>
 #include <QDBusContext>
@@ -13,18 +14,15 @@
 class QDBusPendingCallWatcher;
 class VoiceCallManager;
 class OrganizerAdapter;
-class watchfish::MusicController;
 
 class SailfishPlatform : public PlatformInterface, public QDBusContext
 {
     Q_OBJECT
     Q_CLASSINFO("D-Bus Interface", "org.freedesktop.Notifications")
-    Q_PROPERTY(QDBusInterface* interface READ interface)
 
 
 public:
     SailfishPlatform(QObject *parent = 0);
-    QDBusInterface* interface() const;
 
     void sendMusicControlCommand(MusicControlButton controlButton) override;
     MusicMetaData musicMetaData() const override;
@@ -32,14 +30,17 @@ public:
     QHash<QString, QString> getCategoryParams(QString category);
 
     QList<CalendarEvent> organizerItems() const override;
-    void actionTriggered(const QString &actToken) override;
+    void actionTriggered(const QUuid &uuid, const QString &actToken) const override;
+    void removeNotification(const QUuid &uuid) const override;
 
 public slots:
-    uint Notify(const QString &app_name, uint replaces_id, const QString &app_icon, const QString &summary, const QString &body, const QStringList &actions, const QVariantHash &hints, int expire_timeout);
+    void onNotification(watchfish::Notification *notification);
+    void handleClosedNotification(watchfish::Notification::CloseReason reason);
 
 private slots:
     void fetchMusicMetadata();
     void mediaPropertiesChanged(const QString &interface, const QVariantMap &changedProps, const QStringList &invalidatedProps);
+
     void onActiveVoiceCallChanged();
     void onActiveVoiceCallStatusChanged();
 
@@ -48,7 +49,9 @@ private:
     MusicMetaData m_musicMetaData;
     VoiceCallManager *m_voiceCallManager;
     OrganizerAdapter *m_organizerAdapter;
+    mutable QMap<QUuid, watchfish::Notification*> m_notifs;
     watchfish::MusicController *m_musicController;
+    watchfish::NotificationMonitor *m_notificationMonitor;
 };
 
 #endif // SAILFISHPLATFORM_H

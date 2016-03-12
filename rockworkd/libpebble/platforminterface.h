@@ -16,9 +16,11 @@ public:
 
 // Notifications
 public:
-    virtual void actionTriggered(const QString &actToken) = 0;
+    virtual void actionTriggered(const QUuid &uuid, const QString &actToken) const = 0;
+    virtual void removeNotification(const QUuid &uuid) const = 0;
 signals:
     void notificationReceived(const Notification &notification);
+    void notificationRemoved(const QUuid &uuid);
 
 // Music
 public:

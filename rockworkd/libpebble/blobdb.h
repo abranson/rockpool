@@ -67,7 +67,8 @@ private slots:
 
 signals:
     void muteSource(const QString &sourceId);
-    void actionTriggered(const QString &actToken);
+    void removeNotification(const QUuid &uuid);
+    void actionTriggered(const QUuid &uuid, const QString &actToken);
     void appInserted(const QUuid &uuid);
 
 private:

@@ -66,6 +66,7 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
     m_blobDB = new BlobDB(this, m_connection);
     QObject::connect(m_blobDB, &BlobDB::muteSource, this, &Pebble::muteNotificationSource);
     QObject::connect(m_blobDB, &BlobDB::actionTriggered, Core::instance()->platform(), &PlatformInterface::actionTriggered);
+    QObject::connect(m_blobDB, &BlobDB::removeNotification, Core::instance()->platform(), &PlatformInterface::removeNotification);
     QObject::connect(m_blobDB, &BlobDB::appInserted, this, &Pebble::appInstalled);
     QObject::connect(Core::instance()->platform(), &PlatformInterface::organizerItemsChanged, this, &Pebble::syncCalendar);
 

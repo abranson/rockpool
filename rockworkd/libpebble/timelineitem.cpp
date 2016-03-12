@@ -22,6 +22,10 @@ QUuid TimelineItem::itemId() const
     return m_itemId;
 }
 
+void TimelineItem::setParentId(QUuid parentId) {
+    m_parentId = parentId;
+}
+
 void TimelineItem::setLayout(quint8 layout)
 {
     m_layout = layout;
@@ -57,6 +61,7 @@ QByteArray TimelineItem::serialize() const
     QByteArray ret;
     ret.append(m_itemId.toRfc4122());
     ret.append(m_parentId.toRfc4122());
+    qDebug() << m_parentId;
     int ts = m_timestamp.toMSecsSinceEpoch() / 1000;
     ret.append(ts & 0xFF); ret.append((ts >> 8) & 0xFF); ret.append((ts >> 16) & 0xFF); ret.append((ts >> 24) & 0xFF);
     ret.append(m_duration & 0xFF); ret.append(((m_duration >> 8) & 0xFF));

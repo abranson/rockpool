@@ -3,7 +3,17 @@
 Notification::Notification(const QString &sourceId) :
     m_sourceId(sourceId)
 {
+    m_uuid = QUuid::createUuid();
+}
 
+QUuid Notification::uuid() const
+{
+    return m_uuid;
+}
+
+void Notification::setUuid(QUuid uuid)
+{
+    m_uuid = uuid;
 }
 
 QString Notification::sourceId() const
