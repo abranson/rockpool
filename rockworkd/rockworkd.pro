@@ -43,7 +43,6 @@ SOURCES += main.cpp \
     libpebble/bluez/bluez_device1.cpp \
     libpebble/bluez/freedesktop_objectmanager.cpp \
     libpebble/bluez/freedesktop_properties.cpp \
-    libpebble/bluez/device.cpp \
     core.cpp \
     pebblemanager.cpp \
     dbusinterface.cpp \
@@ -99,7 +98,6 @@ HEADERS += \
     libpebble/bluez/bluez_device1.h \
     libpebble/bluez/freedesktop_objectmanager.h \
     libpebble/bluez/freedesktop_properties.h \
-    libpebble/bluez/device.h \
     core.h \
     pebblemanager.h \
     dbusinterface.h \

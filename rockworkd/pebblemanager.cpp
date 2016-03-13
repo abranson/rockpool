@@ -26,8 +26,8 @@ QList<Pebble *> PebbleManager::pebbles() const
 
 void PebbleManager::loadPebbles()
 {
-    QList<BluezDevice> pairedPebbles = m_bluezClient->pairedPebbles();
-    foreach (const BluezDevice &device, pairedPebbles) {
+    QList<Device> pairedPebbles = m_bluezClient->pairedPebbles();
+    foreach (const Device &device, pairedPebbles) {
         qDebug() << "loading pebble" << device.address.toString();
         Pebble *pebble = get(device.address);
         if (!pebble) {
@@ -46,7 +46,7 @@ void PebbleManager::loadPebbles()
     QList<Pebble*> pebblesToRemove;
     foreach (Pebble *pebble, m_pebbles) {
         bool found = false;
-        foreach (const BluezDevice &dev, pairedPebbles) {
+        foreach (const Device &dev, pairedPebbles) {
             if (dev.address == pebble->address()) {
                 found = true;
                 break;

@@ -1,6 +1,5 @@
 #include "bluezclient.h"
 #include "dbus-shared.h"
-#include "device.h"
 
 #include <QDBusConnection>
 #include <QDBusReply>
@@ -27,7 +26,6 @@ BluezClient::BluezClient(QObject *parent):
             InterfaceList ifaces = objectList.value(path);
             if (ifaces.contains(BLUEZ_DEVICE_IFACE)) {
                 QString candidatePath = path.path();
-                qDebug() << "have device" << candidatePath;
 
                 auto properties = ifaces.value(BLUEZ_DEVICE_IFACE);
                 addDevice(path, properties);
@@ -85,26 +83,24 @@ BluezClient::BluezClient(QObject *parent):
     }
 }
 
-QList<BluezDevice> BluezClient::pairedPebbles() const
+QList<Device> BluezClient::pairedPebbles() const
 {
-    QList<BluezDevice> ret;
-
-    foreach (const BluezDevice &dev, m_devices) {
-        ret << dev;
+    QList<Device> ret;
+    if (m_bluezManager.isValid()) {
+        foreach (const Device &dev, m_devices) {
+            ret << dev;
+        }
     }
-
     return ret;
-
 }
 
 void BluezClient::addDevice(const QDBusObjectPath &path, const QVariantMap &properties)
 {
     QString address = properties.value("Address").toString();
     QString name = properties.value("Name").toString();
-    qDebug() << "Adding device" << address << name;
     if (name.startsWith("Pebble") && !name.startsWith("Pebble Time LE") && !name.startsWith("Pebble-LE") && !m_devices.contains(address)) {
         qDebug() << "Found new Pebble:" << address << name;
-        BluezDevice device;
+        Device device;
         device.address = QBluetoothAddress(address);
         device.name = name;
         device.path = path.path();
@@ -120,26 +116,6 @@ void BluezClient::slotInterfacesAdded(const QDBusObjectPath &path, InterfaceList
     if (ifaces.contains(BLUEZ_DEVICE_IFACE)) {
         auto properties = ifaces.value(BLUEZ_DEVICE_IFACE);
         addDevice(path, properties);
-    }
-}
-
-void BluezClient::slotDevicePairingDone(bool success)
-{
-    qDebug() << "pairing done" << success;
-    if (!success) {
-        return;
-    }
-
-    Device *device = static_cast<Device*>(sender());
-    device->deleteLater();
-
-    if (!m_devices.contains(device->getAddress())) {
-        BluezDevice bluezDevice;
-        bluezDevice.address = QBluetoothAddress(device->getAddress());
-        bluezDevice.name = device->getName();
-        bluezDevice.path = device->getPath();
-        m_devices.insert(device->getAddress(), bluezDevice);
-        emit devicesChanged();
     }
 }
 
