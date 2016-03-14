@@ -4,13 +4,8 @@
 #include "libpebble/calendarevent.h"
 #include <QObject>
 #include <QTimer>
-#include <QOrganizerManager>
-#include <QOrganizerAbstractRequest>
-#include <QOrganizerEvent>
 #include <extendedcalendar.h>
 #include <extendedstorage.h>
-
-QTORGANIZER_USE_NAMESPACE
 
 struct CalendarInfo
 {

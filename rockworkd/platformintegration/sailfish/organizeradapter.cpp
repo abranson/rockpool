@@ -1,13 +1,8 @@
 #include "organizeradapter.h"
 
-#include <QOrganizerItemFetchRequest>
 #include <QDebug>
-#include <QOrganizerEventOccurrence>
-#include <QOrganizerItemDetail>
 #include <extendedcalendar.h>
 #include <extendedstorage.h>
-
-QTORGANIZER_USE_NAMESPACE
 
 #define MANAGER           "eds"
 #define MANAGER_FALLBACK  "memory"

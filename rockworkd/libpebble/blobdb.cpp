@@ -4,7 +4,6 @@
 #include "watchdatawriter.h"
 
 #include <QDebug>
-#include <QOrganizerRecurrenceRule>
 #include <QDir>
 #include <QSettings>
 

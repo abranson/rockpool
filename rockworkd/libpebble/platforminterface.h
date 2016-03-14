@@ -5,7 +5,6 @@
 #include "libpebble/musicmetadata.h"
 
 #include <QObject>
-#include <QOrganizerItem>
 
 class PlatformInterface: public QObject
 {

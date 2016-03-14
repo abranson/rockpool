@@ -1,4 +1,4 @@
-QT += core bluetooth dbus network contacts qml location organizer
+QT += core bluetooth dbus network contacts qml location
 QT -= gui
 
 include(../version.pri)

@@ -9,10 +9,6 @@
 
 #include <QObject>
 #include <QDateTime>
-#include <QOrganizerEvent>
-
-QTORGANIZER_USE_NAMESPACE
-
 
 class BlobDB : public QObject
 {
