@@ -1,8 +1,10 @@
-#include <QGuiApplication>
-#include <QQmlApplicationEngine>
-#include <QQuickView>
-#include <QtQml>
-#include <QFile>
+//#include <QGuiApplication>
+//#include <QQmlApplicationEngine>
+//#include <QQuickView>
+//#include <QtQml>
+//#include <QFile>
+
+#include <sailfishapp.h>
 
 #include "notificationsourcemodel.h"
 #include "servicecontrol.h"
@@ -12,7 +14,6 @@
 #include "applicationsfiltermodel.h"
 #include "appstoreclient.h"
 #include "screenshotmodel.h"
-#include <sailfishapp.h>
 
 int main(int argc, char *argv[])
 {
@@ -32,7 +33,7 @@ int main(int argc, char *argv[])
 
     QScopedPointer<QQuickView> view(SailfishApp::createView());
     view->rootContext()->setContextProperty("version", QStringLiteral(VERSION));
-    view->setSource(SailfishApp::pathTo("qml/Main.qml"));
+    view->setSource(SailfishApp::pathTo("qml/rockpool.qml"));
     view->show();
 
     return app->exec();

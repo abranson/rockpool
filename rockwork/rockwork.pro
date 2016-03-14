@@ -30,6 +30,8 @@ SOURCES += main.cpp \
 RESOURCES += rockwork.qrc
 
 QML_FILES += $$files(qml/*.qml,true)
+QML_FILES += $$files(qml/pages/*.qml,true)
+QML_FILES += $$files(qml/cover/*.qml,true)
 
 CONF_FILES +=  rockpool.png \
                rockpool.desktop
@@ -51,4 +53,7 @@ INSTALLS+=icon
 # Default rules for deployment.
 INSTALLS+=target icon
 target.path = /usr/bin
+
+DISTFILES += \
+    qml/pages/LoadingPage.qml
 
