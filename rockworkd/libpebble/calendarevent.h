@@ -31,6 +31,9 @@ public:
     QDateTime endTime() const;
     void setEndTime(const QDateTime &endTime);
 
+    QDateTime reminder() const;
+    void setReminder(const QDateTime reminder);
+
     QString location() const;
     void setLocation(const QString &location);
 
@@ -62,6 +65,7 @@ private:
     QString m_description;
     QDateTime m_startTime;
     QDateTime m_endTime;
+    QDateTime m_reminder;
     QString m_location;
     QString m_calendar;
     QString m_comment;

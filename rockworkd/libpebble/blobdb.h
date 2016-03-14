@@ -42,9 +42,9 @@ public:
     explicit BlobDB(Pebble *pebble, WatchConnection *connection);
 
     void insertNotification(const Notification &notification);
-    void insertTimelinePin(const QUuid &uuid, TimelineItem::Layout layout, bool isAllDay, const QDateTime &startTime, const QDateTime &endTime, const QString &title, const QString &desctiption, const QMap<QString, QString> fields, bool recurring);
+    void insertTimelinePin(const QUuid &uuid, TimelineItem::Layout layout, bool isAllDay, const QDateTime &startTime, const QDateTime &endTime, const QString &title, const QString &description, const QMap<QString, QString> fields, bool recurring);
     void removeTimelinePin(const QUuid &uuid);
-    void insertReminder();
+    void insertReminder(const QUuid &parentId, const QString &title, const QString &subtitle, const QString &body, const QDateTime &remindTime);
     void clearTimeline();
     void syncCalendar(const QList<CalendarEvent> &events);
 

@@ -164,7 +164,7 @@ void BlobDB::insertNotification(const Notification &notification)
     m_notificationSources.insert(itemUuid, notification);
 }
 
-void BlobDB::insertTimelinePin(const QUuid &uuid, TimelineItem::Layout layout, bool isAllDay, const QDateTime &startTime, const QDateTime &endTime, const QString &title, const QString &desctiption, const QMap<QString, QString> fields, bool recurring)
+void BlobDB::insertTimelinePin(const QUuid &uuid, TimelineItem::Layout layout, bool isAllDay, const QDateTime &startTime, const QDateTime &endTime, const QString &title, const QString &description, const QMap<QString, QString> fields, bool recurring)
 {
 //    TimelineItem item(TimelineItem::TypePin, TimelineItem::FlagSingleEvent, QDateTime::currentDateTime().addMSecs(1000 * 60 * 2), 60);
 
@@ -177,8 +177,8 @@ void BlobDB::insertTimelinePin(const QUuid &uuid, TimelineItem::Layout layout, b
     TimelineAttribute titleAttribute(TimelineAttribute::TypeTitle, title.toUtf8());
     item.appendAttribute(titleAttribute);
 
-    if (!desctiption.isEmpty()) {
-        TimelineAttribute bodyAttribute(TimelineAttribute::TypeBody, desctiption.left(128).toUtf8());
+    if (!description.isEmpty()) {
+        TimelineAttribute bodyAttribute(TimelineAttribute::TypeBody, description.left(128).toUtf8());
         item.appendAttribute(bodyAttribute);
     }
 
@@ -212,25 +212,24 @@ void BlobDB::removeTimelinePin(const QUuid &uuid)
     remove(BlobDBId::BlobDBIdPin, uuid);
 }
 
-void BlobDB::insertReminder()
+void BlobDB::insertReminder(const QUuid &parentId, const QString &title, const QString &subtitle, const QString &body, const QDateTime &remindTime)
 {
 
-    TimelineItem item(TimelineItem::TypeReminder, TimelineItem::FlagSingleEvent, QDateTime::currentDateTime().addMSecs(1000 * 60 * 2), 0);
+    TimelineItem item(TimelineItem::TypeReminder, TimelineItem::FlagSingleEvent, remindTime, 0);
 
-    TimelineAttribute titleAttribute(TimelineAttribute::TypeTitle, "ReminderTitle");
+    item.setParentId(parentId);
+
+    TimelineAttribute titleAttribute(TimelineAttribute::TypeTitle, title.toUtf8());
     item.appendAttribute(titleAttribute);
 
-    TimelineAttribute subjectAttribute(TimelineAttribute::TypeSubtitle, "ReminderSubtitle");
+    TimelineAttribute subjectAttribute(TimelineAttribute::TypeSubtitle, subtitle.toUtf8());
     item.appendAttribute(subjectAttribute);
 
-    TimelineAttribute bodyAttribute(TimelineAttribute::TypeBody, "ReminderBody");
+    TimelineAttribute bodyAttribute(TimelineAttribute::TypeBody, body.toUtf8());
     item.appendAttribute(bodyAttribute);
 
-    QByteArray data;
-    data.append(0x07); data.append('\0'); data.append('\0'); data.append(0x80);
-    TimelineAttribute guessAttribute(TimelineAttribute::TypeTinyIcon, data);
-    item.appendAttribute(guessAttribute);
-    qDebug() << "attrib" << guessAttribute.serialize();
+    TimelineAttribute iconAttribute(TimelineAttribute::TypeTinyIcon, TimelineAttribute::IconIDAlarmClock);
+    item.appendAttribute(iconAttribute);
 
     TimelineAction dismissAction(0, TimelineAction::TypeDismiss);
     TimelineAttribute dismissAttribute(TimelineAttribute::TypeTitle, "Dismiss");
@@ -318,6 +317,8 @@ void BlobDB::syncCalendar(const QList<CalendarEvent> &events)
         if (!event.comment().isEmpty()) fields.insert("Comments", event.comment());
         if (!event.guests().isEmpty()) fields.insert("Guests", event.guests().join(", "));
         insertTimelinePin(event.uuid(), TimelineItem::LayoutCalendar, event.isAllDay(), event.startTime(), event.endTime(), event.title(), event.description(), fields, event.recurring());
+        if (!event.reminder().isNull())
+            insertReminder(event.uuid(), event.title(), event.location(), event.description(), event.reminder());
         m_calendarEntries.append(event);
         event.saveToCache(m_blobDBStoragePath);
     }

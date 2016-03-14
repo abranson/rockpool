@@ -74,6 +74,14 @@ void CalendarEvent::setEndTime(const QDateTime &endTime)
     m_endTime = endTime;
 }
 
+QDateTime CalendarEvent::reminder() const {
+    return m_reminder;
+}
+
+void CalendarEvent::setReminder(const QDateTime reminder) {
+    m_reminder = reminder;
+}
+
 QString CalendarEvent::location() const
 {
     return m_location;
@@ -142,11 +150,14 @@ bool CalendarEvent::operator==(const CalendarEvent &other) const
     thisStartTime.setTimeZone(other.startTime().timeZone());
     QDateTime thisEndTime = m_endTime;
     thisEndTime.setTimeZone(other.endTime().timeZone());
+    QDateTime thisReminder = m_reminder;
+    thisReminder.setTimeZone(other.reminder().timeZone());
     return m_id == other.id()
             && m_title == other.title()
             && m_description == other.description()
             && thisStartTime == other.startTime()
             && thisEndTime == other.endTime()
+            && thisReminder == other.reminder()
             && m_location == other.location()
             && m_calendar == other.calendar()
             && m_comment == other.comment()
@@ -170,6 +181,7 @@ void CalendarEvent::saveToCache(const QString &cachePath) const
     s.setValue("guests", m_guests);
     s.setValue("recurring", m_recurring);
     s.setValue("isAllDay", m_isAllDay);
+    s.setValue("reminder", m_reminder);
 }
 
 void CalendarEvent::loadFromCache(const QString &cachePath, const QString &uuid)
@@ -187,6 +199,7 @@ void CalendarEvent::loadFromCache(const QString &cachePath, const QString &uuid)
     m_guests = s.value("guests").toStringList();
     m_recurring = s.value("recurring").toBool();
     m_isAllDay = s.value("isAllDay").toBool();
+    m_reminder = s.value("reminder").toDateTime();
 }
 
 void CalendarEvent::removeFromCache(const QString &cachePath) const
