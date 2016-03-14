@@ -26,7 +26,7 @@ class OrganizerAdapter : public QObject, public mKCal::ExtendedStorageObserver
     Q_OBJECT
 public:
     explicit OrganizerAdapter(QObject *parent = 0);
-
+    ~OrganizerAdapter();
     QList<CalendarEvent> items() const;
     QString normalizeCalendarName(QString name);
 

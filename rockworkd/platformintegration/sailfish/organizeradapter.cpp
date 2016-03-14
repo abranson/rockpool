@@ -22,11 +22,18 @@ OrganizerAdapter::OrganizerAdapter(QObject *parent) : QObject(parent),
     connect(_refreshTimer, &QTimer::timeout,
             this, &OrganizerAdapter::refresh);
 
+    _calendarStorage->registerObserver(this);
+
     if (_calendarStorage->open()) {
         scheduleRefresh();
     } else {
         qWarning() << "Cannot open calendar database";
     }
+}
+
+OrganizerAdapter::~OrganizerAdapter()
+{
+    _calendarStorage->unregisterObserver(this);
 }
 
 QString OrganizerAdapter::normalizeCalendarName(QString name)
@@ -81,7 +88,14 @@ void OrganizerAdapter::refresh()
             attendees.append(attendee->fullName());
         }
         event.setGuests(attendees);
-        event.setRecurring(event.recurring());
+        event.setRecurring(incidence->recurs());
+        foreach (const QSharedPointer<KCalCore::Alarm> alarm, incidence->alarms()) {
+            if (alarm->enabled()) {
+                event.setReminder(alarm->nextTime(KDateTime::currentDateTime(KDateTime::Spec::LocalZone()), false).dateTime());
+                qDebug() << "Alarm enabled for " << incidence->summary() << " at " <<
+                            alarm->nextTime(KDateTime::currentDateTime(KDateTime::Spec::LocalZone()), false).toString(KDateTime::TimeFormat::RFCDate);
+            }
+        }
 
         items.append(event);
     }
