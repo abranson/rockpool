@@ -1,31 +1,11 @@
-import QtQuick 2.4
-import QtQuick.Layouts 1.1
-import Ubuntu.Components 1.3
+import QtQuick 2.2
+import Sailfish.Silica 1.0
+import QtGraphicalEffects 1.0
 
 Page {
     id: root
-    title: pebble.name
-
     property var pebble: null
-
-    head {
-        actions: [
-            Action {
-                iconName: "info"
-                text: i18n.tr("About")
-                onTriggered: {
-                    pageStack.push(Qt.resolvedUrl("InfoPage.qml"))
-                }
-            },
-            Action {
-                iconName: "ubuntu-sdk-symbolic"
-                text: i18n.tr("Developer tools")
-                onTriggered: {
-                    pageStack.push(Qt.resolvedUrl("DeveloperToolsPage.qml"), {pebble: root.pebble})
-                }
-            }
-        ]
-    }
+    allowedOrientations: Orientation.All
 
     //Creating the menu list this way to allow the text field to be translatable (http://askubuntu.com/a/476331)
     ListModel {
@@ -33,273 +13,194 @@ Page {
         dynamicRoles: true
     }
 
-    Component.onCompleted: {
-        populateMainMenu();
-    }
-
-    Connections {
-        target: root.pebble
-        onFirmwareUpgradeAvailableChanged: {
-            populateMainMenu();
+    SilicaFlickable {
+        PullDownMenu {
+            MenuItem {
+                text: qsTr("About")
+                onClicked: {
+                    pageStack.push(Qt.resolvedUrl("InfoPage.qml"))
+                }
+            }
+            MenuItem {
+                text: qsTr("Developer tools")
+                onClicked: {
+                    pageStack.push(Qt.resolvedUrl("DeveloperToolsPage.qml"), {
+                                       pebble: root.pebble
+                                   })
+                }
+            }
         }
-    }
-
-    function populateMainMenu() {
-        mainMenuModel.clear();
-
-        mainMenuModel.append({
-            icon: "stock_notification",
-            text: i18n.tr("Manage notifications"),
-            page: "NotificationsPage.qml",
-            color: "blue"
-        });
-
-        mainMenuModel.append({
-            icon: "stock_application",
-            text: i18n.tr("Manage Apps"),
-            page: "InstalledAppsPage.qml",
-            showWatchApps: true,
-            color: UbuntuColors.green
-        });
-
-        mainMenuModel.append({
-            icon: "clock-app-symbolic",
-            text: i18n.tr("Manage Watchfaces"),
-            page: "InstalledAppsPage.qml",
-            showWatchFaces: true,
-            color: "black"
-        });
-
-        mainMenuModel.append({
-            icon: "settings",
-            text: i18n.tr("Settings"),
-            page: "SettingsPage.qml",
-            showWatchFaces: true,
-            color: "gold"
-        });
-
-        if (root.pebble.firmwareUpgradeAvailable) {
-            mainMenuModel.append({
-                icon: "preferences-system-updates-symbolic",
-                text: i18n.tr("Firmware upgrade"),
-                page: "FirmwareUpgradePage.qml",
-                color: "red"
-            });
-        }
-
-    }
-
-    PebbleModels {
-        id: modelModel
-    }
-
-    GridLayout {
         anchors.fill: parent
-        columns: parent.width > parent.height ? 2 : 1
-
-        Item {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            Layout.maximumHeight: units.gu(30)
-
-            RowLayout {
-                anchors.fill: parent
-                anchors.margins: units.gu(1)
-                spacing: units.gu(1)
-
-                Item {
-                    Layout.alignment: Qt.AlignHCenter
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true
-                    Layout.minimumWidth: watchImage.width
-                    Image {
-                        id: watchImage
-                        width: implicitWidth * height / implicitHeight
-                        height: parent.height
-                        anchors.horizontalCenter: parent.horizontalCenter
-
-                        source:  modelModel.get(root.pebble.model).image
-                        fillMode: Image.PreserveAspectFit
-
-                        Item {
-                            id: watchFace
-                            height: parent.height * (modelModel.get(root.pebble.model - 1).shape === "rectangle" ? .5 : .515)
-                            width: height * (modelModel.get(root.pebble.model - 1).shape === "rectangle" ? .85 : 1)
+        Column {
+            anchors.fill: parent
+            PageHeader {
+                id: hdr
+                title: pebble.name
+            }
+            Grid {
+                id: watchMenu
+                width: parent.width
+                columns: parent.width > parent.height ? 2 : 1
+                spacing: Theme.paddingSmall
+                Row {
+                    anchors.margins: Theme.paddingSmall
+                    spacing: Theme.paddingSmall
+                    height: watchImage.height
+                    width: parent.width/parent.columns - Theme.paddingSmall
+                    Item {
+                        width: watchImage.width
+                        height: watchImage.height
+                        Image {
+                            id: watchImage
+                            fillMode: Image.PreserveAspectFit
                             anchors.centerIn: parent
-                            anchors.horizontalCenterOffset: units.dp(1)
-                            anchors.verticalCenterOffset: units.dp(modelModel.get(root.pebble.model - 1).shape === "rectangle" ? 0 : 1)
+                            source: modelModel.get(root.pebble.model).image
+                            height: (sourceSize.height ? sourceSize.height : 350)
+                            width: (sourceSize.width ? sourceSize.width : 251)
+                        }
 
-                            Image {
-                                id: image
-                                anchors.fill: parent
-                                source: "file://" + root.pebble.screenshots.latestScreenshot
-                                visible: false
+                        Image {
+                            id: image
+                            anchors.centerIn: parent
+                            source: "file://" + root.pebble.screenshots.latestScreenshot
+                            fillMode: Image.PreserveAspectFit
+                            visible: false
+                        }
+                        Component.onCompleted: {
+                            if (!root.pebble.screenshots.latestScreenshot) {
+                                root.pebble.requestScreenshot()
                             }
-
-                            Component.onCompleted: {
-                                if (!root.pebble.screenshots.latestScreenshot) {
-                                    root.pebble.requestScreenshot();
-                                }
-                            }
-
+                        }
+                        OpacityMask {
+                            anchors.centerIn: parent
+                            width: maskRect.width
+                            height: maskRect.height
+                            source: image
+                            maskSource: maskRect
+                            cached: true
+                        }
+                        Rectangle {
+                            id: maskRect
+                            width: image.width
+                            height: image.height
+                            anchors.centerIn: parent
+                            color: "transparent"
+                            visible: false
+                            property bool isRound: modelModel.get(root.pebble.model - 1).shape === "round"
                             Rectangle {
-                                id: textItem
-                                anchors.fill: parent
-                                layer.enabled: true
-                                radius: modelModel.get(root.pebble.model - 1).shape === "rectangle" ? units.gu(.5) : height / 2
-                                // This item should be used as the 'mask'
-                                layer.samplerName: "maskSource"
-                                layer.effect: ShaderEffect {
-                                    property var colorSource: image;
-                                    fragmentShader: "
-                                        uniform lowp sampler2D colorSource;
-                                        uniform lowp sampler2D maskSource;
-                                        uniform lowp float qt_Opacity;
-                                        varying highp vec2 qt_TexCoord0;
-                                        void main() {
-                                            gl_FragColor =
-                                                texture2D(colorSource, qt_TexCoord0)
-                                                * texture2D(maskSource, qt_TexCoord0).a
-                                                * qt_Opacity;
-                                        }
-                                    "
-                                }
+                                color: "blue"
+                                anchors.centerIn: parent
+                                height: image.height
+                                width: parent.isRound ? height : height * 0.9
+                                radius: parent.isRound ? height / 2 : 0
                             }
                         }
                     }
-                }
-                ColumnLayout {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    spacing: units.gu(2)
-                    Rectangle {
-                        height: units.gu(10)
-                        width: height
-                        radius: height / 2
-                        color: root.pebble.connected ? UbuntuColors.green : UbuntuColors.red
-
-                        Icon {
-                            anchors.fill: parent
-                            anchors.margins: units.gu(2)
-                            color: "white"
-                            name: root.pebble.connected ? "tick" : "dialog-error-symbolic"
+                    Column {
+                        spacing: Theme.paddingSmall
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: parent.width-watchImage.width
+                        Image {
+                            height: Theme.iconSizeSmall
+                            width: height
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            source: "image://theme/icon-lock-"
+                                    + (root.pebble.connected ? "transfer" : "warning")
                         }
+                        Label {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            text: root.pebble.connected ? qsTr("Connected") : qsTr("Disconnected")
+                        }
+                        Image {
+                            id: upgradeIcon
+                            height: Theme.iconSizeMedium
+                            width: height
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            source: "image://theme/icon-m-sync"
+
+                            RotationAnimation on rotation {
+                                duration: 2000
+                                loops: Animation.Infinite
+                                from: 0
+                                to: 360
+                                running: upgradeIcon.visible
+                            }
+                            visible: root.pebble.connected && root.pebble.upgradingFirmware
+                        }
+                        Label {
+                            text: qsTr("Upgrading...")
+                            font.pixelSize: Theme.fontSizeLarge
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            visible: root.pebble.connected && root.pebble.upgradingFirmware
+                        }
+                    }
+                }
+
+                Column {
+                    //width: childrenRect.width
+                    width: parent.width / parent.columns - Theme.paddingSmall
+                    spacing: menuRepeater.count > 0 ? 0 : Theme.paddingSmall
+                    Label {
+                        text: qsTr("Your Pebble smartwatch is disconnected. Please make sure it is powered on, within range and it is paired properly in the Bluetooth System Settings.")
+                        width: parent.width
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        wrapMode: Text.WordWrap
+                        visible: !root.pebble.connected
+                        font.pixelSize: Theme.fontSizeLarge
+                        horizontalAlignment: Text.AlignHCenter
+                    }
+
+                    Button {
+                        text: qsTr("Open System Settings")
+                        visible: !root.pebble.connected
+                        onClicked: Qt.openUrlExternally("settings://system/bluetooth")
+                        anchors.horizontalCenter: parent.horizontalCenter
                     }
 
                     Label {
-                        text: root.pebble.connected ? i18n.tr("Connected") : i18n.tr("Disconnected")
-                        Layout.fillWidth: true
+                        text: qsTr("Your Pebble smartwatch is in factory mode and needs to be initialized.")
+                        width: parent.width
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        wrapMode: Text.WordWrap
+                        visible: root.pebble.connected && root.pebble.recovery && !root.pebble.upgradingFirmware
+                        font.pixelSize: Theme.fontSizeLarge
+                        horizontalAlignment: Text.AlignHCenter
                     }
-                }
-            }
-        }
+                    Button {
+                        text: qsTr("Initialize Pebble")
+                        onClicked: root.pebble.performFirmwareUpgrade()
+                        visible: root.pebble.connected && root.pebble.recovery && !root.pebble.upgradingFirmware
+                        anchors.horizontalCenter: parent.horizontalCenter
+                    }
 
 
-        Column {
-            Layout.fillWidth: true
-            Layout.preferredHeight: childrenRect.height
-            spacing: menuRepeater.count > 0 ? 0 : units.gu(2)
-            Label {
-                text: i18n.tr("Your Pebble smartwatch is disconnected. Please make sure it is powered on, within range and it is paired properly in the Bluetooth System Settings.")
-                width: parent.width - units.gu(4)
-                anchors.horizontalCenter: parent.horizontalCenter
-                wrapMode: Text.WordWrap
-                visible: !root.pebble.connected
-                fontSize: "large"
-                horizontalAlignment: Text.AlignHCenter
-            }
+                    Repeater {
+                        id: menuRepeater
+                        model: root.pebble.connected && !root.pebble.recovery && !root.pebble.upgradingFirmware ? mainMenuModel : null
+                        delegate: ListItem {
+                            contentHeight: Theme.iconSizeMedium + Theme.paddingSmall
+                            Row {
+                                height: Theme.iconSizeMedium
+                                anchors.verticalCenter: parent.verticalCenter
+                                Image {
+                                    width: Theme.iconSizeMedium
+                                    height: Theme.iconSizeMedium
+                                    source: "image://theme/" + model.icon
+                                }
+                                Label {
+                                    text: model.text
+                                }
+                            }
 
-            Button {
-                text: i18n.tr("Open System Settings")
-                visible: !root.pebble.connected
-                onClicked: Qt.openUrlExternally("settings://system/bluetooth")
-                color: UbuntuColors.orange
-                anchors.horizontalCenter: parent.horizontalCenter
-            }
-
-            Label {
-                text: i18n.tr("Your Pebble smartwatch is in factory mode and needs to be initialized.")
-                width: parent.width - units.gu(4)
-                anchors.horizontalCenter: parent.horizontalCenter
-                wrapMode: Text.WordWrap
-                visible: root.pebble.connected && root.pebble.recovery && !root.pebble.upgradingFirmware
-                fontSize: "large"
-                horizontalAlignment: Text.AlignHCenter
-            }
-            Button {
-                text: i18n.tr("Initialize Pebble")
-                onClicked: root.pebble.performFirmwareUpgrade();
-                visible: root.pebble.connected && root.pebble.recovery && !root.pebble.upgradingFirmware
-                color: UbuntuColors.orange
-                anchors.horizontalCenter: parent.horizontalCenter
-            }
-
-            Rectangle {
-                id: upgradeIcon
-                height: units.gu(10)
-                width: height
-                radius: width / 2
-                color: UbuntuColors.orange
-                anchors.horizontalCenter: parent.horizontalCenter
-                Icon {
-                    anchors.fill: parent
-                    anchors.margins: units.gu(1)
-                    name: "preferences-system-updates-symbolic"
-                    color: "white"
-                }
-
-                RotationAnimation on rotation {
-                    duration: 2000
-                    loops: Animation.Infinite
-                    from: 0
-                    to: 360
-                    running: upgradeIcon.visible
-                }
-                visible: root.pebble.connected && root.pebble.upgradingFirmware
-            }
-
-            Label {
-                text: i18n.tr("Upgrading...")
-                fontSize: "large"
-                anchors.horizontalCenter: parent.horizontalCenter
-                visible: root.pebble.connected && root.pebble.upgradingFirmware
-            }
-
-            Repeater {
-                id: menuRepeater
-                model: root.pebble.connected && !root.pebble.recovery && !root.pebble.upgradingFirmware ? mainMenuModel : null
-                delegate: ListItem {
-
-                    RowLayout {
-                        anchors.fill: parent
-                        anchors.margins: units.gu(1)
-
-                        UbuntuShape {
-                            Layout.fillHeight: true
-                            Layout.preferredWidth: height
-                            backgroundColor: model.color
-                            Icon {
-                                anchors.fill: parent
-                                anchors.margins: units.gu(.5)
-                                name: model.icon
-                                color: "white"
+                            onClicked: {
+                                var options = {}
+                                options["pebble"] = root.pebble
+                                var modelItem = mainMenuModel.get(index)
+                                options["showWatchApps"] = modelItem.showWatchApps
+                                options["showWatchFaces"] = modelItem.showWatchFaces
+                                pageStack.push(Qt.resolvedUrl(model.page), options)
                             }
                         }
-
-
-                        Label {
-                            text: model.text
-                            Layout.fillWidth: true
-                        }
-                    }
-
-                    onClicked: {
-                        var options = {};
-                        options["pebble"] = root.pebble
-                        var modelItem = mainMenuModel.get(index)
-                        options["showWatchApps"] = modelItem.showWatchApps
-                        options["showWatchFaces"] = modelItem.showWatchFaces
-                        pageStack.push(Qt.resolvedUrl(model.page), options)
                     }
                 }
             }
@@ -310,8 +211,70 @@ Page {
         target: pebble
         onOpenURL: {
             if (url) {
-                pageStack.push(Qt.resolvedUrl("AppSettingsPage.qml"), {uuid: uuid, url: url, pebble: pebble})
+                pageStack.push(Qt.resolvedUrl("AppSettingsPage.qml"), {
+                                   uuid: uuid,
+                                   url: url,
+                                   pebble: pebble
+                               })
             }
         }
+    }
+    Connections {
+        target: root.pebble
+        onFirmwareUpgradeAvailableChanged: {
+            populateMainMenu()
+        }
+    }
+
+    Component.onCompleted: {
+        populateMainMenu();
+    }
+
+    function populateMainMenu() {
+        mainMenuModel.clear()
+
+        mainMenuModel.append({
+                                 icon: "icon-s-message",
+                                 text: qsTr("Manage notifications"),
+                                 page: "NotificationsPage.qml",
+                                 color: "blue"
+                             })
+
+        mainMenuModel.append({
+                                 icon: "icon-s-installed",
+                                 text: qsTr("Manage Apps"),
+                                 page: "InstalledAppsPage.qml",
+                                 showWatchApps: true,
+                                 color: "green"
+                             })
+
+        mainMenuModel.append({
+                                 icon: "icon-s-time",
+                                 text: qsTr("Manage Watchfaces"),
+                                 page: "InstalledAppsPage.qml",
+                                 showWatchFaces: true,
+                                 color: "black"
+                             })
+
+        mainMenuModel.append({
+                                 icon: "icon-s-setting",
+                                 text: qsTr("Settings"),
+                                 page: "SettingsPage.qml",
+                                 showWatchFaces: true,
+                                 color: "gold"
+                             })
+
+        if (root.pebble.firmwareUpgradeAvailable) {
+            mainMenuModel.append({
+                                     icon: "icon-s-update",
+                                     text: qsTr("Firmware upgrade"),
+                                     page: "FirmwareUpgradePage.qml",
+                                     color: "red"
+                                 })
+        }
+    }
+
+    PebbleModels {
+        id: modelModel
     }
 }
