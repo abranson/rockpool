@@ -1,3 +1,7 @@
+* Mon Mar 14 2016 Andrew Branson <github@andrewbranson.net> 0.3-1
+- Reminders for calendar events
+- Refresh timeline when phone calendar changes.
+
 * Sat Mar 12 2016 Andrew Branson <github@andrewbranson.net> 0.2-1
 - Improved notifications. Can now be closed on the phone by dismissing on the watch.
 - New icon (thanks to Greg Goncharov!)
