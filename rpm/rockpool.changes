@@ -1,3 +1,7 @@
+* Tue Mar 15 2016 Andrew Branson <github@andrewbranson.net> 0.3-2
+- Fixed calendar event comparison
+- Ignore events from disabled calendars.
+
 * Mon Mar 14 2016 Andrew Branson <github@andrewbranson.net> 0.3-1
 - Reminders for calendar events
 - Refresh timeline when phone calendar changes.
