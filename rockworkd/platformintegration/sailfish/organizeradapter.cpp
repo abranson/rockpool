@@ -1,6 +1,7 @@
 #include "organizeradapter.h"
 
 #include <QDebug>
+#include <QSettings>
 #include <extendedcalendar.h>
 #include <extendedstorage.h>
 
@@ -18,7 +19,6 @@ OrganizerAdapter::OrganizerAdapter(QObject *parent) : QObject(parent),
             this, &OrganizerAdapter::refresh);
 
     _calendarStorage->registerObserver(this);
-
     if (_calendarStorage->open()) {
         refresh();
     } else {
@@ -56,6 +56,10 @@ void OrganizerAdapter::refresh()
     _calendarStorage->loadRecurringIncidences();
     _calendarStorage->load(today, endDate);
 
+    //TODO: Didn't know about nemo-qml-plugin-calendar, we should probably use this instead of mKCal
+    //We have to use it to detect which calendars have been turned off, and
+    QSettings nemoSettings("nemo", "nemo-qml-plugin-calendar");
+
     auto events = _calendar->rawExpandedEvents(today, endDate, true, true);
     for (const auto &expanded : events) {
         const QDateTime &start = expanded.first.dtStart;
@@ -63,7 +67,22 @@ void OrganizerAdapter::refresh()
         KCalCore::Incidence::Ptr incidence = expanded.second;
 
         CalendarEvent event;
-        event.setId(incidence->uid());
+        mKCal::Notebook::Ptr notebook = _calendarStorage->notebook(_calendar->notebook(incidence));
+        if (notebook) {
+            event.setCalendar(normalizeCalendarName(notebook->name()));
+            if (nemoSettings.value("exclude/"+notebook->uid()).toBool()) {
+                qDebug() << "Event " << incidence->summary() << " ignored because calendar " << notebook->name() << " excluded. ";
+                continue;
+            }
+            // This would be nice, but we need to approximate RGB colours to the pebble.
+            // event.setColour(nemoSettings.value("color/"+notebook->uid()));
+        }
+
+        if (incidence->recurs())
+            event.setId(incidence->uid() + start.toString());
+        else
+            event.setId(incidence->uid());
+
         event.setTitle(incidence->summary());
         event.setDescription(incidence->description());
         event.setStartTime(start);
@@ -72,10 +91,7 @@ void OrganizerAdapter::refresh()
         if (!incidence->location().isEmpty()) {
             event.setLocation(incidence->location());
         }
-        mKCal::Notebook::Ptr notebook = _calendarStorage->notebook(_calendar->notebook(incidence));
-        if (notebook) {
-            event.setCalendar(normalizeCalendarName(notebook->name()));
-        }
+
         event.setComment(incidence->comments().join(";"));
 
         QStringList attendees;
