@@ -1,74 +1,82 @@
-import QtQuick 2.4
-import QtQuick.Layouts 1.1
-import Ubuntu.Components 1.3
-import Ubuntu.Components.ListItems 1.3
+import QtQuick 2.2
+import Sailfish.Silica 1.0
 
 Page {
-    title: "About RockWork"
 
-    Flickable {
+    SilicaFlickable {
         anchors.fill: parent
-        contentHeight: contentColumn.height + units.gu(4)
+        contentHeight: contentColumn.height + Theme.paddingSmall
 
-        ColumnLayout {
+        Column {
             id: contentColumn
-            anchors { left: parent.left; top: parent.top; right: parent.right; margins: units.gu(2) }
-            spacing: units.gu(2)
+            width: parent.width
+            height: childrenRect.height
+            spacing: Theme.paddingSmall
+            PageHeader {
+                title: "About RockPool"
+            }
 
-            RowLayout {
-                Layout.fillWidth: true
-                spacing: units.gu(2)
-                UbuntuShape {
-                    source: Image {
-                        anchors.fill: parent
-                        source: "artwork/rockwork.svg"
-                    }
-                    height: units.gu(6)
+            Row {
+                width: parent.width
+                spacing: Theme.paddingSmall
+                Image {
+                    source: "artwork/rockwork.svg"
+                    height: Theme.iconSizeSmall
                     width: height
                 }
 
                 Label {
-                    text: i18n.tr("Version %1").arg(version)
-                    Layout.fillWidth: true
-                    fontSize: "large"
+                    text: qsTr("Version %1").arg(version)
+                    font.pixelSize: Theme.fontSizeLarge
                 }
             }
 
-            ThinDivider {}
+            Separator {
+                width: parent.width
+                height: Theme.paddingSmall
+                color: Theme.secondaryHighlightColor
+            }
 
             Label {
-                text: i18n.tr("Legal")
-                Layout.fillWidth: true
+                width: parent.width
+                text: qsTr("Legal")
                 font.bold: true
             }
 
             Label {
-                text: "This program is free software: you can redistribute it and/or modify" +
-                      "it under the terms of the GNU General Public License as published by" +
-                      "the Free Software Foundation, version 3 of the License.<br>" +
-
-                      "This program is distributed in the hope that it will be useful," +
-                      "but WITHOUT ANY WARRANTY; without even the implied warranty of" +
-                      "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the" +
-                      "GNU General Public License for more details.<br>" +
-
-                      "You should have received a copy of the GNU General Public License" +
-                      "along with this program.  If not, see <http://www.gnu.org/licenses/>."
-                Layout.fillWidth: true
+                width: parent.width
+                text: "This program is free software: you can redistribute it and/or modify"
+                      + "it under the terms of the GNU General Public License as published "
+                      + "by the Free Software Foundation, version 3 of the License.<br>"
+                      + "This program is distributed in the hope that it will be useful, "
+                      + "but WITHOUT ANY WARRANTY; without even the implied warranty of "
+                      + "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the "
+                      + "GNU General Public License for more details.<br>"
+                      + "You should have received a copy of the GNU General Public License "
+                      + "along with this program.  If not, see <http://www.gnu.org/licenses/>."
                 wrapMode: Text.WordWrap
             }
 
-            Label {
-                text: i18n.tr("This application is neither affiliated with nor endorsed by Pebble Technology Corp.")
-                Layout.fillWidth: true
-                wrapMode: Text.WordWrap
+            Separator {
+                width: parent.width
+                height: Theme.paddingSmall
+                color: Theme.secondaryHighlightColor
             }
             Label {
-                text: i18n.tr("Pebble is a trademark of Pebble Technology Corp.")
-                Layout.fillWidth: true
+                width: parent.width
+                text: qsTr("This application is neither affiliated with nor endorsed by Pebble Technology Corp.")
+                wrapMode: Text.WordWrap
+            }
+            Separator {
+                width: parent.width
+                height: Theme.paddingSmall
+                color: Theme.secondaryHighlightColor
+            }
+            Label {
+                width: parent.width
+                text: qsTr("Pebble is a trademark of Pebble Technology Corp.")
                 wrapMode: Text.WordWrap
             }
         }
     }
 }
-
