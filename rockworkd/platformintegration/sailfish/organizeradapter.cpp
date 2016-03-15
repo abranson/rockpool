@@ -20,7 +20,7 @@ OrganizerAdapter::OrganizerAdapter(QObject *parent) : QObject(parent),
     _calendarStorage->registerObserver(this);
 
     if (_calendarStorage->open()) {
-        scheduleRefresh();
+        refresh();
     } else {
         qWarning() << "Cannot open calendar database";
     }
@@ -86,9 +86,9 @@ void OrganizerAdapter::refresh()
         event.setRecurring(incidence->recurs());
         foreach (const QSharedPointer<KCalCore::Alarm> alarm, incidence->alarms()) {
             if (alarm->enabled()) {
-                event.setReminder(alarm->nextTime(KDateTime::currentDateTime(KDateTime::Spec::LocalZone()), false).dateTime());
-                qDebug() << "Alarm enabled for " << incidence->summary() << " at " <<
-                            alarm->nextTime(KDateTime::currentDateTime(KDateTime::Spec::LocalZone()), false).toString(KDateTime::TimeFormat::RFCDate);
+                QDateTime reminderTime = alarm->nextTime(KDateTime::currentDateTime(KDateTime::Spec::LocalZone()), false).dateTime();
+                event.setReminder(reminderTime);
+                qDebug() << "Alarm enabled for " << incidence->summary() << " at " << reminderTime;
             }
         }
 

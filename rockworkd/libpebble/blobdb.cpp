@@ -281,9 +281,13 @@ void BlobDB::syncCalendar(const QList<CalendarEvent> &events)
         if (!syncedEvent.isValid()) {
             itemsToAdd.append(event);
         } else if (!(syncedEvent == event)) {
-            qDebug() << "event has changed!";
+            qDebug() << "event " << event.id() << " has changed!";
+            syncedEvent.diff(event);
             itemsToDelete.append(syncedEvent);
             itemsToAdd.append(event);
+        }
+        else {
+            qDebug() << "event " << event.id() << " hasn't changed!";
         }
     }
 
@@ -316,8 +320,10 @@ void BlobDB::syncCalendar(const QList<CalendarEvent> &events)
         if (!event.comment().isEmpty()) fields.insert("Comments", event.comment());
         if (!event.guests().isEmpty()) fields.insert("Guests", event.guests().join(", "));
         insertTimelinePin(event.uuid(), TimelineItem::LayoutCalendar, event.isAllDay(), event.startTime(), event.endTime(), event.title(), event.description(), fields, event.recurring());
-        if (!event.reminder().isNull())
+        if (!event.reminder().isNull()) {
+            qDebug() << "Inserting reminder " << event.reminder();
             insertReminder(event.uuid(), event.title(), event.location(), event.description(), event.reminder());
+        }
         m_calendarEntries.append(event);
         event.saveToCache(m_blobDBStoragePath);
     }
@@ -608,6 +614,7 @@ CalendarEvent BlobDB::findCalendarEvent(const QString &id)
 {
     foreach (const CalendarEvent &entry, m_calendarEntries) {
         if (entry.id() == id) {
+            qDebug() << "Entry found " << id;
             return entry;
         }
     }

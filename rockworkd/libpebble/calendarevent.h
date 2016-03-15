@@ -1,6 +1,7 @@
 #ifndef CALENDAREVENT_H
 #define CALENDAREVENT_H
 
+#include <QDebug>
 #include <QString>
 #include <QStringList>
 #include <QDateTime>
@@ -53,6 +54,7 @@ public:
     void setIsAllDay(bool isAllDay);
 
     bool operator==(const CalendarEvent &other) const;
+    void diff(const CalendarEvent &other) const;
 
     void saveToCache(const QString &cachePath) const;
     void loadFromCache(const QString &cachePath, const QString &uuid);

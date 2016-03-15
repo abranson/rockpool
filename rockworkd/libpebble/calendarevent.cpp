@@ -147,10 +147,13 @@ bool CalendarEvent::operator==(const CalendarEvent &other) const
     // Storing a QDateTime to QSettings seems to lose time zone information. Lets ignore the time zone when
     // comparing or we'll never find ourselves again.
     QDateTime thisStartTime = m_startTime;
-    thisStartTime.setTimeZone(other.startTime().timeZone());
+    if (other.startTime().timeSpec() == Qt::TimeZone)
+        thisStartTime.setTimeZone(other.startTime().timeZone());
     QDateTime thisEndTime = m_endTime;
-    thisEndTime.setTimeZone(other.endTime().timeZone());
+    if (other.endTime().timeSpec() == Qt::TimeZone)
+        thisEndTime.setTimeZone(other.endTime().timeZone());
     QDateTime thisReminder = m_reminder;
+        if (other.reminder().timeSpec() == Qt::TimeZone)
     thisReminder.setTimeZone(other.reminder().timeZone());
     return m_id == other.id()
             && m_title == other.title()
@@ -164,6 +167,31 @@ bool CalendarEvent::operator==(const CalendarEvent &other) const
             && m_guests == other.guests()
             && m_recurring == other.recurring()
             && m_isAllDay == other.isAllDay();
+}
+
+void CalendarEvent::diff(const CalendarEvent &other) const {
+    QDateTime thisStartTime = m_startTime;
+    if (other.startTime().timeSpec() == Qt::TimeZone)
+        thisStartTime.setTimeZone(other.startTime().timeZone());
+    QDateTime thisEndTime = m_endTime;
+    if (other.endTime().timeSpec() == Qt::TimeZone)
+        thisEndTime.setTimeZone(other.endTime().timeZone());
+    QDateTime thisReminder = m_reminder;
+        if (other.reminder().timeSpec() == Qt::TimeZone)
+    thisReminder.setTimeZone(other.reminder().timeZone());
+
+    if (m_id != other.id()) qDebug() << "id: " << m_id << " <> " << other.id();
+    if (m_title != other.title()) qDebug() << "title: " << m_title << " <> " << other.title();
+    if (m_description != other.description()) qDebug() << "description: " << m_description << " <> " << other.description();
+    if (thisStartTime != other.startTime()) qDebug() << "startTime: " << thisStartTime << " <> " << other.startTime();
+    if (thisEndTime != other.endTime()) qDebug() << "endTime: " << thisEndTime << " <> " << other.endTime();
+    if (thisReminder != other.reminder()) qDebug() << "reminder: " << thisReminder << " <> " << other.reminder();
+    if (m_location != other.location()) qDebug() << "location: " << m_location << " <> " << other.location();
+    if (m_calendar != other.calendar()) qDebug() << "calendar: " << m_calendar << " <> " << other.calendar();
+    if (m_comment != other.comment()) qDebug() << "comment: " << m_comment << " <> " << other.comment();
+    if (m_guests != other.guests()) qDebug() << "guests: " << m_guests << " <> " << other.guests();
+    if (m_recurring != other.recurring()) qDebug() << "recurring: " << m_recurring << " <> " << other.recurring();
+    if (m_isAllDay != other.isAllDay()) qDebug() << "isAllDay: " << m_isAllDay << " <> " << other.isAllDay();
 }
 
 void CalendarEvent::saveToCache(const QString &cachePath) const
