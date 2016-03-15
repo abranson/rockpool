@@ -33,6 +33,7 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
     m_connection = new WatchConnection(this);
     QObject::connect(m_connection, &WatchConnection::watchConnected, this, &Pebble::onPebbleConnected);
     QObject::connect(m_connection, &WatchConnection::watchDisconnected, this, &Pebble::onPebbleDisconnected);
+    QObject::connect(Core::instance()->platform(), &PlatformInterface::timeChanged, this, &Pebble::syncTime);
 
     m_connection->registerEndpointHandler(WatchConnection::EndpointVersion, this, "pebbleVersionReceived");
     m_connection->registerEndpointHandler(WatchConnection::EndpointPhoneVersion, this, "phoneVersionAsked");

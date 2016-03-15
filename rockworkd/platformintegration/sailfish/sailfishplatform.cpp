@@ -6,6 +6,7 @@
 #include "syncmonitorclient.h"
 #include "musiccontroller.h"
 #include "notificationmonitor.h"
+#include "walltimemonitor.h"
 
 #include <QDBusConnection>
 #include <QDebug>
@@ -14,6 +15,9 @@
 SailfishPlatform::SailfishPlatform(QObject *parent):
     PlatformInterface(parent)
 {
+    // Time sync
+    m_wallTimeMonitor = new watchfish::WallTimeMonitor(this);
+    connect(m_wallTimeMonitor, &watchfish::WallTimeMonitor::timeChanged, this, &SailfishPlatform::onTimeChanged);
 
     // Notifications
     m_notificationMonitor = new watchfish::NotificationMonitor(this);
@@ -30,6 +34,7 @@ SailfishPlatform::SailfishPlatform(QObject *parent):
     // Organizer
     m_organizerAdapter = new OrganizerAdapter(this);
     connect(m_organizerAdapter, &OrganizerAdapter::itemsChanged, this, &PlatformInterface::organizerItemsChanged);
+    connect(m_wallTimeMonitor, &watchfish::WallTimeMonitor::timezoneChanged, m_organizerAdapter, &OrganizerAdapter::scheduleRefresh);
 }
 
 void SailfishPlatform::onActiveVoiceCallChanged()
@@ -74,6 +79,10 @@ void SailfishPlatform::onActiveVoiceCallStatusChanged()
     case VoiceCallHandler::STATUS_HELD:
         break;
     }
+}
+
+void SailfishPlatform::onTimeChanged() {
+    emit timeChanged();
 }
 
 void SailfishPlatform::onNotification(watchfish::Notification *notification) {

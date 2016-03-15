@@ -20,6 +20,7 @@ public:
 signals:
     void notificationReceived(const Notification &notification);
     void notificationRemoved(const QUuid &uuid);
+    void timeChanged();
 
 // Music
 public:

@@ -7,6 +7,7 @@
 #include "voicecallhandler.h"
 #include "musiccontroller.h"
 #include "notificationmonitor.h"
+#include "walltimemonitor.h"
 
 #include <QDBusInterface>
 #include <QDBusContext>
@@ -36,6 +37,7 @@ public:
 public slots:
     void onNotification(watchfish::Notification *notification);
     void handleClosedNotification(watchfish::Notification::CloseReason reason);
+    void onTimeChanged();
 
 private slots:
     void fetchMusicMetadata();
@@ -52,6 +54,7 @@ private:
     mutable QMap<QUuid, watchfish::Notification*> m_notifs;
     watchfish::MusicController *m_musicController;
     watchfish::NotificationMonitor *m_notificationMonitor;
+    watchfish::WallTimeMonitor *m_wallTimeMonitor;
 };
 
 #endif // SAILFISHPLATFORM_H
