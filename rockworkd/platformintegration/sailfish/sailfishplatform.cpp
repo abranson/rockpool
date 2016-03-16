@@ -154,6 +154,7 @@ void SailfishPlatform::handleClosedNotification(watchfish::Notification::CloseRe
             m_notifs.remove(it.key());
             return;
         }
+        it++;
     }
     qDebug() << "Notification not found";
 }
