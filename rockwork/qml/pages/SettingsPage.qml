@@ -1,80 +1,48 @@
-import QtQuick 2.4
-import QtQuick.Layouts 1.1
-import Ubuntu.Components 1.3
-import Ubuntu.Components.ListItems 1.3
+import QtQuick 2.2
+import Sailfish.Silica 1.0
 
 Page {
     id: root
-    title: i18n.tr("Settings")
 
     property var pebble: null
 
-    ColumnLayout {
+    SilicaFlickable {
         anchors.fill: parent
-        anchors.margins: units.gu(1)
-        spacing: units.gu(1)
+        anchors.margins: Theme.horizontalPageMargin
 
-        Label {
-            Layout.fillWidth: true
-            text: i18n.tr("Distance Units")
-            font.bold: true
-        }
+        Column {
+            width: parent.width
+            spacing: Theme.paddingSmall
 
-        RowLayout {
-            Layout.fillWidth: true
-            CheckBox {
-                id: metricUnitsCheckbox
-                checked: !root.pebble.imperialUnits
-                onClicked: {
-                    checked = true
-                    root.pebble.imperialUnits = false;
-                    imperialUnitsCheckBox.checked = false;
+            PageHeader {
+                title: qsTr("Settings")
+            }
+            Slider {
+                width: parent.width
+                label: qsTr("Distance Units")
+                valueText: [qsTr("Metric"), qsTr("Imperial")][value]
+                minimumValue: 0
+                maximumValue: 1
+                stepSize: 1
+                onValueChanged: {
+                    root.pebble.imperialUnits = (value===1)
                 }
+                value: (root.pebble.imperialUnits) ? 1 : 0
             }
-            Label {
-                text: i18n.tr("Metric")
-                Layout.fillWidth: true
+            Separator {
+                width: parent.width * 0.7
+                anchors.horizontalCenter: parent.horizontalCenter
+                height: Theme.paddingSmall
+                color: Theme.secondaryHighlightColor
             }
-            CheckBox {
-                id: imperialUnitsCheckBox
-                checked: root.pebble.imperialUnits
-                onClicked: {
-                    checked = true
-                    root.pebble.imperialUnits = true;
-                    metricUnitsCheckbox.checked = false;
-                }
-            }
-            Label {
-                text: i18n.tr("Imperial")
-                Layout.fillWidth: true
-            }
-        }
-        ThinDivider {}
-
-        Label {
-            text: i18n.tr("Calendar")
-            Layout.fillWidth: true
-            font.bold: true
-        }
-        RowLayout {
-            Layout.fillWidth: true
-            Label {
-                text: i18n.tr("Sync calendar to timeline")
-                Layout.fillWidth: true
-            }
-            Switch {
+            TextSwitch {
+                width: parent.width
+                text: qsTr("Sync calendar to timeline")
                 checked: root.pebble.calendarSyncEnabled
                 onClicked: {
-                    root.pebble.calendarSyncEnabled = checked;
+                    root.pebble.calendarSyncEnabled = checked
                 }
             }
-        }
-        ThinDivider {}
-
-        Item {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
         }
     }
 }
-
