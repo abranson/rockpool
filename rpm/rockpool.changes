@@ -1,3 +1,7 @@
+* Tue Mar 15 2016 Andrew Branson <github@andrewbranson.net> 0.4-1
+- Automatic time sync when phone time is updated.
+- Fixed notification removal hang
+
 * Tue Mar 15 2016 Andrew Branson <github@andrewbranson.net> 0.3-2
 - Fixed calendar event comparison
 - Ignore events from disabled calendars.
