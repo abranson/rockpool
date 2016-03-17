@@ -1,115 +1,93 @@
-import QtQuick 2.4
-import QtQuick.Layouts 1.1
-import Ubuntu.Components 1.3
-import Ubuntu.Components.Popups 1.3
-import Ubuntu.Components.ListItems 1.3
+import QtQuick 2.2
+import Sailfish.Silica 1.0
 
 Dialog {
     id: root
-    title: i18n.tr("Health settings")
 
     property var healthParams: null
 
-    signal accepted();
+    Column {
+        width: parent.width
 
-    RowLayout {
-        Label {
-            text: i18n.tr("Health app enabled")
-            Layout.fillWidth: true
+        DialogHeader {
+            title: qsTr("Health settings")
+            defaultAcceptText: qsTr("OK")
+            //acceptText: qsTr("OK")
+            defaultCancelText: qsTr("Cancel")
+            //cancelText: qsTr("Cancel")
         }
-        Switch {
+        TextSwitch {
+            text: qsTr("Health app enabled")
             id: enabledSwitch
             checked: healthParams["enabled"]
-        }
-    }
-
-    ItemSelector {
-        id: genderSelector
-        model: [i18n.tr("Female"), i18n.tr("Male")]
-        selectedIndex: root.healthParams["gender"] === "female" ? 0 : 1
-    }
-
-    RowLayout {
-        Label {
-            text: i18n.tr("Age")
-            Layout.fillWidth: true
+            width: parent.width
         }
         TextField {
+            label: qsTr("Age")
             id: ageField
             inputMethodHints: Qt.ImhDigitsOnly
             text: healthParams["age"]
-            Layout.preferredWidth: units.gu(10)
-        }
-    }
-
-    RowLayout {
-        Label {
-            text: i18n.tr("Height (cm)")
-            Layout.fillWidth: true
+            width: parent.width
+            EnterKey.enabled: text.length > 0 && text != "0"
+            EnterKey.onClicked: heightField.focus = true
+            EnterKey.iconSource: "image://theme/icon-m-enter-next"
         }
         TextField {
             id: heightField
+            label: qsTr("Height (cm)")
             inputMethodHints: Qt.ImhDigitsOnly
             text: healthParams["height"]
-            Layout.preferredWidth: units.gu(10)
-        }
-    }
-
-    RowLayout {
-        Label {
-            text: i18n.tr("Weight")
-            Layout.fillWidth: true
+            width: parent.width
+            EnterKey.enabled: text.length > 0 && text != "0"
+            EnterKey.onClicked: weightField.focus = true
+            EnterKey.iconSource: "image://theme/icon-m-enter-next"
         }
         TextField {
             id: weightField
+            label: qsTr("Weight (kg)")
             inputMethodHints: Qt.ImhDigitsOnly
             text: healthParams["weight"]
-            Layout.preferredWidth: units.gu(10)
+            width: parent.width
+            EnterKey.enabled: text.length > 0 && text != "0"
+            EnterKey.onClicked: genderSelector.focus = true
+            EnterKey.iconSource: "image://theme/icon-m-enter-next"
         }
-    }
-
-    RowLayout {
-        Label {
-            text: i18n.tr("I want to be more active")
-            Layout.fillWidth: true
+        Slider {
+            id: genderSelector
+            width: parent.width
+            label: qsTr("Gender")
+            valueText: [qsTr("Female"), qsTr("Male")][value]
+            value: (root.healthParams["gender"] === "female") ? 0 : 1
+            minimumValue: 0
+            maximumValue: 1
+            stepSize: 1
         }
-        Switch {
+        TextSwitch {
             id: moreActiveSwitch
+            description: qsTr("I want to be more active")
+            text: qsTr("More Active")
             checked: healthParams["moreActive"]
+            width: parent.width
         }
-    }
-
-    RowLayout {
-        Label {
-            text: i18n.tr("I want to sleep more")
-            Layout.fillWidth: true
-        }
-        Switch {
+        TextSwitch {
             id: sleepMoreSwitch
+            description: qsTr("I want to sleep more")
+            text: qsTr("Sleep More")
             checked: healthParams["sleepMore"]
+            width: parent.width
         }
     }
 
-
-    Button {
-        text: i18n.tr("OK")
-        color: UbuntuColors.green
-        onClicked: {
+    onDone: {
+        if(result === DialogResult.Accepted) {
             root.healthParams["enabled"] = enabledSwitch.checked;
-            root.healthParams["gender"] = genderSelector.selectedIndex == 0 ? "female" : "male"
+            root.healthParams["gender"] = genderSelector.value == 0 ? "female" : "male"
             root.healthParams["age"] = ageField.text;
             root.healthParams["height"] = heightField.text;
             root.healthParams["weight"] = weightField.text;
             root.healthParams["moreActive"] = moreActiveSwitch.checked;
             root.healthParams["sleepMore"] = sleepMoreSwitch.checked;
-            root.accepted();
-            PopupUtils.close(root);
         }
-    }
-    Button {
-        text: i18n.tr("Cancel")
-        color: UbuntuColors.red
-        onClicked: PopupUtils.close(root)
     }
 }
 
