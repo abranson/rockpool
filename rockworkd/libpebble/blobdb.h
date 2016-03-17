@@ -40,7 +40,7 @@ public:
     void insertNotification(const Notification &notification);
     void insertTimelinePin(const QUuid &uuid, TimelineItem::Layout layout, bool isAllDay, const QDateTime &startTime, const QDateTime &endTime, const QString &title, const QString &description, const QMap<QString, QString> fields, bool recurring);
     void removeTimelinePin(const QUuid &uuid);
-    void insertReminder(const QUuid &parentId, const QString &title, const QString &subtitle, const QString &body, const QDateTime &remindTime);
+    void insertReminder(const QUuid &uuid, const QUuid &parentId, const QString &title, const QString &subtitle, const QString &body, const QDateTime &remindTime);
     void clearTimeline();
     void syncCalendar(const QList<CalendarEvent> &events);
 

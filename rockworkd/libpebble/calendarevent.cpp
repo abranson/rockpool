@@ -32,6 +32,7 @@ QUuid CalendarEvent::uuid() const
 void CalendarEvent::generateNewUuid()
 {
     m_uuid = QUuid::createUuid();
+    m_reminderUuid = QUuid::createUuid();
 }
 
 QString CalendarEvent::title() const
@@ -80,6 +81,11 @@ QDateTime CalendarEvent::reminder() const {
 
 void CalendarEvent::setReminder(const QDateTime reminder) {
     m_reminder = reminder;
+}
+
+QUuid CalendarEvent::reminderUuid() const
+{
+    return m_reminderUuid;
 }
 
 QString CalendarEvent::location() const
@@ -210,6 +216,7 @@ void CalendarEvent::saveToCache(const QString &cachePath) const
     s.setValue("recurring", m_recurring);
     s.setValue("isAllDay", m_isAllDay);
     s.setValue("reminder", m_reminder);
+    s.setValue("reminderId", m_reminderUuid);
 }
 
 void CalendarEvent::loadFromCache(const QString &cachePath, const QString &uuid)
@@ -228,6 +235,7 @@ void CalendarEvent::loadFromCache(const QString &cachePath, const QString &uuid)
     m_recurring = s.value("recurring").toBool();
     m_isAllDay = s.value("isAllDay").toBool();
     m_reminder = s.value("reminder").toDateTime();
+    m_reminderUuid = s.value("reminderId").toUuid();
 }
 
 void CalendarEvent::removeFromCache(const QString &cachePath) const

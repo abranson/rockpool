@@ -211,11 +211,10 @@ void BlobDB::removeTimelinePin(const QUuid &uuid)
     remove(BlobDBId::BlobDBIdPin, uuid);
 }
 
-void BlobDB::insertReminder(const QUuid &parentId, const QString &title, const QString &subtitle, const QString &body, const QDateTime &remindTime)
+void BlobDB::insertReminder(const QUuid &uuid, const QUuid &parentId, const QString &title, const QString &subtitle, const QString &body, const QDateTime &remindTime)
 {
 
-    TimelineItem item(TimelineItem::TypeReminder, TimelineItem::FlagSingleEvent, remindTime, 0);
-
+    TimelineItem item(uuid, TimelineItem::TypeReminder, TimelineItem::FlagSingleEvent, remindTime, 0);
     item.setParentId(parentId);
 
     TimelineAttribute titleAttribute(TimelineAttribute::TypeTitle, title.toUtf8());
@@ -246,7 +245,6 @@ void BlobDB::insertReminder(const QUuid &parentId, const QString &title, const Q
     item.appendAction(muteAction);
 
     insert(BlobDB::BlobDBIdReminder, item);
-    //    qDebug() << "adding timeline item" << ddd.toHex();
 
 }
 
@@ -308,6 +306,7 @@ void BlobDB::syncCalendar(const QList<CalendarEvent> &events)
 
     foreach (const CalendarEvent &event, itemsToDelete) {
         removeTimelinePin(event.uuid());
+        if (!event.reminder().isNull()) removeTimelinePin(event.reminderUuid());
         m_calendarEntries.removeAll(event);
         event.removeFromCache(m_blobDBStoragePath);
     }
@@ -322,7 +321,7 @@ void BlobDB::syncCalendar(const QList<CalendarEvent> &events)
         insertTimelinePin(event.uuid(), TimelineItem::LayoutCalendar, event.isAllDay(), event.startTime(), event.endTime(), event.title(), event.description(), fields, event.recurring());
         if (!event.reminder().isNull()) {
             qDebug() << "Inserting reminder " << event.reminder();
-            insertReminder(event.uuid(), event.title(), event.location(), event.description(), event.reminder());
+            insertReminder(event.reminderUuid(), event.uuid(), event.title(), event.location(), event.description(), event.reminder());
         }
         m_calendarEntries.append(event);
         event.saveToCache(m_blobDBStoragePath);

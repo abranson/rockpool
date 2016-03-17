@@ -35,6 +35,9 @@ public:
     QDateTime reminder() const;
     void setReminder(const QDateTime reminder);
 
+    QUuid reminderUuid() const;
+    void setReminderUuid(const QUuid uuid);
+
     QString location() const;
     void setLocation(const QString &location);
 
@@ -68,6 +71,7 @@ private:
     QDateTime m_startTime;
     QDateTime m_endTime;
     QDateTime m_reminder;
+    QUuid m_reminderUuid;
     QString m_location;
     QString m_calendar;
     QString m_comment;
