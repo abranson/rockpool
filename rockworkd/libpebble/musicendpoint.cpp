@@ -1,5 +1,8 @@
 #include "musicendpoint.h"
 #include "pebble.h"
+#include "core.h"
+#include "platforminterface.h"
+#include "watchdatawriter.h"
 #include "watchconnection.h"
 
 #include <QDebug>
@@ -14,8 +17,13 @@ MusicEndpoint::MusicEndpoint(Pebble *pebble, WatchConnection *connection):
 
 void MusicEndpoint::setMusicMetadata(const MusicMetaData &metaData)
 {
+    qDebug() << "setMusicMetadata";
     m_metaData = metaData;
     writeMetadata();
+}
+
+MusicPlayState MusicEndpoint::getMusicPlayState() {
+    return Core::instance()->platform()->getMusicPlayState();
 }
 
 void MusicEndpoint::writeMetadata()
@@ -23,36 +31,72 @@ void MusicEndpoint::writeMetadata()
     if (!m_watchConnection->isConnected()) {
         return;
     }
+
     QStringList tmp;
     tmp.append(m_metaData.artist.left(30));
     tmp.append(m_metaData.album.left(30));
     tmp.append(m_metaData.title.left(30));
-    QByteArray res = m_watchConnection->buildMessageData(16, tmp); // Not yet sure what the 16 is about :/
+    QByteArray res = m_watchConnection->buildMessageData(MusicControlUpdateCurrentTrack, tmp);
+    WatchDataWriter writer(&res);
+    if (m_metaData.duration) {
+        writer.writeLE(m_metaData.duration);
+        if (m_metaData.trackCount) {
+            writer.writeLE(m_metaData.trackCount);
+            if (m_metaData.currentTrack) {
+            writer.writeLE(m_metaData.currentTrack);
+            }
+        }
+    }
+
+    m_watchConnection->writeToPebble(WatchConnection::EndpointMusicControl, res);
+}
+
+void MusicEndpoint::writePlayState(const MusicPlayState &playState) {
+    qDebug() << "Writing playstate. Position: " << playState.trackPosition;
+    if (!m_watchConnection->isConnected()) {
+        return;
+    }
+    QByteArray res;
+    WatchDataWriter writer(&res);
+    res.append(MusicControlUpdatePlayStateInfo); // MusicControlUpdatePlayStateInfo
+    res.append(playState.state);
+    writer.writeLE(playState.trackPosition);
+    writer.writeLE(playState.playRate);
+    res.append(playState.shuffle);
+    res.append(playState.repeat);
 
     m_watchConnection->writeToPebble(WatchConnection::EndpointMusicControl, res);
 }
 
 void MusicEndpoint::handleMessage(const QByteArray &data)
 {
+    qDebug() << "Music control : " << data.toHex().toInt();
     MusicControlButton controlButton;
     switch (data.toHex().toInt()) {
-    case 0x01:
+    case MusicControlPlayPause:
         controlButton = MusicControlPlayPause;
         break;
-    case 0x04:
-        controlButton = MusicControlSkipNext;
+    case MusicControlPause:
+        controlButton = MusicControlPause;
         break;
-    case 0x05:
-        controlButton = MusicControlSkipBack;
+    case MusicControlPlay:
+        controlButton = MusicControlPlay;
         break;
-    case 0x06:
+    case MusicControlNextTrack:
+        controlButton = MusicControlNextTrack;
+        break;
+    case MusicControlPreviousTrack:
+        controlButton = MusicControlPreviousTrack;
+        break;
+    case MusicControlVolumeUp:
         controlButton = MusicControlVolumeUp;
         break;
-    case 0x07:
+    case MusicControlVolumeDown:
         controlButton = MusicControlVolumeDown;
         break;
-    case 0x08:
+    case MusicControlGetCurrentTrack: // MusicControlGetCurrentTrack
         writeMetadata();
+        writePlayState(getMusicPlayState());
         return;
     default:
         qWarning() << "Unhandled music control button pressed:" << data.toHex();

@@ -17,6 +17,7 @@ public:
 
 public slots:
     void setMusicMetadata(const MusicMetaData &metaData);
+    void writePlayState(const MusicPlayState &playState);
 
 private slots:
     void handleMessage(const QByteArray &data);
@@ -26,6 +27,7 @@ signals:
 
 private:
     void writeMetadata();
+    MusicPlayState getMusicPlayState();
 
 private:
     Pebble *m_pebble;

@@ -61,6 +61,7 @@ public:
 	QString title() const;
 	QString album() const;
 	QString artist() const;
+    qlonglong position() const;
 
 	int duration() const;
 
@@ -83,6 +84,7 @@ signals:
 	void statusChanged();
 	void serviceChanged();
 	void metadataChanged();
+    void positionChanged();
 	void titleChanged();
 	void albumChanged();
 	void artistChanged();
@@ -120,6 +122,7 @@ private:
 private slots:
     void handleCurrentServiceChanged();
     void handlePlaybackStatusChanged();
+    void handlePositionChanged(qlonglong position);
     void handleMetadataChanged();
 
 private:

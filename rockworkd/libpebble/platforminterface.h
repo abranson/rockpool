@@ -20,12 +20,15 @@ public:
 signals:
     void notificationReceived(const Notification &notification);
     void notificationRemoved(const QUuid &uuid);
+    void musicPlayStateChanged(const MusicPlayState &playState);
     void timeChanged();
 
 // Music
 public:
     virtual void sendMusicControlCommand(MusicControlButton controlButton) = 0;
     virtual MusicMetaData musicMetaData() const = 0;
+    virtual MusicPlayState getMusicPlayState() const = 0;
+
 signals:
     void musicMetadataChanged(MusicMetaData metaData);
 

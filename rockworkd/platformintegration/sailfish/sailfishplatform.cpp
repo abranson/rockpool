@@ -30,6 +30,8 @@ SailfishPlatform::SailfishPlatform(QObject *parent):
     // Music
     m_musicController = new watchfish::MusicController(this);
     connect(m_musicController, SIGNAL(metadataChanged()), SLOT(fetchMusicMetadata()));
+    connect(m_musicController, SIGNAL(statusChanged()), SLOT(updateMusicStatus()));
+    connect(m_musicController, SIGNAL(positionChanged()), SLOT(updateMusicStatus()));
 
     // Organizer
     m_organizerAdapter = new OrganizerAdapter(this);
@@ -165,10 +167,16 @@ void SailfishPlatform::sendMusicControlCommand(MusicControlButton controlButton)
     case MusicControlPlayPause:
         m_musicController->playPause();
         break;
-    case MusicControlSkipBack:
+    case MusicControlPause:
+        m_musicController->pause();
+        break;
+    case MusicControlPlay:
+        m_musicController->play();
+        break;
+    case MusicControlPreviousTrack:
         m_musicController->previous();
         break;
-    case MusicControlSkipNext:
+    case MusicControlNextTrack:
         m_musicController->next();
         break;
     case MusicControlVolumeUp:
@@ -227,7 +235,57 @@ void SailfishPlatform::fetchMusicMetadata()
     m_musicMetaData.album = m_musicController->album();
     m_musicMetaData.title = m_musicController->title();
     m_musicMetaData.duration = m_musicController->duration();
+    qDebug() << "New track " << m_musicMetaData.title << ". Length: " << m_musicMetaData.duration;
     emit musicMetadataChanged(m_musicMetaData);
+    updateMusicStatus();
+}
+
+void SailfishPlatform::updateMusicStatus() {
+    MusicPlayState playState = getMusicPlayState();
+    emit musicPlayStateChanged(playState);
+}
+
+
+
+MusicPlayState SailfishPlatform::getMusicPlayState() const {
+    MusicPlayState playState;
+    switch (m_musicController->status()) {
+        case watchfish::MusicController::Status::StatusNoPlayer:
+            playState.state = MusicPlayState::StateUnknown;
+        break;
+        case watchfish::MusicController::Status::StatusStopped:
+            playState.state = MusicPlayState::StatePaused;
+        break;
+        case watchfish::MusicController::Status::StatusPaused:
+            playState.state = MusicPlayState::StatePaused;
+        break;
+        case watchfish::MusicController::Status::StatusPlaying:
+            playState.state = MusicPlayState::StatePlaying;
+        break;
+        default:
+            playState.state = MusicPlayState::StateUnknown;
+    }
+    switch (m_musicController->repeat()) {
+        case watchfish::MusicController::RepeatStatus::RepeatNone:
+            playState.repeat = MusicPlayState::RepeatOff;
+        break;
+        case watchfish::MusicController::RepeatStatus::RepeatTrack:
+            playState.repeat = MusicPlayState::RepeatOne;
+        break;
+        case watchfish::MusicController::RepeatStatus::RepeatPlaylist:
+            playState.repeat = MusicPlayState::RepeatAll;
+        break;
+        default:
+            playState.repeat = MusicPlayState::RepeatUnknown;
+    }
+
+    playState.trackPosition = m_musicController->position()/1000;
+    if (m_musicController->shuffle())
+        playState.shuffle = MusicPlayState::ShuffleOn;
+    else
+        playState.shuffle = MusicPlayState::ShuffleOff;
+
+    return playState;
 }
 
 void SailfishPlatform::mediaPropertiesChanged(const QString &interface, const QVariantMap &changedProps, const QStringList &invalidatedProps)

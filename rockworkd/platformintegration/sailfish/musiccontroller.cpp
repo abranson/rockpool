@@ -34,6 +34,8 @@ MusicControllerPrivate::MusicControllerPrivate(MusicController *q)
 			this, &MusicControllerPrivate::handleCurrentServiceChanged);
 	connect(manager, &MprisManager::playbackStatusChanged,
 			this, &MusicControllerPrivate::handlePlaybackStatusChanged);
+    connect(manager, &MprisManager::positionChanged,
+            this, &MusicControllerPrivate::handlePositionChanged);
 	connect(manager, &MprisManager::metadataChanged,
 			this, &MusicControllerPrivate::handleMetadataChanged);
 	connect(manager, &MprisManager::shuffleChanged,
@@ -123,6 +125,13 @@ void MusicControllerPrivate::handlePlaybackStatusChanged()
 	updateStatus();
 }
 
+void MusicControllerPrivate::handlePositionChanged(qlonglong position)
+{
+    Q_Q(MusicController);
+    qCDebug(musicControllerCat()) << "Position changed: " << position;
+    emit q->positionChanged();
+}
+
 void MusicControllerPrivate::handleMetadataChanged()
 {
 	updateMetadata();
@@ -205,6 +214,12 @@ int MusicController::duration() const
 {
 	Q_D(const MusicController);
 	return d->curDuration;
+}
+
+qlonglong MusicController::position() const
+{
+    Q_D(const MusicController);
+    return d->manager->position();
 }
 
 MusicController::RepeatStatus MusicController::repeat() const

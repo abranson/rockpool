@@ -31,6 +31,8 @@ public:
     QHash<QString, QString> getCategoryParams(QString category);
 
     QList<CalendarEvent> organizerItems() const override;
+    MusicPlayState getMusicPlayState() const override;
+
     void actionTriggered(const QUuid &uuid, const QString &actToken) const override;
     void removeNotification(const QUuid &uuid) const override;
 
@@ -38,6 +40,7 @@ public slots:
     void onNotification(watchfish::Notification *notification);
     void handleClosedNotification(watchfish::Notification::CloseReason reason);
     void onTimeChanged();
+    void updateMusicStatus();
 
 private slots:
     void fetchMusicMetadata();
