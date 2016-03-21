@@ -1,6 +1,7 @@
 [Unit]
 Description=Rockpool daemon for Pebble smartwatches
 Requires=dbus.socket bluetooth.target booster-qt5.service
+Conflicts=pebbled.service
 After=pre-user-session.target lipstick.service dbus.socket bluetooth.target booster-qt5.service
 
 [Service]

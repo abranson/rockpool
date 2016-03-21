@@ -1,3 +1,15 @@
+* Mon Mar 21 2016 Andrew Branson <github@andrewbranson.net> 0.6-1
+- Initial Sailfish User interface
+- Small fixes and tweaks
+
+* Sat Mar 19 2016 Andrew Branson <github@andrewbranson.net> 0.5-2
+- Fix firmware checking for versions with less than 3 digits.
+
+* Sat Mar 19 2016 Andrew Branson <github@andrewbranson.net> 0.5-1
+- Track reminders and remove them with their calendar entries
+- Support Music play state to enable track progress on the watch.
+- Service conflicts with Pebbled so they will stop each other.
+
 * Tue Mar 15 2016 Andrew Branson <github@andrewbranson.net> 0.4-1
 - Automatic time sync when phone time is updated.
 - Fixed notification removal hang
