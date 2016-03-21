@@ -20,13 +20,13 @@ public:
         }
         tmp = tmp.right(tmp.length() - 1);
         QStringList fields = tmp.split(".");
-        if (fields.length() != 3) {
-            qWarning() << "firmware string expected to be of format vX.Y.Z but it is" << versionString;
+        if (fields.length() > 3) {
+            qWarning() << "firmware string expected to be of format vX.(Y).(Z) but it is" << versionString;
             return;
         }
         major = fields.at(0).toInt();
-        minor = fields.at(1).toInt();
-        patch = fields.at(2).toInt();
+        minor = fields.length() > 1?fields.at(1).toInt():0;
+        patch = fields.length() > 2?fields.at(2).toInt():0;
     }
 
     bool operator>(const FirmwareVersion &other) {
