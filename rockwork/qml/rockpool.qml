@@ -1,8 +1,5 @@
 import QtQuick 2.2
 import Sailfish.Silica 1.0
-//import QtQuick 2.4
-//import QtQuick.Layouts 1.1
-//import Ubuntu.Components 1.3
 import RockPool 1.0
 import "pages"
 
@@ -18,22 +15,23 @@ ApplicationWindow {
 
     ServiceController {
         id: serviceController
-        Component.onCompleted: {
-            if (!serviceController.serviceRunning) {
-                console.log("Service not running. Starting now.");
-                serviceController.startService();
-            }
-            if (pebbles.version !== version) {
-                console.log("Service file version (", version, ") is not equal running service version (", pebbles.version, "). Restarting service.");
-                serviceController.restartService();
-            }
-        }
+        Component.onCompleted: initService()
     }
 
     Pebbles {
         id: pebbles
         onCountChanged: loadStack()
         onConnectedToServiceChanged: loadStack();
+    }
+    function initService() {
+        if (!serviceController.serviceRunning) {
+            console.log("Service not running. Starting now.");
+            serviceController.startService();
+        }
+        if (pebbles.version !== version) {
+            console.log("Service file version (", version, ") is not equal running service version (", pebbles.version, "). Restarting service.");
+            serviceController.restartService();
+        }
     }
 
     function loadStack() {

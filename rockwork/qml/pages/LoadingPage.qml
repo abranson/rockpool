@@ -3,6 +3,7 @@ import Sailfish.Silica 1.0
 
 Page {
     id: loadingComponent
+    property bool wantConnect: true
 
     Column {
         width:parent.width
@@ -18,6 +19,11 @@ Page {
             font.pixelSize: Theme.fontSizeLarge
             text: qsTr("Loading and Connecting...")
         }
+        Button {
+            text: qsTr("Restart Service")
+            onClicked: rockPool.initService()
+            width: parent.width
+        }
     }
     Image {
         id: upgradeIcon
@@ -31,6 +37,7 @@ Page {
             to: 360
             running: upgradeIcon.visible
         }
-        visible: !pebbles.connectedToService
+
+        visible: !pebbles.connectedToService && loadingComponent.status === PageStatus.Active && wantConnect
     }
 }
