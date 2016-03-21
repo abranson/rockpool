@@ -37,16 +37,10 @@ void MusicEndpoint::writeMetadata()
     tmp.append(m_metaData.album.left(30));
     tmp.append(m_metaData.title.left(30));
     QByteArray res = m_watchConnection->buildMessageData(MusicControlUpdateCurrentTrack, tmp);
-    WatchDataWriter writer(&res);
-    if (m_metaData.duration) {
-        writer.writeLE(m_metaData.duration);
-        if (m_metaData.trackCount) {
-            writer.writeLE(m_metaData.trackCount);
-            if (m_metaData.currentTrack) {
-            writer.writeLE(m_metaData.currentTrack);
-            }
-        }
-    }
+    WatchDataWriter writer(&res); // Used to skip these if not present in the metadata, but the watch didn't clear duration data
+    writer.writeLE(m_metaData.duration);
+    writer.writeLE(m_metaData.trackCount);
+    writer.writeLE(m_metaData.currentTrack);
 
     m_watchConnection->writeToPebble(WatchConnection::EndpointMusicControl, res);
 }

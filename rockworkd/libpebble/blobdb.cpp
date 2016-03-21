@@ -279,13 +279,13 @@ void BlobDB::syncCalendar(const QList<CalendarEvent> &events)
         if (!syncedEvent.isValid()) {
             itemsToAdd.append(event);
         } else if (!(syncedEvent == event)) {
-            qDebug() << "event " << event.id() << " has changed!";
+            qDebug() << "event " << event.id() << " (" << event.title() << ") has changed!";
             syncedEvent.diff(event);
             itemsToDelete.append(syncedEvent);
             itemsToAdd.append(event);
         }
         else {
-            qDebug() << "event " << event.id() << " hasn't changed!";
+            qDebug() << "event " << event.id() << " (" << event.title() << ") hasn't changed!";
         }
     }
 
@@ -299,7 +299,7 @@ void BlobDB::syncCalendar(const QList<CalendarEvent> &events)
             }
         }
         if (!found) {
-            qDebug() << "removing stale timeline entry";
+            qDebug() << "removing stale timeline entry " << event.id() << ": " << event.title();
             itemsToDelete.append(event);
         }
     }
@@ -613,7 +613,6 @@ CalendarEvent BlobDB::findCalendarEvent(const QString &id)
 {
     foreach (const CalendarEvent &entry, m_calendarEntries) {
         if (entry.id() == id) {
-            qDebug() << "Entry found " << id;
             return entry;
         }
     }

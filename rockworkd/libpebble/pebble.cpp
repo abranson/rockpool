@@ -588,7 +588,7 @@ void Pebble::factorySettingsReceived(const QByteArray &data)
 
 void Pebble::phoneVersionAsked(const QByteArray &data)
 {
-
+    Q_UNUSED(data);
     QByteArray res;
 
     Capabilities sessionCap(CapabilityHealth

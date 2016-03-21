@@ -34,7 +34,7 @@ MusicControllerPrivate::MusicControllerPrivate(MusicController *q)
 			this, &MusicControllerPrivate::handleCurrentServiceChanged);
 	connect(manager, &MprisManager::playbackStatusChanged,
 			this, &MusicControllerPrivate::handlePlaybackStatusChanged);
-    connect(manager, &MprisManager::positionChanged,
+    connect(manager, &MprisManager::positionChanged, // doesn't seem to work :(
             this, &MusicControllerPrivate::handlePositionChanged);
 	connect(manager, &MprisManager::metadataChanged,
 			this, &MusicControllerPrivate::handleMetadataChanged);
