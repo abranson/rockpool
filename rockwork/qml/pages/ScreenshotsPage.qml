@@ -11,12 +11,12 @@ Page {
         anchors.fill: parent
         clip: true
 
-        property int columns: 2
+        property int columns: Math.round(width/200)
 
-        cellWidth: width / columns
+        cellWidth: width / columns - Theme.paddingSmall
         cellHeight: cellWidth
 
-        PageHeader {
+        header: PageHeader {
             title: qsTr("Screenshots")
         }
         PullDownMenu {
@@ -28,12 +28,15 @@ Page {
 
         model: root.pebble.screenshots
 
-        delegate: Item {
-            width: grid.cellWidth
-            height: grid.cellHeight
+        delegate: ListItem {
+            //width: grid.cellWidth
+            //height: grid.cellHeight
+            contentWidth: grid.cellWidth
+            contentHeight: grid.cellHeight
             Image {
-                anchors.fill: parent
-                anchors.margins: units.gu(.5)
+                //anchors.fill: parent
+                //anchors.margins: Theme.paddingSmall
+                anchors.centerIn: parent
                 fillMode: Image.PreserveAspectFit
                 source: "file://" + model.filename
             }

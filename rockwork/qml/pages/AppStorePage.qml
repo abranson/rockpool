@@ -195,7 +195,7 @@ Page {
             height: parent.height
             width: height
             icon.source: "image://theme/icon-m-search"
-            onClicked: client.search(searchTextField.displayText, root.showWatchApps ? AppStoreClient.TypeWatchapp : AppStoreClient.TypeWatchface);
+            onClicked: client.search(searchTextField.text, root.showWatchApps ? AppStoreClient.TypeWatchapp : AppStoreClient.TypeWatchface);
         }
     }
 }

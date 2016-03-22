@@ -62,6 +62,7 @@ bool ServiceControl::startService()
         return false;
     } else {
         systemd->call("Reload");
+        systemd->call("StartUnit", ROCKPOOLD_SYSTEMD_UNIT, "replace");
         return true;
     }
 }
@@ -69,6 +70,7 @@ bool ServiceControl::startService()
 bool ServiceControl::stopService()
 {
     QDBusError reply;
+    systemd->call("StopUnit", ROCKPOOLD_SYSTEMD_UNIT, "replace");
     systemd->call("DisableUnitFiles", QStringList() << ROCKPOOLD_SYSTEMD_UNIT, false);
     if (reply.isValid()) {
         qWarning() << reply.message();
