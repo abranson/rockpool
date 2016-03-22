@@ -33,6 +33,10 @@ ApplicationWindow {
             serviceController.restartService();
         }
     }
+    function stopService() {
+        console.log("Request to stop and disable service");
+        serviceController.stopService()
+    }
 
     function loadStack() {
         if (pebbles.connectedToService) {
@@ -45,6 +49,11 @@ ApplicationWindow {
             }
         } else {
             console.log("Waiting for service")
+            if(curPebble>=0) {
+                pageStack.clear();
+                pageStack.push(initialPage);
+                curPebble = -1;
+            }
         }
     }
     Component.onCompleted: loadStack();

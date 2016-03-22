@@ -20,7 +20,7 @@ Page {
                 width: parent.width
                 spacing: Theme.paddingSmall
                 Image {
-                    source: "artwork/rockwork.svg"
+                    source: "qrc:///artwork/rockwork.svg"
                     height: Theme.iconSizeSmall
                     width: height
                 }
