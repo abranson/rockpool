@@ -1,3 +1,13 @@
+* Tue Mar 22 2016 Andrew Branson <github@andrewbranson.net> 0.7-2
+- Firmware upgrade page
+- Simplify firmware checking
+
+* Tue Mar 22 2016 Andrew Branson <github@andrewbranson.net> 0.7-1
+- Service AutoStart from the app
+- AppStore search - a missing attribute during cleanup
+- AppSettings List - introduced floating list selector component to pick dropbox values
+- DeveloperPage - the page is cleaned up and is displayable, however File Picker is still missing hence functionality is still partial. Also added Disable Service to the devel page. At the moment there's no ability to switch it off (apart of cli)
+
 * Mon Mar 21 2016 Andrew Branson <github@andrewbranson.net> 0.6-1
 - Initial Sailfish User interface
 - Small fixes and tweaks

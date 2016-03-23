@@ -8,50 +8,6 @@
 class Pebble;
 class QNetworkAccessManager;
 
-class FirmwareVersion
-{
-public:
-    FirmwareVersion(const QString &versionString)
-    {
-        QString tmp = versionString;
-        if (!tmp.startsWith("v")) {
-            qWarning() << "firmware string expected to be of format vX.Y.Z but it is" << versionString;
-            return;
-        }
-        tmp = tmp.right(tmp.length() - 1);
-        QStringList fields = tmp.split(".");
-        if (fields.length() > 3) {
-            qWarning() << "firmware string expected to be of format vX.(Y).(Z) but it is" << versionString;
-            return;
-        }
-        major = fields.at(0).toInt();
-        minor = fields.length() > 1?fields.at(1).toInt():0;
-        patch = fields.length() > 2?fields.at(2).toInt():0;
-    }
-
-    bool operator>(const FirmwareVersion &other) {
-        if (major > other.major) {
-            return true;
-        }
-        if (major == other.major && minor > other.minor) {
-            return true;
-        }
-        if (major == other.major && minor == other.minor && patch > other.patch) {
-            return true;
-        }
-        return false;
-    }
-
-    bool isValid() const {
-        return major > -1 && minor > -1 && patch > -1;
-    }
-
-    int major = -1;
-    int minor = -1;
-    int patch = -1;
-
-};
-
 class FirmwareDownloader : public QObject
 {
     Q_OBJECT
