@@ -186,9 +186,11 @@ Page {
                                     width: Theme.iconSizeMedium
                                     height: Theme.iconSizeMedium
                                     source: "image://theme/" + model.icon
+                                    anchors.verticalCenter: parent.verticalCenter
                                 }
                                 Label {
                                     text: model.text
+                                    anchors.verticalCenter: parent.verticalCenter
                                 }
                             }
 
@@ -236,42 +238,32 @@ Page {
         mainMenuModel.append({
                                  icon: "icon-s-message",
                                  text: qsTr("Manage notifications"),
-                                 page: "NotificationsPage.qml",
-                                 color: "blue"
+                                 page: "NotificationsPage.qml"
                              })
-
         mainMenuModel.append({
                                  icon: "icon-s-installed",
                                  text: qsTr("Manage Apps"),
                                  page: "InstalledAppsPage.qml",
-                                 showWatchApps: true,
-                                 color: "green"
+                                 showWatchApps: true
                              })
-
         mainMenuModel.append({
                                  icon: "icon-s-time",
                                  text: qsTr("Manage Watchfaces"),
                                  page: "InstalledAppsPage.qml",
-                                 showWatchFaces: true,
-                                 color: "black"
+                                 showWatchFaces: true
                              })
-
         mainMenuModel.append({
                                  icon: "icon-s-setting",
                                  text: qsTr("Settings"),
                                  page: "SettingsPage.qml",
-                                 showWatchFaces: true,
-                                 color: "gold"
+                                 showWatchFaces: true
                              })
 
-        if (root.pebble.firmwareUpgradeAvailable) {
-            mainMenuModel.append({
-                                     icon: "icon-s-update",
-                                     text: qsTr("Firmware upgrade"),
-                                     page: "FirmwareUpgradePage.qml",
-                                     color: "red"
-                                 })
-        }
+        mainMenuModel.append({
+                                 icon: "icon-s-update",
+                                 text: qsTr("Manage Firmware"),
+                                 page: "FirmwareUpgradePage.qml"
+                             })
     }
 
     PebbleModels {
