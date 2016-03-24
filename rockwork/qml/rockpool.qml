@@ -24,7 +24,7 @@ ApplicationWindow {
         onConnectedToServiceChanged: loadStack();
     }
     function initService() {
-        if (!serviceController.serviceRunning) {
+        if (!pebbles.connectedToService && !serviceController.serviceRunning) {
             console.log("Service not running. Starting now.");
             serviceController.startService();
         }
