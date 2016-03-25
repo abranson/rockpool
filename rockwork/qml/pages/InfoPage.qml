@@ -20,8 +20,8 @@ Page {
                 width: parent.width
                 spacing: Theme.paddingSmall
                 Image {
-                    source: "qrc:///artwork/rockwork.svg"
-                    height: Theme.iconSizeSmall
+                    source: "qrc:///rockpool.png"
+                    height: Theme.iconSizeLarge
                     width: height
                 }
 
@@ -45,6 +45,7 @@ Page {
 
             Label {
                 width: parent.width
+                font.pixelSize: Theme.fontSizeSmall
                 text: "This program is free software: you can redistribute it and/or modify"
                       + "it under the terms of the GNU General Public License as published "
                       + "by the Free Software Foundation, version 3 of the License.<br>"

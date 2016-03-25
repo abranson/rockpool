@@ -1,6 +1,6 @@
 <RCC>
     <qresource prefix="/">
-    	<file>artwork/back-cover.png</file>
+        <file>artwork/back-cover.png</file>
         <file>artwork/bianca-black.png</file>
         <file>artwork/bianca-silver.png</file>
         <file>artwork/black-20mm-hole.png</file>
@@ -23,5 +23,6 @@
         <file>artwork/tintin-pink.png</file>
         <file>artwork/tintin-red.png</file>
         <file>artwork/tintin-white.png</file>
+        <file>rockpool.png</file>
     </qresource>
 </RCC>
