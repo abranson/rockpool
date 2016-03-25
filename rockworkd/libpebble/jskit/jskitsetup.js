@@ -45,12 +45,6 @@ function XMLHttpRequest() {
         ['readyState', 'response', 'responseText', 'responseType', 'status',
         'statusText', 'timeout', 'onreadystatechange', 'ontimeout', 'onload',
         'onloadstart', 'onloadend', 'onprogress', 'onerror', 'onabort']);
-
-    this.UNSENT = 0;
-    this.OPENED = 1;
-    this.HEADERS_RECEIVED = 2;
-    this.LOADING = 3;
-    this.DONE = 4;
 }
 
 function setInterval(func, time) {
