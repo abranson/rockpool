@@ -29,19 +29,21 @@ Page {
         }
 
         model: root.showWatchApps ? root.pebble.installedApps : root.pebble.installedWatchfaces
-        //clip: true
+        clip: true
 
         delegate: InstalledAppDelegate {
             uuid: model.uuid
             name: model.name
             vendor: model.vendor
             iconSource: model.icon
+            isLastApp: !listView.model.get(index+1)
             isSystemApp: model.isSystemApp
             hasSettings: model.hasSettings
 
             onDeleteApp: pebble.removeApp(model.uuid)
             onLaunchApp: pebble.launchApp(model.uuid)
             onConfigureApp: root.configureApp(model.uuid)
+            onMoveApp: root.moveApp(index,dir)
         }
         VerticalScrollDecorator {}
     }
@@ -56,6 +58,25 @@ Page {
             })
         } else {
             pebble.requestConfigurationURL(uuid)
+        }
+    }
+    function moveApp(idx,dir) {
+        listView.model.move(idx,idx+dir);
+        moveDock.show();
+    }
+
+    DockedPanel {
+        id: moveDock
+        dock: Dock.Top
+        width: parent.width
+        height: Theme.itemSizeSmall
+        Button {
+            text: qsTr("Save Apps Order")
+            anchors.horizontalCenter: parent.horizontalCenter
+            onClicked: {
+                moveDock.hide();
+                listView.model.commitMove();
+            }
         }
     }
 }

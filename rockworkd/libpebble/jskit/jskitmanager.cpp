@@ -68,7 +68,6 @@ void JSKitManager::handleWebviewClosed(const QString &result)
         qCWarning(l) << "webview closed event, but JS engine is not running";
     }
 }
-
 void JSKitManager::setConfigurationId(const QUuid &uuid)
 {
     m_configurationUuid = uuid;
@@ -246,6 +245,9 @@ void JSKitManager::startJsApp()
         qCWarning(l) << "Error opening" << jsApp;
         return;
     }
+    //QString jsCode = QString::fromUtf8(f.readAll());
+    //qCDebug(l) << "loading script" << jsCode;
+    //QJSValue ret = m_engine->evaluate(jsCode);
     QJSValue ret = m_engine->evaluate(QString::fromUtf8(f.readAll()));
     qCDebug(l) << "loaded script" << ret.toString();
 
@@ -262,8 +264,11 @@ void JSKitManager::startJsApp()
         return true;
     });
 
+    QJSValue eventObj = m_engine->newObject();
+    eventObj.setProperty("ready",m_engine->toScriptValue(true));
+    eventObj.setProperty("type","ready");
     // We try to invoke the callbacks even if script parsing resulted in error...
-    m_jspebble->invokeCallbacks("ready");
+    m_jspebble->invokeCallbacks("ready",QJSValueList({eventObj}));
 
     loadJsFile(":/cacheLocalStorage.js");
 

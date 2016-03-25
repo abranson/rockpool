@@ -10,10 +10,12 @@ ListItem {
     property string vendor: ""
     property bool hasSettings: false
     property bool isSystemApp: false
+    property bool isLastApp: true
 
     signal launchApp
     signal deleteApp
     signal configureApp
+    signal moveApp(int dir)
 
     contentHeight: Theme.itemSizeMedium
     width: parent.width
@@ -38,6 +40,16 @@ ListItem {
                     root.deleteApp()
                 })
             }
+        }
+        MenuItem {
+            text: qsTr("Move Up")
+            visible: index > 1
+            onClicked: root.moveApp(-1)
+        }
+        MenuItem {
+            text: qsTr("Move Down")
+            visible: index>0 && !root.isLastApp
+            onClicked: root.moveApp(1)
         }
     }
 
