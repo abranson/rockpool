@@ -1,4 +1,4 @@
-QT += core bluetooth dbus network contacts qml location
+QT += core bluetooth dbus network contacts qml location websockets
 QT -= gui
 
 include(../version.pri)
@@ -32,7 +32,7 @@ SOURCES += main.cpp \
     libpebble/jskit/jskitxmlhttprequest.cpp \
     libpebble/jskit/jskittimer.cpp \
     libpebble/jskit/jskitperformance.cpp \
-#   libpebble/jskit/jskitwebsocket.cpp \
+    libpebble/jskit/jskitwebsocket.cpp \
     libpebble/appinfo.cpp \
     libpebble/appmanager.cpp \
     libpebble/appmsgmanager.cpp \
@@ -48,7 +48,6 @@ SOURCES += main.cpp \
     dbusinterface.cpp \
 # Platform integration part
     platformintegration/sailfish/sailfishplatform.cpp \
-#   platformintegration/sailfish/callchannelobserver.cpp \
     platformintegration/sailfish/voicecallmanager.cpp \
     platformintegration/sailfish/voicecallhandler.cpp \
     libpebble/blobdb.cpp \
@@ -88,7 +87,7 @@ HEADERS += \
     libpebble/jskit/jskitxmlhttprequest.h \
     libpebble/jskit/jskittimer.h \
     libpebble/jskit/jskitperformance.h \
-#   libpebble/jskit/jskitwebsocket.h \
+    libpebble/jskit/jskitwebsocket.h \
     libpebble/appinfo.h \
     libpebble/appmanager.h \
     libpebble/appmsgmanager.h \

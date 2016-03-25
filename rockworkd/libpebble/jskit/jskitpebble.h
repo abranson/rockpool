@@ -32,9 +32,7 @@ public:
     Q_INVOKABLE void openURL(const QUrl &url);
 
     Q_INVOKABLE QJSValue createXMLHttpRequest();
-#if QT_VERSION >= 0x050300
     Q_INVOKABLE QJSValue createWebSocket(const QString &url, const QJSValue &protocols=QJSValue{});
-#endif
     void invokeCallbacks(const QString &type, const QJSValueList &args = QJSValueList());
 
 private:
