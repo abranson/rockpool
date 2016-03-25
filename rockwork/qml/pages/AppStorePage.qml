@@ -38,6 +38,15 @@ Page {
         header: PageHeader {
             title: (catName)? catName: (showWatchApps ? qsTr("Add new watchapp") : qsTr("Add new watchface"))
         }
+        ViewPlaceholder {
+            enabled: parent.count===0
+            anchors.fill: parent
+            BusyIndicator {
+                anchors.centerIn: parent
+                running: parent.enabled
+            }
+        }
+
         model: ApplicationsFilterModel {
             id: appsFilterModel
             model: client.model
@@ -183,7 +192,6 @@ Page {
                 searchTextField.focus = true;
             }
         }
-
         TextField {
             id: searchTextField
             anchors { top: parent.top; left: parent.left }

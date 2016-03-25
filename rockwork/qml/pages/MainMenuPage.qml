@@ -178,13 +178,12 @@ Page {
                         id: menuRepeater
                         model: root.pebble.connected && !root.pebble.recovery && !root.pebble.upgradingFirmware ? mainMenuModel : null
                         delegate: ListItem {
-                            contentHeight: Theme.iconSizeMedium + Theme.paddingSmall
+                            contentHeight: Theme.iconSizeMedium + Theme.paddingSmall*2
                             Row {
                                 height: Theme.iconSizeMedium
                                 anchors.verticalCenter: parent.verticalCenter
+                                spacing: Theme.paddingSmall
                                 Image {
-                                    width: Theme.iconSizeMedium
-                                    height: Theme.iconSizeMedium
                                     source: "image://theme/" + model.icon
                                     anchors.verticalCenter: parent.verticalCenter
                                 }
@@ -236,31 +235,31 @@ Page {
         mainMenuModel.clear()
 
         mainMenuModel.append({
-                                 icon: "icon-s-message",
+                                 icon: "icon-m-alarm",
                                  text: qsTr("Manage notifications"),
                                  page: "NotificationsPage.qml"
                              })
         mainMenuModel.append({
-                                 icon: "icon-s-installed",
+                                 icon: "icon-m-toy",
                                  text: qsTr("Manage Apps"),
                                  page: "InstalledAppsPage.qml",
                                  showWatchApps: true
                              })
         mainMenuModel.append({
-                                 icon: "icon-s-time",
+                                 icon: "icon-m-watch",
                                  text: qsTr("Manage Watchfaces"),
                                  page: "InstalledAppsPage.qml",
                                  showWatchFaces: true
                              })
         mainMenuModel.append({
-                                 icon: "icon-s-setting",
+                                 icon: "icon-m-developer-mode",
                                  text: qsTr("Settings"),
                                  page: "SettingsPage.qml",
                                  showWatchFaces: true
                              })
 
         mainMenuModel.append({
-                                 icon: "icon-s-update",
+                                 icon: "icon-m-up",
                                  text: qsTr("Manage Firmware"),
                                  page: "FirmwareUpgradePage.qml"
                              })
