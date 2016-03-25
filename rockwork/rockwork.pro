@@ -34,7 +34,8 @@ QML_FILES += $$files(qml/pages/*.qml,true)
 QML_FILES += $$files(qml/cover/*.qml,true)
 
 CONF_FILES +=  rockpool.png \
-               rockpool.desktop
+               rockpool.desktop \
+               translations/*.ts
 
 #show all the files in QtCreator
 OTHER_FILES += $${QML_FILES} \
@@ -56,4 +57,10 @@ target.path = /usr/bin
 
 DISTFILES += \
     qml/pages/LoadingPage.qml
+
+# Translations
+CONFIG += sailfishapp_i18n
+TRANSLATIONS += translations/*.ts
+
+
 
