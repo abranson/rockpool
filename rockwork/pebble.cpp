@@ -15,6 +15,7 @@ Pebble::Pebble(const QDBusObjectPath &path, QObject *parent):
     m_installedApps = new ApplicationsModel(this);
     connect(m_installedApps, &ApplicationsModel::appsSorted, this, &Pebble::appsSorted);
     m_installedWatchfaces = new ApplicationsModel(this);
+    connect(m_installedWatchfaces, &ApplicationsModel::appsSorted, this, &Pebble::appsSorted);
     m_screenshotModel = new ScreenshotModel(this);
 
     QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "Connected", this, SLOT(pebbleConnected()));
