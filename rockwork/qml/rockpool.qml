@@ -1,6 +1,7 @@
 import QtQuick 2.2
 import Sailfish.Silica 1.0
 import RockPool 1.0
+import org.nemomobile.dbus 2.0
 import "pages"
 
 /*!
@@ -23,6 +24,24 @@ ApplicationWindow {
         onCountChanged: loadStack()
         onConnectedToServiceChanged: loadStack();
     }
+    DBusInterface {
+        id: lipstick
+        service: "org.nemomobile.lipstick"
+        path: "/LauncherModel"
+        iface: "org.nemomobile.lipstick.LauncherModel"
+    }
+    DBusInterface {
+        id: jolla
+        service: "com.jolla.settings"
+        path: "/com/jolla/settings/ui"
+        iface: "com.jolla.settings.ui"
+    }
+    function startBT() {
+        lipstick.typedCall("notifyLaunching",[{"type":"s","value":"jolla-settings.desktop"}],
+                           function(r){jolla.call("showPage",["system_settings/connectivity/bluetooth"])},
+                           function(e){console.log("Error",e)})
+    }
+
     function initService() {
         if (!pebbles.connectedToService && !serviceController.serviceRunning) {
             console.log("Service not running. Starting now.");
