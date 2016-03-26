@@ -38,14 +38,6 @@ Page {
         header: PageHeader {
             title: (catName)? catName: (showWatchApps ? qsTr("Add new watchapp") : qsTr("Add new watchface"))
         }
-        ViewPlaceholder {
-            enabled: parent.count===0
-            anchors.fill: parent
-            BusyIndicator {
-                anchors.centerIn: parent
-                running: parent.enabled
-            }
-        }
 
         model: ApplicationsFilterModel {
             id: appsFilterModel
@@ -179,6 +171,12 @@ Page {
                 pageStack.push(Qt.resolvedUrl("AppStoreDetailsPage.qml"), {app: appsFilterModel.get(index), pebble: root.pebble})
             }
         }
+    }
+    BusyIndicator {
+        anchors.centerIn: parent
+        running: client.busy
+        size: BusyIndicatorSize.Large
+        visible: running
     }
     DockedPanel {
         id: searchField
