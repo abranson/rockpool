@@ -70,6 +70,7 @@ public:
 public slots:
     QHash<QString, bool> notificationsFilter() const;
     void setNotificationFilter(const QString &sourceId, bool enabled);
+    void sendSimpleNotification(const QUuid &uuid, const QString &title, const QString &body);
     void sendNotification(const Notification &notification);
 
     void clearTimeline();
