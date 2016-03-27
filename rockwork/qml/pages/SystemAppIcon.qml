@@ -7,7 +7,7 @@ Item {
     property string iconSource: ""
 
     Image {
-        anchors.fill: parent
+        anchors.verticalCenter: parent.verticalCenter
         visible: parent.isSystemApp
         source: {
             var icon = "";
@@ -25,17 +25,17 @@ Item {
                 icon = "music";
                 break;
             case "{b2cae818-10f8-46df-ad2b-98ad2254a3c1}":
-                icon = "notifications";
+                icon = "alarm";
                 break;
             case "{67a32d95-ef69-46d4-a0b9-854cc62f97f9}":
-                icon = "alarm";
+                icon = "timer";
                 break;
             case "{8f3c8686-31a1-4f5f-91f5-01600c9bdc59}":
                 icon = "clock"
             }
             if (icon)
                 return "image://theme/icon-m-" + icon
-            return ""
+            return "image://theme/icon-m-other"
         }
     }
 

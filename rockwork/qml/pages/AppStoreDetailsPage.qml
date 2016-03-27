@@ -72,7 +72,7 @@ Page {
                         anchors.centerIn: parent
                         spacing: Theme.paddingSmall
                         Image {
-                            source: "image://theme/icon-m-" + (root.app.isWatchFace ? "wath" : "toy")
+                            source: "image://theme/icon-m-" + (root.app.isWatchFace ? "watch" : "toy")
                             height: parent.height
                             width: height
                         }
@@ -155,7 +155,7 @@ Page {
                             id: maskFace
                             color: "blue"
                             anchors.centerIn: parent
-                            anchors.horizontalCenterOffset: Theme.paddingSmall
+                            anchors.horizontalCenterOffset: Theme.paddingSmall/2
                             height: parent.height
                             width: screenshotsItem.isRound ? height : height * 0.86
                             radius: screenshotsItem.isRound ? height / 2 : 0

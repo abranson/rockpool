@@ -4,7 +4,7 @@ import QtWebKit 3.0
 //import QtWebKit.experimental 1.0
 
 Page {
-    id: settings
+    id: appSettings
 
     property string uuid;
     property string url;
@@ -13,7 +13,7 @@ Page {
         id: webview
         anchors.fill: parent
 
-        url: settings.url
+        url: appSettings.url
         /*header: Label {
             text: qsTr("App Settings")
             width: parent.width
@@ -29,14 +29,13 @@ Page {
             var url = request.url.toString();
             console.log(url, url.substring(0, 16));
             if (url.substring(0, 16) == 'pebblejs://close') {
-                pebble.configurationClosed(settings.uuid, url);
+                pebble.configurationClosed(appSettings.uuid, url);
                 request.action = WebView.IgnoreRequest;
                 pageStack.pop();
             }
         }
-        experimental.preferences.webGLEnabled: true
-        //experimental.preferences.webAudioEnabled: true
-        //experimental.preferredMinimumContentsWidth: 980
+        //experimental.deviceHeight:appSettings.height
+        experimental.transparentBackground: true
         experimental.itemSelector: Component {
             id: selBox
             Rectangle {
@@ -72,6 +71,20 @@ Page {
         //experimental.alertDialog: AlertDialog { }
         //experimental.confirmDialog: ConfirmDialog { }
         //experimental.promptDialog: PromptDialog { }
-
+        experimental.colorChooser: Component {
+            id: colBox
+            ColorPicker {
+                anchors.fill: webview
+                onColorChanged: { console.log("The color is",color); model.reject() }
+            }
+        }
+        onLoadingChanged: {busyId.running = webview.loading}
+    }
+    BusyIndicator {
+        id: busyId
+        anchors.centerIn: parent
+        running: true
+        visible: running
+        size: BusyIndicatorSize.Large
     }
 }

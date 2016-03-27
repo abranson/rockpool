@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1">
+<TS version="2.1" language="ru" sourcelanguage="en">
 <context>
     <name>AppSettingsPage</name>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="46"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>Отмена</translation>
     </message>
 </context>
 <context>
@@ -14,32 +14,32 @@
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="170"/>
         <source>Description</source>
-        <translation type="unfinished"></translation>
+        <translation>Описание</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="191"/>
         <source>Developer</source>
-        <translation type="unfinished"></translation>
+        <translation>Разработчик</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="196"/>
         <source>Version</source>
-        <translation type="unfinished"></translation>
+        <translation>Версия</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="246"/>
         <source>Install</source>
-        <translation type="unfinished"></translation>
+        <translation>Установить</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="246"/>
         <source>Installing...</source>
-        <translation type="unfinished"></translation>
+        <translation>Ставится...</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="246"/>
         <source>Installed</source>
-        <translation type="unfinished"></translation>
+        <translation>Установлено</translation>
     </message>
 </context>
 <context>
@@ -47,22 +47,22 @@
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="39"/>
         <source>Add new watchapp</source>
-        <translation type="unfinished"></translation>
+        <translation>Добавить приложение</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="39"/>
         <source>Add new watchface</source>
-        <translation type="unfinished"></translation>
+        <translation>Добавить циферблат</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="83"/>
         <source>See all</source>
-        <translation type="unfinished"></translation>
+        <translation>Показать Все</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="197"/>
         <source>Search app or watchface</source>
-        <translation type="unfinished"></translation>
+        <translation>Поиск публикации</translation>
     </message>
 </context>
 <context>
@@ -70,12 +70,12 @@
     <message>
         <location filename="../qml/cover/CoverPage.qml" line="27"/>
         <source>connected</source>
-        <translation type="unfinished"></translation>
+        <translation>Подключен</translation>
     </message>
     <message>
         <location filename="../qml/cover/CoverPage.qml" line="27"/>
         <source>disconnected</source>
-        <translation type="unfinished"></translation>
+        <translation>Отключен</translation>
     </message>
 </context>
 <context>
@@ -83,48 +83,48 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="11"/>
         <source>Developer Tools</source>
-        <translation type="unfinished"></translation>
+        <translation>Инструменты Разработчика</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="58"/>
         <source>Disable Service</source>
-        <translation type="unfinished"></translation>
+        <translation>Выключить Сервис</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="64"/>
         <source>Screenshots</source>
-        <translation type="unfinished"></translation>
+        <translation>Снимки Экрана</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="70"/>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="92"/>
         <source>Report problem</source>
-        <translation type="unfinished"></translation>
+        <translation>Сообщить о Проблеме</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="76"/>
         <source>Install app or watchface from file</source>
-        <translation type="unfinished"></translation>
+        <translation>Установить приложение из файла</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="105"/>
         <source>Preparing logs package...</source>
-        <translation type="unfinished"></translation>
+        <translation>Подготовка пакета журналов...</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="129"/>
         <source>Send</source>
-        <translation type="unfinished"></translation>
+        <translation>Отправить</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="140"/>
         <source>Send watch logs</source>
-        <translation type="unfinished"></translation>
+        <translation>Послать журнал с часов</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="149"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>Отмена</translation>
     </message>
 </context>
 <context>
@@ -132,47 +132,47 @@
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="15"/>
         <source>Firmware upgrade</source>
-        <translation type="unfinished"></translation>
+        <translation>Обновление прошивки</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="18"/>
         <source>Currently installed firmware: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Версия текущей прошивки: %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="24"/>
         <source>A new firmware upgrade is available for your Pebble smartwatch.</source>
-        <translation type="unfinished"></translation>
+        <translation>Доступно обновление прошивки для ваших часов Pebble.</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="32"/>
         <source>Candidate firmware version: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Доступная версия прошивки: %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="39"/>
         <source>Release Notes: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Замечания к версии: %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="46"/>
         <source>Important:</source>
-        <translation type="unfinished"></translation>
+        <translation>Важно:</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="46"/>
         <source>This update will also upgrade recovery data. Make sure your Pebble smartwarch is connected to a power adapter.</source>
-        <translation type="unfinished"></translation>
+        <translation>Это обновление также обновит оболочку аварийного восстановления. Пожалуйста убедитесь, что ваш Pebble подключен к источнику питания.</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="53"/>
         <source>Upgrade now</source>
-        <translation type="unfinished"></translation>
+        <translation>Обновить немедля</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="53"/>
         <source>Firmware is Up-To-Date</source>
-        <translation type="unfinished"></translation>
+        <translation>У вас самая свежая прошивка</translation>
     </message>
 </context>
 <context>
@@ -180,72 +180,72 @@
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="13"/>
         <source>Health settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Фитнес-настройки</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="14"/>
         <source>OK</source>
-        <translation type="unfinished"></translation>
+        <translation>Принять</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="16"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>Отмена</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="20"/>
         <source>Health app enabled</source>
-        <translation type="unfinished"></translation>
+        <translation>Фитнес-приложение включено</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="26"/>
         <source>Age</source>
-        <translation type="unfinished"></translation>
+        <translation>Возраст</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="37"/>
         <source>Height (cm)</source>
-        <translation type="unfinished"></translation>
+        <translation>Рост (см)</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="47"/>
         <source>Weight (kg)</source>
-        <translation type="unfinished"></translation>
+        <translation>Вес (кг)</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="58"/>
         <source>Gender</source>
-        <translation type="unfinished"></translation>
+        <translation>Пол</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="59"/>
         <source>Female</source>
-        <translation type="unfinished"></translation>
+        <translation>Женский</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="59"/>
         <source>Male</source>
-        <translation type="unfinished"></translation>
+        <translation>Мужской</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="67"/>
         <source>I want to be more active</source>
-        <translation type="unfinished"></translation>
+        <translation>Желаю больше двигаться</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="68"/>
         <source>More Active</source>
-        <translation type="unfinished"></translation>
+        <translation>Быть активней</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="74"/>
         <source>I want to sleep more</source>
-        <translation type="unfinished"></translation>
+        <translation>Желаю больше высыпаться</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="75"/>
         <source>Sleep More</source>
-        <translation type="unfinished"></translation>
+        <translation>Спать дольше</translation>
     </message>
 </context>
 <context>
@@ -253,12 +253,12 @@
     <message>
         <location filename="../qml/pages/ImportPackagePage.qml" line="8"/>
         <source>Import watchapp or watchface</source>
-        <translation type="unfinished"></translation>
+        <translation>Импортировать приложение или циферблат</translation>
     </message>
     <message>
         <location filename="../qml/pages/ImportPackagePage.qml" line="30"/>
         <source>Import File?</source>
-        <translation type="unfinished"></translation>
+        <translation>Импортировать?</translation>
     </message>
 </context>
 <context>
@@ -266,22 +266,22 @@
     <message>
         <location filename="../qml/pages/InfoPage.qml" line="29"/>
         <source>Version %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Версия %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/InfoPage.qml" line="42"/>
         <source>Legal</source>
-        <translation type="unfinished"></translation>
+        <translation>Правовая информация</translation>
     </message>
     <message>
         <location filename="../qml/pages/InfoPage.qml" line="68"/>
         <source>This application is neither affiliated with nor endorsed by Pebble Technology Corp.</source>
-        <translation type="unfinished"></translation>
+        <translation>Данное приложение никоим образом не имеет отношения к Pebble Technology Corp. не являясь ни оффициальной ни рекоммендованной компанией оболочкой.</translation>
     </message>
     <message>
         <location filename="../qml/pages/InfoPage.qml" line="78"/>
         <source>Pebble is a trademark of Pebble Technology Corp.</source>
-        <translation type="unfinished"></translation>
+        <translation>Pebble является регистрированной торговой маркой Pebble Technology Corp.</translation>
     </message>
 </context>
 <context>
@@ -289,32 +289,32 @@
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="27"/>
         <source>Launch</source>
-        <translation type="unfinished"></translation>
+        <translation>Запустить</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="31"/>
         <source>Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Настройки</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="36"/>
         <source>Delete</source>
-        <translation type="unfinished"></translation>
+        <translation>Удалить</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="39"/>
         <source>Really Delete?</source>
-        <translation type="unfinished"></translation>
+        <translation>Действительно Удалить?</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="45"/>
         <source>Move Up</source>
-        <translation type="unfinished"></translation>
+        <translation>Подвинуть Вверх</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="50"/>
         <source>Move Down</source>
-        <translation type="unfinished"></translation>
+        <translation>Подвинуть Вниз</translation>
     </message>
 </context>
 <context>
@@ -322,27 +322,27 @@
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="18"/>
         <source>Add New</source>
-        <translation type="unfinished"></translation>
+        <translation>Добавить</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="27"/>
         <source>Apps &amp; Watchfaces</source>
-        <translation type="unfinished"></translation>
+        <translation>Приложения и Циферблаты</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="27"/>
         <source>Apps</source>
-        <translation type="unfinished"></translation>
+        <translation>Приложения</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="27"/>
         <source>Watchfaces</source>
-        <translation type="unfinished"></translation>
+        <translation>Циферблаты</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="74"/>
         <source>Save Apps Order</source>
-        <translation type="unfinished"></translation>
+        <translation>Сохранить Порядок Пакетов</translation>
     </message>
 </context>
 <context>
@@ -350,12 +350,12 @@
     <message>
         <location filename="../qml/pages/LoadingPage.qml" line="20"/>
         <source>Loading and Connecting...</source>
-        <translation type="unfinished"></translation>
+        <translation>Загрузка и Подключение...</translation>
     </message>
     <message>
         <location filename="../qml/pages/LoadingPage.qml" line="23"/>
         <source>Restart Service</source>
-        <translation type="unfinished"></translation>
+        <translation>Перезапустить Сервис</translation>
     </message>
 </context>
 <context>
@@ -363,72 +363,72 @@
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="19"/>
         <source>About</source>
-        <translation type="unfinished"></translation>
+        <translation>О Программе</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="25"/>
         <source>Developer tools</source>
-        <translation type="unfinished"></translation>
+        <translation>Инструменты Разработчика</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="112"/>
         <source>Connected</source>
-        <translation type="unfinished"></translation>
+        <translation>Подключен</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="112"/>
         <source>Disconnected</source>
-        <translation type="unfinished"></translation>
+        <translation>Отключен</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="131"/>
         <source>Upgrading...</source>
-        <translation type="unfinished"></translation>
+        <translation>Обновление...</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="144"/>
         <source>Your Pebble smartwatch is disconnected. Please make sure it is powered on, within range and it is paired properly in the Bluetooth System Settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ваши часы Pebble в данный момент отключены. Пожалуйста убедитесь что они включены, находятся в пределах досягаемости и добавлены в системных настройках Bluetooth.</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="154"/>
         <source>Open Bluetooth Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Открыть Настройки Bluetooth</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="161"/>
         <source>Your Pebble smartwatch is in factory mode and needs to be initialized.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ваши часы Pebble находятся в специальном режиме и требуют инициализации.</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="170"/>
         <source>Initialize Pebble</source>
-        <translation type="unfinished"></translation>
+        <translation>Инициализировать Pebble</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="239"/>
         <source>Manage notifications</source>
-        <translation type="unfinished"></translation>
+        <translation>Управление Уведомлениями</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="244"/>
         <source>Manage Apps</source>
-        <translation type="unfinished"></translation>
+        <translation>Управление Приложениями</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="250"/>
         <source>Manage Watchfaces</source>
-        <translation type="unfinished"></translation>
+        <translation>Управление Циферблатами</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="256"/>
         <source>Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Системные Настройки</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="263"/>
         <source>Manage Firmware</source>
-        <translation type="unfinished"></translation>
+        <translation>Управление Прошивкой</translation>
     </message>
 </context>
 <context>
@@ -436,12 +436,12 @@
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="15"/>
         <source>Notifications</source>
-        <translation type="unfinished"></translation>
+        <translation>Уведомления</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="18"/>
         <source>Entries here will be added as notifications appear on the phone. Selected notifications will be shown on your Pebble smartwatch.</source>
-        <translation type="unfinished"></translation>
+        <translation>Категории уведомлений ниже будут появляться по мере их поступления с телефона. Выбранные категории будут появляться на ваших часах Pebble.</translation>
     </message>
 </context>
 <context>
@@ -449,37 +449,37 @@
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="9"/>
         <source>RockPool</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="10"/>
         <source>Manage Pebble Watches</source>
-        <translation type="unfinished"></translation>
+        <translation>Управление часами Pebble</translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="14"/>
         <source>Bluetooth Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Настройки Bluetooth</translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="37"/>
         <source>Connected</source>
-        <translation type="unfinished"></translation>
+        <translation>Подключено</translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="37"/>
         <source>Disconnected</source>
-        <translation type="unfinished"></translation>
+        <translation>Отключено</translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="57"/>
         <source>No Pebble smartwatches configured yet. Please connect your Pebble smartwatch using System Settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>Отсутствует конфигурация каких либо часов Pebble. Пожалуйста подключите часы Pebble в настройках Системы.</translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="66"/>
         <source>Open Bluetooth Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Открыть Настройки Bluetooth</translation>
     </message>
 </context>
 <context>
@@ -487,33 +487,33 @@
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="20"/>
         <source>Screenshots</source>
-        <translation type="unfinished"></translation>
+        <translation>Снимки Экрана</translation>
     </message>
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="24"/>
         <source>Take Screenshot</source>
-        <translation type="unfinished"></translation>
+        <translation>Сделать Снимок</translation>
     </message>
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="46"/>
         <source>Share</source>
-        <translation type="unfinished"></translation>
+        <translation>Отправить</translation>
     </message>
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="48"/>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="57"/>
         <source>Pebble screenshot</source>
-        <translation type="unfinished"></translation>
+        <translation>Снимок экрана Pebble</translation>
     </message>
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="55"/>
         <source>Save</source>
-        <translation type="unfinished"></translation>
+        <translation>Сохранить</translation>
     </message>
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="64"/>
         <source>Delete</source>
-        <translation type="unfinished"></translation>
+        <translation>Удалить</translation>
     </message>
 </context>
 <context>
@@ -521,27 +521,27 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="18"/>
         <source>Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Настройки</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="22"/>
         <source>Distance Units</source>
-        <translation type="unfinished"></translation>
+        <translation>Еденицы длинны</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="23"/>
         <source>Metric</source>
-        <translation type="unfinished"></translation>
+        <translation>Метрические</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="23"/>
         <source>Imperial</source>
-        <translation type="unfinished"></translation>
+        <translation>Британские</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="39"/>
         <source>Sync calendar to timeline</source>
-        <translation type="unfinished"></translation>
+        <translation>Синхронизировать Календарь с лентой сообщений</translation>
     </message>
 </context>
 </TS>

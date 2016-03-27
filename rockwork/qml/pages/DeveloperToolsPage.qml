@@ -115,7 +115,7 @@ Page {
                     if (success) {
                         var filename = "/tmp/pebble.log"
                         pageStack.push(Qt.resolvedUrl("ContentPeerPickerPage.qml"), {
-                            itemName: qsTr("pebble.log"),
+                            itemName: "pebble.log",
                             handler: ContentHandler.Share,
                             contentType: ContentType.All,
                             filename: filename
@@ -126,12 +126,12 @@ Page {
             }
 
             Button {
-                text: qsTr("Send rockworkd.log")
+                text: qsTr("Send")+"rockworkd.log"
                 width: parent.width
                 visible: !busyIndicator.visible
                 onClicked: {
                     var filename = homePath + "/.cache/upstart/rockworkd.log"
-                    pageStack.push(Qt.resolvedUrl("ContentPeerPickerPage.qml"), {itemName: qsTr("rockworkd.log"),handler: ContentHandler.Share, contentType: ContentType.All, filename: filename })
+                    pageStack.push(Qt.resolvedUrl("ContentPeerPickerPage.qml"), {itemName: "rockworkd.log",handler: ContentHandler.Share, contentType: ContentType.All, filename: filename })
 
                     sendLogsDocker.hide()
                 }

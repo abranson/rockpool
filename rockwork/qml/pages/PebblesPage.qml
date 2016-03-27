@@ -11,8 +11,10 @@ Page {
         }
         PullDownMenu {
             MenuItem {
-                text: qsTr("Settings")
-                onClicked: Qt.openUrlExternally("settings://system/bluetooth");
+                text: qsTr("Bluetooth Settings")
+                onClicked: rockPool.startBT()
+                enabled: pebbles.count>0
+                visible: enabled
             }
             /*MenuItem {
                 text: "Refresh"
@@ -61,10 +63,10 @@ Page {
         }
 
         Button {
-            text: qsTr("Open System Settings")
+            text: qsTr("Open Bluetooth Settings")
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.bottom: parent.bottom
-            onClicked: Qt.openUrlExternally("settings://system/bluetooth")
+            onClicked: rockPool.startBT()
         }
     }
 }

@@ -38,6 +38,7 @@ Page {
         header: PageHeader {
             title: (catName)? catName: (showWatchApps ? qsTr("Add new watchapp") : qsTr("Add new watchface"))
         }
+
         model: ApplicationsFilterModel {
             id: appsFilterModel
             model: client.model
@@ -171,6 +172,12 @@ Page {
             }
         }
     }
+    BusyIndicator {
+        anchors.centerIn: parent
+        running: client.busy
+        size: BusyIndicatorSize.Large
+        visible: running
+    }
     DockedPanel {
         id: searchField
         dock: Dock.Bottom
@@ -183,7 +190,6 @@ Page {
                 searchTextField.focus = true;
             }
         }
-
         TextField {
             id: searchTextField
             anchors { top: parent.top; left: parent.left }

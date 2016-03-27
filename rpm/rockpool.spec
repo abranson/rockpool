@@ -92,6 +92,7 @@ update-desktop-database
 %defattr(-,root,root,-)
 %{_bindir}
 %{_datadir}/%{name}/qml
+%{_datadir}/%{name}/translations
 %{_datadir}/applications/%{name}.desktop
 %{_datadir}/icons/hicolor/86x86/apps/%{name}.png
 %{_libdir}/systemd/user/%{name}d.service

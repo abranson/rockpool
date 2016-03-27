@@ -30,8 +30,7 @@ Page {
                 value: (root.pebble.imperialUnits) ? 1 : 0
             }
             Separator {
-                width: parent.width * 0.7
-                anchors.horizontalCenter: parent.horizontalCenter
+                width: parent.width
                 height: Theme.paddingSmall
                 color: Theme.secondaryHighlightColor
             }
