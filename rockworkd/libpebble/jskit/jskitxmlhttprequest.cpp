@@ -208,6 +208,45 @@ void JSKitXMLHttpRequest::setResponseType(const QString &type)
     m_responseType = type;
 }
 
+void JSKitXMLHttpRequest::addEventListener(const QString &type, QJSValue function)
+{
+    m_listeners[type].append(function);
+}
+
+void JSKitXMLHttpRequest::removeEventListener(const QString &type, QJSValue function)
+{
+    if (!m_listeners.contains(type)) return;
+
+    QList<QJSValue> &callbacks = m_listeners[type];
+    for (QList<QJSValue>::iterator it = callbacks.begin(); it != callbacks.end(); ) {
+        if (it->strictlyEquals(function)) {
+            it = callbacks.erase(it);
+        } else {
+            ++it;
+        }
+    }
+
+    if (callbacks.empty()) {
+        m_listeners.remove(type);
+    }
+}
+
+void JSKitXMLHttpRequest::invokeCallbacks(const QString &type, const QJSValueList &args)
+{
+    if (!m_listeners.contains(type)) return;
+    QList<QJSValue> &callbacks = m_listeners[type];
+
+    for (QList<QJSValue>::iterator it = callbacks.begin(); it != callbacks.end(); ++it) {
+        qCDebug(l) << "invoking callback" << type << it->toString();
+        QJSValue result = it->call(args);
+        if (result.isError()) {
+            qCWarning(l) << "error while invoking callback"
+                << type << it->toString() << ":"
+                << JSKitManager::describeError(result);
+        }
+    }
+}
+
 QJSValue JSKitXMLHttpRequest::response() const
 {
     if (m_responseType.isEmpty() || m_responseType == "text") {
@@ -269,6 +308,7 @@ void JSKitXMLHttpRequest::handleReplyFinished()
     } else {
         qCDebug(l) << "No onload set";
     }
+    invokeCallbacks("load", QJSValueList({m_engine->newQObject(this)}));
 
     if (m_onreadystatechange.isCallable()) {
         qCDebug(l) << "going to call onreadystatechange handler:" << m_onreadystatechange.toString();
@@ -277,6 +317,7 @@ void JSKitXMLHttpRequest::handleReplyFinished()
             qCWarning(l) << "JS error on onreadystatechange handler:" << JSKitManager::describeError(result);
         }
     }
+    invokeCallbacks("readystatechange", QJSValueList({m_engine->newQObject(this)}));
 }
 
 void JSKitXMLHttpRequest::handleReplyError(QNetworkReply::NetworkError code)
@@ -299,6 +340,7 @@ void JSKitXMLHttpRequest::handleReplyError(QNetworkReply::NetworkError code)
             qCWarning(l) << "JS error on onerror handler:" << JSKitManager::describeError(result);
         }
     }
+    invokeCallbacks("error", QJSValueList({m_engine->newQObject(this)}));
 }
 
 void JSKitXMLHttpRequest::handleAuthenticationRequired(QNetworkReply *reply, QAuthenticator *auth)
