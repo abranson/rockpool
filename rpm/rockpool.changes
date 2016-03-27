@@ -1,3 +1,8 @@
+* Sun Mar 27 2016 Andrew Branson <github@andrewbranson.net> 0.8-1
+- Translation support added. Russian and Ukrainian translations added
+- Bluetooth settings launch
+- Layout and icon improvements
+
 * Fri Mar 25 2016 Andrew Branson <github@andrewbranson.net> 0.7-3
 - Watch app reordering
 - Watch app sideloading
