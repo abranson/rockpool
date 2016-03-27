@@ -151,9 +151,9 @@ Page {
                     }
 
                     Button {
-                        text: qsTr("Open System Settings")
+                        text: qsTr("Open Bluetooth Settings")
                         visible: !root.pebble.connected
-                        onClicked: Qt.openUrlExternally("settings://system/bluetooth")
+                        onClicked: rockPool.startBT()
                         anchors.horizontalCenter: parent.horizontalCenter
                     }
 

@@ -35,7 +35,7 @@ QML_FILES += $$files(qml/cover/*.qml,true)
 
 CONF_FILES +=  rockpool.png \
                rockpool.desktop \
-               translations/*.ts
+               $$files(translations/*.ts,true)
 
 #show all the files in QtCreator
 OTHER_FILES += $${QML_FILES} \
@@ -59,8 +59,8 @@ DISTFILES += \
     qml/pages/LoadingPage.qml
 
 # Translations
+lupdate_only {
+    SOURCES += QML_FILES
+}
 CONFIG += sailfishapp_i18n
-TRANSLATIONS += translations/*.ts
-
-
-
+TRANSLATIONS += $$files(translations/*.ts,true)

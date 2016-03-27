@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.0" language="uk" sourcelanguage="en">
+<TS version="2.1" language="uk" sourcelanguage="en">
 <context>
     <name>AppSettingsPage</name>
     <message>
@@ -393,8 +393,8 @@
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="154"/>
-        <source>Open System Settings</source>
-        <translation>Відкрити Налаштування Сістеми</translation>
+        <source>Open Bluetooth Settings</source>
+        <translation>Відкрити Налаштування Bluetooth</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="161"/>
@@ -459,28 +459,28 @@
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="14"/>
-        <source>Settings</source>
-        <translation>Налаштування</translation>
+        <source>Bluetooth Settings</source>
+        <translation>Налаштування Bluetooth</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PebblesPage.qml" line="35"/>
+        <location filename="../qml/pages/PebblesPage.qml" line="37"/>
         <source>Connected</source>
         <translation>Підключено</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PebblesPage.qml" line="35"/>
+        <location filename="../qml/pages/PebblesPage.qml" line="37"/>
         <source>Disconnected</source>
         <translation>Відключено</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PebblesPage.qml" line="55"/>
+        <location filename="../qml/pages/PebblesPage.qml" line="57"/>
         <source>No Pebble smartwatches configured yet. Please connect your Pebble smartwatch using System Settings.</source>
         <translation>Відсутня жодна конфігурація годинників Pebble. Будьласка підключьте Pebble в Налаштуванні Сістеми.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PebblesPage.qml" line="64"/>
-        <source>Open System Settings</source>
-        <translation>Відкрити Налаштування Сістеми</translation>
+        <location filename="../qml/pages/PebblesPage.qml" line="66"/>
+        <source>Open Bluetooth Settings</source>
+        <translation>Відкрити Налаштування Bluetooth</translation>
     </message>
 </context>
 <context>
@@ -542,7 +542,7 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="39"/>
         <source>Sync calendar to timeline</source>
-        <translation>Синхронизувати Календар з часовою смугою</translation>
+        <translation>Синхронизувати Календар з Pebble Timeline</translation>
     </message>
 </context>
 </TS>

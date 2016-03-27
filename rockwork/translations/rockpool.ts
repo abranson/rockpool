@@ -4,7 +4,7 @@
 <context>
     <name>AppSettingsPage</name>
     <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="47"/>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="46"/>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
@@ -55,12 +55,12 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="82"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="83"/>
         <source>See all</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="191"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="197"/>
         <source>Search app or watchface</source>
         <translation type="unfinished"></translation>
     </message>
@@ -112,18 +112,8 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="118"/>
-        <source>pebble.log</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="129"/>
-        <source>Send rockworkd.log</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="134"/>
-        <source>rockworkd.log</source>
+        <source>Send</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -402,7 +392,7 @@
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="154"/>
-        <source>Open System Settings</source>
+        <source>Open Bluetooth Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -416,27 +406,27 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="240"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="239"/>
         <source>Manage notifications</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="245"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="244"/>
         <source>Manage Apps</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="251"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="250"/>
         <source>Manage Watchfaces</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="257"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="256"/>
         <source>Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="264"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="263"/>
         <source>Manage Firmware</source>
         <translation type="unfinished"></translation>
     </message>
@@ -468,27 +458,27 @@
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="14"/>
-        <source>Settings</source>
+        <source>Bluetooth Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PebblesPage.qml" line="35"/>
+        <location filename="../qml/pages/PebblesPage.qml" line="37"/>
         <source>Connected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PebblesPage.qml" line="35"/>
+        <location filename="../qml/pages/PebblesPage.qml" line="37"/>
         <source>Disconnected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PebblesPage.qml" line="55"/>
+        <location filename="../qml/pages/PebblesPage.qml" line="57"/>
         <source>No Pebble smartwatches configured yet. Please connect your Pebble smartwatch using System Settings.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PebblesPage.qml" line="64"/>
-        <source>Open System Settings</source>
+        <location filename="../qml/pages/PebblesPage.qml" line="66"/>
+        <source>Open Bluetooth Settings</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -549,7 +539,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="40"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="39"/>
         <source>Sync calendar to timeline</source>
         <translation type="unfinished"></translation>
     </message>

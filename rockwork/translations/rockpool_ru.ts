@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.0" language="ru" sourcelanguage="en">
+<TS version="2.1" language="ru" sourcelanguage="en">
 <context>
     <name>AppSettingsPage</name>
     <message>
@@ -137,7 +137,7 @@
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="18"/>
         <source>Currently installed firmware: %1</source>
-        <translation>Версия текуще прошивки: %1</translation>
+        <translation>Версия текущей прошивки: %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="24"/>
@@ -281,7 +281,7 @@
     <message>
         <location filename="../qml/pages/InfoPage.qml" line="78"/>
         <source>Pebble is a trademark of Pebble Technology Corp.</source>
-        <translation>Pebble является регестрированной торговой маркой Pebble Technology Corp.</translation>
+        <translation>Pebble является регистрированной торговой маркой Pebble Technology Corp.</translation>
     </message>
 </context>
 <context>
@@ -388,12 +388,12 @@
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="144"/>
         <source>Your Pebble smartwatch is disconnected. Please make sure it is powered on, within range and it is paired properly in the Bluetooth System Settings.</source>
-        <translation>Ваши часы Pebble в данный момент отключены. Пожалуйста убедитесь чтто они включены, находятся в пределах досягаемости и добавлены в системных настройках Bluetooth.</translation>
+        <translation>Ваши часы Pebble в данный момент отключены. Пожалуйста убедитесь что они включены, находятся в пределах досягаемости и добавлены в системных настройках Bluetooth.</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="154"/>
-        <source>Open System Settings</source>
-        <translation>Открыть Системные Настройки</translation>
+        <source>Open Bluetooth Settings</source>
+        <translation>Открыть Настройки Bluetooth</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="161"/>
@@ -458,28 +458,28 @@
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="14"/>
-        <source>Settings</source>
-        <translation>Настройки</translation>
+        <source>Bluetooth Settings</source>
+        <translation>Настройки Bluetooth</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PebblesPage.qml" line="35"/>
+        <location filename="../qml/pages/PebblesPage.qml" line="37"/>
         <source>Connected</source>
         <translation>Подключено</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PebblesPage.qml" line="35"/>
+        <location filename="../qml/pages/PebblesPage.qml" line="37"/>
         <source>Disconnected</source>
         <translation>Отключено</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PebblesPage.qml" line="55"/>
+        <location filename="../qml/pages/PebblesPage.qml" line="57"/>
         <source>No Pebble smartwatches configured yet. Please connect your Pebble smartwatch using System Settings.</source>
         <translation>Отсутствует конфигурация каких либо часов Pebble. Пожалуйста подключите часы Pebble в настройках Системы.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PebblesPage.qml" line="64"/>
-        <source>Open System Settings</source>
-        <translation>Открыть Настройки Системы</translation>
+        <location filename="../qml/pages/PebblesPage.qml" line="66"/>
+        <source>Open Bluetooth Settings</source>
+        <translation>Открыть Настройки Bluetooth</translation>
     </message>
 </context>
 <context>

@@ -21,6 +21,10 @@ int main(int argc, char *argv[])
     app->setApplicationName("pebble");
     app->setOrganizationName("");
 
+    QTranslator i18n;
+    i18n.load("translations_"+QLocale::system().name(),"/usr/share/rockpool/translations");
+    app->installTranslator(&i18n);
+
     qmlRegisterUncreatableType<Pebble>("RockPool", 1, 0, "Pebble", "Get them from the model");
     qmlRegisterUncreatableType<ApplicationsModel>("RockPool", 1, 0, "ApplicationsModel", "Get them from a Pebble object");
     qmlRegisterUncreatableType<AppItem>("RockPool", 1, 0, "AppItem", "Get them from an ApplicationsModel");
