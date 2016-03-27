@@ -685,7 +685,7 @@ void Pebble::syncTime()
 void Pebble::slotUpdateAvailableChanged()
 {
     qDebug() << "update available" << m_firmwareDownloader->updateAvailable() << m_firmwareDownloader->candidateVersion();
-
+    m_connection->systemMessage(WatchConnection::SystemMessageFirmwareAvailable);
     emit updateAvailableChanged();
 }
 
