@@ -2,10 +2,12 @@ TARGET = rockpool
 
 include(../version.pri)
 
-QT += qml quick dbus webkit quick-private webkit-private
+QT += qml quick dbus
 
 CONFIG += c++11
 CONFIG += sailfishapp
+
+PKGCONFIG += qt5embedwidget
 
 HEADERS += \
     notificationsourcemodel.h \

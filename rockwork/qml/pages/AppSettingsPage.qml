@@ -1,7 +1,6 @@
 import QtQuick 2.2
 import Sailfish.Silica 1.0
-import QtWebKit 3.0
-//import QtWebKit.experimental 1.0
+import Qt5Mozilla 1.0
 
 Page {
     id: appSettings
@@ -9,21 +8,18 @@ Page {
     property string uuid;
     property string url;
     property var pebble;
-    SilicaWebView {
+    QmlMozView {
         id: webview
+        //objectName: "webview"
         anchors.fill: parent
+        parentid: 0
+        visible: true
+        clip: false
+        focus: true
+        active: true
 
         url: appSettings.url
-        /*header: Label {
-            text: qsTr("App Settings")
-            width: parent.width
-            horizontalAlignment: Text.AlignRight
-            color: Theme.highlightColor
-        }*/
-        VerticalScrollDecorator {
-            flickable: parent
-        }
-
+        /*
         onNavigationRequested: {
             //The pebblejs:// protocol is handeled by the urihandler, as it appears we can't intercept it
             var url = request.url.toString();
@@ -78,6 +74,7 @@ Page {
                 onColorChanged: { console.log("The color is",color); model.reject() }
             }
         }
+        */
         onLoadingChanged: {busyId.running = webview.loading}
     }
     BusyIndicator {
