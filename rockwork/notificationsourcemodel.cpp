@@ -69,51 +69,25 @@ NotificationSourceItem NotificationSourceModel::fromDesktopFile(const QString &s
 {
     NotificationSourceItem ret;
     ret.m_id = sourceId;
+    ret.m_displayName = sourceId;
     ret.m_icon = "dialog-question-symbolic";
 
-    QString desktopFilePath;
     QStringList appsDirs = QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation);
+    qDebug() << QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation);
     foreach (const QString &appsDir, appsDirs) {
         QDir dir(appsDir);
-        QFileInfoList entries = dir.entryInfoList({sourceId + "*.desktop"});
-        if (entries.count() > 0) {
-            desktopFilePath = entries.first().absoluteFilePath();
-            break;
-        }
-    }
-
-    if (desktopFilePath.isEmpty()) {
-        // Lets see if this is an indicator
-        QDir dir("/usr/share/upstart/xdg/autostart/");
-        QString serviceName = sourceId;
-        serviceName.remove("-service");
-        QFileInfoList entries = dir.entryInfoList({serviceName + "*.desktop"});
-        if (entries.count() > 0) {
-            desktopFilePath = entries.first().absoluteFilePath();
-            if (sourceId == "indicator-power-service") {
-                ret.m_icon = "gpm-battery-050";
-            } else if (sourceId == "indicator-datetime-service") {
-                ret.m_icon = "alarm-clock";
-            } else {
-                ret.m_icon = "settings";
+        QFileInfoList entries = dir.entryInfoList({"*.desktop"});
+        foreach (const QFileInfo &appFile, entries) {
+            QSettings s(appFile.absoluteFilePath(), QSettings::IniFormat);
+            s.beginGroup("Desktop Entry");
+            if (s.value("Name").toString() == sourceId) {
+                ret.m_icon = s.value("Icon").toString();
+                return ret;
             }
         }
     }
 
-    if (desktopFilePath.isEmpty()) {
-        qWarning() << ".desktop file not found for" << sourceId;
-        ret.m_displayName = sourceId;
-        return ret;
-    }
-
-    QSettings s(desktopFilePath, QSettings::IniFormat);
-    s.beginGroup("Desktop Entry");
-    ret.m_displayName = s.value("Name").toString();
-    if (!s.value("Icon").toString().isEmpty()) {
-        ret.m_icon = s.value("Icon").toString();
-    }
-
-    qDebug() << "parsed file:" << desktopFilePath << ret.m_displayName << ret.m_icon;
+    qWarning() << ".desktop file not found for" << sourceId;
     return ret;
 }
 

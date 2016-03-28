@@ -47,6 +47,8 @@ Page {
                     }
                     return model.icon.indexOf("/") === 0 ? "file://" + model.icon : ""
                 }
+                icon.width: Theme.iconSizeSmall
+                icon.height: Theme.iconSizeSmall
                 text: model.name
                 onClicked: {
                     root.pebble.setNotificationFilter(model.id, checked)
