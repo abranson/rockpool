@@ -51,47 +51,56 @@ void WatchDataWriter::writeDict(const QMap<int, QVariant> &d)
     writeLE<quint8>(size);
 
     for (QMap<int, QVariant>::const_iterator it = d.constBegin(); it != d.constEnd(); ++it) {
-        writeLE<quint32>(it.key());
 
         switch (int(it.value().type())) {
+        case QMetaType::VoidStar: // skip nulls
+            continue;
         case QMetaType::Char:
+            writeLE<quint32>(it.key());
             writeLE<quint8>(WatchConnection::DictItemTypeInt);
             writeLE<quint16>(sizeof(char));
             writeLE<char>(it.value().value<char>());
             break;
         case QMetaType::Short:
+            writeLE<quint32>(it.key());
             writeLE<quint8>(WatchConnection::DictItemTypeInt);
             writeLE<quint16>(sizeof(short));
             writeLE<short>(it.value().value<short>());
             break;
         case QMetaType::Int:
+            writeLE<quint32>(it.key());
             writeLE<quint8>(WatchConnection::DictItemTypeInt);
             writeLE<quint16>(sizeof(int));
             writeLE<int>(it.value().value<int>());
             break;
 
         case QMetaType::UChar:
+            writeLE<quint32>(it.key());
             writeLE<quint8>(WatchConnection::DictItemTypeInt);
             writeLE<quint16>(sizeof(char));
             writeLE<char>(it.value().value<char>());
             break;
         case QMetaType::SChar:
+            writeLE<quint32>(it.key());
             writeLE<quint8>(WatchConnection::DictItemTypeInt);
             writeLE<quint16>(sizeof(signed char));
             writeLE<signed char>(it.value().value<signed char>());
             break;
         case QMetaType::UShort:
-            writeLE<quint8>(WatchConnection::DictItemTypeInt);
-            writeLE<quint16>(sizeof(short));
-            writeLE<short>(it.value().value<short>());
+            writeLE<quint32>(it.key());
+            writeLE<quint8>(WatchConnection::DictItemTypeUInt);
+            writeLE<quint16>(sizeof(ushort));
+            writeLE<ushort>(it.value().value<ushort>());
             break;
         case QMetaType::UInt:
-            writeLE<quint8>(WatchConnection::DictItemTypeInt);
-            writeLE<quint16>(sizeof(int));
-            writeLE<int>(it.value().value<int>());
+            writeLE<quint32>(it.key());
+            writeLE<quint8>(WatchConnection::DictItemTypeUInt);
+            writeLE<quint16>(sizeof(uint));
+            writeLE<uint>(it.value().value<uint>());
             break;
 
         case QMetaType::Bool:
+            writeLE<quint32>(it.key());
             writeLE<quint8>(WatchConnection::DictItemTypeInt);
             writeLE<quint16>(sizeof(char));
             writeLE<char>(it.value().value<char>());
@@ -99,12 +108,14 @@ void WatchDataWriter::writeDict(const QMap<int, QVariant> &d)
 
         case QMetaType::Float: // Treat qreals as ints
         case QMetaType::Double:
+            writeLE<quint32>(it.key());
             writeLE<quint8>(WatchConnection::DictItemTypeInt);
             writeLE<quint16>(sizeof(int));
             writeLE<int>(it.value().value<int>());
             break;
 
         case QMetaType::QByteArray: {
+            writeLE<quint32>(it.key());
             QByteArray ba = it.value().toByteArray();
             writeLE<quint8>(WatchConnection::DictItemTypeBytes);
             writeLE<quint16>(ba.size());
@@ -114,6 +125,7 @@ void WatchDataWriter::writeDict(const QMap<int, QVariant> &d)
 
         case QMetaType::QVariantList: {
             // Generally a JS array, which we marshal as a byte array.
+            writeLE<quint32>(it.key());
             QVariantList list = it.value().toList();
             QByteArray ba;
             ba.reserve(list.size());
@@ -134,6 +146,7 @@ void WatchDataWriter::writeDict(const QMap<int, QVariant> &d)
         case QMetaType::QString:
         case QMetaType::QUrl:
         {
+            writeLE<quint32>(it.key());
             QByteArray s = it.value().toString().toUtf8();
             if (s.isEmpty() || s[s.size() - 1] != '\0') {
                 // Add null terminator if it doesn't have one
