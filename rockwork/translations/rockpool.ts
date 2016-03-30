@@ -274,12 +274,12 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/InfoPage.qml" line="68"/>
-        <source>This application is neither affiliated with nor endorsed by Pebble Technology Corp.</source>
+        <location filename="../qml/pages/InfoPage.qml" line="69"/>
+        <source>This application is neither affiliated with nor endorsed by Pebble Technology Corp.-</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/InfoPage.qml" line="78"/>
+        <location filename="../qml/pages/InfoPage.qml" line="79"/> 
         <source>Pebble is a trademark of Pebble Technology Corp.</source>
         <translation type="unfinished"></translation>
     </message>

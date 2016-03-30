@@ -46,7 +46,7 @@ Page {
             Label {
                 width: parent.width
                 font.pixelSize: Theme.fontSizeSmall
-                text: "This program is free software: you can redistribute it and/or modify"
+                text: "This program is free software: you can redistribute it and/or modify "
                       + "it under the terms of the GNU General Public License as published "
                       + "by the Free Software Foundation, version 3 of the License.<br>"
                       + "This program is distributed in the hope that it will be useful, "
@@ -54,7 +54,8 @@ Page {
                       + "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the "
                       + "GNU General Public License for more details.<br>"
                       + "You should have received a copy of the GNU General Public License "
-                      + "along with this program.  If not, see <http://www.gnu.org/licenses/>."
+                      + "along with this program.  If not, see <a href=\"http://www.gnu.org/"
+                      + "licenses/\">http://www.gnu.org/licenses</a>."
                 wrapMode: Text.WordWrap
             }
 
@@ -65,7 +66,7 @@ Page {
             }
             Label {
                 width: parent.width
-                text: qsTr("This application is neither affiliated with nor endorsed by Pebble Technology Corp.")
+                text: qsTr("This application is neither affiliated with nor endorsed by Pebble Technology Corp.-")
                 wrapMode: Text.WordWrap
             }
             Separator {

@@ -274,12 +274,12 @@
         <translation>Правова інформація</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InfoPage.qml" line="68"/>
+        <location filename="../qml/pages/InfoPage.qml" line="69"/>
         <source>This application is neither affiliated with nor endorsed by Pebble Technology Corp.</source>
         <translation>Цей додаток в жодній мірі не має відношення до Pebble Technology Corp. не будучи ані офіційною ані рекомендованою оболонкою компанії.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InfoPage.qml" line="78"/>
+        <location filename="../qml/pages/InfoPage.qml" line="79"/>
         <source>Pebble is a trademark of Pebble Technology Corp.</source>
         <translation>Pebble є регистрованою торгівельною маркою Pebble Technology Corp.</translation>
     </message>
