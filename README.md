@@ -24,6 +24,18 @@ This application supports the Pebble v3 firmware in Sailfish (i.e. Pebble Time, 
 
 * The project should build in Qt Creator with no specific changes, but it requires the 'quazip-devel' library to be installed on the build VM because Pkgconfig doesn't work for that.
 
+* To build with Gecko engine it's required to install qtmozembed-qt5-devel on MerSDK. That requires manual intervention as well, because 
+	* The repository containing the package is missing in default MerSDK VM
+	* The prerequisite packages (dependencies) are hooked to the different versions, hence it raises a conflict which would need to be manually resolved
+
+	So you would need to perform following steps:
+
+	* SSH to the MerSDK as mersdk user
+	* enter the scratchbox as root for package installation (sb2 -t SailfishOS-armv7hl -R -m sdk-install)
+	* add mer-core repository (zypper ar -f http://repo.merproject.org/obs/mer-core:/armv7hl:/devel/Core_armv7hl/armv7hl/ mer-core)
+	* install required package and explicit conflicting down-chain (zypper install xulrunner-qt5 qtmozembed-qt5 qtmozembed-qt5-devel)
+	* When zypper complains about conflicts - chose option 3 (proceed with broken dependencies)
+
 ## The plan
 
 I've started proposing the libpebble changes back into RockWork, When it's ready, we'll merge the Sailfish-specific QML, platform integration and any other tweaks back into the RockWork tree.
