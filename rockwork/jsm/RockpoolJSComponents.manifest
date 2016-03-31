@@ -1,0 +1,4 @@
+# PebbleProtoHandle.js
+component {64D704B0-F5FF-11E5-8DDD-D05ABB8E7F8B} PebbleProtoHandle.js
+contract @mozilla.org/network/protocol;1?name=pebblejs {64D704B0-F5FF-11E5-8DDD-D05ABB8E7F8B}
+#category app-startup PebbleProtoHandler protocol,@mozilla.org/network/protocol;1?name=pebblejs

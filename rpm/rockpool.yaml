@@ -39,6 +39,7 @@ Requires:
 Files:
 - '%{_bindir}'
 - '%{_datadir}/%{name}/qml'
+- '%{_datadir}/%{name}/jsm'
 - '%{_datadir}/%{name}/translations'
 - '%{_datadir}/applications/%{name}.desktop'
 - '%{_datadir}/icons/hicolor/86x86/apps/%{name}.png'

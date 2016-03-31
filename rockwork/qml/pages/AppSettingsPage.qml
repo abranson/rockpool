@@ -10,71 +10,77 @@ Page {
     property var pebble;
     QmlMozView {
         id: webview
-        //objectName: "webview"
         anchors.fill: parent
-        parentid: 0
         visible: true
         clip: false
         focus: true
         active: true
 
         url: appSettings.url
-        /*
-        onNavigationRequested: {
-            //The pebblejs:// protocol is handeled by the urihandler, as it appears we can't intercept it
-            var url = request.url.toString();
-            console.log(url, url.substring(0, 16));
-            if (url.substring(0, 16) == 'pebblejs://close') {
-                pebble.configurationClosed(appSettings.uuid, url);
-                request.action = WebView.IgnoreRequest;
-                pageStack.pop();
-            }
-        }
-        //experimental.deviceHeight:appSettings.height
-        experimental.transparentBackground: true
-        experimental.itemSelector: Component {
-            id: selBox
-            Rectangle {
-                property QtObject selectorModel: model
-                anchors.fill: webview
-                color: Theme.rgba(Theme.highlightDimmerColor, 0.75)
-                Button {
-                    text: qsTr("Cancel")
-                    onClicked: selectorModel.reject()
-                    anchors.horizontalCenter: parent.horizontalCenter
+        Loader {
+            id: selectorLoader
+            focus: true
+            anchors.fill: parent
+            ListModel {
+                id: selectorModel
+                property bool multi: false
+                function reject() {
+                    webview.sendAsyncMessage("embedui:selectresponse", {"result": -1})
+                    selectorLoader.sourceComponent=null;
                 }
-
-                SilicaListView {
-                    width: parent.width
-                    height: parent.height-Theme.itemSizeSmall
-                    anchors.bottom: parent.bottom
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    model: selectorModel.items
-                    delegate: ListItem {
-                        enabled: model.enabled
-                        contentHeight: Theme.itemSizeSmall
-                        Label {
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            text: model.text
-                            color: model.enabled ? Theme.primaryColor : Theme.secondaryHighlightColor
-                        }
-                        onClicked: selectorModel.accept(index);
+                function accept() {
+                    var res = [];
+                    for(var i=0;i<count;i++) {
+                        var item=get(i);
+                        res.push({"selected":item.selected,"index":item.index});
                     }
+                    //console.log("Responding with",JSON.stringify(res));
+                    webview.sendAsyncMessage("embedui:selectresponse", {"result": res});
+                    selectorLoader.sourceComponent=null;
+                }
+            }
+
+            function show(data) {
+                selectorModel.multi=data.multiple;
+                sourceComponent=selBox;
+                selectorModel.clear();
+                for(var i=0;i<data.options.length;i++) {
+                    selectorModel.append(data.options[i]);
                 }
             }
         }
-
-        //experimental.alertDialog: AlertDialog { }
-        //experimental.confirmDialog: ConfirmDialog { }
-        //experimental.promptDialog: PromptDialog { }
-        experimental.colorChooser: Component {
-            id: colBox
-            ColorPicker {
-                anchors.fill: webview
-                onColorChanged: { console.log("The color is",color); model.reject() }
+        onViewInitialized: {
+            webview.loadFrameScript("chrome://embedlite/content/SelectAsyncHelper.js");
+            webview.addMessageListeners(
+                        [
+                            "embed:selectasync",
+                            //"embed:select",
+                            //"embed:alert",
+                            //"embed:confirm",
+                            //"embed:filepicker",
+                            //"embed:prompt",
+                            //"embed:auth",
+                            "embed:pebble"]);
+            console.log("Ready, Steady, Go!");
+        }
+        onRecvAsyncMessage: {
+            console.log("Message",message);
+            switch(message) {
+            case "embed:selectasync": {
+                selectorLoader.show(data);
+                break;
+            }
+            case "embed:pebble": {
+                if(data.action === "close") {
+                    pebble.configurationClosed(appSettings.uuid, data.uri);
+                    pageStack.pop();
+                }
+                break;
+            }
+            default:
+                console.log("Data",JSON.stringify(data));
             }
         }
-        */
         onLoadingChanged: {busyId.running = webview.loading}
     }
     BusyIndicator {
@@ -83,5 +89,55 @@ Page {
         running: true
         visible: running
         size: BusyIndicatorSize.Large
+    }
+    Component {
+        id: selBox
+        Rectangle {
+            //property QtObject selectorModel: model
+            //anchors.fill: webview
+            color: Theme.rgba(Theme.highlightDimmerColor, 0.75)
+            Row {
+                anchors.horizontalCenter: parent.horizontalCenter
+                spacing: Theme.paddingSmall
+                Button {
+                    text: qsTr("Cancel")
+                    onClicked: selectorModel.reject()
+                }
+                Button {
+                    text: qsTr("Select")
+                    onClicked: selectorModel.accept()
+                    enabled: selectorModel.multi
+                    visible: enabled
+                }
+            }
+
+            SilicaListView {
+                width: parent.width
+                height:parent.height-Theme.itemSizeSmall
+                anchors.bottom: parent.bottom
+                anchors.horizontalCenter: parent.horizontalCenter
+                model: selectorModel
+                delegate: ListItem {
+                    enabled: !model.disable
+                    contentHeight: Theme.itemSizeSmall
+                    Label {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        text: model.label
+                        color: !parent.enabled ? Theme.secondaryHighlightColor : Theme.primaryColor
+                    }
+                    highlighted: model.selected
+                    onClicked: {
+                        if(selectorModel.multi)
+                            selectorModel.setProperty(index,"selected",!model.selected);
+                        else {
+                            for(var i=0;i<selectorModel.count;i++)
+                                selectorModel.setProperty(i,"selected",false);
+                            selectorModel.setProperty(index,"selected",true);
+                            selectorModel.accept();
+                        }
+                    }
+                }
+            }
+        }
     }
 }

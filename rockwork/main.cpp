@@ -17,14 +17,19 @@
 #define DEFAULT_COMPONENTS_PATH "/usr/lib/mozembedlite/"
 #include <QTimer>
 #endif
+
+#ifndef ROCKPOOL_DATA_PATH
+#define ROCKPOOL_DATA_PATH "/usr/share/rockpool/"
+#endif //ROCKPOOL_DATA_PATH
+
 int main(int argc, char *argv[])
 {
     QScopedPointer<const QGuiApplication> app(SailfishApp::application(argc, argv));
-    app->setApplicationName("pebble");
+    app->setApplicationName("rockpool");
     app->setOrganizationName("");
 
     QTranslator i18n;
-    i18n.load("rockpool_"+QLocale::system().name(),"/usr/share/rockpool/translations");
+    i18n.load("rockpool_"+QLocale::system().name(),QString(ROCKPOOL_DATA_PATH)+QString("translations"));
     app->installTranslator(&i18n);
 
     qmlRegisterUncreatableType<Pebble>("RockPool", 1, 0, "Pebble", "Get them from the model");
@@ -37,16 +42,23 @@ int main(int argc, char *argv[])
     qmlRegisterType<AppStoreClient>("RockPool", 1, 0, "AppStoreClient");
     qmlRegisterType<ScreenshotModel>("RockPool", 1, 0, "ScreenshotModel");
 #ifdef WITH_QTMOZEMBED
+    setenv("USE_ASYNC", "1", 1);
+    setenv("MP_UA", "1", 1);
     QString componentPath(DEFAULT_COMPONENTS_PATH);
-    QMozContext::GetInstance()->addComponentManifest(componentPath + QString("/components") + QString("/EmbedLiteBinComponents.manifest"));
-    QMozContext::GetInstance()->addComponentManifest(componentPath + QString("/chrome") + QString("/EmbedLiteJSScripts.manifest"));
-    QMozContext::GetInstance()->addComponentManifest(componentPath + QString("/chrome") + QString("/EmbedLiteOverrides.manifest"));
-    QMozContext::GetInstance()->addComponentManifest(componentPath + QString("/components") + QString("/EmbedLiteJSComponents.manifest"));
-    QTimer::singleShot(0, QMozContext::GetInstance(), SLOT(runEmbedding()));
+    QMozContext::GetInstance()->setProfile(QStandardPaths::writableLocation(QStandardPaths::CacheLocation));
+    QMozContext::GetInstance()->addComponentManifest(componentPath + QString("components/EmbedLiteBinComponents.manifest"));
+    QMozContext::GetInstance()->addComponentManifest(componentPath + QString("components/EmbedLiteJSComponents.manifest"));
+    QMozContext::GetInstance()->addComponentManifest(componentPath + QString("chrome/EmbedLiteJSScripts.manifest"));
+    QMozContext::GetInstance()->addComponentManifest(componentPath + QString("chrome/EmbedLiteOverrides.manifest"));
+    QMozContext::GetInstance()->addComponentManifest(QString(ROCKPOOL_DATA_PATH) + QString("jsm/RockpoolJSComponents.manifest"));
     QObject::connect(app.data(), SIGNAL(lastWindowClosed()), QMozContext::GetInstance(), SLOT(stopEmbedding()));
 #endif
     QScopedPointer<QQuickView> view(SailfishApp::createView());
     view->rootContext()->setContextProperty("version", QStringLiteral(VERSION));
+#ifdef WITH_QTMOZEMBED
+    view->rootContext()->setContextProperty("MozContext", QMozContext::GetInstance());
+    QTimer::singleShot(0, QMozContext::GetInstance(), SLOT(runEmbedding()));
+#endif
     view->setSource(SailfishApp::pathTo("qml/rockpool.qml"));
     view->show();
 

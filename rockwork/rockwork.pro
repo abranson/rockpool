@@ -39,8 +39,12 @@ CONF_FILES +=  rockpool.png \
                rockpool.desktop \
                $$files(translations/*.ts,true)
 
+JSM_FILES += $$files(jsm/*.manifest,true)
+JSM_FILES += $$files(jsm/*.js,true)
+
 #show all the files in QtCreator
 OTHER_FILES += $${QML_FILES} \
+               $${JSM_FILES} \
                $${CONF_FILES}
 
 #specify where the qml files are installed to
@@ -54,9 +58,18 @@ icon.files = rockpool.png
 # Default rules for deployment.
 target.path = /usr/bin
 
-DISTFILES += \
-    qml/pages/LoadingPage.qml
+# gecko js modules
+jsm.path = /usr/share/rockpool/jsm
+jsm.files += $${JSM_FILES}
 
+DISTFILES += JSM_FILES
+INSTALLS += jsm
+
+## These are pre-defined rules, don't need explicit mentioning
+#INSTALLS+=target icon qml
+CONFIG(debug, debug|release) {
+    DEFINES += 'ROCKPOOL_DATA_PATH=\\"/opt/sdk/rockpool/usr/share/rockpool/\\"'
+}
 # Translations
 lupdate_only {
     SOURCES += QML_FILES
