@@ -66,7 +66,7 @@ Page {
             }
             Label {
                 width: parent.width
-                text: qsTr("This application is neither affiliated with nor endorsed by Pebble Technology Corp.-")
+                text: qsTr("This application is neither affiliated with nor endorsed by Pebble Technology Corp.")
                 wrapMode: Text.WordWrap
             }
             Separator {
