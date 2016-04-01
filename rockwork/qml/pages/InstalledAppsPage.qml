@@ -25,7 +25,6 @@ Page {
         }
         header: PageHeader {
             title: showWatchApps ? (showWatchFaces ? qsTr("Apps & Watchfaces") : qsTr("Apps")) : qsTr("Watchfaces")
-            width: parent.width
         }
 
         model: root.showWatchApps ? root.pebble.installedApps : root.pebble.installedWatchfaces

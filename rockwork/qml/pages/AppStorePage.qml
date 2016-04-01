@@ -8,7 +8,7 @@ Page {
     property var pebble: null
     property bool showWatchApps: false
     property bool showWatchFaces: false
-    property string catName
+    property string catName: ""
 
     property string link: ""
 
@@ -46,12 +46,12 @@ Page {
         clip: true
 
         section.property: "groupId"
-        section.labelPositioning: ViewSection.CurrentLabelAtStart | ViewSection.InlineLabels
+        section.labelPositioning: ViewSection.InlineLabels | (catName ? 0 : ViewSection.CurrentLabelAtStart)
         section.delegate: ListItem {
             height: section ? Theme.itemSizeMedium : 0
             width: parent.width
             contentHeight: height
-            visible: height>0
+            visible: section
             Rectangle {
                 anchors.fill: parent
                 color: Theme.highlightDimmerColor
@@ -81,7 +81,6 @@ Page {
             Label {
                 anchors { right: seeAllBtn.left; verticalCenter: parent.verticalCenter}
                 text: qsTr("See all")
-                visible: parent.visible
             }
         }
 

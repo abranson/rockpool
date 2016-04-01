@@ -19,7 +19,6 @@ ListItem {
 
     contentHeight: Theme.itemSizeMedium
     width: parent.width
-    //height: contentHeight
 
     menu: ContextMenu {
         closeOnActivation: true
@@ -78,4 +77,5 @@ ListItem {
             }
         }
     }
+    onClicked: showMenu()
 }
