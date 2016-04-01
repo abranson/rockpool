@@ -42,7 +42,6 @@ public:
 
     Q_INVOKABLE void addEventListener(const QString &type, QJSValue function);
     Q_INVOKABLE void removeEventListener(const QString &type, QJSValue function);
-    void invokeCallbacks(const QString &type, const QJSValueList &args = QJSValueList());
     QJSValue onload() const;
     void setOnload(const QJSValue &value);
     QJSValue onreadystatechange() const;
@@ -77,6 +76,9 @@ private slots:
     void handleReplyFinished();
     void handleReplyError(QNetworkReply::NetworkError code);
     void handleAuthenticationRequired(QNetworkReply *reply, QAuthenticator *auth);
+
+private:
+    void invokeCallbacks(const QString &type, const QJSValueList &args = QJSValueList());
 
 private:
     QJSEngine *m_engine;
