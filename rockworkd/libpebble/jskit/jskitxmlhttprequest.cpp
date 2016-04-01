@@ -238,7 +238,7 @@ void JSKitXMLHttpRequest::invokeCallbacks(const QString &type, const QJSValueLis
 
     for (QList<QJSValue>::iterator it = callbacks.begin(); it != callbacks.end(); ++it) {
         qCDebug(l) << "invoking callback" << type << it->toString();
-        QJSValue result = it->call(args);
+        QJSValue result = it->callWithInstance(m_engine->newQObject(this), args);
         if (result.isError()) {
             qCWarning(l) << "error while invoking callback"
                 << type << it->toString() << ":"
