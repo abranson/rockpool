@@ -17,49 +17,17 @@ Page {
         active: true
 
         url: appSettings.url
-        Loader {
-            id: selectorLoader
-            focus: true
-            anchors.fill: parent
-            ListModel {
-                id: selectorModel
-                property bool multi: false
-                function reject() {
-                    webview.sendAsyncMessage("embedui:selectresponse", {"result": -1})
-                    selectorLoader.sourceComponent=null;
-                }
-                function accept() {
-                    var res = [];
-                    for(var i=0;i<count;i++) {
-                        var item=get(i);
-                        res.push({"selected":item.selected,"index":item.index});
-                    }
-                    //console.log("Responding with",JSON.stringify(res));
-                    webview.sendAsyncMessage("embedui:selectresponse", {"result": res});
-                    selectorLoader.sourceComponent=null;
-                }
-            }
-
-            function show(data) {
-                selectorModel.multi=data.multiple;
-                sourceComponent=selBox;
-                selectorModel.clear();
-                for(var i=0;i<data.options.length;i++) {
-                    selectorModel.append(data.options[i]);
-                }
-            }
-        }
         onViewInitialized: {
             webview.loadFrameScript("chrome://embedlite/content/SelectAsyncHelper.js");
             webview.addMessageListeners(
                         [
                             "embed:selectasync",
-                            //"embed:select",
-                            //"embed:alert",
-                            //"embed:confirm",
-                            //"embed:filepicker",
-                            //"embed:prompt",
-                            //"embed:auth",
+                            "embed:select",
+                            "embed:alert",
+                            "embed:confirm",
+                            "embed:filepicker",
+                            "embed:prompt",
+                            "embed:auth",
                             "embed:pebble"]);
             console.log("Ready, Steady, Go!");
         }
@@ -89,6 +57,38 @@ Page {
         running: true
         visible: running
         size: BusyIndicatorSize.Large
+    }
+    Loader {
+        id: selectorLoader
+        focus: true
+        anchors.fill: parent
+        ListModel {
+            id: selectorModel
+            property bool multi: false
+            function reject() {
+                webview.sendAsyncMessage("embedui:selectresponse", {"result": -1})
+                selectorLoader.sourceComponent=null;
+            }
+            function accept() {
+                var res = [];
+                for(var i=0;i<count;i++) {
+                    var item=get(i);
+                    res.push({"selected":item.selected,"index":item.index});
+                }
+                //console.log("Responding with",JSON.stringify(res));
+                webview.sendAsyncMessage("embedui:selectresponse", {"result": res});
+                selectorLoader.sourceComponent=null;
+            }
+        }
+
+        function show(data) {
+            selectorModel.multi=data.multiple;
+            sourceComponent=selBox;
+            selectorModel.clear();
+            for(var i=0;i<data.options.length;i++) {
+                selectorModel.append(data.options[i]);
+            }
+        }
     }
     Component {
         id: selBox

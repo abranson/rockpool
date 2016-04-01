@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<AppStoreClient>("RockPool", 1, 0, "AppStoreClient");
     qmlRegisterType<ScreenshotModel>("RockPool", 1, 0, "ScreenshotModel");
 #ifdef WITH_QTMOZEMBED
-    setenv("USE_ASYNC", "1", 1);
+    //setenv("USE_ASYNC", "1", 1);
     setenv("MP_UA", "1", 1);
     QString componentPath(DEFAULT_COMPONENTS_PATH);
     QMozContext::GetInstance()->setProfile(QStandardPaths::writableLocation(QStandardPaths::CacheLocation));
