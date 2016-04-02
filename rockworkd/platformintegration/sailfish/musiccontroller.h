@@ -70,6 +70,9 @@ public:
     void setVolume(const uint newVolume);
     int volume() const;
 
+private:
+    void connectPulseBus();
+
 public slots:
 	void play();
 	void pause();
@@ -96,7 +99,7 @@ signals:
 private:
     MusicControllerPrivate * const d_ptr;
     QDBusConnection *_pulseBus;
-    uint _maxVolume;
+    uint _maxVolume = 0;
 };
 class MusicControllerPrivate : public QObject
 {
