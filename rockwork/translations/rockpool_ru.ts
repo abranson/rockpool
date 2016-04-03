@@ -57,11 +57,13 @@
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="43"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="54"/>
         <source>Collections</source>
         <translation>Коллекции</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="43"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="54"/>
         <source>Categories</source>
         <translation>Категории</translation>
     </message>
@@ -72,18 +74,13 @@
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="54"/>
-        <source>Add New</source>
-        <translation>Добавить</translation>
+        <source>Watchapps</source>
+        <translation>Приложения</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="54"/>
-        <source>Watchapp</source>
-        <translation>Приложение</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="54"/>
-        <source>Watchface</source>
-        <translation>Циферблат</translation>
+        <source>Watchfaces</source>
+        <translation>Циферблаты</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="100"/>

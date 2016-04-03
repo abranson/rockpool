@@ -43,6 +43,7 @@ Page {
                 text: qsTr("Use")+" "+(showCategories ? qsTr("Collections") : qsTr("Categories"))
                 onClicked: showCategories=!showCategories;
                 enabled: client.enableCategories
+                visible: enabled
             }
             MenuItem {
                 text: qsTr("Search")
@@ -51,7 +52,7 @@ Page {
         }
 
         header: PageHeader {
-            title: (grpName)? grpName: qsTr("Add New")+" "+(showWatchApps ? qsTr("Watchapp") : qsTr("Watchface"))
+            title: (grpName)? grpName :((showWatchApps ? qsTr("Watchapps") : qsTr("Watchfaces"))+": "+(showCategories ? qsTr("Categories") : qsTr("Collections")))
         }
 
         model: ApplicationsFilterModel {
