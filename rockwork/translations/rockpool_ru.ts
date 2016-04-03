@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.0" language="ru" sourcelanguage="en">
+<TS version="2.1" language="ru" sourcelanguage="en">
 <context>
     <name>AppSettingsPage</name>
     <message>
@@ -57,54 +57,54 @@
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="43"/>
-        <location filename="../qml/pages/AppStorePage.qml" line="54"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="55"/>
         <source>Collections</source>
         <translation>Коллекции</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="43"/>
-        <location filename="../qml/pages/AppStorePage.qml" line="54"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="55"/>
         <source>Categories</source>
         <translation>Категории</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="48"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="49"/>
         <source>Search</source>
         <translation>Поиск</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="54"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="55"/>
         <source>Watchapps</source>
         <translation>Приложения</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="54"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="55"/>
         <source>Watchfaces</source>
         <translation>Циферблаты</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="100"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="101"/>
         <source>See all</source>
         <translatorcomment>Показать Все</translatorcomment>
         <translation>Все</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="162"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="163"/>
         <source>All Apps</source>
         <translation>Все Приложения</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="195"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="196"/>
         <source>Needs companion</source>
         <translation>Нужен Компаньон</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="248"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="249"/>
         <source>Search app or watchface</source>
         <translation>Поиск Приложений</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="258"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="259"/>
         <source>Search Results</source>
         <translation>Результаты Поиска</translation>
     </message>

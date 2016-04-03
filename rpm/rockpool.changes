@@ -1,3 +1,8 @@
+* Sun Apr 03 2016 Andrew Branson <github@andrewbranson.net> 0.8-3
+- App Store overhaul, including switching between Category and Collection views, and companion app indicator
+- More JS API additions and bugfixes
+- Fix volume control sometimes stopping working
+
 * Tue Mar 29 2016 Andrew Branson <github@andrewbranson.net> 0.8-2
 - App compatibility fixes in JSKit
 - AppMessage dict nulls fixed
