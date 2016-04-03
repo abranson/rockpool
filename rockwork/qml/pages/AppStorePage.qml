@@ -255,6 +255,7 @@ Page {
             onClicked: {
                 client.search(searchTextField.text, root.showWatchApps ? AppStoreClient.TypeWatchapp : AppStoreClient.TypeWatchface);
                 searchField.open=false;
+                grpName = qsTr("Search Results")
             }
         }
     }

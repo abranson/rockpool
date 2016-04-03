@@ -106,6 +106,11 @@
         <source>Search app or watchface</source>
         <translation>Поиск Приложений</translation>
     </message>
+    <message>
+        <location filename="../qml/pages/AppStorePage.qml" line="258"/>
+        <source>Search Results</source>
+        <translation>Результаты Поиска</translation>
+    </message>
 </context>
 <context>
     <name>CoverPage</name>

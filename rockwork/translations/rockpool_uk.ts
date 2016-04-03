@@ -104,6 +104,11 @@
         <source>Search app or watchface</source>
         <translation>Шукати Додаток або Циферблат</translation>
     </message>
+    <message>
+        <location filename="../qml/pages/AppStorePage.qml" line="258"/>
+        <source>Search Results</source>
+        <translation>Результати Пошуку</translation>
+    </message>
 </context>
 <context>
     <name>CoverPage</name>
