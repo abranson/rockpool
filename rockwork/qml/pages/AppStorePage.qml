@@ -42,7 +42,7 @@ Page {
             MenuItem {
                 text: qsTr("Use")+" "+(showCategories ? qsTr("Collections") : qsTr("Categories"))
                 onClicked: showCategories=!showCategories;
-                enabled: client.enableCategories
+                enabled: client.enableCategories && showWatchApps
                 visible: enabled
             }
             MenuItem {
