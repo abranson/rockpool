@@ -161,15 +161,10 @@ void AppStoreClient::fetchLink(const QString &link)
 
     QUrl storeUrl(link);
     QUrlQuery query(storeUrl);
+    // Navigation buttons are supplied based on actual navigation availability
+    // Limit is preserved in links as long as it differs from default(20).
     query.removeQueryItem("limit");
-    // We fetch one more than we actually want so we can see if we need to display
-    // a next button
-    // But navigation buttons are supplied based on actual navigation availability
-    // se we can remove this hack
-    query.addQueryItem("limit", QString::number(m_limit + 1));
-    int currentOffset = query.queryItemValue("offset").toInt();
-    query.removeQueryItem("offset");
-    query.addQueryItem("offset", QString::number(qMax(0, currentOffset - 1)));
+    query.addQueryItem("limit", QString::number(m_limit));
     if (!query.hasQueryItem("hardware")) {
         query.addQueryItem("hardware", m_hardwarePlatform);
         query.addQueryItem("filter_hardware", "true");
@@ -179,7 +174,7 @@ void AppStoreClient::fetchLink(const QString &link)
     qDebug() << "fetching link" << request.url();
 
     QNetworkReply *reply = m_nam->get(request);
-    connect(reply, &QNetworkReply::finished, [this, reply]() {
+    connect(reply, &QNetworkReply::finished, [this, reply, storeUrl]() {
         qDebug() << "fetch reply";
         QByteArray data = reply->readAll();
         reply->deleteLater();
@@ -187,41 +182,28 @@ void AppStoreClient::fetchLink(const QString &link)
         QJsonDocument jsonDoc = QJsonDocument::fromJson(data);
         QVariantMap resultMap = jsonDoc.toVariant().toMap();
 
-        bool haveMore = false;
         foreach (const QVariant &entry, resultMap.value("data").toList()) {
-            if (m_model->rowCount() >= m_limit) {
-                haveMore = true;
-                qDebug() << "Jumped above the limit" << m_limit << "with row number" << m_model->rowCount();
-                break;
-            }
             AppItem *item = parseAppItem(entry.toMap());
             qDebug() << "have entry" << item->name() << item->groupId() << item->companion() << item->category();
-            //if (item->companion()) {
-                // For now just skip items with companions
-            //    delete item;
-            //} else {
-                m_model->insert(item);
-            //}
+            // We filter apps in ModelFilter now. Since we didn't reqeuest additional apps to align for those
+            // filtered out - it doesn't change end result. maybe slightly increases memory footprint.
+            m_model->insert(item);
         }
-
+        // Links should be built independently, otherwise we cannot go Previous from last page (no Next).
+        int currentOffset = resultMap.value("offset").toInt();
+        if (currentOffset > 0) {
+            QUrl previousLink(storeUrl);
+            QUrlQuery query(previousLink);
+            query.removeQueryItem("offset");
+            query.addQueryItem("offset", QString::number(qMax(0, currentOffset - m_limit)));
+            previousLink.setQuery(query);
+            m_model->addLink(previousLink.toString(), gettext("Previous"));
+        }
+        // NextLink is provided when there's more to fetch, no need for *haveMore* hack.
         if (resultMap.contains("links") && resultMap.value("links").toMap().contains("nextPage") &&
                 !resultMap.value("links").toMap().value("nextPage").isNull()) {
-            int currentOffset = resultMap.value("offset").toInt();
             QString nextLink = resultMap.value("links").toMap().value("nextPage").toString();
-
-            if (currentOffset > 0) {
-                QUrl previousLink(nextLink);
-                QUrlQuery query(previousLink);
-                query.removeQueryItem("limit");
-                query.addQueryItem("limit", QString::number(m_limit + 1));
-                query.removeQueryItem("offset");
-                query.addQueryItem("offset", QString::number(qMax(0, currentOffset - m_limit + 1)));
-                previousLink.setQuery(query);
-                m_model->addLink(previousLink.toString(), gettext("Previous"));
-            }
-            if (haveMore) {
-                m_model->addLink(nextLink, gettext("Next"));
-            }
+            m_model->addLink(nextLink, gettext("Next"));
         }
         setBusy(false);
     });
