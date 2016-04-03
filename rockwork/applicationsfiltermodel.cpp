@@ -1,6 +1,6 @@
 #include "applicationsfiltermodel.h"
 #include "applicationsmodel.h"
-
+#include <QDebug>
 ApplicationsFilterModel::ApplicationsFilterModel(QObject *parent):
     QSortFilterProxyModel(parent)
 {
@@ -63,16 +63,52 @@ void ApplicationsFilterModel::setSortByGroupId(bool sortByGroupId)
     }
 }
 
+bool ApplicationsFilterModel::showCategories() const
+{
+    return m_showCategories;
+}
+void ApplicationsFilterModel::setShowCategories(bool showCategories)
+{
+    m_showCategories = showCategories;
+    emit showCategoriesChanged();
+    invalidate();
+    sort(0);
+}
+
+bool ApplicationsFilterModel::filterCompanion() const
+{
+    return m_filterCompanion;
+}
+void ApplicationsFilterModel::setFilterCompanion(bool filter)
+{
+    m_filterCompanion = filter;
+    emit filterCompanionChanged();
+    invalidate();
+    sort(0);
+}
+
+
 bool ApplicationsFilterModel::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const
 {
     Q_UNUSED(source_parent)
     AppItem *item = m_appsModel->get(source_row);
+    if(m_sortByGroupId) {
+        item->setGroupKind(m_showCategories ? AppItem::GroupCategory : AppItem::GroupCollection);
+        if(item->groupId().isEmpty()) {
+            qDebug() << "Skipping item" << item->name() << "because it has no group";
+            return false;
+        }
+    }
+    if(m_filterCompanion && item->companion()) {
+        return false;
+    }
     if (m_showWatchApps && !item->isWatchFace()) {
         return true;
     }
     if (m_showWatchFaces && item->isWatchFace()) {
         return true;
     }
+    qDebug() << "Skipping item" << item->name() << "because we cannot determine its type";
     return false;
 }
 

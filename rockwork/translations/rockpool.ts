@@ -41,26 +41,61 @@
         <source>Installed</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="246"/>
+        <source>Needs Companion</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>AppStorePage</name>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="39"/>
-        <source>Add new watchapp</source>
+        <location filename="../qml/pages/AppStorePage.qml" line="44"/>
+        <source>Use</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="39"/>
-        <source>Add new watchface</source>
+        <location filename="../qml/pages/AppStorePage.qml" line="44"/>
+        <source>Collections</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="83"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="44"/>
+        <source>Categories</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppStorePage.qml" line="50"/>
+        <source>Add New</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppStorePage.qml" line="50"/>
+        <source>Watchapp</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppStorePage.qml" line="50"/>
+        <source>Watchface</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppStorePage.qml" line="95"/>
         <source>See all</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="197"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="157"/>
+        <source>All Apps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppStorePage.qml" line="190"/>
+        <source>Needs companion</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppStorePage.qml" line="230"/>
         <source>Search app or watchface</source>
         <translation type="unfinished"></translation>
     </message>
@@ -287,32 +322,32 @@
 <context>
     <name>InstalledAppDelegate</name>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="27"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="26"/>
         <source>Launch</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="31"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="30"/>
         <source>Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="36"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="35"/>
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="39"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="38"/>
         <source>Really Delete?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="45"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="44"/>
         <source>Move Up</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="50"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="49"/>
         <source>Move Down</source>
         <translation type="unfinished"></translation>
     </message>
@@ -340,7 +375,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppsPage.qml" line="74"/>
+        <location filename="../qml/pages/InstalledAppsPage.qml" line="73"/>
         <source>Save Apps Order</source>
         <translation type="unfinished"></translation>
     </message>

@@ -8,13 +8,16 @@ Page {
     property var pebble: null
     property bool showWatchApps: false
     property bool showWatchFaces: false
-    property string catName: ""
+    property bool showCategories: false
+    property bool enableCategories: true
+    property string grpName: ""
 
     property string link: ""
 
     AppStoreClient {
         id: client
         hardwarePlatform: pebble.hardwarePlatform
+        enableCategories: root.enableCategories
     }
 
     function fetchHome() {
@@ -35,18 +38,29 @@ Page {
 
     SilicaListView {
         anchors.fill: parent
+        PullDownMenu {
+            enabled: client.enableCategories
+            MenuItem {
+                text: qsTr("Use")+" "+(showCategories ? qsTr("Collections") : qsTr("Categories"))
+                onClicked: showCategories=!showCategories;
+            }
+        }
+
         header: PageHeader {
-            title: (catName)? catName: (showWatchApps ? qsTr("Add new watchapp") : qsTr("Add new watchface"))
+            title: (grpName)? grpName: qsTr("Add New")+" "+(showWatchApps ? qsTr("Watchapp") : qsTr("Watchface"))
         }
 
         model: ApplicationsFilterModel {
             id: appsFilterModel
             model: client.model
+            showCategories: (root.enableCategories ? root.showCategories : false)
+            sortByGroupId: !grpName
+            filterCompanion: false
         }
         clip: true
 
         section.property: "groupId"
-        section.labelPositioning: ViewSection.InlineLabels | (catName ? 0 : ViewSection.CurrentLabelAtStart)
+        section.labelPositioning: ViewSection.InlineLabels | (grpName ? 0 : ViewSection.CurrentLabelAtStart)
         section.delegate: ListItem {
             height: section ? Theme.itemSizeMedium : 0
             width: parent.width
@@ -57,13 +71,28 @@ Page {
                 color: Theme.highlightDimmerColor
                 opacity: Theme.highlightBackgroundOpacity
             }
+            Image {
+                id: groupIcon
+                anchors {left: parent.left; verticalCenter: parent.verticalCenter }
+                height: parent.height - Theme.paddingSmall
+                width: source ? height: 0
+                source: client.model.groupIcon(section)
+                sourceSize.height: height
+                sourceSize.width: height
+            }
+
             Label {
                 id: label
-                anchors {left: parent.left; verticalCenter: parent.verticalCenter}
-                width: parent.width-seeAllBtn.width
+                anchors {left: groupIcon.right; verticalCenter: parent.verticalCenter}
+                width: parent.width-seeAllBtn.width-groupIcon.width-seeAllLbl.width
                 text: client.model.groupName(section)
                 font.pixelSize: Theme.fontSizeLarge
                 elide: Text.ElideRight
+            }
+            Label {
+                id: seeAllLbl
+                anchors { right: seeAllBtn.left; verticalCenter: parent.verticalCenter}
+                text: qsTr("See all")
             }
             IconButton {
                 id: seeAllBtn
@@ -73,14 +102,10 @@ Page {
                     pageStack.push(Qt.resolvedUrl("AppStorePage.qml"), {
                                        pebble: root.pebble,
                                        link: client.model.groupLink(section),
-                                       catName: client.model.groupName(section)
+                                       grpName: client.model.groupName(section),
+                                       enableCategories: false
                                    });
                 }
-                visible: parent.visible
-            }
-            Label {
-                anchors { right: seeAllBtn.left; verticalCenter: parent.verticalCenter}
-                text: qsTr("See all")
             }
         }
 
@@ -129,9 +154,10 @@ Page {
                         elide: Text.ElideRight
                     }
                     Label {
-                        text: model.category
+                        text: showCategories ? (model.collection ? model.collection : qsTr("All Apps")) : model.category
                     }
                     Row {
+                        spacing: Theme.paddingSmall
                         Image {
                             source: "image://theme/icon-s-like"
                         }
@@ -155,6 +181,14 @@ Page {
                                     tickIcon.visible = root.pebble.installedApps.contains(model.storeId) || root.pebble.installedWatchfaces.contains(model.storeId)
                                 }
                             }
+                        }
+                        Image {
+                            source: "image://theme/icon-s-high-importance"
+                            visible: model.companion
+                        }
+                        Label {
+                            text: qsTr("Needs companion")
+                            visible: model.companion
                         }
                     }
                     Separator {

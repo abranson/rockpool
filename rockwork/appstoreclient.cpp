@@ -53,6 +53,16 @@ void AppStoreClient::setHardwarePlatform(const QString &hardwarePlatform)
     m_hardwarePlatform = hardwarePlatform;
     emit hardwarePlatformChanged();
 }
+void AppStoreClient::setEnableCategories(const bool enable)
+{
+    m_enableCategories = enable;
+    emit enableCategoriesChanged();
+}
+
+bool AppStoreClient::enableCategories() const
+{
+    return m_enableCategories;
+}
 
 bool AppStoreClient::busy() const
 {
@@ -104,6 +114,12 @@ void AppStoreClient::fetchHome(Type type)
         QHash<QString, QString> categoryNames;
         foreach (const QVariant &entry, resultMap.value("categories").toList()) {
             categoryNames[entry.toMap().value("id").toString()] = entry.toMap().value("name").toString();
+            if(m_enableCategories) {
+                m_model->insertGroup(entry.toMap().value("id").toString(),
+                                     entry.toMap().value("name").toString(),
+                                     entry.toMap().value("links").toMap().value("apps").toString(),
+                                     entry.toMap().value("icon").toMap().value("88x88").toString());
+            }
         }
 
         foreach (const QVariant &entry, jsonDoc.toVariant().toMap().value("applications").toList()) {
@@ -111,19 +127,25 @@ void AppStoreClient::fetchHome(Type type)
             foreach (const QString &collection, collections.keys()) {
                 if (collections.value(collection).contains(item->storeId())) {
                     item->setGroupId(collection);
+                    item->setCollection(m_model->groupName(collection));
                     break;
                 }
             }
             item->setCategory(categoryNames.value(entry.toMap().value("category_id").toString()));
 
-            qDebug() << "have entry" << item->name() << item->groupId() << item->companion();
+            if(m_enableCategories) {
+                item->setGroupId(entry.toMap().value("category_id").toString(),AppItem::GroupCategory);
+            }
+            qDebug() << "have entry" << item->name() << item->groupId() << item->companion() << item->collection();
 
+            /* Let's just disable ability to install, and give user ability to filter
             if (item->groupId().isEmpty() || item->companion()) {
                 // Skip items that we couldn't match to a collection
                 // Also skip apps that need a companion
                 delete item;
                 continue;
             }
+            */
             m_model->insert(item);
         }
         setBusy(false);
@@ -142,6 +164,8 @@ void AppStoreClient::fetchLink(const QString &link)
     query.removeQueryItem("limit");
     // We fetch one more than we actually want so we can see if we need to display
     // a next button
+    // But navigation buttons are supplied based on actual navigation availability
+    // se we can remove this hack
     query.addQueryItem("limit", QString::number(m_limit + 1));
     int currentOffset = query.queryItemValue("offset").toInt();
     query.removeQueryItem("offset");
@@ -165,17 +189,19 @@ void AppStoreClient::fetchLink(const QString &link)
 
         bool haveMore = false;
         foreach (const QVariant &entry, resultMap.value("data").toList()) {
-            if (model()->rowCount() >= m_limit) {
+            if (m_model->rowCount() >= m_limit) {
                 haveMore = true;
+                qDebug() << "Jumped above the limit" << m_limit << "with row number" << m_model->rowCount();
                 break;
             }
             AppItem *item = parseAppItem(entry.toMap());
-            if (item->companion()) {
+            qDebug() << "have entry" << item->name() << item->groupId() << item->companion() << item->category();
+            //if (item->companion()) {
                 // For now just skip items with companions
-                delete item;
-            } else {
+            //    delete item;
+            //} else {
                 m_model->insert(item);
-            }
+            //}
         }
 
         if (resultMap.contains("links") && resultMap.value("links").toMap().contains("nextPage") &&

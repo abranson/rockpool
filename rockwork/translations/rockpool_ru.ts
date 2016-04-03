@@ -41,28 +41,65 @@
         <source>Installed</source>
         <translation>Установлено</translation>
     </message>
+    <message>
+        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="246"/>
+        <source>Needs Companion</source>
+        <translation>Нужен Компаньон</translation>
+    </message>
 </context>
 <context>
     <name>AppStorePage</name>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="39"/>
-        <source>Add new watchapp</source>
-        <translation>Добавить приложение</translation>
+        <location filename="../qml/pages/AppStorePage.qml" line="44"/>
+        <source>Use</source>
+        <translatorcomment>Включить</translatorcomment>
+        <translation>Использовать</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="39"/>
-        <source>Add new watchface</source>
-        <translation>Добавить циферблат</translation>
+        <location filename="../qml/pages/AppStorePage.qml" line="44"/>
+        <source>Collections</source>
+        <translation>Коллекции</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="83"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="44"/>
+        <source>Categories</source>
+        <translation>Категории</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppStorePage.qml" line="50"/>
+        <source>Add New</source>
+        <translation>Добавить</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppStorePage.qml" line="50"/>
+        <source>Watchapp</source>
+        <translation>Приложение</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppStorePage.qml" line="50"/>
+        <source>Watchface</source>
+        <translation>Циферблат</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppStorePage.qml" line="95"/>
         <source>See all</source>
-        <translation>Показать Все</translation>
+        <translatorcomment>Показать Все</translatorcomment>
+        <translation>Все</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="197"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="157"/>
+        <source>All Apps</source>
+        <translation>Все Приложения</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppStorePage.qml" line="190"/>
+        <source>Needs companion</source>
+        <translation>Нужен Компаньон</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppStorePage.qml" line="230"/>
         <source>Search app or watchface</source>
-        <translation>Поиск публикации</translation>
+        <translation>Поиск Приложений</translation>
     </message>
 </context>
 <context>
@@ -287,32 +324,32 @@
 <context>
     <name>InstalledAppDelegate</name>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="27"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="26"/>
         <source>Launch</source>
         <translation>Запустить</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="31"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="30"/>
         <source>Settings</source>
         <translation>Настройки</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="36"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="35"/>
         <source>Delete</source>
         <translation>Удалить</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="39"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="38"/>
         <source>Really Delete?</source>
         <translation>Действительно Удалить?</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="45"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="44"/>
         <source>Move Up</source>
         <translation>Подвинуть Вверх</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="50"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="49"/>
         <source>Move Down</source>
         <translation>Подвинуть Вниз</translation>
     </message>
@@ -340,7 +377,7 @@
         <translation>Циферблаты</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppsPage.qml" line="74"/>
+        <location filename="../qml/pages/InstalledAppsPage.qml" line="73"/>
         <source>Save Apps Order</source>
         <translation>Сохранить Порядок Пакетов</translation>
     </message>
