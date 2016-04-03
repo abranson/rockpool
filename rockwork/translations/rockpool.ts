@@ -50,52 +50,57 @@
 <context>
     <name>AppStorePage</name>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="44"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="43"/>
         <source>Use</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="44"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="43"/>
         <source>Collections</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="44"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="43"/>
         <source>Categories</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="50"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="48"/>
+        <source>Search</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppStorePage.qml" line="54"/>
         <source>Add New</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="50"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="54"/>
         <source>Watchapp</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="50"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="54"/>
         <source>Watchface</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="95"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="100"/>
         <source>See all</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="157"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="162"/>
         <source>All Apps</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="190"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="195"/>
         <source>Needs companion</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="230"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="248"/>
         <source>Search app or watchface</source>
         <translation type="unfinished"></translation>
     </message>

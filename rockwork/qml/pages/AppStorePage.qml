@@ -39,10 +39,14 @@ Page {
     SilicaListView {
         anchors.fill: parent
         PullDownMenu {
-            enabled: client.enableCategories
             MenuItem {
                 text: qsTr("Use")+" "+(showCategories ? qsTr("Collections") : qsTr("Categories"))
                 onClicked: showCategories=!showCategories;
+                enabled: client.enableCategories
+            }
+            MenuItem {
+                text: qsTr("Search")
+                onClicked: searchField.open=true
             }
         }
 
@@ -71,58 +75,59 @@ Page {
                 color: Theme.highlightDimmerColor
                 opacity: Theme.highlightBackgroundOpacity
             }
-            Image {
-                id: groupIcon
-                anchors {left: parent.left; verticalCenter: parent.verticalCenter }
-                height: parent.height - Theme.paddingSmall
-                width: source ? height: 0
-                source: client.model.groupIcon(section)
-                sourceSize.height: height
-                sourceSize.width: height
-            }
-
-            Label {
-                id: label
-                anchors {left: groupIcon.right; verticalCenter: parent.verticalCenter}
-                width: parent.width-seeAllBtn.width-groupIcon.width-seeAllLbl.width
-                text: client.model.groupName(section)
-                font.pixelSize: Theme.fontSizeLarge
-                elide: Text.ElideRight
-            }
-            Label {
-                id: seeAllLbl
-                anchors { right: seeAllBtn.left; verticalCenter: parent.verticalCenter}
-                text: qsTr("See all")
-            }
-            IconButton {
-                id: seeAllBtn
-                anchors {right:parent.right;verticalCenter: parent.verticalCenter}
-                icon.source: "image://theme/icon-m-enter-accept"
-                onClicked: {
-                    pageStack.push(Qt.resolvedUrl("AppStorePage.qml"), {
-                                       pebble: root.pebble,
-                                       link: client.model.groupLink(section),
-                                       grpName: client.model.groupName(section),
-                                       enableCategories: false
-                                   });
+            Row {
+                anchors.fill: parent
+                Image {
+                    id: groupIcon
+                    anchors.verticalCenter: parent.verticalCenter
+                    height: parent.height - Theme.paddingSmall
+                    width: source.toString() ? height : Theme.paddingSmall
+                    source: client.model.groupIcon(section)
+                    sourceSize.height: height
+                    sourceSize.width: height
+                }
+                Label {
+                    id: label
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: client.model.groupName(section)
+                    font.pixelSize: Theme.fontSizeLarge
+                    elide: Text.ElideRight
+                    width: parent.width-groupIcon.width-seeAllBtn.width-seeAllLbl.width
+                }
+                Label {
+                    id: seeAllLbl
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: qsTr("See all")
+                }
+                IconButton {
+                    id: seeAllBtn
+                    anchors.verticalCenter: parent.verticalCenter
+                    icon.source: "image://theme/icon-m-enter-accept"
+                    onClicked: {
+                        pageStack.push(Qt.resolvedUrl("AppStorePage.qml"), {
+                                           pebble: root.pebble,
+                                           link: client.model.groupLink(section),
+                                           grpName: client.model.groupName(section),
+                                           enableCategories: false
+                                       });
+                    }
                 }
             }
         }
 
         footer: Item {
             height: client.model.links.length > 0 ? Theme.itemSizeSmall : 0
-            width: root.width-Theme.horizontalPageMargins
+            width: root.width
             visible: height>0
 
-            Grid {
+            Row {
                 anchors.fill: parent
                 spacing: Theme.paddingSmall
-                columns: client.model.links.length
 
                 Repeater {
                     model: client.model.links
                     Button {
-                        width: parent.width/client.model.links.length
+                        width: root.width/client.model.links.length - Theme.paddingSmall
                         text: client.model.linkName(client.model.links[index])
                         onClicked: client.fetchLink(client.model.links[index]);
                     }
@@ -216,17 +221,30 @@ Page {
         dock: Dock.Bottom
         width: parent.width
         height: Theme.iconSizeMedium
-        open: true
+        open: false
 
-        onOpenChanged: {
-            if (open) {
+        onMovingChanged: {
+            if (open && visibleSize === height) {
                 searchTextField.focus = true;
             }
         }
+        Rectangle {
+            anchors.fill: parent
+            color: Theme.highlightDimmerColor
+            opacity: 0.75
+        }
+        IconButton {
+            icon.source: "image://theme/icon-m-reset"
+            anchors {top: parent.top; left:parent.left}
+            height:parent.height
+            width: height
+            onClicked: searchField.open=false;
+        }
         TextField {
             id: searchTextField
-            anchors { top: parent.top; left: parent.left }
-            width: parent.width - parent.height
+            anchors.top: parent.top
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: parent.width - parent.height*1.8
             placeholderText: qsTr("Search app or watchface")
         }
         IconButton {
@@ -234,7 +252,10 @@ Page {
             height: parent.height
             width: height
             icon.source: "image://theme/icon-m-search"
-            onClicked: client.search(searchTextField.text, root.showWatchApps ? AppStoreClient.TypeWatchapp : AppStoreClient.TypeWatchface);
+            onClicked: {
+                client.search(searchTextField.text, root.showWatchApps ? AppStoreClient.TypeWatchapp : AppStoreClient.TypeWatchface);
+                searchField.open=false;
+            }
         }
     }
 }
