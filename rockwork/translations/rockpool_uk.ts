@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1" language="uk" sourcelanguage="en">
+<TS version="2.0" language="uk" sourcelanguage="en">
 <context>
     <name>AppSettingsPage</name>
     <message>
@@ -41,28 +41,68 @@
         <source>Installed</source>
         <translation>Встановлено</translation>
     </message>
+    <message>
+        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="246"/>
+        <source>Needs Companion</source>
+        <translation>Потрібен Компаньйон</translation>
+    </message>
 </context>
 <context>
     <name>AppStorePage</name>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="39"/>
-        <source>Add new watchapp</source>
-        <translation>Добавити додаток</translation>
+        <location filename="../qml/pages/AppStorePage.qml" line="43"/>
+        <source>Use</source>
+        <translation>Вживати</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="39"/>
-        <source>Add new watchface</source>
-        <translation>Добавити циферблат</translation>
+        <location filename="../qml/pages/AppStorePage.qml" line="43"/>
+        <source>Collections</source>
+        <translation>Колекції</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="83"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="43"/>
+        <source>Categories</source>
+        <translation>Категорії</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppStorePage.qml" line="48"/>
+        <source>Search</source>
+        <translation>Пошук</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppStorePage.qml" line="54"/>
+        <source>Add New</source>
+        <translation>Добавити</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppStorePage.qml" line="54"/>
+        <source>Watchapp</source>
+        <translation>Додаток</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppStorePage.qml" line="54"/>
+        <source>Watchface</source>
+        <translation>Циферблат</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppStorePage.qml" line="100"/>
         <source>See all</source>
-        <translation>Показати Всі</translation>
+        <translation>Всі</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="197"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="162"/>
+        <source>All Apps</source>
+        <translation>Всі Додатки</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppStorePage.qml" line="195"/>
+        <source>Needs companion</source>
+        <translation>Потрібен Компаньйон</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppStorePage.qml" line="248"/>
         <source>Search app or watchface</source>
-        <translation>Пошук додатку або циферблату</translation>
+        <translation>Шукати Додаток або Циферблат</translation>
     </message>
 </context>
 <context>
@@ -287,33 +327,33 @@
 <context>
     <name>InstalledAppDelegate</name>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="27"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="26"/>
         <source>Launch</source>
         <translation>Запустити
 </translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="31"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="30"/>
         <source>Settings</source>
         <translation>Налаштування</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="36"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="35"/>
         <source>Delete</source>
         <translation>Видалити</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="39"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="38"/>
         <source>Really Delete?</source>
         <translation>Дійсно Видалити?</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="45"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="44"/>
         <source>Move Up</source>
         <translation>Посунути Догори</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="50"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="49"/>
         <source>Move Down</source>
         <translation>Посунути Донизу</translation>
     </message>
@@ -341,7 +381,7 @@
         <translation>Циферблати</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppsPage.qml" line="74"/>
+        <location filename="../qml/pages/InstalledAppsPage.qml" line="73"/>
         <source>Save Apps Order</source>
         <translation>Зберегти Порядок Додатків</translation>
     </message>

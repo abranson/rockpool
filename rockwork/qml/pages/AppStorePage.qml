@@ -8,13 +8,16 @@ Page {
     property var pebble: null
     property bool showWatchApps: false
     property bool showWatchFaces: false
-    property string catName
+    property bool showCategories: false
+    property bool enableCategories: true
+    property string grpName: ""
 
     property string link: ""
 
     AppStoreClient {
         id: client
         hardwarePlatform: pebble.hardwarePlatform
+        enableCategories: root.enableCategories
     }
 
     function fetchHome() {
@@ -35,70 +38,96 @@ Page {
 
     SilicaListView {
         anchors.fill: parent
+        PullDownMenu {
+            MenuItem {
+                text: qsTr("Use")+" "+(showCategories ? qsTr("Collections") : qsTr("Categories"))
+                onClicked: showCategories=!showCategories;
+                enabled: client.enableCategories
+            }
+            MenuItem {
+                text: qsTr("Search")
+                onClicked: searchField.open=true
+            }
+        }
+
         header: PageHeader {
-            title: (catName)? catName: (showWatchApps ? qsTr("Add new watchapp") : qsTr("Add new watchface"))
+            title: (grpName)? grpName: qsTr("Add New")+" "+(showWatchApps ? qsTr("Watchapp") : qsTr("Watchface"))
         }
 
         model: ApplicationsFilterModel {
             id: appsFilterModel
             model: client.model
+            showCategories: (root.enableCategories ? root.showCategories : false)
+            sortByGroupId: !grpName
+            filterCompanion: false
         }
         clip: true
 
         section.property: "groupId"
-        section.labelPositioning: ViewSection.CurrentLabelAtStart | ViewSection.InlineLabels
+        section.labelPositioning: ViewSection.InlineLabels | (grpName ? 0 : ViewSection.CurrentLabelAtStart)
         section.delegate: ListItem {
             height: section ? Theme.itemSizeMedium : 0
             width: parent.width
             contentHeight: height
-            visible: height>0
+            visible: section
             Rectangle {
                 anchors.fill: parent
                 color: Theme.highlightDimmerColor
                 opacity: Theme.highlightBackgroundOpacity
             }
-            Label {
-                id: label
-                anchors {left: parent.left; verticalCenter: parent.verticalCenter}
-                width: parent.width-seeAllBtn.width
-                text: client.model.groupName(section)
-                font.pixelSize: Theme.fontSizeLarge
-                elide: Text.ElideRight
-            }
-            IconButton {
-                id: seeAllBtn
-                anchors {right:parent.right;verticalCenter: parent.verticalCenter}
-                icon.source: "image://theme/icon-m-enter-accept"
-                onClicked: {
-                    pageStack.push(Qt.resolvedUrl("AppStorePage.qml"), {
-                                       pebble: root.pebble,
-                                       link: client.model.groupLink(section),
-                                       catName: client.model.groupName(section)
-                                   });
+            Row {
+                anchors.fill: parent
+                Image {
+                    id: groupIcon
+                    anchors.verticalCenter: parent.verticalCenter
+                    height: parent.height - Theme.paddingSmall
+                    width: source.toString() ? height : Theme.paddingSmall
+                    source: client.model.groupIcon(section)
+                    sourceSize.height: height
+                    sourceSize.width: height
                 }
-                visible: parent.visible
-            }
-            Label {
-                anchors { right: seeAllBtn.left; verticalCenter: parent.verticalCenter}
-                text: qsTr("See all")
-                visible: parent.visible
+                Label {
+                    id: label
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: client.model.groupName(section)
+                    font.pixelSize: Theme.fontSizeLarge
+                    elide: Text.ElideRight
+                    width: parent.width-groupIcon.width-seeAllBtn.width-seeAllLbl.width
+                }
+                Label {
+                    id: seeAllLbl
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: qsTr("See all")
+                }
+                IconButton {
+                    id: seeAllBtn
+                    anchors.verticalCenter: parent.verticalCenter
+                    icon.source: "image://theme/icon-m-enter-accept"
+                    onClicked: {
+                        pageStack.push(Qt.resolvedUrl("AppStorePage.qml"), {
+                                           pebble: root.pebble,
+                                           link: client.model.groupLink(section),
+                                           grpName: client.model.groupName(section),
+                                           enableCategories: false
+                                       });
+                    }
+                }
             }
         }
 
         footer: Item {
             height: client.model.links.length > 0 ? Theme.itemSizeSmall : 0
-            width: root.width-Theme.horizontalPageMargins
+            width: root.width
             visible: height>0
 
-            Grid {
+            Row {
                 anchors.fill: parent
                 spacing: Theme.paddingSmall
-                columns: client.model.links.length
 
                 Repeater {
                     model: client.model.links
                     Button {
-                        width: parent.width/client.model.links.length
+                        width: root.width/client.model.links.length - Theme.paddingSmall
                         text: client.model.linkName(client.model.links[index])
                         onClicked: client.fetchLink(client.model.links[index]);
                     }
@@ -130,9 +159,10 @@ Page {
                         elide: Text.ElideRight
                     }
                     Label {
-                        text: model.category
+                        text: showCategories ? (model.collection ? model.collection : qsTr("All Apps")) : model.category
                     }
                     Row {
+                        spacing: Theme.paddingSmall
                         Image {
                             source: "image://theme/icon-s-like"
                         }
@@ -156,6 +186,14 @@ Page {
                                     tickIcon.visible = root.pebble.installedApps.contains(model.storeId) || root.pebble.installedWatchfaces.contains(model.storeId)
                                 }
                             }
+                        }
+                        Image {
+                            source: "image://theme/icon-s-high-importance"
+                            visible: model.companion
+                        }
+                        Label {
+                            text: qsTr("Needs companion")
+                            visible: model.companion
                         }
                     }
                     Separator {
@@ -183,17 +221,30 @@ Page {
         dock: Dock.Bottom
         width: parent.width
         height: Theme.iconSizeMedium
-        open: true
+        open: false
 
-        onOpenChanged: {
-            if (open) {
+        onMovingChanged: {
+            if (open && visibleSize === height) {
                 searchTextField.focus = true;
             }
         }
+        Rectangle {
+            anchors.fill: parent
+            color: Theme.highlightDimmerColor
+            opacity: 0.75
+        }
+        IconButton {
+            icon.source: "image://theme/icon-m-reset"
+            anchors {top: parent.top; left:parent.left}
+            height:parent.height
+            width: height
+            onClicked: searchField.open=false;
+        }
         TextField {
             id: searchTextField
-            anchors { top: parent.top; left: parent.left }
-            width: parent.width - parent.height
+            anchors.top: parent.top
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: parent.width - parent.height*1.8
             placeholderText: qsTr("Search app or watchface")
         }
         IconButton {
@@ -201,7 +252,10 @@ Page {
             height: parent.height
             width: height
             icon.source: "image://theme/icon-m-search"
-            onClicked: client.search(searchTextField.text, root.showWatchApps ? AppStoreClient.TypeWatchapp : AppStoreClient.TypeWatchface);
+            onClicked: {
+                client.search(searchTextField.text, root.showWatchApps ? AppStoreClient.TypeWatchapp : AppStoreClient.TypeWatchface);
+                searchField.open=false;
+            }
         }
     }
 }

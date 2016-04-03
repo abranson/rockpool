@@ -43,6 +43,10 @@ QVariant ApplicationsModel::data(const QModelIndex &index, int role) const
         return m_apps.at(index.row())->category();
     case RoleGroupId:
         return m_apps.at(index.row())->groupId();
+    case RoleCollection:
+        return m_apps.at(index.row())->collection();
+    case RoleHasCompanion:
+        return m_apps.at(index.row())->companion();
     }
 
     return QVariant();
@@ -64,6 +68,8 @@ QHash<int, QByteArray> ApplicationsModel::roleNames() const
     roles.insert(RoleHearts, "hearts");
     roles.insert(RoleCategory, "category");
     roles.insert(RoleGroupId, "groupId");
+    roles.insert(RoleCollection, "collection");
+    roles.insert(RoleHasCompanion, "companion");
     return roles;
 }
 
@@ -75,6 +81,7 @@ void ApplicationsModel::clear()
     endResetModel();
     m_groupNames.clear();
     m_groupLinks.clear();
+    m_groupIcons.clear();
     m_links.clear();
     m_linkNames.clear();
     emit linksChanged();
@@ -90,10 +97,11 @@ void ApplicationsModel::insert(AppItem *item)
     emit changed();
 }
 
-void ApplicationsModel::insertGroup(const QString &id, const QString &name, const QString &link)
+void ApplicationsModel::insertGroup(const QString &id, const QString &name, const QString &link, const QString &icon)
 {
     m_groupNames[id] = name;
     m_groupLinks[id] = link;
+    m_groupIcons[id] = icon;
 }
 
 AppItem *ApplicationsModel::get(int index) const
@@ -147,6 +155,11 @@ QString ApplicationsModel::groupName(const QString &groupId) const
 QString ApplicationsModel::groupLink(const QString &groupId) const
 {
     return m_groupLinks.value(groupId);
+}
+
+QString ApplicationsModel::groupIcon(const QString &groupId) const
+{
+    return m_groupIcons.value(groupId);
 }
 
 QString ApplicationsModel::linkName(const QString &link) const
@@ -268,10 +281,22 @@ QString AppItem::category() const
 {
     return m_category;
 }
-
+QString AppItem::collection() const
+{
+    return m_collection;
+}
 QString AppItem::groupId() const
 {
-    return m_groupId;
+    return m_groupIds.value(m_groupKind,"");
+}
+QString AppItem::groupId(const GroupKind kind) const
+{
+    return m_groupIds.value(kind,"");
+}
+
+AppItem::GroupKind AppItem::groupKind() const
+{
+    return m_groupKind;
 }
 
 void AppItem::setStoreId(const QString &storeId)
@@ -342,6 +367,11 @@ void AppItem::setCategory(const QString &category)
     m_category = category;
 }
 
+void AppItem::setCollection(const QString &collection)
+{
+    m_collection = collection;
+}
+
 void AppItem::setScreenshotImages(const QStringList &screenshotImages)
 {
     m_screenshotImages = screenshotImages;
@@ -353,9 +383,16 @@ void AppItem::setHeaderImage(const QString &headerImage)
     emit headerImageChanged();
 }
 
-void AppItem::setGroupId(const QString &groupId)
+void AppItem::setGroupId(const QString &groupId, const GroupKind kind)
 {
-    m_groupId = groupId;
+    m_groupIds[kind]=groupId;
+    emit groupIdChanged();
+}
+
+void AppItem::setGroupKind(const GroupKind kind) {
+    m_groupKind = kind;
+    emit groupKindChanged();
+    emit groupIdChanged();
 }
 
 QString AppItem::headerImage() const

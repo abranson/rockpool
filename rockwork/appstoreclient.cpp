@@ -53,6 +53,16 @@ void AppStoreClient::setHardwarePlatform(const QString &hardwarePlatform)
     m_hardwarePlatform = hardwarePlatform;
     emit hardwarePlatformChanged();
 }
+void AppStoreClient::setEnableCategories(const bool enable)
+{
+    m_enableCategories = enable;
+    emit enableCategoriesChanged();
+}
+
+bool AppStoreClient::enableCategories() const
+{
+    return m_enableCategories;
+}
 
 bool AppStoreClient::busy() const
 {
@@ -104,6 +114,12 @@ void AppStoreClient::fetchHome(Type type)
         QHash<QString, QString> categoryNames;
         foreach (const QVariant &entry, resultMap.value("categories").toList()) {
             categoryNames[entry.toMap().value("id").toString()] = entry.toMap().value("name").toString();
+            if(m_enableCategories) {
+                m_model->insertGroup(entry.toMap().value("id").toString(),
+                                     entry.toMap().value("name").toString(),
+                                     entry.toMap().value("links").toMap().value("apps").toString(),
+                                     entry.toMap().value("icon").toMap().value("88x88").toString());
+            }
         }
 
         foreach (const QVariant &entry, jsonDoc.toVariant().toMap().value("applications").toList()) {
@@ -111,19 +127,25 @@ void AppStoreClient::fetchHome(Type type)
             foreach (const QString &collection, collections.keys()) {
                 if (collections.value(collection).contains(item->storeId())) {
                     item->setGroupId(collection);
+                    item->setCollection(m_model->groupName(collection));
                     break;
                 }
             }
             item->setCategory(categoryNames.value(entry.toMap().value("category_id").toString()));
 
-            qDebug() << "have entry" << item->name() << item->groupId() << item->companion();
+            if(m_enableCategories) {
+                item->setGroupId(entry.toMap().value("category_id").toString(),AppItem::GroupCategory);
+            }
+            qDebug() << "have entry" << item->name() << item->groupId() << item->companion() << item->collection();
 
+            /* Let's just disable ability to install, and give user ability to filter
             if (item->groupId().isEmpty() || item->companion()) {
                 // Skip items that we couldn't match to a collection
                 // Also skip apps that need a companion
                 delete item;
                 continue;
             }
+            */
             m_model->insert(item);
         }
         setBusy(false);
@@ -139,13 +161,10 @@ void AppStoreClient::fetchLink(const QString &link)
 
     QUrl storeUrl(link);
     QUrlQuery query(storeUrl);
+    // Navigation buttons are supplied based on actual navigation availability
+    // Limit is preserved in links as long as it differs from default(20).
     query.removeQueryItem("limit");
-    // We fetch one more than we actually want so we can see if we need to display
-    // a next button
-    query.addQueryItem("limit", QString::number(m_limit + 1));
-    int currentOffset = query.queryItemValue("offset").toInt();
-    query.removeQueryItem("offset");
-    query.addQueryItem("offset", QString::number(qMax(0, currentOffset - 1)));
+    query.addQueryItem("limit", QString::number(m_limit));
     if (!query.hasQueryItem("hardware")) {
         query.addQueryItem("hardware", m_hardwarePlatform);
         query.addQueryItem("filter_hardware", "true");
@@ -155,7 +174,7 @@ void AppStoreClient::fetchLink(const QString &link)
     qDebug() << "fetching link" << request.url();
 
     QNetworkReply *reply = m_nam->get(request);
-    connect(reply, &QNetworkReply::finished, [this, reply]() {
+    connect(reply, &QNetworkReply::finished, [this, reply, storeUrl]() {
         qDebug() << "fetch reply";
         QByteArray data = reply->readAll();
         reply->deleteLater();
@@ -163,39 +182,28 @@ void AppStoreClient::fetchLink(const QString &link)
         QJsonDocument jsonDoc = QJsonDocument::fromJson(data);
         QVariantMap resultMap = jsonDoc.toVariant().toMap();
 
-        bool haveMore = false;
         foreach (const QVariant &entry, resultMap.value("data").toList()) {
-            if (model()->rowCount() >= m_limit) {
-                haveMore = true;
-                break;
-            }
             AppItem *item = parseAppItem(entry.toMap());
-            if (item->companion()) {
-                // For now just skip items with companions
-                delete item;
-            } else {
-                m_model->insert(item);
-            }
+            qDebug() << "have entry" << item->name() << item->groupId() << item->companion() << item->category();
+            // We filter apps in ModelFilter now. Since we didn't reqeuest additional apps to align for those
+            // filtered out - it doesn't change end result. maybe slightly increases memory footprint.
+            m_model->insert(item);
         }
-
+        // Links should be built independently, otherwise we cannot go Previous from last page (no Next).
+        int currentOffset = resultMap.value("offset").toInt();
+        if (currentOffset > 0) {
+            QUrl previousLink(storeUrl);
+            QUrlQuery query(previousLink);
+            query.removeQueryItem("offset");
+            query.addQueryItem("offset", QString::number(qMax(0, currentOffset - m_limit)));
+            previousLink.setQuery(query);
+            m_model->addLink(previousLink.toString(), gettext("Previous"));
+        }
+        // NextLink is provided when there's more to fetch, no need for *haveMore* hack.
         if (resultMap.contains("links") && resultMap.value("links").toMap().contains("nextPage") &&
                 !resultMap.value("links").toMap().value("nextPage").isNull()) {
-            int currentOffset = resultMap.value("offset").toInt();
             QString nextLink = resultMap.value("links").toMap().value("nextPage").toString();
-
-            if (currentOffset > 0) {
-                QUrl previousLink(nextLink);
-                QUrlQuery query(previousLink);
-                query.removeQueryItem("limit");
-                query.addQueryItem("limit", QString::number(m_limit + 1));
-                query.removeQueryItem("offset");
-                query.addQueryItem("offset", QString::number(qMax(0, currentOffset - m_limit + 1)));
-                previousLink.setQuery(query);
-                m_model->addLink(previousLink.toString(), gettext("Previous"));
-            }
-            if (haveMore) {
-                m_model->addLink(nextLink, gettext("Next"));
-            }
+            m_model->addLink(nextLink, gettext("Next"));
         }
         setBusy(false);
     });

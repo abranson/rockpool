@@ -20,12 +20,14 @@ class AppItem: public QObject
     Q_PROPERTY(QStringList screenshotImages MEMBER m_screenshotImages CONSTANT)
     Q_PROPERTY(QString headerImage READ headerImage NOTIFY headerImageChanged)
     Q_PROPERTY(QString category MEMBER m_category CONSTANT)
+    Q_PROPERTY(QString collection MEMBER m_collection CONSTANT)
     Q_PROPERTY(bool isWatchFace MEMBER m_isWatchFace NOTIFY isWatchFaceChanged)
     Q_PROPERTY(bool isSystemApp MEMBER m_isSystemApp CONSTANT)
     Q_PROPERTY(bool hasSettings MEMBER m_hasSettings CONSTANT)
     Q_PROPERTY(bool companion MEMBER m_companion CONSTANT)
 
-    Q_PROPERTY(QString groupId MEMBER m_groupId CONSTANT)
+    Q_PROPERTY(QString groupId READ groupId NOTIFY groupIdChanged)
+    Q_PROPERTY(QString groupKind READ groupKind NOTIFY groupKindChanged)
 
 
 public:
@@ -46,7 +48,14 @@ public:
     bool hasSettings() const;
     bool companion() const;
     QString category() const;
+    QString collection() const;
 
+    enum GroupKind {
+        GroupCollection,
+        GroupCategory
+    };
+    GroupKind groupKind() const;
+    QString groupId(const GroupKind kind) const;
     QString groupId() const;
 
     void setStoreId(const QString &storeId);
@@ -58,6 +67,7 @@ public:
     void setDescription(const QString &description);
     void setHearts(int hearts);
     void setCategory(const QString &category);
+    void setCollection(const QString &collection);
     void setScreenshotImages(const QStringList &screenshotImages);
     void setHeaderImage(const QString &headerImage);
     void setIsWatchFace(bool isWatchFace);
@@ -66,7 +76,8 @@ public:
     void setCompanion(bool companion);
 
     // For grouping in lists, e.g. by collection
-    void setGroupId(const QString &groupId);
+    void setGroupId(const QString &groupId, const GroupKind kind = GroupCollection);
+    void setGroupKind(const GroupKind kind);
 
 
 signals:
@@ -74,6 +85,8 @@ signals:
     void vendorChanged();
     void headerImageChanged();
     void isWatchFaceChanged();
+    void groupIdChanged();
+    void groupKindChanged();
 
 private:
     QString m_storeId;
@@ -85,13 +98,15 @@ private:
     QString m_description;
     int m_hearts = 0;
     QString m_category;
+    QString m_collection;
     QStringList m_screenshotImages;
     bool m_isWatchFace = false;
     bool m_isSystemApp = false;
     bool m_hasSettings = false;
     bool m_companion = false;
 
-    QString m_groupId;
+    QHash<GroupKind,QString> m_groupIds;
+    GroupKind m_groupKind;
 
     QString m_headerImage;
 };
@@ -115,7 +130,9 @@ public:
         RoleDescription,
         RoleHearts,
         RoleCategory,
-        RoleGroupId
+        RoleGroupId,
+        RoleCollection,
+        RoleHasCompanion
     };
 
     ApplicationsModel(QObject *parent = nullptr);
@@ -126,7 +143,7 @@ public:
 
     void clear();
     void insert(AppItem *item);
-    void insertGroup(const QString &id, const QString &name, const QString &link);
+    void insertGroup(const QString &id, const QString &name, const QString &link, const QString &icon = "");
 
     Q_INVOKABLE AppItem* get(int index) const;
     AppItem* findByStoreId(const QString &storeId) const;
@@ -136,6 +153,7 @@ public:
 
     Q_INVOKABLE QString groupName(const QString &groupId) const;
     Q_INVOKABLE QString groupLink(const QString &groupId) const;
+    Q_INVOKABLE QString groupIcon(const QString &groupId) const;
 
     QStringList links() const;
     Q_INVOKABLE QString linkName(const QString &link) const;
@@ -153,6 +171,7 @@ private:
     QList<AppItem*> m_apps;
     QHash<QString, QString> m_groupNames;
     QHash<QString, QString> m_groupLinks;
+    QHash<QString, QString> m_groupIcons;
     QStringList m_links;
     QHash<QString, QString> m_linkNames;
 };

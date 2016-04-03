@@ -13,6 +13,8 @@ class ApplicationsFilterModel : public QSortFilterProxyModel
     Q_PROPERTY(bool showWatchApps READ showWatchApps WRITE setShowWatchApps NOTIFY showWatchAppsChanged)
     Q_PROPERTY(bool showWatchFaces READ showWatchFaces WRITE setShowWatchFaces NOTIFY showWatchFacesChanged)
     Q_PROPERTY(bool sortByGroupId READ sortByGroupId WRITE setSortByGroupId NOTIFY sortByGroupIdChanged)
+    Q_PROPERTY(bool showCategories READ showCategories WRITE setShowCategories NOTIFY showCategoriesChanged)
+    Q_PROPERTY(bool filterCompanion READ filterCompanion WRITE setFilterCompanion NOTIFY filterCompanionChanged)
 
 public:
     ApplicationsFilterModel(QObject *parent = nullptr);
@@ -29,6 +31,12 @@ public:
     bool sortByGroupId() const;
     void setSortByGroupId(bool sortByGroupId);
 
+    bool showCategories() const;
+    void setShowCategories(bool showCategories);
+
+    bool filterCompanion() const;
+    void setFilterCompanion(bool filter);
+
     bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const override;
     bool lessThan(const QModelIndex &source_left, const QModelIndex &source_right) const override;
 
@@ -40,6 +48,8 @@ signals:
     void showWatchAppsChanged();
     void showWatchFacesChanged();
     void sortByGroupIdChanged();
+    void showCategoriesChanged();
+    void filterCompanionChanged();
 
 public slots:
 
@@ -49,6 +59,8 @@ private:
     bool m_showWatchApps = true;
     bool m_showWatchFaces = true;
     bool m_sortByGroupId = true;
+    bool m_showCategories = false;
+    bool m_filterCompanion = true;
 };
 
 #endif // APPLICATIONSFILTERMODEL_H
