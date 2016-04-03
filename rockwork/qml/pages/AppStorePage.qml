@@ -42,7 +42,8 @@ Page {
             MenuItem {
                 text: qsTr("Use")+" "+(showCategories ? qsTr("Collections") : qsTr("Categories"))
                 onClicked: showCategories=!showCategories;
-                enabled: client.enableCategories
+                enabled: client.enableCategories && showWatchApps
+                visible: enabled
             }
             MenuItem {
                 text: qsTr("Search")
@@ -51,7 +52,7 @@ Page {
         }
 
         header: PageHeader {
-            title: (grpName)? grpName: qsTr("Add New")+" "+(showWatchApps ? qsTr("Watchapp") : qsTr("Watchface"))
+            title: (grpName)? grpName :((showWatchApps ? qsTr("Watchapps") : qsTr("Watchfaces"))+": "+(showCategories ? qsTr("Categories") : qsTr("Collections")))
         }
 
         model: ApplicationsFilterModel {
@@ -255,6 +256,7 @@ Page {
             onClicked: {
                 client.search(searchTextField.text, root.showWatchApps ? AppStoreClient.TypeWatchapp : AppStoreClient.TypeWatchface);
                 searchField.open=false;
+                grpName = qsTr("Search Results")
             }
         }
     }

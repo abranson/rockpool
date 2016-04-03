@@ -56,11 +56,13 @@
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="43"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="54"/>
         <source>Collections</source>
         <translation>Колекції</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="43"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="54"/>
         <source>Categories</source>
         <translation>Категорії</translation>
     </message>
@@ -71,18 +73,13 @@
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="54"/>
-        <source>Add New</source>
-        <translation>Добавити</translation>
+        <source>Watchapps</source>
+        <translation>Додатки</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="54"/>
-        <source>Watchapp</source>
-        <translation>Додаток</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="54"/>
-        <source>Watchface</source>
-        <translation>Циферблат</translation>
+        <source>Watchfaces</source>
+        <translation>Циферблати</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="100"/>
@@ -103,6 +100,11 @@
         <location filename="../qml/pages/AppStorePage.qml" line="248"/>
         <source>Search app or watchface</source>
         <translation>Шукати Додаток або Циферблат</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppStorePage.qml" line="258"/>
+        <source>Search Results</source>
+        <translation>Результати Пошуку</translation>
     </message>
 </context>
 <context>

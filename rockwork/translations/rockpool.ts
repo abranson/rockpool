@@ -56,11 +56,13 @@
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="43"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="54"/>
         <source>Collections</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="43"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="54"/>
         <source>Categories</source>
         <translation type="unfinished"></translation>
     </message>
@@ -71,17 +73,12 @@
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="54"/>
-        <source>Add New</source>
+        <source>Watchapps</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="54"/>
-        <source>Watchapp</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="54"/>
-        <source>Watchface</source>
+        <source>Watchfaces</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -102,6 +99,11 @@
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="248"/>
         <source>Search app or watchface</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppStorePage.qml" line="258"/>
+        <source>Search Results</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
