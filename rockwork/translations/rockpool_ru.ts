@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1" language="ru" sourcelanguage="en">
+<TS version="2.0" language="ru" sourcelanguage="en">
 <context>
     <name>AppSettingsPage</name>
     <message>
@@ -425,52 +425,57 @@
         <translation>Отключен</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="131"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="120"/>
+        <source>Update Available</source>
+        <translation>Есть Обновление</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/MainMenuPage.qml" line="142"/>
         <source>Upgrading...</source>
         <translation>Обновление...</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="144"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="154"/>
         <source>Your Pebble smartwatch is disconnected. Please make sure it is powered on, within range and it is paired properly in the Bluetooth System Settings.</source>
         <translation>Ваши часы Pebble в данный момент отключены. Пожалуйста убедитесь что они включены, находятся в пределах досягаемости и добавлены в системных настройках Bluetooth.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="154"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="164"/>
         <source>Open Bluetooth Settings</source>
         <translation>Открыть Настройки Bluetooth</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="161"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="171"/>
         <source>Your Pebble smartwatch is in factory mode and needs to be initialized.</source>
         <translation>Ваши часы Pebble находятся в специальном режиме и требуют инициализации.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="170"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="180"/>
         <source>Initialize Pebble</source>
         <translation>Инициализировать Pebble</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="239"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="249"/>
         <source>Manage notifications</source>
         <translation>Управление Уведомлениями</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="244"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="254"/>
         <source>Manage Apps</source>
         <translation>Управление Приложениями</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="250"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="260"/>
         <source>Manage Watchfaces</source>
         <translation>Управление Циферблатами</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="256"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="266"/>
         <source>Settings</source>
         <translation>Системные Настройки</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="263"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="273"/>
         <source>Manage Firmware</source>
         <translation>Управление Прошивкой</translation>
     </message>

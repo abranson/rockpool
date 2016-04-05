@@ -423,52 +423,57 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="131"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="120"/>
+        <source>Update Available</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/MainMenuPage.qml" line="142"/>
         <source>Upgrading...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="144"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="154"/>
         <source>Your Pebble smartwatch is disconnected. Please make sure it is powered on, within range and it is paired properly in the Bluetooth System Settings.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="154"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="164"/>
         <source>Open Bluetooth Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="161"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="171"/>
         <source>Your Pebble smartwatch is in factory mode and needs to be initialized.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="170"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="180"/>
         <source>Initialize Pebble</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="239"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="249"/>
         <source>Manage notifications</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="244"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="254"/>
         <source>Manage Apps</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="250"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="260"/>
         <source>Manage Watchfaces</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="256"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="266"/>
         <source>Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="263"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="273"/>
         <source>Manage Firmware</source>
         <translation type="unfinished"></translation>
     </message>

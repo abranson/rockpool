@@ -112,6 +112,17 @@ Page {
                             text: root.pebble.connected ? qsTr("Connected") : qsTr("Disconnected")
                         }
                         Image {
+                            source: "image://theme/icon-lock-application-update"
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            visible: root.pebble.connected && root.pebble.firmwareUpgradeAvailable && !root.pebble.upgradingFirmware
+                        }
+                        Label {
+                            text: qsTr("Update Available")
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            visible: root.pebble.connected && root.pebble.firmwareUpgradeAvailable && !root.pebble.upgradingFirmware
+                        }
+
+                        Image {
                             id: upgradeIcon
                             height: Theme.iconSizeMedium
                             width: height
@@ -137,7 +148,6 @@ Page {
                 }
 
                 Column {
-                    //width: childrenRect.width
                     width: parent.width / parent.columns - Theme.paddingSmall
                     spacing: menuRepeater.count > 0 ? 0 : Theme.paddingSmall
                     Label {
