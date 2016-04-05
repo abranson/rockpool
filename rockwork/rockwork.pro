@@ -44,15 +44,12 @@ OTHER_FILES += $${QML_FILES} \
 #specify where the qml files are installed to
 qml.path = /usr/share/rockpool/qml
 qml.files += $${QML_FILES}
-INSTALLS+=qml
 
 #and the app icon
 icon.path = /usr/share/icons/hicolor/86x86/apps/
 icon.files = rockpool.png
-INSTALLS+=icon
 
 # Default rules for deployment.
-INSTALLS+=target icon
 target.path = /usr/bin
 
 DISTFILES += \
