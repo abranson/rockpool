@@ -1,7 +1,5 @@
 [Desktop Entry]
 Name=RockPool
-Exec=env GRE_HOME="/usr/lib" rockpool
+Exec=invoker -s --type=browser -G /usr/bin/rockpool
 Icon=rockpool
 Type=Application
-X-Nemo-Application-Type=no-invoker
-X-Nemo-Single-Instance=yes

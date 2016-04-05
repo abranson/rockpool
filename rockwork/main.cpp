@@ -42,8 +42,10 @@ int main(int argc, char *argv[])
     qmlRegisterType<AppStoreClient>("RockPool", 1, 0, "AppStoreClient");
     qmlRegisterType<ScreenshotModel>("RockPool", 1, 0, "ScreenshotModel");
 #ifdef WITH_QTMOZEMBED
-    //setenv("USE_ASYNC", "1", 1);
-    setenv("MP_UA", "1", 1);
+    // This must be set or app segfaults under maplaunchd's boostable invoker
+    setenv("GRE_HOME", app->applicationDirPath().toLocal8Bit().constData(), 1);
+    setenv("USE_ASYNC", "1", 1);// Use Qt Assisted event loop instead of native full thread
+    setenv("MP_UA", "1", 1);    // Use generic MobilePhone UserAgent string for Gecko
     QString componentPath(DEFAULT_COMPONENTS_PATH);
     QMozContext::GetInstance()->setProfile(QStandardPaths::writableLocation(QStandardPaths::CacheLocation));
     QMozContext::GetInstance()->addComponentManifest(componentPath + QString("components/EmbedLiteBinComponents.manifest"));

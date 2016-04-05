@@ -8,6 +8,8 @@ Page {
     property string uuid;
     property string url;
     property var pebble;
+    allowedOrientations: Orientation.All
+    backNavigation: webview.contentRect.x===0
     QmlMozView {
         id: webview
         anchors.fill: parent

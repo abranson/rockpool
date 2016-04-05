@@ -4,8 +4,13 @@
 <context>
     <name>AppSettingsPage</name>
     <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="46"/>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="105"/>
         <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="109"/>
+        <source>Select</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
