@@ -495,6 +495,21 @@
         <source>Entries here will be added as notifications appear on the phone. Selected notifications will be shown on your Pebble smartwatch.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../qml/pages/NotificationsPage.qml" line="71"/>
+        <source>Always Enabled</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/NotificationsPage.qml" line="77"/>
+        <source>Disabled When Active</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/NotificationsPage.qml" line="83"/>
+        <source>Always Disabled</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>PebblesPage</name>

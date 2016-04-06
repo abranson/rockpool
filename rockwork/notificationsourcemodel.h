@@ -9,7 +9,7 @@ public:
     QString m_id;
     QString m_displayName;
     QString m_icon;
-    bool m_enabled = false;
+    int m_enabled = 0;
 
     bool operator ==(const NotificationSourceItem &other) {
         return m_id == other.m_id;
@@ -34,7 +34,7 @@ public:
     QVariant data(const QModelIndex &index, int role) const override;
     QHash<int, QByteArray> roleNames() const override;
 
-    void insert(const QString &sourceId, bool enabled);
+    void insert(const QString &sourceId, int enabled);
 
 signals:
     void countChanged();

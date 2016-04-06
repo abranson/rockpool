@@ -497,6 +497,21 @@
         <source>Entries here will be added as notifications appear on the phone. Selected notifications will be shown on your Pebble smartwatch.</source>
         <translation>Категории уведомлений ниже будут появляться по мере их поступления с телефона. Выбранные категории будут появляться на ваших часах Pebble.</translation>
     </message>
+    <message>
+        <location filename="../qml/pages/NotificationsPage.qml" line="71"/>
+        <source>Always Enabled</source>
+        <translation>Всегда Включено</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/NotificationsPage.qml" line="77"/>
+        <source>Disabled When Active</source>
+        <translation>Выключено Когда Активен</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/NotificationsPage.qml" line="83"/>
+        <source>Always Disabled</source>
+        <translation>Всегда Выключено</translation>
+    </message>
 </context>
 <context>
     <name>PebblesPage</name>

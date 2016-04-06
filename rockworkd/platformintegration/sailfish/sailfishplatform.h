@@ -8,6 +8,7 @@
 #include "musiccontroller.h"
 #include "notificationmonitor.h"
 #include "walltimemonitor.h"
+#include "modecontrolentity.h"
 
 #include <QDBusInterface>
 #include <QDBusContext>
@@ -24,6 +25,7 @@ class SailfishPlatform : public PlatformInterface, public QDBusContext
 
 public:
     SailfishPlatform(QObject *parent = 0);
+    ~SailfishPlatform();
 
     void sendMusicControlCommand(MusicControlButton controlButton) override;
     MusicMetaData musicMetaData() const override;
@@ -35,6 +37,7 @@ public:
 
     void actionTriggered(const QUuid &uuid, const QString &actToken) const override;
     void removeNotification(const QUuid &uuid) const override;
+    bool deviceIsActive() const override;
 
 public slots:
     void onNotification(watchfish::Notification *notification);
@@ -54,6 +57,7 @@ private:
     MusicMetaData m_musicMetaData;
     VoiceCallManager *m_voiceCallManager;
     OrganizerAdapter *m_organizerAdapter;
+    ModeControlEntity *m_nokiaMCE;
     mutable QMap<QUuid, watchfish::Notification*> m_notifs;
     watchfish::MusicController *m_musicController;
     watchfish::NotificationMonitor *m_notificationMonitor;

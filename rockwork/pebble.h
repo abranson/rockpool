@@ -63,7 +63,7 @@ public:
     void setCalendarSyncEnabled(bool enabled);
 
 public slots:
-    void setNotificationFilter(const QString &sourceId, bool enabled);
+    void setNotificationFilter(const QString &sourceId, int enabled);
     void removeApp(const QString &uuid);
     void installApp(const QString &storeId);
     void sideloadApp(const QString &packageFile);
@@ -96,7 +96,7 @@ private slots:
     void dataChanged();
     void pebbleConnected();
     void pebbleDisconnected();
-    void notificationFilterChanged(const QString &sourceId, bool enabled);
+    void notificationFilterChanged(const QString &sourceId, int enabled);
     void refreshNotifications();
     void refreshApps();
     void appsSorted();

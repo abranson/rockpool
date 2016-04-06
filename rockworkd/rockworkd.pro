@@ -68,6 +68,7 @@ SOURCES += main.cpp \
     platformintegration/sailfish/musiccontroller.cpp \
     platformintegration/sailfish/notificationmonitor.cpp \
     platformintegration/sailfish/notifications.cpp \
+    platformintegration/sailfish/modecontrolentity.cpp \
     platformintegration/sailfish/walltimemonitor.cpp
 
 HEADERS += \
@@ -124,6 +125,8 @@ HEADERS += \
     libpebble/healthparams.h \
     libpebble/dataloggingendpoint.h \
     platformintegration/sailfish/notifications.h \
+    platformintegration/sailfish/modecontrolentity.h \
+    platformintegration/sailfish/nokia-mce-dbus-names.h \
     platformintegration/sailfish/walltimemonitor.h
 
 testing: {

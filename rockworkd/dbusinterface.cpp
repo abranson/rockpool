@@ -59,16 +59,16 @@ QString DBusPebble::CandidateFirmwareVersion() const
 QVariantMap DBusPebble::NotificationsFilter() const
 {
     QVariantMap ret;
-    QHash<QString, bool> filter = m_pebble->notificationsFilter();
+    QHash<QString, Pebble::NotificationFilter> filter = m_pebble->notificationsFilter();
     foreach (const QString &sourceId, filter.keys()) {
         ret.insert(sourceId, filter.value(sourceId));
     }
     return ret;
 }
 
-void DBusPebble::SetNotificationFilter(const QString &sourceId, bool enabled)
+void DBusPebble::SetNotificationFilter(const QString &sourceId, int enabled)
 {
-    m_pebble->setNotificationFilter(sourceId, enabled);
+    m_pebble->setNotificationFilter(sourceId, Pebble::NotificationFilter(enabled));
 }
 
 void DBusPebble::InstallApp(const QString &id)

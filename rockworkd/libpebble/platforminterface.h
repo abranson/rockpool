@@ -13,6 +13,12 @@ public:
     PlatformInterface(QObject *parent = 0): QObject(parent) {}
     virtual ~PlatformInterface() {}
 
+// Device state
+public:
+    virtual bool deviceIsActive() const = 0;
+signals:
+    void deviceActiveChanged();
+
 // Notifications
 public:
     virtual void actionTriggered(const QUuid &uuid, const QString &actToken) const = 0;

@@ -42,7 +42,7 @@ QHash<int, QByteArray> NotificationSourceModel::roleNames() const
     return roles;
 }
 
-void NotificationSourceModel::insert(const QString &sourceId, bool enabled)
+void NotificationSourceModel::insert(const QString &sourceId, int enabled)
 {
     qDebug() << "changed" << sourceId << enabled;
 

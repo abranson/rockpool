@@ -37,6 +37,18 @@ SailfishPlatform::SailfishPlatform(QObject *parent):
     m_organizerAdapter = new OrganizerAdapter(this);
     connect(m_organizerAdapter, &OrganizerAdapter::itemsChanged, this, &PlatformInterface::organizerItemsChanged);
     connect(m_wallTimeMonitor, &watchfish::WallTimeMonitor::timezoneChanged, m_organizerAdapter, &OrganizerAdapter::scheduleRefresh);
+
+    // Device - MCE
+    m_nokiaMCE = new ModeControlEntity(this);
+}
+SailfishPlatform::~SailfishPlatform()
+{
+    delete m_nokiaMCE;
+    delete m_organizerAdapter;
+    delete m_musicController;
+    delete m_voiceCallManager;
+    delete m_notificationMonitor;
+    delete m_wallTimeMonitor;
 }
 
 void SailfishPlatform::onActiveVoiceCallChanged()
@@ -294,4 +306,9 @@ void SailfishPlatform::mediaPropertiesChanged(const QString &interface, const QV
     Q_UNUSED(changedProps)
     Q_UNUSED(invalidatedProps)
     fetchMusicMetadata();
+}
+
+bool SailfishPlatform::deviceIsActive() const
+{
+    return m_nokiaMCE->isActive();
 }

@@ -22,7 +22,7 @@ Pebble::Pebble(const QDBusObjectPath &path, QObject *parent):
     QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "Disconnected", this, SLOT(pebbleDisconnected()));
     QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "InstalledAppsChanged", this, SLOT(refreshApps()));
     QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "OpenURL", this, SIGNAL(openURL(const QString&, const QString&)));
-    QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "NotificationFilterChanged", this, SLOT(notificationFilterChanged(const QString &, bool)));
+    QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "NotificationFilterChanged", this, SLOT(notificationFilterChanged(const QString &, int)));
     QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "ScreenshotAdded", this, SLOT(screenshotAdded(const QString &)));
     QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "ScreenshotRemoved", this, SLOT(screenshotRemoved(const QString &)));
     QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "FirmwareUpgradeAvailableChanged", this, SLOT(refreshFirmwareUpdateInfo()));
@@ -255,7 +255,7 @@ void Pebble::pebbleDisconnected()
     emit connectedChanged();
 }
 
-void Pebble::notificationFilterChanged(const QString &sourceId, bool enabled)
+void Pebble::notificationFilterChanged(const QString &sourceId, int enabled)
 {
     m_notifications->insert(sourceId, enabled);
 }
@@ -274,11 +274,11 @@ void Pebble::refreshNotifications()
     arg >> mapEntryVariant;
 
     foreach (const QString &sourceId, mapEntryVariant.keys()) {
-        m_notifications->insert(sourceId, mapEntryVariant.value(sourceId).toBool());
+        m_notifications->insert(sourceId, mapEntryVariant.value(sourceId).toInt());
     }
 }
 
-void Pebble::setNotificationFilter(const QString &sourceId, bool enabled)
+void Pebble::setNotificationFilter(const QString &sourceId, int enabled)
 {
     m_iface->call("SetNotificationFilter", sourceId, enabled);
 }

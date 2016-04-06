@@ -283,22 +283,25 @@ QString Pebble::storagePath() const
     return m_storagePath;
 }
 
-QHash<QString, bool> Pebble::notificationsFilter() const
+QHash<QString, Pebble::NotificationFilter> Pebble::notificationsFilter() const
 {
-    QHash<QString, bool> ret;
+    QHash<QString, Pebble::NotificationFilter> ret;
     QString settingsFile = m_storagePath + "/notifications.conf";
     QSettings s(settingsFile, QSettings::IniFormat);
     foreach (const QString &key, s.allKeys()) {
-        ret.insert(key, s.value(key).toBool());
+        if(!key.isEmpty()) {
+            ret.insert(key, Pebble::NotificationFilter(s.value(key).toInt()));
+        }
     }
     return ret;
 }
 
-void Pebble::setNotificationFilter(const QString &sourceId, bool enabled)
+void Pebble::setNotificationFilter(const QString &sourceId, NotificationFilter enabled)
 {
     QString settingsFile = m_storagePath + "/notifications.conf";
     QSettings s(settingsFile, QSettings::IniFormat);
-    if (!s.contains(sourceId) || s.value(sourceId).toBool() != enabled) {
+    qDebug() << "Setting" << sourceId << "to" << enabled << "while it's" << s.value(sourceId,"true").toInt();
+    if (!s.contains(sourceId) || s.value(sourceId).toInt() != enabled) {
         s.setValue(sourceId, enabled);
         emit notificationFilterChanged(sourceId, enabled);
     }
@@ -313,12 +316,13 @@ void Pebble::sendSimpleNotification(const QUuid &uuid, const QString &title, con
 
 void Pebble::sendNotification(const Notification &notification)
 {
-    if (!notificationsFilter().value(notification.sourceId(), true)) {
+    NotificationFilter f = notificationsFilter().value(notification.sourceId(), NotificationEnabled);
+    if (f==NotificationDisabled || (f==Pebble::NotificationDisabledActive && Core::instance()->platform()->deviceIsActive())) {
         qDebug() << "Notifications for" << notification.sourceId() << "disabled.";
         return;
     }
     // In case it wasn't there before, make sure to write it to the config now so it will appear in the config app.
-    setNotificationFilter(notification.sourceId(), true);
+    setNotificationFilter(notification.sourceId(), NotificationEnabled);
 
     qDebug() << "Sending notification from source" << notification.sourceId() << "to watch";
 
@@ -659,7 +663,7 @@ void Pebble::appStarted(const QUuid &uuid)
 
 void Pebble::muteNotificationSource(const QString &source)
 {
-    setNotificationFilter(source, false);
+    setNotificationFilter(source, NotificationDisabled);
 }
 
 void Pebble::resetPebble()

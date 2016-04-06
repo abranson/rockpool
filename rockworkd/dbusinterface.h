@@ -17,7 +17,7 @@ public:
 signals:
     void Connected();
     void Disconnected();
-    void NotificationFilterChanged(const QString &sourceId, bool enabled);
+    void NotificationFilterChanged(const QString &sourceId, int enabled);
     void InstalledAppsChanged();
     void OpenURL(const QString &uuid, const QString &url);
     void ScreenshotAdded(const QString &filename);
@@ -46,7 +46,7 @@ public slots:
     bool UpgradingFirmware() const;
 
     QVariantMap NotificationsFilter() const;
-    void SetNotificationFilter(const QString &sourceId, bool enabled);
+    void SetNotificationFilter(const QString &sourceId, int enabled);
 
     void InstallApp(const QString &id);
     void SideloadApp(const QString &packageFile);
