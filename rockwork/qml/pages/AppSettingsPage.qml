@@ -40,6 +40,9 @@ Page {
                 selectorLoader.show(data);
                 break;
             }
+            case "embed:alert": {
+                dialogLoader.alert(data.text,data.title);
+            }
             case "embed:pebble": {
                 if(data.action === "close") {
                     pebble.configurationClosed(appSettings.uuid, data.uri);
@@ -60,6 +63,73 @@ Page {
         visible: running
         size: BusyIndicatorSize.Large
     }
+    // Alert/Prompt dialog
+    Loader {
+        id: dialogLoader
+        focus: true
+        anchors.fill: parent
+        property bool singleChoice: true
+        property string dlgTitle: qsTr("Alert")
+        property string dlgText: qsTr("Something going wrong")
+        property string acceptStr: qsTr("Accept")
+        property string cancelStr: qsTr("Cancel")
+        function alert(text,title) {
+            sourceComponent = cmpDialog;
+            singleChoice=true;
+            dlgTitle=title;
+            dlgText=text;
+        }
+        function accept() {
+            sourceComponent = null;
+        }
+        function reject() {
+            sourceComponent = null;
+        }
+    }
+    Component {
+        id: cmpDialog
+        Rectangle {
+            color: Theme.rgba(Theme.highlightDimmerColor, 0.75)
+            Row {
+                anchors.horizontalCenter: parent.horizontalCenter
+                spacing: Theme.paddingSmall
+                Button {
+                    text: dialogLoader.singleChoice ? dialogLoader.acceptStr : dialogLoader.cancelStr
+                    onClicked: dialogLoader.reject()
+                }
+                Button {
+                    text: dialogLoader.acceptStr
+                    onClicked: dialogLoader.accept()
+                    enabled: !dialogLoader.singleChoice
+                    visible: enabled
+                }
+            }
+            SilicaFlickable {
+                width: parent.width
+                height:parent.height-Theme.itemSizeSmall
+                anchors.bottom: parent.bottom
+                anchors.horizontalCenter: parent.horizontalCenter
+                Column {
+                    width: parent.width
+                    spacing: Theme.paddingSmall
+                    Label {
+                        horizontalAlignment: Text.AlignRight
+                        color: Theme.secondaryHighlightColor
+                        font.pixelSize: Theme.fontSizeLarge
+                        wrapMode: Text.WordWrap
+                        text: dialogLoader.dlgTitle
+                        width: parent.width
+                    }
+                    Label {
+                        width: parent.width
+                        wrapMode: Text.WordWrap
+                        text: dialogLoader.dlgText
+                    }
+                }
+            }
+        }
+    }
+    // Select control
     Loader {
         id: selectorLoader
         focus: true

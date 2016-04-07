@@ -4,12 +4,28 @@
 <context>
     <name>AppSettingsPage</name>
     <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="105"/>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="72"/>
+        <source>Alert</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="73"/>
+        <source>Something going wrong</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="74"/>
+        <source>Accept</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="75"/>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="175"/>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="109"/>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="179"/>
         <source>Select</source>
         <translation type="unfinished"></translation>
     </message>
