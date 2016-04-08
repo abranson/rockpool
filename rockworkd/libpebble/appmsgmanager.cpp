@@ -169,6 +169,7 @@ WatchConnection::Dict AppMsgManager::mapAppKeys(const QUuid &uuid, const QVarian
 
     for (QVariantMap::const_iterator it = data.constBegin(); it != data.constEnd(); ++it) {
         if (info.appKeys().contains(it.key())) {
+            qDebug() << it.key() << " found as " << info.appKeys().value(it.key()) << " for value " << it.value();
             d.insert(info.appKeys().value(it.key()), it.value());
         } else {
             // Even if we do not know about this appkey, try to see if it's already a numeric key we

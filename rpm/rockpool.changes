@@ -1,3 +1,9 @@
+* Wed Apr 06 2016 Andrew Branson <github@andrewbranson.net> 0.9-1
+- Switched web engine to Gecko with QtMozEmbed, which should fix most app settings problems.
+- Firmware update indicator on main page
+- Add third notification filter - hide only when phone is unlocked
+- German Translation
+
 * Sun Apr 03 2016 Andrew Branson <github@andrewbranson.net> 0.8-3
 - App Store overhaul, including switching between Category and Collection views, and companion app indicator
 - More JS API additions and bugfixes

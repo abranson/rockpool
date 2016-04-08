@@ -32,7 +32,7 @@ This application supports the Pebble v3 firmware in Sailfish (i.e. Pebble Time, 
 
 	* SSH to the MerSDK as mersdk user
 	* enter the scratchbox as root for package installation (sb2 -t SailfishOS-armv7hl -R -m sdk-install)
-	* add mer-core repository (zypper ar -f http://repo.merproject.org/obs/mer-core:/armv7hl:/devel/Core_armv7hl/armv7hl/ mer-core)
+	* add mer-core repository (zypper ar -f http://repo.merproject.org/obs/mer-core:/armv7hl:/devel/Core_armv7hl/ mer-core)
 	* install required package and explicit conflicting down-chain (zypper install xulrunner-qt5 qtmozembed-qt5 qtmozembed-qt5-devel)
 	* When zypper complains about conflicts - chose option 3 (proceed with broken dependencies)
 
