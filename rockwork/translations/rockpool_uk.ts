@@ -129,6 +129,19 @@
     </message>
 </context>
 <context>
+    <name>ContentPeerPickerPage</name>
+    <message>
+        <location filename="../qml/pages/ContentPeerPickerPage.qml" line="16"/>
+        <source>Share Via</source>
+        <translation>Поширити через</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ContentPeerPickerPage.qml" line="26"/>
+        <source>No Share Providers configured. Please add provider&apos;s account in System Settings</source>
+        <translation>Незнайдено конфігурації жодного механізму поширення. Будьласка додайте обліковий запис в Налаштуванні Системи</translation>
+    </message>
+</context>
+<context>
     <name>CoverPage</name>
     <message>
         <location filename="../qml/cover/CoverPage.qml" line="27"/>
@@ -175,17 +188,12 @@
         <translation>Підготовка пакету журналів...</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="129"/>
-        <source>Send</source>
-        <translation>Відіслати</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="140"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="146"/>
         <source>Send watch logs</source>
         <translation>Відіслати журнал з годинника</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="149"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="155"/>
         <source>Cancel</source>
         <translation>Відмінити</translation>
     </message>
@@ -579,25 +587,35 @@
         <translation>Зробити Знімок</translation>
     </message>
     <message>
-        <location filename="../qml/pages/ScreenshotsPage.qml" line="46"/>
+        <location filename="../qml/pages/ScreenshotsPage.qml" line="43"/>
         <source>Share</source>
         <translation>Поділитися</translation>
     </message>
     <message>
-        <location filename="../qml/pages/ScreenshotsPage.qml" line="48"/>
-        <location filename="../qml/pages/ScreenshotsPage.qml" line="57"/>
+        <location filename="../qml/pages/ScreenshotsPage.qml" line="45"/>
+        <location filename="../qml/pages/ScreenshotsPage.qml" line="54"/>
         <source>Pebble screenshot</source>
         <translation>Знімок екрану Pebble</translation>
     </message>
     <message>
-        <location filename="../qml/pages/ScreenshotsPage.qml" line="55"/>
+        <location filename="../qml/pages/ScreenshotsPage.qml" line="46"/>
+        <source>Screen snapshot of Pebble Smartwatches</source>
+        <translation>Знімок екрану годинників Pebble</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ScreenshotsPage.qml" line="52"/>
         <source>Save</source>
         <translation>Зберігти</translation>
     </message>
     <message>
-        <location filename="../qml/pages/ScreenshotsPage.qml" line="64"/>
+        <location filename="../qml/pages/ScreenshotsPage.qml" line="61"/>
         <source>Delete</source>
         <translation>Видалити</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ScreenshotsPage.qml" line="62"/>
+        <source>Really Delete?</source>
+        <translation>Дійсно Видалити?</translation>
     </message>
 </context>
 <context>

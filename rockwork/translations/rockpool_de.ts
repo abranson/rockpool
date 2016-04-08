@@ -129,6 +129,19 @@
     </message>
 </context>
 <context>
+    <name>ContentPeerPickerPage</name>
+    <message>
+        <location filename="../qml/pages/ContentPeerPickerPage.qml" line="16"/>
+        <source>Share Via</source>
+        <translation>Freigeben Via</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ContentPeerPickerPage.qml" line="26"/>
+        <source>No Share Providers configured. Please add provider&apos;s account in System Settings</source>
+        <translation>Es ist keine Anbieter der Ubertragung konfiguriert. Bitte hinzufügen Sie eine Konto des Anbieters in Systemeinstellungen</translation>
+    </message>
+</context>
+<context>
     <name>CoverPage</name>
     <message>
         <location filename="../qml/cover/CoverPage.qml" line="27"/>
@@ -175,17 +188,12 @@
         <translation>Logbuch vorbereiten...</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="129"/>
-        <source>Send</source>
-        <translation>Senden</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="140"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="146"/>
         <source>Send watch logs</source>
         <translation>Senden Uhr Protokolle</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="149"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="155"/>
         <source>Cancel</source>
         <translation>Abbrechen</translation>
     </message>
@@ -578,25 +586,35 @@
         <translation>Screenshot nehmen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/ScreenshotsPage.qml" line="46"/>
+        <location filename="../qml/pages/ScreenshotsPage.qml" line="43"/>
         <source>Share</source>
         <translation>Teile</translation>
     </message>
     <message>
-        <location filename="../qml/pages/ScreenshotsPage.qml" line="48"/>
-        <location filename="../qml/pages/ScreenshotsPage.qml" line="57"/>
+        <location filename="../qml/pages/ScreenshotsPage.qml" line="45"/>
+        <location filename="../qml/pages/ScreenshotsPage.qml" line="54"/>
         <source>Pebble screenshot</source>
         <translation>Pebble Screenshot</translation>
     </message>
     <message>
-        <location filename="../qml/pages/ScreenshotsPage.qml" line="55"/>
+        <location filename="../qml/pages/ScreenshotsPage.qml" line="46"/>
+        <source>Screen snapshot of Pebble Smartwatches</source>
+        <translation>Bildschirmfoto der Pebble Smartwatch</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ScreenshotsPage.qml" line="52"/>
         <source>Save</source>
         <translation>Sichern</translation>
     </message>
     <message>
-        <location filename="../qml/pages/ScreenshotsPage.qml" line="64"/>
+        <location filename="../qml/pages/ScreenshotsPage.qml" line="61"/>
         <source>Delete</source>
         <translation>Löschen</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ScreenshotsPage.qml" line="62"/>
+        <source>Really Delete?</source>
+        <translation>Wirklich löschen?</translation>
     </message>
 </context>
 <context>

@@ -99,7 +99,7 @@ Page {
                 id: busyIndicator
                 visible: false
                 running: visible
-                width: parent.width
+                anchors.horizontalCenter: parent.horizontalCenter
             }
             Label {
                 text: qsTr("Preparing logs package...")
@@ -116,26 +116,32 @@ Page {
                         var filename = "/tmp/pebble.log"
                         pageStack.push(Qt.resolvedUrl("ContentPeerPickerPage.qml"), {
                             itemName: "pebble.log",
-                            handler: ContentHandler.Share,
-                            contentType: ContentType.All,
+                            itemDescription: "Platform "+pebble.name+" ("+pebble.hardwarePlatform+") "+pebble.softwareVersion,
+                            contentType: "text/plain",
                             filename: filename
                         })
                     }
                     sendLogsDocker.hide()
                 }
             }
-
+            /* On jolla it's in journald
             Button {
-                text: qsTr("Send")+"rockworkd.log"
+                text: qsTr("Send")+" rockworkd.log"
                 width: parent.width
                 visible: !busyIndicator.visible
                 onClicked: {
                     var filename = homePath + "/.cache/upstart/rockworkd.log"
-                    pageStack.push(Qt.resolvedUrl("ContentPeerPickerPage.qml"), {itemName: "rockworkd.log",handler: ContentHandler.Share, contentType: ContentType.All, filename: filename })
+                    pageStack.push(Qt.resolvedUrl("ContentPeerPickerPage.qml"), {
+                           itemName: "rockpoold.log",
+                           itemDescription: "RockPool Daemon "+version,
+                           contentType: "text/plain",
+                           fileName: filename
+                    })
 
                     sendLogsDocker.hide()
                 }
             }
+            */
             Button {
                 text: qsTr("Send watch logs")
                 visible: !busyIndicator.visible

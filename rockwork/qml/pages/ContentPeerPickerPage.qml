@@ -1,41 +1,29 @@
-import QtQuick 2.4
-import Ubuntu.Components 1.3
-import Ubuntu.Content 1.3
-import RockWork 1.0
+import QtQuick 2.2
+import Sailfish.Silica 1.0
+import Sailfish.TransferEngine 1.0
 
 Page {
     id: pickerPage
-    head {
-        locked: true
-        visible: false
-    }
-
-    property alias contentType: contentPeerPicker.contentType
+    property alias contentType: contentPeerPicker.filter
     property string itemName
-    property alias handler: contentPeerPicker.handler
     property string filename
+    property string itemDescription
 
-    Component {
-        id: exportItemComponent
-        ContentItem {
-            name: pickerPage.itemName
-        }
-    }
-    ContentPeerPicker {
+    ShareMethodList {
         id: contentPeerPicker
         anchors.fill: parent
-
-        onCancelPressed: pageStack.pop()
-
-        onPeerSelected: {
-            var transfer = peer.request();
-            var items = [];
-            var item = exportItemComponent.createObject();
-            item.url = "file://" + pickerPage.filename;
-            items.push(item)
-            transfer.items = items;
-            transfer.state = ContentTransfer.Charged;
-            pageStack.pop();
+        header: PageHeader {
+            title: qsTr("Share Via")
+        }
+        source: "file://"+filename
+        content: {
+            "linkTitle": itemName,
+            "status": itemDescription,
+            "type": contentPeerPicker.filter
+        }
+        ViewPlaceholder {
+            enabled: contentPeerPicker.model.count === 0
+            text: qsTr("No Share Providers configured. Please add provider's account in System Settings")
         }
     }
 }
