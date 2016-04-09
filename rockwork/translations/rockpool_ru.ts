@@ -578,45 +578,44 @@
 <context>
     <name>ScreenshotsPage</name>
     <message>
-        <location filename="../qml/pages/ScreenshotsPage.qml" line="20"/>
+        <location filename="../qml/pages/ScreenshotsPage.qml" line="23"/>
         <source>Screenshots</source>
         <translation>Снимки Экрана</translation>
     </message>
     <message>
-        <location filename="../qml/pages/ScreenshotsPage.qml" line="24"/>
+        <location filename="../qml/pages/ScreenshotsPage.qml" line="27"/>
         <source>Take Screenshot</source>
         <translation>Сделать Снимок</translation>
     </message>
     <message>
-        <location filename="../qml/pages/ScreenshotsPage.qml" line="43"/>
+        <location filename="../qml/pages/ScreenshotsPage.qml" line="53"/>
         <source>Share</source>
-        <translation>Отправить</translation>
+        <translation>Поделиться</translation>
     </message>
     <message>
-        <location filename="../qml/pages/ScreenshotsPage.qml" line="45"/>
-        <location filename="../qml/pages/ScreenshotsPage.qml" line="54"/>
+        <location filename="../qml/pages/ScreenshotsPage.qml" line="55"/>
         <source>Pebble screenshot</source>
         <translation>Снимок экрана Pebble</translation>
     </message>
     <message>
-        <location filename="../qml/pages/ScreenshotsPage.qml" line="46"/>
+        <location filename="../qml/pages/ScreenshotsPage.qml" line="56"/>
         <source>Screen snapshot of Pebble Smartwatches</source>
         <translation>Снимок экрана часов Pebble</translation>
     </message>
     <message>
-        <location filename="../qml/pages/ScreenshotsPage.qml" line="52"/>
-        <source>Save</source>
-        <translation>Сохранить</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/ScreenshotsPage.qml" line="61"/>
+        <location filename="../qml/pages/ScreenshotsPage.qml" line="62"/>
         <source>Delete</source>
         <translation>Удалить</translation>
     </message>
     <message>
-        <location filename="../qml/pages/ScreenshotsPage.qml" line="62"/>
+        <location filename="../qml/pages/ScreenshotsPage.qml" line="64"/>
         <source>Really Delete?</source>
         <translation>Действительно Удалить?</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ScreenshotsPage.qml" line="69"/>
+        <source>Cancel</source>
+        <translation>Отмена</translation>
     </message>
 </context>
 <context>

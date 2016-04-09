@@ -576,44 +576,43 @@
 <context>
     <name>ScreenshotsPage</name>
     <message>
-        <location filename="../qml/pages/ScreenshotsPage.qml" line="20"/>
+        <location filename="../qml/pages/ScreenshotsPage.qml" line="23"/>
         <source>Screenshots</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/ScreenshotsPage.qml" line="24"/>
+        <location filename="../qml/pages/ScreenshotsPage.qml" line="27"/>
         <source>Take Screenshot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/ScreenshotsPage.qml" line="43"/>
+        <location filename="../qml/pages/ScreenshotsPage.qml" line="53"/>
         <source>Share</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/ScreenshotsPage.qml" line="45"/>
-        <location filename="../qml/pages/ScreenshotsPage.qml" line="54"/>
+        <location filename="../qml/pages/ScreenshotsPage.qml" line="55"/>
         <source>Pebble screenshot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/ScreenshotsPage.qml" line="46"/>
+        <location filename="../qml/pages/ScreenshotsPage.qml" line="56"/>
         <source>Screen snapshot of Pebble Smartwatches</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/ScreenshotsPage.qml" line="52"/>
-        <source>Save</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/ScreenshotsPage.qml" line="61"/>
+        <location filename="../qml/pages/ScreenshotsPage.qml" line="62"/>
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/ScreenshotsPage.qml" line="62"/>
+        <location filename="../qml/pages/ScreenshotsPage.qml" line="64"/>
         <source>Really Delete?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ScreenshotsPage.qml" line="69"/>
+        <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
