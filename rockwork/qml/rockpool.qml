@@ -13,6 +13,7 @@ ApplicationWindow {
     initialPage: Qt.resolvedUrl("pages/LoadingPage.qml")
     cover: Qt.resolvedUrl("cover/CoverPage.qml")
     property int curPebble: -1
+    property var sysProfiles: ['ignore']
 
     ServiceController {
         id: serviceController
@@ -35,6 +36,19 @@ ApplicationWindow {
         service: "com.jolla.settings"
         path: "/com/jolla/settings/ui"
         iface: "com.jolla.settings.ui"
+    }
+    DBusInterface {
+        id: profiled
+        service: "com.nokia.profiled"
+        path: "/com/nokia/profiled"
+        iface: "com.nokia.profiled"
+    }
+    function getProfiles() {
+        if(sysProfiles.length===1) {
+            profiled.typedCall("get_profiles",[],
+               function(r){sysProfiles=[].concat(sysProfiles,r);console.log("Now",sysProfiles,sysProfiles.length)},
+               function(e){console.log("com.nokia.profiled error",e)})
+        }
     }
     function startBT() {
         lipstick.typedCall("notifyLaunching",[{"type":"s","value":"jolla-settings.desktop"}],

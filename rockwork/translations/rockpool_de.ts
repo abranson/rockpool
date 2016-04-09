@@ -643,5 +643,20 @@
         <source>Sync calendar to timeline</source>
         <translation>Kalender zu Chronik synchronisieren</translation>
     </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="51"/>
+        <source>Connected</source>
+        <translation>Verbunden</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="51"/>
+        <source>Disconnected</source>
+        <translation>Getrennt</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="54"/>
+        <source>Profile when</source>
+        <translation>Profil wenn</translation>
+    </message>
 </context>
 </TS>

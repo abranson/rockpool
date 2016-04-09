@@ -644,5 +644,20 @@
         <source>Sync calendar to timeline</source>
         <translation>Синхронизувати Календар з Pebble Timeline</translation>
     </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="51"/>
+        <source>Connected</source>
+        <translation>Підключено</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="51"/>
+        <source>Disconnected</source>
+        <translation>Відключено</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="54"/>
+        <source>Profile when</source>
+        <translation>Профіль коли</translation>
+    </message>
 </context>
 </TS>

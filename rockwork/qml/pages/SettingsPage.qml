@@ -42,6 +42,39 @@ Page {
                     root.pebble.calendarSyncEnabled = checked
                 }
             }
+            Separator {
+                width: parent.width
+                height: Theme.paddingSmall
+                color: Theme.secondaryHighlightColor
+            }
+            Repeater {
+                model: [[0,qsTr("Connected")],[1,qsTr("Disconnected")]]
+                delegate: Slider {
+                    width: parent.width
+                    label: qsTr("Profile when")+" "+modelData[1]
+                    minimumValue: 0
+                    maximumValue: rockPool.sysProfiles.length-1
+                    stepSize: 1
+                    valueText: rockPool.sysProfiles[value]
+                    enabled: rockPool.sysProfiles.length>1
+                    visible: enabled
+                    onValueChanged: {
+                        if(value===0) {
+                            //pebble.setProfile(modelData[0],'')
+                            console.log("Disable profile change for",modelData[1])
+                        } else {
+                            //pebble.setProfile(modelData[0],rockPool.sysProfiles[value])
+                            console.log("Set profile",rockPool.sysProfiles[value],"for",modelData[1])
+                        }
+                    }
+                }
+            }
+            Separator {
+                width: parent.width
+                height: Theme.paddingSmall
+                color: Theme.secondaryHighlightColor
+            }
         }
+        Component.onCompleted: rockPool.getProfiles()
     }
 }

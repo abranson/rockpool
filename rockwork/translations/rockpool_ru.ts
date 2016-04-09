@@ -645,5 +645,20 @@
         <source>Sync calendar to timeline</source>
         <translation>Синхронизировать Календарь с лентой сообщений</translation>
     </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="51"/>
+        <source>Connected</source>
+        <translation>Подключен</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="51"/>
+        <source>Disconnected</source>
+        <translation>Отключен</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="54"/>
+        <source>Profile when</source>
+        <translation>Профиль когда</translation>
+    </message>
 </context>
 </TS>
