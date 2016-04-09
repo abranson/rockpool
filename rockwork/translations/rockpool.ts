@@ -520,17 +520,17 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/NotificationsPage.qml" line="71"/>
+        <location filename="../qml/pages/NotificationsPage.qml" line="85"/>
         <source>Always Enabled</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/NotificationsPage.qml" line="77"/>
+        <location filename="../qml/pages/NotificationsPage.qml" line="91"/>
         <source>Disabled When Active</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/NotificationsPage.qml" line="83"/>
+        <location filename="../qml/pages/NotificationsPage.qml" line="97"/>
         <source>Always Disabled</source>
         <translation type="unfinished"></translation>
     </message>

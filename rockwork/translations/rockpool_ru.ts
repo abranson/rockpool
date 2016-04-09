@@ -522,17 +522,17 @@
         <translation>Категории уведомлений ниже будут появляться по мере их поступления с телефона. Выбранные категории будут появляться на ваших часах Pebble.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NotificationsPage.qml" line="71"/>
+        <location filename="../qml/pages/NotificationsPage.qml" line="85"/>
         <source>Always Enabled</source>
         <translation>Всегда Включено</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NotificationsPage.qml" line="77"/>
+        <location filename="../qml/pages/NotificationsPage.qml" line="91"/>
         <source>Disabled When Active</source>
         <translation>Выключено Когда Активен</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NotificationsPage.qml" line="83"/>
+        <location filename="../qml/pages/NotificationsPage.qml" line="97"/>
         <source>Always Disabled</source>
         <translation>Всегда Выключено</translation>
     </message>

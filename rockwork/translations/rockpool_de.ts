@@ -520,17 +520,17 @@
         <translation>Einträge hier hinzugefügt werden, sowie Benachrichtigungen im Telefon erscheinen. Ausgewählte Meldungen werden auf Ihrem Pebble Smartwatch angezeigt.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NotificationsPage.qml" line="71"/>
+        <location filename="../qml/pages/NotificationsPage.qml" line="85"/>
         <source>Always Enabled</source>
         <translation>Immer aktiviert</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NotificationsPage.qml" line="77"/>
+        <location filename="../qml/pages/NotificationsPage.qml" line="91"/>
         <source>Disabled When Active</source>
         <translation>Deaktiviert Wenn Aktiv</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NotificationsPage.qml" line="83"/>
+        <location filename="../qml/pages/NotificationsPage.qml" line="97"/>
         <source>Always Disabled</source>
         <translation>Immer deaktiviert</translation>
     </message>

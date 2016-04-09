@@ -37,6 +37,20 @@ Page {
                     source: {
                         console.log(model.icon);
                         // Add some hacks for known icons
+                        if(model.icon==="dialog-question-symbolic") {
+                            switch(model.name){
+                            case "Twitter":
+                                return "image://theme/graphic-service-twitter";
+                            case "GMail":
+                                return "image://theme/graphic-service-google";
+                            case "Facebook":
+                                return "image://theme/graphic-service-facebook";
+                            }
+                            if(model.name.indexOf("@")>=0)
+                                return "image://theme/graphic-service-generic-mail";
+                            return "image://theme/icon-lock-information";
+                        }
+                        /*
                         switch (model.icon) {
                         case "calendar":
                             return "image://theme/icon-lock-calendar";
@@ -48,7 +62,7 @@ Page {
                             return "image://theme/icon-lock-alarm";
                         case "gpm-battery-050":
                             return "image://theme/icon-lock-warning";
-                        }
+                        }*/
                         return model.icon.indexOf("/") === 0 ? "file://" + model.icon : ""
                     }
                     width: height
