@@ -10,9 +10,21 @@ Page {
     property var pebble;
     allowedOrientations: Orientation.All
     backNavigation: webview.contentRect.x===0
+    Label {
+        id: header
+        width: parent.width
+        anchors.top: parent.top
+        text: url
+        height: Theme.itemSizeSmall
+        horizontalAlignment: Text.AlignHCenter
+        font.pixelSize: Theme.fontSizeTiny
+        wrapMode: Text.WordWrap
+    }
+
     QmlMozView {
         id: webview
-        anchors.fill: parent
+        anchors { top: header.bottom;bottom:parent.bottom }
+        width: parent.width
         visible: true
         clip: false
         focus: true
@@ -41,8 +53,14 @@ Page {
                 break;
             }
             case "embed:alert": {
-                dialogLoader.alert(data.text,data.title);
+                dialogLoader.alert(data);
+                break;
             }
+            case "embed:confirm": {
+                dialogLoader.confirm("confirm",data);
+                break;
+            }
+
             case "embed:pebble": {
                 if(data.action === "close") {
                     pebble.configurationClosed(appSettings.uuid, data.uri);
@@ -73,17 +91,41 @@ Page {
         property string dlgText: qsTr("Something going wrong")
         property string acceptStr: qsTr("Accept")
         property string cancelStr: qsTr("Cancel")
-        function alert(text,title) {
+        property var dlgData: {}
+        property string dlgMsg: ""
+
+        function alert(data) {
             sourceComponent = cmpDialog;
             singleChoice=true;
-            dlgTitle=title;
-            dlgText=text;
+            dlgTitle=data.title;
+            dlgText=data.text;
+            dlgData=data;
+            dlgMsg="alert";
         }
+        function confirm(msg,data) {
+            sourceComponent = cmpDialog;
+            singleChoice = false;
+            dlgTitle = data.title;
+            dlgText = data.text;
+            dlgMsg = msg;
+            dlgData = data;
+        }
+
         function accept() {
             sourceComponent = null;
+            if(dlgMsg) {
+                console.log("Sending accept for",dlgMsg+"response")
+                webview.sendAsyncMessage(dlgMsg+"response", {"accepted": true,"winid":dlgData.winid})
+                dlgMsg = "";
+            }
         }
         function reject() {
             sourceComponent = null;
+            if(dlgMsg) {
+                console.log("Sending reject for",dlgMsg+"response")
+                webview.sendAsyncMessage(dlgMsg+"response", {"accepted": false, "winid":dlgData.winid})
+                dlgMsg = "";
+            }
         }
     }
     Component {
@@ -114,7 +156,7 @@ Page {
                     spacing: Theme.paddingSmall
                     Label {
                         horizontalAlignment: Text.AlignRight
-                        color: Theme.secondaryHighlightColor
+                        color: Theme.highlightColor
                         font.pixelSize: Theme.fontSizeLarge
                         wrapMode: Text.WordWrap
                         text: dialogLoader.dlgTitle

@@ -4,28 +4,28 @@
 <context>
     <name>AppSettingsPage</name>
     <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="72"/>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="90"/>
         <source>Alert</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="73"/>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="91"/>
         <source>Something going wrong</source>
         <translation>Щось пошкандибало нетуди</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="74"/>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="92"/>
         <source>Accept</source>
         <translation>Добре</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="75"/>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="175"/>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="93"/>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="217"/>
         <source>Cancel</source>
         <translation>Відмінити</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="179"/>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="221"/>
         <source>Select</source>
         <translation>Вибрати</translation>
     </message>

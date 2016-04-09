@@ -172,21 +172,21 @@ Page {
                         width: parent.width
                         anchors.horizontalCenter: parent.horizontalCenter
                         wrapMode: Text.WordWrap
-                        visible: root.pebble.connected && root.pebble.recovery && !root.pebble.upgradingFirmware
+                        visible: root.pebble && root.pebble.connected && root.pebble.recovery && !root.pebble.upgradingFirmware
                         font.pixelSize: Theme.fontSizeLarge
                         horizontalAlignment: Text.AlignHCenter
                     }
                     Button {
                         text: qsTr("Initialize Pebble")
                         onClicked: root.pebble.performFirmwareUpgrade()
-                        visible: root.pebble.connected && root.pebble.recovery && !root.pebble.upgradingFirmware
+                        visible: root.pebble && root.pebble.connected && root.pebble.recovery && !root.pebble.upgradingFirmware
                         anchors.horizontalCenter: parent.horizontalCenter
                     }
 
 
                     Repeater {
                         id: menuRepeater
-                        model: root.pebble.connected && !root.pebble.recovery && !root.pebble.upgradingFirmware ? mainMenuModel : null
+                        model: root.pebble && root.pebble.connected && !root.pebble.recovery && !root.pebble.upgradingFirmware ? mainMenuModel : null
                         delegate: ListItem {
                             contentHeight: Theme.iconSizeMedium + Theme.paddingSmall*2
                             Row {
