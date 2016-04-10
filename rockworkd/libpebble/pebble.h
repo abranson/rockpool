@@ -110,6 +110,9 @@ public slots:
     void setImperialUnits(bool imperial);
     bool imperialUnits() const;
 
+    void setProfileWhen(const bool connected, const QString &profile);
+    QString profileWhen(bool connected) const;
+
     void dumpLogs(const QString &fileName) const;
 
 private slots:
@@ -145,6 +148,7 @@ signals:
 
     void calendarSyncEnabledChanged();
     void imperialUnitsChanged();
+    void profileConnectionSwitchChanged(bool connected);
     void healtParamsChanged();
 private:
     void setHardwareRevision(HardwareRevision hardwareRevision);
@@ -183,6 +187,8 @@ private:
     QUuid m_lastSyncedAppUuid;
 
     bool m_calendarSyncEnabled = true;
+    QString m_profileWhenConnected = "ignore";
+    QString m_profileWhenDisconnected = "ignore";
     HealthParams m_healthParams;
     bool m_imperialUnits = false;
 };

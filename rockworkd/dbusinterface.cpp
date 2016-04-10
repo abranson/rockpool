@@ -18,6 +18,7 @@ DBusPebble::DBusPebble(Pebble *pebble, QObject *parent):
     connect(pebble, &Pebble::logsDumped, this, &DBusPebble::LogsDumped);
     connect(pebble, &Pebble::healtParamsChanged, this, &DBusPebble::HealthParamsChanged);
     connect(pebble, &Pebble::imperialUnitsChanged, this, &DBusPebble::ImperialUnitsChanged);
+    connect(pebble, &Pebble::profileConnectionSwitchChanged, this, &DBusPebble::onProfileConnectionSwitchChanged);
     connect(pebble, &Pebble::calendarSyncEnabledChanged, this, &DBusPebble::CalendarSyncEnabledChanged);
 }
 
@@ -238,6 +239,31 @@ void DBusPebble::SetImperialUnits(bool imperialUnits)
 {
     qDebug() << "setting imperial units" << imperialUnits;
     m_pebble->setImperialUnits(imperialUnits);
+}
+
+void DBusPebble::onProfileConnectionSwitchChanged(bool connected) {
+    if (connected)
+        emit ProfileWhenConnectedChanged();
+    else
+        emit ProfileWhenDisconnectedChanged();
+}
+
+QString DBusPebble::ProfileWhenConnected() {
+    return m_pebble->profileWhen(true);
+}
+
+QString DBusPebble::ProfileWhenDisconnected() {
+    return m_pebble->profileWhen(false);
+}
+
+void DBusPebble::SetProfileWhenConnected(const QString &profile) {
+    qDebug() << "setting connected profile: " << profile;
+    m_pebble->setProfileWhen(true, profile);
+}
+
+void DBusPebble::SetProfileWhenDisconnected(const QString &profile) {
+    qDebug() << "setting disconnected profile: " << profile;
+    m_pebble->setProfileWhen(false, profile);
 }
 
 bool DBusPebble::CalendarSyncEnabled() const

@@ -108,6 +108,11 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
     settings.beginGroup("calendar");
     m_calendarSyncEnabled = settings.value("calendarSyncEnabled", true).toBool();
     settings.endGroup();
+
+    settings.beginGroup("profileWhen");
+    m_profileWhenConnected = settings.value("connected", "").toString();
+    m_profileWhenDisconnected = settings.value("disconnected", "").toString();
+    settings.endGroup();
 }
 
 QBluetoothAddress Pebble::address() const
@@ -366,6 +371,29 @@ void Pebble::setCalendarSyncEnabled(bool enabled)
 bool Pebble::calendarSyncEnabled() const
 {
     return m_calendarSyncEnabled;
+}
+
+QString Pebble::profileWhen(bool connected) const {
+    if (connected)
+        return m_profileWhenConnected;
+    else
+        return m_profileWhenDisconnected;
+}
+
+void Pebble::setProfileWhen(const bool connected, const QString &profile)
+{
+    QString *profileWhen = connected?&m_profileWhenConnected:&m_profileWhenDisconnected;
+    if (profileWhen == profile) {
+        return;
+    }
+    *profileWhen = profile;
+    emit profileConnectionSwitchChanged(connected);
+
+    QSettings settings(m_storagePath + "/appsettings.conf", QSettings::IniFormat);
+    settings.beginGroup("profileWhen");
+
+    settings.setValue(connected?"connected":"disconnected", *profileWhen);
+    settings.endGroup();
 }
 
 void Pebble::syncCalendar(const QList<CalendarEvent> &items)

@@ -30,6 +30,8 @@ Pebble::Pebble(const QDBusObjectPath &path, QObject *parent):
     QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "LogsDumped", this, SIGNAL(logsDumped(bool)));
     QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "HealthParamsChanged", this, SIGNAL(healthParamsChanged()));
     QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "ImperialUnitsChanged", this, SIGNAL(imperialUnitsChanged()));
+    QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "ProfileWhenConnectedChanged", this, SIGNAL(profileWhenConnectedChanged()));
+    QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "ProfileWhenDisconnectedChanged", this, SIGNAL(profileWhenDisconnectedChanged()));
     QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "CalendarSyncEnabledChanged", this, SIGNAL(calendarSyncEnabledChanged()));
 
     dataChanged();
@@ -156,6 +158,28 @@ void Pebble::setImperialUnits(bool imperialUnits)
 {
     qDebug() << "setting im units" << imperialUnits;
     m_iface->call("SetImperialUnits", imperialUnits);
+}
+
+QString Pebble::profileWhenConnected()
+{
+    return fetchProperty("ProfileWhenConnected").toString();
+}
+
+QString Pebble::profileWhenDisconnected()
+{
+    return fetchProperty("ProfileWhenDisconnected").toString();
+}
+
+void Pebble::setProfileWhenConnected(const QString &profile)
+{
+    qDebug() << "setting profile when connected: " << profile;
+    m_iface->call("SetProfileWhenConnected", profile);
+}
+
+void Pebble::setProfileWhenDisconnected(const QString &profile)
+{
+    qDebug() << "setting profile when disconnected: " << profile;
+    m_iface->call("SetProfileWhenDisconnected", profile);
 }
 
 bool Pebble::calendarSyncEnabled() const

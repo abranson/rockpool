@@ -27,6 +27,8 @@ class Pebble : public QObject
     Q_PROPERTY(bool upgradingFirmware READ upgradingFirmware NOTIFY upgradingFirmwareChanged)
     Q_PROPERTY(QVariantMap healthParams READ healthParams WRITE setHealthParams NOTIFY healthParamsChanged)
     Q_PROPERTY(bool imperialUnits READ imperialUnits WRITE setImperialUnits NOTIFY imperialUnitsChanged)
+    Q_PROPERTY(QString profileWhenConnected READ profileWhenConnected WRITE setProfileWhenConnected NOTIFY profileWhenConnectedChanged)
+    Q_PROPERTY(QString profileWhenDisconnected READ profileWhenDisconnected WRITE setProfileWhenDisconnected NOTIFY profileWhenDisconnectedChanged)
     Q_PROPERTY(bool calendarSyncEnabled READ calendarSyncEnabled WRITE setCalendarSyncEnabled NOTIFY calendarSyncEnabledChanged)
 
 public:
@@ -59,6 +61,11 @@ public:
     bool imperialUnits() const;
     void setImperialUnits(bool imperialUnits);
 
+    QString profileWhenConnected();
+    void setProfileWhenConnected(const QString &profile);
+    QString profileWhenDisconnected();
+    void setProfileWhenDisconnected(const QString &profile);
+
     bool calendarSyncEnabled() const;
     void setCalendarSyncEnabled(bool enabled);
 
@@ -85,6 +92,8 @@ signals:
     void logsDumped(bool success);
     void healthParamsChanged();
     void imperialUnitsChanged();
+    void profileWhenDisconnectedChanged();
+    void profileWhenConnectedChanged();
     void calendarSyncEnabledChanged();
 
     void openURL(const QString &uuid, const QString &url);

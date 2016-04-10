@@ -13,7 +13,7 @@ ApplicationWindow {
     initialPage: Qt.resolvedUrl("pages/LoadingPage.qml")
     cover: Qt.resolvedUrl("cover/CoverPage.qml")
     property int curPebble: -1
-    property var sysProfiles: ['ignore']
+    property var sysProfiles: [ ]
 
     ServiceController {
         id: serviceController
@@ -44,7 +44,7 @@ ApplicationWindow {
         iface: "com.nokia.profiled"
     }
     function getProfiles() {
-        if(sysProfiles.length===1) {
+        if(sysProfiles.length===0) {
             profiled.typedCall("get_profiles",[],
                function(r){sysProfiles=[].concat(sysProfiles,r);console.log("Now",sysProfiles,sysProfiles.length)},
                function(e){console.log("com.nokia.profiled error",e)})

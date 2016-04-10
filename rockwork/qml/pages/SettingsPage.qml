@@ -17,23 +17,7 @@ Page {
             PageHeader {
                 title: qsTr("Settings")
             }
-            Slider {
-                width: parent.width
-                label: qsTr("Distance Units")
-                valueText: [qsTr("Metric"), qsTr("Imperial")][value]
-                minimumValue: 0
-                maximumValue: 1
-                stepSize: 1
-                onValueChanged: {
-                    root.pebble.imperialUnits = (value===1)
-                }
-                value: (root.pebble.imperialUnits) ? 1 : 0
-            }
-            Separator {
-                width: parent.width
-                height: Theme.paddingSmall
-                color: Theme.secondaryHighlightColor
-            }
+
             TextSwitch {
                 width: parent.width
                 text: qsTr("Sync calendar to timeline")
@@ -42,37 +26,70 @@ Page {
                     root.pebble.calendarSyncEnabled = checked
                 }
             }
-            Separator {
+
+            ComboBox {
                 width: parent.width
-                height: Theme.paddingSmall
-                color: Theme.secondaryHighlightColor
+                label: qsTr("Distance Units")
+                menu: ContextMenu {
+                        MenuItem {
+                            text: qsTr("Metric")
+                        }
+                        MenuItem {
+                            text: qsTr("Imperial")
+                        }
+                    }
+                onCurrentIndexChanged: {
+                    root.pebble.imperialUnits = (currentIndex===1)
+                }
+                currentIndex: (root.pebble.imperialUnits) ? 1 : 0
             }
-            Repeater {
-                model: [[0,qsTr("Connected")],[1,qsTr("Disconnected")]]
-                delegate: Slider {
-                    width: parent.width
-                    label: qsTr("Profile when")+" "+modelData[1]
-                    minimumValue: 0
-                    maximumValue: rockPool.sysProfiles.length-1
-                    stepSize: 1
-                    valueText: rockPool.sysProfiles[value]
-                    enabled: rockPool.sysProfiles.length>1
-                    visible: enabled
-                    onValueChanged: {
-                        if(value===0) {
-                            //pebble.setProfile(modelData[0],'')
-                            console.log("Disable profile change for",modelData[1])
-                        } else {
-                            //pebble.setProfile(modelData[0],rockPool.sysProfiles[value])
-                            console.log("Set profile",rockPool.sysProfiles[value],"for",modelData[1])
+
+            Label {
+                text: qsTr("Automatic Profile")
+                font.family: Theme.fontFamilyHeading
+                color: Theme.highlightColor
+                anchors.right: parent.right
+                anchors.rightMargin: Theme.paddingMedium
+            }
+            ComboBox {
+                width: parent.width
+                label: qsTr("Connected")
+                menu: ContextMenu {
+                    MenuItem {
+                        text: qsTr("no change")
+                    }
+                    Repeater {
+                        model: rockPool.sysProfiles
+                        delegate: MenuItem {
+                            text: modelData
+                            down: modelData === root.pebble.profileWhenConnected || (root.pebble.profileWhenConnected === "" && index === 0)
                         }
                     }
                 }
+                value: root.pebble.profileWhenConnected === "" ? qsTr("no change") : root.pebble.profileWhenConnected
+                onCurrentIndexChanged: {
+                    root.pebble.profileWhenConnected = currentIndex == 0 ? "" : currentItem.text
+                }
             }
-            Separator {
+            ComboBox {
                 width: parent.width
-                height: Theme.paddingSmall
-                color: Theme.secondaryHighlightColor
+                label: qsTr("Disconnected")
+                menu: ContextMenu {
+                    MenuItem {
+                        text: qsTr("no change")
+                    }
+                    Repeater {
+                        model: rockPool.sysProfiles
+                        delegate: MenuItem {
+                            text: modelData
+                            down: modelData === root.pebble.profileWhenDisconnected || (root.pebble.profileWhenConnected === "" && index == 0)
+                        }
+                    }
+                }
+                value: root.pebble.profileWhenDisconnected === "" ? qsTr("no change") : root.pebble.profileWhenDisconnected
+                onCurrentIndexChanged: {
+                    root.pebble.profileWhenDisconnected = currentIndex == 0 ? "" : currentItem.text
+                }
             }
         }
         Component.onCompleted: rockPool.getProfiles()

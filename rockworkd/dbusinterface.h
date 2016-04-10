@@ -28,6 +28,8 @@ signals:
 
     void HealthParamsChanged();
     void ImperialUnitsChanged();
+    void ProfileWhenConnectedChanged();
+    void ProfileWhenDisconnectedChanged();
     void CalendarSyncEnabledChanged();
 
 public slots:
@@ -67,6 +69,14 @@ public slots:
 
     bool ImperialUnits() const;
     void SetImperialUnits(bool imperialUnits);
+
+    QString ProfileWhenConnected();
+    void SetProfileWhenConnected(const QString &profile);
+
+    QString ProfileWhenDisconnected();
+    void SetProfileWhenDisconnected(const QString &profile);
+
+    void onProfileConnectionSwitchChanged(bool connected);
 
     bool CalendarSyncEnabled() const;
     void SetCalendarSyncEnabled(bool enabled);
