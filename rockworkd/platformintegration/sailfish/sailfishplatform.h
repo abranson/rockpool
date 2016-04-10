@@ -38,6 +38,7 @@ public:
     void actionTriggered(const QUuid &uuid, const QString &actToken) const override;
     void removeNotification(const QUuid &uuid) const override;
     bool deviceIsActive() const override;
+    void setProfile(const QString &profile) const override;
 
 public slots:
     void onNotification(watchfish::Notification *notification);

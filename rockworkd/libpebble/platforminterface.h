@@ -16,6 +16,7 @@ public:
 // Device state
 public:
     virtual bool deviceIsActive() const = 0;
+    virtual void setProfile(const QString &profile) const = 0;
 signals:
     void deviceActiveChanged();
 

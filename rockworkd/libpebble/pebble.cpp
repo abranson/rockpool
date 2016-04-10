@@ -113,6 +113,10 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
     m_profileWhenConnected = settings.value("connected", "").toString();
     m_profileWhenDisconnected = settings.value("disconnected", "").toString();
     settings.endGroup();
+
+    QObject::connect(m_connection, &WatchConnection::watchConnected, this, &Pebble::profileSwitchRequired);
+    QObject::connect(m_connection, &WatchConnection::watchDisconnected, this, &Pebble::profileSwitchRequired);
+    QObject::connect(this, &Pebble::profileConnectionSwitchChanged, this, &Pebble::profileSwitchRequired);
 }
 
 QBluetoothAddress Pebble::address() const
@@ -533,6 +537,14 @@ void Pebble::onPebbleDisconnected()
 {
     qDebug() << "Pebble disconnected:" << m_name;
     emit pebbleDisconnected();
+}
+
+void Pebble::profileSwitchRequired()
+{
+    QString *targetProfile = m_connection->isConnected()?&m_profileWhenConnected:&m_profileWhenDisconnected;
+    if (targetProfile->isEmpty()) return;
+    qDebug() << "Request Profile Switch: connected=" << m_connection->isConnected() << " profile=" << targetProfile;
+     Core::instance()->platform()->setProfile(*targetProfile);
 }
 
 void Pebble::pebbleVersionReceived(const QByteArray &data)

@@ -40,6 +40,8 @@ SailfishPlatform::SailfishPlatform(QObject *parent):
 
     // Device - MCE
     m_nokiaMCE = new ModeControlEntity(this);
+
+    // Profile switching
 }
 SailfishPlatform::~SailfishPlatform()
 {
@@ -311,4 +313,19 @@ void SailfishPlatform::mediaPropertiesChanged(const QString &interface, const QV
 bool SailfishPlatform::deviceIsActive() const
 {
     return m_nokiaMCE->isActive();
+}
+
+void SailfishPlatform::setProfile(const QString &profile) const
+{
+    QDBusReply<bool> res = QDBusConnection::sessionBus().call(
+                QDBusMessage::createMethodCall("com.nokia.profiled", "/com/nokia/profiled", "com.nokia.profiled", "set_profile")
+                << profile);
+    if (res.isValid()) {
+        if (!res.value()) {
+            qWarning() << "Unable to set profile" << profile;
+        }
+    }
+    else {
+        qWarning() << res.error().message();
+    }
 }

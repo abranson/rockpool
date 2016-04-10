@@ -118,6 +118,7 @@ public slots:
 private slots:
     void onPebbleConnected();
     void onPebbleDisconnected();
+    void profileSwitchRequired();
     void pebbleVersionReceived(const QByteArray &data);
     void factorySettingsReceived(const QByteArray &data);
     void phoneVersionAsked(const QByteArray &data);
