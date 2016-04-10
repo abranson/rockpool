@@ -1,7 +1,15 @@
-* Wed Apr 06 2016 Andrew Branson <github@andrewbranson.net> 0.9-1
+* Sun Apr 10 2016 Andrew Branson <github@andrewbranson.net> 0.9-3
+- Automatic phone profile switching on watch connection/disconnection
+- Screenshot sharing
+- Added some default notification icons
+- Gecko confirm handler and settings page header (showing page url)
+
+* Fri Apr 08 2016 Andrew Branson <github@andrewbranson.net> 0.9-2
+- Add third notification filter - hide only when phone is unlocked
+
+* Fri Apr 08 2016 Andrew Branson <github@andrewbranson.net> 0.9-1
 - Switched web engine to Gecko with QtMozEmbed, which should fix most app settings problems.
 - Firmware update indicator on main page
-- Add third notification filter - hide only when phone is unlocked
 - German Translation
 
 * Sun Apr 03 2016 Andrew Branson <github@andrewbranson.net> 0.8-3

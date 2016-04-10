@@ -40,8 +40,6 @@ SailfishPlatform::SailfishPlatform(QObject *parent):
 
     // Device - MCE
     m_nokiaMCE = new ModeControlEntity(this);
-
-    // Profile switching
 }
 SailfishPlatform::~SailfishPlatform()
 {
