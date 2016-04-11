@@ -17,6 +17,7 @@
 #include "platforminterface.h"
 #include "ziphelper.h"
 #include "dataloggingendpoint.h"
+#include "devconnection.h"
 
 #include "QDir"
 #include <QDateTime>
@@ -119,6 +120,14 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
     QObject::connect(m_connection, &WatchConnection::watchConnected, this, &Pebble::profileSwitchRequired);
     QObject::connect(m_connection, &WatchConnection::watchDisconnected, this, &Pebble::profileSwitchRequired);
     QObject::connect(this, &Pebble::profileConnectionSwitchChanged, this, &Pebble::profileSwitchRequired);
+
+    m_devConnection = new DevConnection(this, m_connection);
+    settings.beginGroup("devConnection");
+    m_devConnection->onEnableChanged(settings.value("enabled", true).toBool()); // TODO set to false, testing only
+    m_devConnection->onPortChanged(settings.value("listenPort", 9000).toInt());
+    m_devConnection->onCloudEnableChanged(settings.value("useCloud", true).toBool()); // not implemented yet
+    settings.endGroup();
+
 }
 
 QBluetoothAddress Pebble::address() const
@@ -243,6 +252,31 @@ bool Pebble::recovery() const
 bool Pebble::upgradingFirmware() const
 {
     return m_firmwareDownloader->upgrading();
+}
+
+bool Pebble::devConEnabled() const
+{
+    return m_devConnection->enabled();
+}
+void Pebble::setDevConEnabled(bool enabled)
+{
+    m_devConnection->onEnableChanged(enabled);
+}
+quint16 Pebble::devConListenPort() const
+{
+    return m_devConnection->listenPort();
+}
+void Pebble::setDevConListenPort(quint16 port)
+{
+    m_devConnection->onPortChanged(port);
+}
+bool Pebble::devConCloudEnabled() const
+{
+    return m_devConnection->cloudEnabled();
+}
+void Pebble::setDevConCloudEnabled(bool enabled)
+{
+    m_devConnection->onCloudEnableChanged(enabled);
 }
 
 void Pebble::setHealthParams(const HealthParams &healthParams)

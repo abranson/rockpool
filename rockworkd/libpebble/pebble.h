@@ -26,6 +26,7 @@ class ScreenshotEndpoint;
 class FirmwareDownloader;
 class WatchLogEndpoint;
 class DataLoggingEndpoint;
+class DevConnection;
 
 class Pebble : public QObject
 {
@@ -73,6 +74,9 @@ public:
         NotificationDisabledActive = 1,
         NotificationEnabled = 2
     };
+    bool devConEnabled() const;
+    quint16 devConListenPort() const;
+    bool devConCloudEnabled() const;
 public slots:
     QVariantMap notificationsFilter() const;
     void setNotificationFilter(const QString &sourceId, const QString &name, const QString &icon, const NotificationFilter enabled);
@@ -81,6 +85,10 @@ public slots:
     QString findNotificationData(const QString &sourceId, const QString &key);
     void sendSimpleNotification(const QUuid &uuid, const QString &title, const QString &body);
     void sendNotification(const Notification &notification);
+
+    void setDevConEnabled(bool enabled);
+    void setDevConListenPort(quint16 port);
+    void setDevConCloudEnabled(bool enabled);
 
     void clearTimeline();
     void setCalendarSyncEnabled(bool enabled);
@@ -156,6 +164,9 @@ signals:
     void imperialUnitsChanged();
     void profileConnectionSwitchChanged(bool connected);
     void healtParamsChanged();
+    void devConEnabledChanged(bool enabled);
+    void devConListenPortChanged(quint16 port);
+    void devConCloudEnabledChanged(bool enabled);
 private:
     void setHardwareRevision(HardwareRevision hardwareRevision);
 
@@ -198,6 +209,7 @@ private:
     QString m_profileWhenDisconnected = "ignore";
     HealthParams m_healthParams;
     bool m_imperialUnits = false;
+    DevConnection *m_devConnection;
 };
 
 /*

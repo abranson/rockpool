@@ -23,6 +23,7 @@ PkgConfigBR:
 - Qt5Network
 - Qt5Location
 - qt5-boostable
+- Qt5WebSockets
 - mpris-qt5
 - timed-qt5
 - mlite5
