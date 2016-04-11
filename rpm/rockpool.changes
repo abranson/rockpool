@@ -1,3 +1,6 @@
+* Sun Apr 10 2016 Andrew Branson <github@andrewbranson.net> 0.9-4
+- Fix old notification settings defaulting to off
+
 * Sun Apr 10 2016 Andrew Branson <github@andrewbranson.net> 0.9-3
 - Automatic phone profile switching on watch connection/disconnection
 - Screenshot sharing

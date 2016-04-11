@@ -299,7 +299,10 @@ QHash<QString, Pebble::NotificationFilter> Pebble::notificationsFilter() const
     QSettings s(settingsFile, QSettings::IniFormat);
     foreach (const QString &key, s.allKeys()) {
         if(!key.isEmpty()) {
-            ret.insert(key, Pebble::NotificationFilter(s.value(key).toInt()));
+            if (s.value(key).toString() == "true")
+                ret.insert(key, Pebble::NotificationEnabled);
+            else
+                ret.insert(key, Pebble::NotificationFilter(s.value(key).toInt()));
         }
     }
     return ret;
