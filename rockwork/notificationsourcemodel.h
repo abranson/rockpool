@@ -34,13 +34,13 @@ public:
     QVariant data(const QModelIndex &index, int role) const override;
     QHash<int, QByteArray> roleNames() const override;
 
-    void insert(const QString &sourceId, int enabled);
+    void insert(const QString &sourceId, int enabled, const QString &icon);
 
 signals:
     void countChanged();
 
 private:
-    NotificationSourceItem fromDesktopFile(const QString &sourceId);
+    NotificationSourceItem fromDesktopFile(const QString &sourceId, const QString &icon);
 
 private:
     QList<NotificationSourceItem> m_sources;

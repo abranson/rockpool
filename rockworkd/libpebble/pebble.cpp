@@ -292,17 +292,23 @@ QString Pebble::storagePath() const
     return m_storagePath;
 }
 
-QHash<QString, Pebble::NotificationFilter> Pebble::notificationsFilter() const
+ QVariantMap Pebble::notificationsFilter() const
 {
-    QHash<QString, Pebble::NotificationFilter> ret;
+    QVariantMap ret;
     QString settingsFile = m_storagePath + "/notifications.conf";
+    QString iconFile = m_storagePath + "/notificationIcons.conf";
     QSettings s(settingsFile, QSettings::IniFormat);
+    QSettings i(iconFile, QSettings::IniFormat);
     foreach (const QString &key, s.allKeys()) {
         if(!key.isEmpty()) {
+            QVariantMap notif;
             if (s.value(key).toString() == "true")
-                ret.insert(key, Pebble::NotificationEnabled);
+                notif.insert("enabled", Pebble::NotificationEnabled);
             else
-                ret.insert(key, Pebble::NotificationFilter(s.value(key).toInt()));
+                notif.insert("enabled", Pebble::NotificationFilter(s.value(key).toInt()));
+            notif.insert("icon", i.value(key).toString());
+            qDebug() << key << notif.value("icon") << notif.value("enabled");
+            ret.insert(key, notif);
         }
     }
     return ret;
@@ -310,13 +316,28 @@ QHash<QString, Pebble::NotificationFilter> Pebble::notificationsFilter() const
 
 void Pebble::setNotificationFilter(const QString &sourceId, NotificationFilter enabled)
 {
+    QVariantMap notifFilter = notificationsFilter().value(sourceId).toMap();
+    setNotificationFilter(sourceId, enabled, notifFilter.value("icon").toString());
+}
+
+void Pebble::setNotificationFilter(const QString &sourceId, NotificationFilter enabled, const QString &icon)
+{
     QString settingsFile = m_storagePath + "/notifications.conf";
+    QString iconFile = m_storagePath + "/notificationIcons.conf";
     QSettings s(settingsFile, QSettings::IniFormat);
-    qDebug() << "Setting" << sourceId << "to" << enabled << "while it's" << s.value(sourceId,"true").toInt();
+    QSettings i(iconFile, QSettings::IniFormat);
+    qDebug() << "Setting" << sourceId << "with icon" << icon << "to" << enabled << "while it's" << s.value(sourceId,2).toInt();
+    bool changed = false;
     if (!s.contains(sourceId) || s.value(sourceId).toInt() != enabled) {
         s.setValue(sourceId, enabled);
-        emit notificationFilterChanged(sourceId, enabled);
+        changed = true;
     }
+    if (!i.contains(sourceId) || i.value(sourceId).toString() != icon) {
+        i.setValue(sourceId, icon);
+        changed = true;
+    }
+    if (changed)
+        emit notificationFilterChanged(sourceId, enabled, icon);
 }
 
 void Pebble::sendSimpleNotification(const QUuid &uuid, const QString &title, const QString &body) {
@@ -328,13 +349,14 @@ void Pebble::sendSimpleNotification(const QUuid &uuid, const QString &title, con
 
 void Pebble::sendNotification(const Notification &notification)
 {
-    NotificationFilter f = notificationsFilter().value(notification.sourceId(), NotificationEnabled);
+    QVariantMap notifFilter = notificationsFilter().value(notification.sourceId()).toMap();
+    NotificationFilter f = NotificationFilter(notifFilter.value("enabled", QVariant(NotificationEnabled)).toInt());
     if (f==NotificationDisabled || (f==Pebble::NotificationDisabledActive && Core::instance()->platform()->deviceIsActive())) {
         qDebug() << "Notifications for" << notification.sourceId() << "disabled.";
         return;
     }
     // In case it wasn't there before, make sure to write it to the config now so it will appear in the config app.
-    setNotificationFilter(notification.sourceId(), NotificationEnabled);
+    setNotificationFilter(notification.sourceId(), NotificationEnabled, notification.icon());
 
     qDebug() << "Sending notification from source" << notification.sourceId() << "to watch";
 

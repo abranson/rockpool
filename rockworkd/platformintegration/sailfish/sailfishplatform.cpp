@@ -142,6 +142,7 @@ void SailfishPlatform::onNotification(watchfish::Notification *notification) {
     }
     n.setSubject(notification->summary());
     n.setBody(notification->body());
+    n.setIcon(notification->icon());
     foreach (const QString &action, notification->actions()) {
         if (action == "default") {
             n.setActToken(action);

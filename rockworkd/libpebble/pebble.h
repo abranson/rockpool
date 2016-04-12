@@ -72,7 +72,8 @@ public:
         NotificationEnabled
     };
 public slots:
-    QHash<QString, NotificationFilter> notificationsFilter() const;
+    QVariantMap notificationsFilter() const;
+    void setNotificationFilter(const QString &sourceId, NotificationFilter enabled, const QString &icon);
     void setNotificationFilter(const QString &sourceId, NotificationFilter enabled);
     void sendSimpleNotification(const QUuid &uuid, const QString &title, const QString &body);
     void sendNotification(const Notification &notification);
@@ -137,7 +138,7 @@ private slots:
 signals:
     void pebbleConnected();
     void pebbleDisconnected();
-    void notificationFilterChanged(const QString &sourceId, NotificationFilter enabled);
+    void notificationFilterChanged(const QString &sourceId, NotificationFilter enabled, const QString &icon);
     void musicControlPressed(MusicControlButton control);
     void installedAppsChanged();
     void openURL(const QString &uuid, const QString &url);

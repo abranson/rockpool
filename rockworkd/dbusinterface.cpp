@@ -59,12 +59,7 @@ QString DBusPebble::CandidateFirmwareVersion() const
 
 QVariantMap DBusPebble::NotificationsFilter() const
 {
-    QVariantMap ret;
-    QHash<QString, Pebble::NotificationFilter> filter = m_pebble->notificationsFilter();
-    foreach (const QString &sourceId, filter.keys()) {
-        ret.insert(sourceId, filter.value(sourceId));
-    }
-    return ret;
+    return m_pebble->notificationsFilter();
 }
 
 void DBusPebble::SetNotificationFilter(const QString &sourceId, int enabled)

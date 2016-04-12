@@ -22,7 +22,7 @@ Pebble::Pebble(const QDBusObjectPath &path, QObject *parent):
     QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "Disconnected", this, SLOT(pebbleDisconnected()));
     QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "InstalledAppsChanged", this, SLOT(refreshApps()));
     QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "OpenURL", this, SIGNAL(openURL(const QString&, const QString&)));
-    QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "NotificationFilterChanged", this, SLOT(notificationFilterChanged(const QString &, int)));
+    QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "NotificationFilterChanged", this, SLOT(notificationFilterChanged(const QString &, int, const QString &)));
     QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "ScreenshotAdded", this, SLOT(screenshotAdded(const QString &)));
     QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "ScreenshotRemoved", this, SLOT(screenshotRemoved(const QString &)));
     QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "FirmwareUpgradeAvailableChanged", this, SLOT(refreshFirmwareUpdateInfo()));
@@ -279,9 +279,9 @@ void Pebble::pebbleDisconnected()
     emit connectedChanged();
 }
 
-void Pebble::notificationFilterChanged(const QString &sourceId, int enabled)
+void Pebble::notificationFilterChanged(const QString &sourceId, int enabled, const QString &icon)
 {
-    m_notifications->insert(sourceId, enabled);
+    m_notifications->insert(sourceId, enabled, icon);
 }
 
 void Pebble::refreshNotifications()
@@ -298,7 +298,10 @@ void Pebble::refreshNotifications()
     arg >> mapEntryVariant;
 
     foreach (const QString &sourceId, mapEntryVariant.keys()) {
-        m_notifications->insert(sourceId, mapEntryVariant.value(sourceId).toInt());
+        const QDBusArgument &arg2 = qvariant_cast<QDBusArgument>(mapEntryVariant.value(sourceId));
+        QVariantMap notifEntry;
+        arg2 >> notifEntry;
+        m_notifications->insert(sourceId, notifEntry.value("enabled").toInt(), notifEntry.value("icon").toString());
     }
 }
 

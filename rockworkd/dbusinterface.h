@@ -17,7 +17,7 @@ public:
 signals:
     void Connected();
     void Disconnected();
-    void NotificationFilterChanged(const QString &sourceId, int enabled);
+    void NotificationFilterChanged(const QString &sourceId, int enabled, const QString &icon);
     void InstalledAppsChanged();
     void OpenURL(const QString &uuid, const QString &url);
     void ScreenshotAdded(const QString &filename);

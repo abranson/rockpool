@@ -483,17 +483,17 @@
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="249"/>
-        <source>Manage notifications</source>
+        <source>Notifications</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="254"/>
-        <source>Manage Apps</source>
+        <source>Watch Apps</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="260"/>
-        <source>Manage Watchfaces</source>
+        <source>Watchfaces</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -503,7 +503,7 @@
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="273"/>
-        <source>Manage Firmware</source>
+        <source>Firmware</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -520,17 +520,17 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/NotificationsPage.qml" line="85"/>
+        <location filename="../qml/pages/NotificationsPage.qml" line="63"/>
         <source>Always Enabled</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/NotificationsPage.qml" line="91"/>
+        <location filename="../qml/pages/NotificationsPage.qml" line="69"/>
         <source>Disabled When Active</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/NotificationsPage.qml" line="97"/>
+        <location filename="../qml/pages/NotificationsPage.qml" line="75"/>
         <source>Always Disabled</source>
         <translation type="unfinished"></translation>
     </message>

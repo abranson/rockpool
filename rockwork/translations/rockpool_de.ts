@@ -483,28 +483,28 @@
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="249"/>
-        <source>Manage notifications</source>
-        <translation>Benachrichtigungen verwalten</translation>
+        <source>Notifications</source>
+        <translation>Benachrichtigungen</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="254"/>
-        <source>Manage Apps</source>
-        <translation>Anwendungen verwalten</translation>
+        <source>Watch Apps</source>
+        <translation>Anwendungen</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="260"/>
-        <source>Manage Watchfaces</source>
-        <translation>Zifferblätter verwalten</translation>
+        <source>Watchfaces</source>
+        <translation>Zifferblätter</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/MainMenuPage.qml" line="273"/>
+        <source>Firmware</source>
+        <translation>Firmware</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="266"/>
         <source>Settings</source>
         <translation>Einstellungen</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="273"/>
-        <source>Manage Firmware</source>
-        <translation>Firmware verwalten</translation>
     </message>
 </context>
 <context>
@@ -520,19 +520,19 @@
         <translation>Einträge hier hinzugefügt werden, sowie Benachrichtigungen im Telefon erscheinen. Ausgewählte Meldungen werden auf Ihrem Pebble Smartwatch angezeigt.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NotificationsPage.qml" line="85"/>
+        <location filename="../qml/pages/NotificationsPage.qml" line="63"/>
         <source>Always Enabled</source>
         <translation>Immer aktiviert</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NotificationsPage.qml" line="91"/>
+        <location filename="../qml/pages/NotificationsPage.qml" line="69"/>
         <source>Disabled When Active</source>
-        <translation>Deaktiviert Wenn Aktiv</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/NotificationsPage.qml" line="97"/>
+        <location filename="../qml/pages/NotificationsPage.qml" line="75"/>
         <source>Always Disabled</source>
-        <translation>Immer deaktiviert</translation>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

@@ -44,6 +44,8 @@ public:
 
     QString body() const;
     void setBody(const QString &body);
+    QString icon() const;
+    void setIcon(const QString &icon);
 
     NotificationType type() const;
     void setType(NotificationType type);
@@ -58,6 +60,7 @@ private:
     QString m_sender;
     QString m_subject;
     QString m_body;
+    QString m_icon;
     NotificationType m_type = NotificationTypeGeneric;
     QString m_actToken;
 };

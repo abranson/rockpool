@@ -484,28 +484,28 @@
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="249"/>
-        <source>Manage notifications</source>
-        <translation>Керувати Повідомленнями</translation>
+        <source>Notifications</source>
+        <translation>Повідомленнями</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="254"/>
-        <source>Manage Apps</source>
-        <translation>Керувати Додатками</translation>
+        <source>Watch Apps</source>
+        <translation>Додатками</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="260"/>
-        <source>Manage Watchfaces</source>
-        <translation>Керувати Циферблатами</translation>
+        <source>Watchfaces</source>
+        <translation>Циферблатами</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/MainMenuPage.qml" line="273"/>
+        <source>Firmware</source>
+        <translation>Прошивкою</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="266"/>
         <source>Settings</source>
         <translation>Налаштування</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="273"/>
-        <source>Manage Firmware</source>
-        <translation>Керувати Прошивкою</translation>
     </message>
 </context>
 <context>
@@ -521,17 +521,17 @@
         <translation>Записи нижче будуть з&apos;являтися згідно з їх появою в телефоні. Вибрані категорії будуть відсилатися до годиннику Pebble.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NotificationsPage.qml" line="85"/>
+        <location filename="../qml/pages/NotificationsPage.qml" line="63"/>
         <source>Always Enabled</source>
         <translation>Завжди Ввімкнено</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NotificationsPage.qml" line="91"/>
+        <location filename="../qml/pages/NotificationsPage.qml" line="69"/>
         <source>Disabled When Active</source>
         <translation>Вимкнуто Якщо Авктивний</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NotificationsPage.qml" line="97"/>
+        <location filename="../qml/pages/NotificationsPage.qml" line="75"/>
         <source>Always Disabled</source>
         <translation>Завжди Вимкнуто</translation>
     </message>

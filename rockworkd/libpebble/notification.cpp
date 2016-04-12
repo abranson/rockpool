@@ -66,6 +66,16 @@ void Notification::setBody(const QString &body)
     m_body = body;
 }
 
+QString Notification::icon() const
+{
+    return m_icon;
+}
+
+void Notification::setIcon(const QString &icon)
+{
+    m_icon = icon;
+}
+
 Notification::NotificationType Notification::type() const
 {
     return m_type;

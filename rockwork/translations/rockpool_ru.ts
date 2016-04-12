@@ -485,28 +485,28 @@
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="249"/>
-        <source>Manage notifications</source>
-        <translation>Управление Уведомлениями</translation>
+        <source>Notifications</source>
+        <translation>Уведомлениями</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="254"/>
-        <source>Manage Apps</source>
-        <translation>Управление Приложениями</translation>
+        <source>Watch Apps</source>
+        <translation>Приложениями</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="260"/>
-        <source>Manage Watchfaces</source>
-        <translation>Управление Циферблатами</translation>
+        <source>Watchfaces</source>
+        <translation>Циферблатами</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/MainMenuPage.qml" line="273"/>
+        <source>Firmware</source>
+        <translation>Прошивкой</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="266"/>
         <source>Settings</source>
         <translation>Системные Настройки</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="273"/>
-        <source>Manage Firmware</source>
-        <translation>Управление Прошивкой</translation>
     </message>
 </context>
 <context>
@@ -522,17 +522,17 @@
         <translation>Категории уведомлений ниже будут появляться по мере их поступления с телефона. Выбранные категории будут появляться на ваших часах Pebble.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NotificationsPage.qml" line="85"/>
+        <location filename="../qml/pages/NotificationsPage.qml" line="63"/>
         <source>Always Enabled</source>
         <translation>Всегда Включено</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NotificationsPage.qml" line="91"/>
+        <location filename="../qml/pages/NotificationsPage.qml" line="69"/>
         <source>Disabled When Active</source>
         <translation>Выключено Когда Активен</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NotificationsPage.qml" line="97"/>
+        <location filename="../qml/pages/NotificationsPage.qml" line="75"/>
         <source>Always Disabled</source>
         <translation>Всегда Выключено</translation>
     </message>
