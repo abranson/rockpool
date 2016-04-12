@@ -246,18 +246,18 @@ Page {
 
         mainMenuModel.append({
                                  icon: "icon-m-alarm",
-                                 text: qsTr("Manage notifications"),
+                                 text: qsTr("Notifications"),
                                  page: "NotificationsPage.qml"
                              })
         mainMenuModel.append({
                                  icon: "icon-m-toy",
-                                 text: qsTr("Manage Apps"),
+                                 text: qsTr("Watch Apps"),
                                  page: "InstalledAppsPage.qml",
                                  showWatchApps: true
                              })
         mainMenuModel.append({
                                  icon: "icon-m-watch",
-                                 text: qsTr("Manage Watchfaces"),
+                                 text: qsTr("Watchfaces"),
                                  page: "InstalledAppsPage.qml",
                                  showWatchFaces: true
                              })
@@ -270,7 +270,7 @@ Page {
 
         mainMenuModel.append({
                                  icon: "icon-m-up",
-                                 text: qsTr("Manage Firmware"),
+                                 text: qsTr("Firmware"),
                                  page: "FirmwareUpgradePage.qml"
                              })
     }
