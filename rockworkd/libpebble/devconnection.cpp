@@ -6,6 +6,7 @@
 #include <QException>
 #include <QWebSocketServer>
 #include <QWebSocket>
+#include <QTemporaryFile>
 
 #include <QDebug>
 
@@ -77,14 +78,12 @@ void DevConnection::onRawIncomingMsg(const QByteArray &msg)
     QByteArray data=QByteArray(msg);
     data.prepend(char(0));
     broadcast(data);
-    qDebug() << "Broadcast inMsg: " << data.toHex();
 }
 void DevConnection::onRawOutgoingMsg(const QByteArray &msg)
 {
     QByteArray data=QByteArray(msg);
     data.prepend(char(1));
     broadcast(data);
-    qDebug() << "Broadcast outMsg: " << data.toHex();
 }
 void DevConnection::onAppLogMsg(const QByteArray &msg)
 {
@@ -133,6 +132,10 @@ void DevConnection::sendToWatch(const QByteArray &msg)
 {
     m_connection->writeRawData(msg);
 }
+void DevConnection::installBundle(QString file)
+{
+    m_pebble->sideloadApp(file);
+}
 
 // private slots/handlers
 void DevConnection::socketConnected()
@@ -169,8 +172,6 @@ void DevConnection::rawDataReceived(QByteArray data)
         pkt->execute();
         if(!pkt->isValid()) {
             delete pkt;
-        } else {
-            QObject::connect(pkt,&DevPacket::complete,[pkt](){delete pkt;});
         }
      } catch(QException &e) {
          qWarning() << "DevPacket not understood: " << data;
@@ -188,6 +189,7 @@ void DevConnection::broadcast(const QByteArray &msg)
                 delete sock;
             }
         }
+        qDebug() << "Broadcast " << (msg.at(0)==1?"outMsg":"inMsg") << ": " << msg.toHex();
     }
 }
 
@@ -199,7 +201,7 @@ DevPacket::DevPacket(QByteArray &data, QWebSocket *sock, DevConnection *srv):
     m_srv(srv)
 {
     QObject::connect(sock,&QWebSocket::disconnected,this,&DevPacket::complete);
-    //QObject::connect(sock,&QWebSocket::destroyed,this,&DevPacket::complete);
+    QObject::connect(this,&DevPacket::complete,this,&DevPacket::deleteLater);
 }
 void DevPacket::serverDown()
 {
@@ -236,6 +238,32 @@ public:
     bool isReply() const {return true;}
     void execute() {m_sock->sendBinaryMessage(m_data);m_sock=nullptr;}
 };
+class DevPacketInstall: public DevPacket
+{
+public:
+    DevPacketInstall(QByteArray &data, QWebSocket *sock, DevConnection *srv):
+        DevPacket(data,sock,srv)
+    {
+        m_sock = sock;
+        m_data.remove(0,1);
+    }
+    bool isRequest() const {return true;}
+    bool isReply() const {return false;}
+    void execute() {
+        QTemporaryFile f;
+        if(f.open()) {
+            f.write(m_data);
+            f.flush();
+            f.close();
+            qDebug() << "Installing bundle from file " << f.fileName();
+            m_srv->installBundle(f.fileName());
+            m_data.fill('\0',4);
+            m_data.prepend('\5');
+            m_sock->sendBinaryMessage(m_data);
+            m_sock=nullptr;
+        }
+    }
+};
 
 DevPacket * DevPacket::CreatePacket(QByteArray &data, QWebSocket *sock, DevConnection *srv)
 {
@@ -247,6 +275,8 @@ DevPacket * DevPacket::CreatePacket(QByteArray &data, QWebSocket *sock, DevConne
     case OCRelayToWatch:
         return new DevPacketRelay(data,sock,srv);
         break;
+    case OCInstallBundle:
+        return new DevPacketInstall(data,sock,srv);
     default:
         throw QException();
     }

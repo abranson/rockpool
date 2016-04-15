@@ -32,6 +32,7 @@ public slots:
     void onCloudEnableChanged(bool enabled);
     void onWatchConnected();
     void sendToWatch(const QByteArray &msg);
+    void installBundle(QString file);
     void onWatchDisconnected();
     void onRawIncomingMsg(const QByteArray &msg);
     void onRawOutgoingMsg(const QByteArray &msg);
