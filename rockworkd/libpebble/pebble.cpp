@@ -123,10 +123,14 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
     QObject::connect(this, &Pebble::profileConnectionSwitchChanged, this, &Pebble::profileSwitchRequired);
 
     m_devConnection = new DevConnection(this, m_connection);
+    QObject::connect(m_devConnection, &DevConnection::serverStateChanged, this, &Pebble::devConServerStateChanged);
+    QObject::connect(m_devConnection, &DevConnection::cloudStateChanged, this, &Pebble::devConCloudStateChanged);
     settings.beginGroup("devConnection");
-    m_devConnection->onEnableChanged(settings.value("enabled", true).toBool()); // TODO set to false, testing only
-    m_devConnection->onPortChanged(settings.value("listenPort", 9000).toInt());
-    m_devConnection->onCloudEnableChanged(settings.value("useCloud", true).toBool()); // not implemented yet
+    // DeveloperConnection is a backdoor to the pebble, it has no authentication whatsoever.
+    // Dont ever enable it automatically, only on-demand by explicit user request!!111
+    //m_devConnection->setEnabled(settings.value("enabled", true).toBool());
+    m_devConnection->setPort(settings.value("listenPort", 9000).toInt());
+    m_devConnection->setCloudEnabled(settings.value("useCloud", true).toBool()); // not implemented yet
     settings.endGroup();
 
 }
@@ -261,7 +265,7 @@ bool Pebble::devConEnabled() const
 }
 void Pebble::setDevConEnabled(bool enabled)
 {
-    m_devConnection->onEnableChanged(enabled);
+    m_devConnection->setEnabled(enabled);
 }
 quint16 Pebble::devConListenPort() const
 {
@@ -269,7 +273,11 @@ quint16 Pebble::devConListenPort() const
 }
 void Pebble::setDevConListenPort(quint16 port)
 {
-    m_devConnection->onPortChanged(port);
+    m_devConnection->setPort(port);
+}
+bool Pebble::devConServerState() const
+{
+    return m_devConnection->serverState();
 }
 bool Pebble::devConCloudEnabled() const
 {
@@ -277,7 +285,11 @@ bool Pebble::devConCloudEnabled() const
 }
 void Pebble::setDevConCloudEnabled(bool enabled)
 {
-    m_devConnection->onCloudEnableChanged(enabled);
+    m_devConnection->setCloudEnabled(enabled);
+}
+bool Pebble::devConCloudState() const
+{
+    return m_devConnection->cloudState();
 }
 
 void Pebble::setHealthParams(const HealthParams &healthParams)

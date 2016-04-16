@@ -20,16 +20,21 @@ public:
     bool cloudEnabled() const;
     quint16 listenPort() const;
 
+    bool serverState() const;
+    bool cloudState() const;
+
 signals:
-    void devConnected();
-    void serverDown();
+    void serverStateChanged(bool state);
+    void cloudStateChanged(bool state);
 
 public slots:
     void enableConnection(quint16 port);
     void disableConnection();
-    void onEnableChanged(bool enabled);
-    void onPortChanged(quint16 port);
-    void onCloudEnableChanged(bool enabled);
+
+    void setEnabled(bool enabled);
+    void setPort(quint16 port);
+    void setCloudEnabled(bool enabled);
+
     void onWatchConnected();
     void sendToWatch(const QByteArray &msg);
     void installBundle(QString file);

@@ -76,7 +76,9 @@ public:
     };
     bool devConEnabled() const;
     quint16 devConListenPort() const;
+    bool devConServerState() const;
     bool devConCloudEnabled() const;
+    bool devConCloudState() const;
 public slots:
     QVariantMap notificationsFilter() const;
     void setNotificationFilter(const QString &sourceId, const QString &name, const QString &icon, const NotificationFilter enabled);
@@ -164,9 +166,8 @@ signals:
     void imperialUnitsChanged();
     void profileConnectionSwitchChanged(bool connected);
     void healtParamsChanged();
-    void devConEnabledChanged(bool enabled);
-    void devConListenPortChanged(quint16 port);
-    void devConCloudEnabledChanged(bool enabled);
+    void devConServerStateChanged(bool state);
+    void devConCloudStateChanged(bool state);
 private:
     void setHardwareRevision(HardwareRevision hardwareRevision);
 

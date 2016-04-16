@@ -16,9 +16,6 @@ DevConnection::DevConnection(Pebble *pebble, WatchConnection *connection):
     m_connection(connection),
     m_qtwsServer(0)
 {
-    QObject::connect(pebble, &Pebble::devConEnabledChanged, this, &DevConnection::onEnableChanged);
-    QObject::connect(pebble, &Pebble::devConListenPortChanged, this, &DevConnection::onPortChanged);
-    QObject::connect(pebble, &Pebble::devConCloudEnabledChanged, this, &DevConnection::onCloudEnableChanged);
     QObject::connect(connection, &WatchConnection::watchConnected, this, &DevConnection::onWatchConnected);
     QObject::connect(connection, &WatchConnection::watchDisconnected, this, &DevConnection::onWatchDisconnected);
     QObject::connect(connection, &WatchConnection::rawIncomingMsg, this, &DevConnection::onRawIncomingMsg);
@@ -41,8 +38,16 @@ bool DevConnection::cloudEnabled() const
 {
     return false; // TODO
 }
+bool DevConnection::serverState() const
+{
+    return m_qtwsServer && m_qtwsServer->isListening();
+}
+bool DevConnection::cloudState() const
+{
+    return false; // TODO
+}
 // pebble slots
-void DevConnection::onEnableChanged(bool enabled)
+void DevConnection::setEnabled(bool enabled)
 {
     if(enabled && m_qtwsServer==nullptr) {
         enableConnection(m_port);
@@ -50,7 +55,7 @@ void DevConnection::onEnableChanged(bool enabled)
         disableConnection();
     }
 }
-void DevConnection::onPortChanged(quint16 port) {
+void DevConnection::setPort(quint16 port) {
     if(port != m_port && port > 0 && m_qtwsServer) {
         if(m_qtwsServer->isListening())
             disableConnection();
@@ -59,7 +64,7 @@ void DevConnection::onPortChanged(quint16 port) {
         m_port = port;
     }
 }
-void DevConnection::onCloudEnableChanged(bool enabled)
+void DevConnection::setCloudEnabled(bool enabled)
 {
     Q_UNUSED(enabled); // no idea how it works
     // Pebble-tool connects to wss://cloudpebble-ws-proxy-prod.herokuapp.com/tool
@@ -99,6 +104,7 @@ void DevConnection::disableConnection()
     if(m_qtwsServer) {
         delete m_qtwsServer;
         m_qtwsServer = nullptr;
+        emit serverStateChanged(false);
     }
     if(m_clients.length()>0) {
         QWebSocket *sock;
@@ -117,10 +123,13 @@ void DevConnection::enableConnection(quint16 port)
     }
     if(port>0) {
         m_port=port;
-        if(m_qtwsServer->isListening())
+        if(m_qtwsServer->isListening()) {
             m_qtwsServer->close();
+            emit serverStateChanged(false);
+        }
         if(m_qtwsServer->listen(QHostAddress::Any,m_port)) {
             qDebug() << "DevConnection listening on *:" << m_port;
+            emit serverStateChanged(true);
         } else {
             qWarning() << "Error listening on " << port << ": " << m_qtwsServer->errorString();
             delete m_qtwsServer;
