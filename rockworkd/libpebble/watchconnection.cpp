@@ -41,14 +41,19 @@ void WatchConnection::scheduleReconnect()
         qDebug() << "Attempting to reconnect in 1 minute";
         m_reconnectTimer.start(1000 * 60);
     } else {
-        qDebug() << "Attempting to reconnect in 15 minutes";
-        m_reconnectTimer.start(1000 * 60 * 15);
+        qDebug() << "Attempting to reconnect in 5 minutes";
+        m_reconnectTimer.start(1000 * 60 * 5);
     }
 }
 
 void WatchConnection::reconnect()
 {
     QBluetoothLocalDevice localBtDev;
+    if (localBtDev.hostMode() == QBluetoothLocalDevice::HostPoweredOff) {
+        qDebug() << "Bluetooth powered off. Ceasing connection attempts";
+        if (m_reconnectTimer.isActive()) m_reconnectTimer.stop();
+        return;
+    }
     if (localBtDev.pairingStatus(m_pebbleAddress) == QBluetoothLocalDevice::Unpaired) {
         // Try again in one 10 secs, give the user some time to pair it
         m_connectionAttempts = 1;
@@ -201,21 +206,17 @@ void WatchConnection::readyRead()
 
 void WatchConnection::hostModeStateChanged(QBluetoothLocalDevice::HostMode state)
 {
-    switch (state) {
-    case QBluetoothLocalDevice::HostPoweredOff:
+    qDebug() << "Bluetooth host changed state:" << state;
+    if (state == QBluetoothLocalDevice::HostPoweredOff)
+    {
         qDebug() << "Bluetooth turned off. Stopping any reconnect attempts.";
         m_reconnectTimer.stop();
-        break;
-    case QBluetoothLocalDevice::HostConnectable:
-    case QBluetoothLocalDevice::HostDiscoverable:
-    case QBluetoothLocalDevice::HostDiscoverableLimitedInquiry:
-        if (m_socket && m_socket->state() != QBluetoothSocket::ConnectedState
-                && m_socket->state() != QBluetoothSocket::ConnectingState
-                && !m_reconnectTimer.isActive()) {
-            qDebug() << "Bluetooth now active. Trying to reconnect";
-            m_connectionAttempts = 0;
-            scheduleReconnect();
-        }
+    }
+    else if (!isConnected() && !m_reconnectTimer.isActive())
+    {
+        qDebug() << "Bluetooth now active. Trying to reconnect";
+        m_connectionAttempts = 0;
+        scheduleReconnect();
     }
 }
 
