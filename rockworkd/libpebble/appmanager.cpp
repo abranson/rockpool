@@ -165,7 +165,8 @@ void AppManager::sortingReply(const QByteArray &data)
 
 void AppManager::insertAppInfo(const AppInfo &info)
 {
-    m_appList.append(info.uuid());
+    if(!m_appList.contains(info.uuid()))
+        m_appList.append(info.uuid());
     m_apps.insert(info.uuid(), info);
 //    m_appsIds.insert(info.id(), info.uuid());
     emit appsChanged();

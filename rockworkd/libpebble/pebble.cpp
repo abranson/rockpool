@@ -24,6 +24,7 @@
 #include <QStandardPaths>
 #include <QSettings>
 #include <QTimeZone>
+#include <QTemporaryDir>
 
 Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
     QObject(parent),
@@ -530,26 +531,32 @@ void Pebble::sideloadApp(const QString &packageFile)
     targetFile.remove("file://");
 
     QString id;
-    int i = 0;
-    do {
-        QDir dir(m_storagePath + "/apps/sideload" + QString::number(i));
-        if (!dir.exists()) {
-            if (!dir.mkpath(dir.absolutePath())) {
-                qWarning() << "Error creating dir for unpacking. Cannot install package" << packageFile;
-                return;
-            }
-            id = "sideload" + QString::number(i);
+    QTemporaryDir td;
+    if(td.isValid()) {
+        if (!ZipHelper::unpackArchive(targetFile, td.path())) {
+            qWarning() << "Error unpacking App zip file" << targetFile << "to" << td.path();
+            return;
         }
-        i++;
-    } while (id.isEmpty());
+        qDebug() << "Pre-scanning app" << td.path();
+        AppInfo info(td.path());
+        if (!info.isValid()) {
+            qWarning() << "Error parsing App metadata" << targetFile << "at" << td.path();
+            return;
+        }
+        id = info.uuid().toString().mid(1,36);
+        QDir ad;
+        if(ad.mkpath(m_storagePath + "apps/" + id)) {
 
-    if (!ZipHelper::unpackArchive(targetFile, m_storagePath + "/apps/" + id)) {
-        qWarning() << "Error unpacking App zip file" << targetFile << "to" << m_storagePath + "/apps/" + id;
-        return;
+            if(!ZipHelper::unpackArchive(targetFile, m_storagePath + "apps/" + id)) {
+                    qWarning() << "Error unpacking App zip file" << targetFile << "to" << m_storagePath + "apps/" + id;
+                    return;
+            }
+            qDebug() << "Sideload package unpacked to" << m_storagePath + "apps/" + id;
+            appDownloadFinished(id);
+        } else {
+            qWarning() << "Cannot create app dir" << m_storagePath + "apps/" + id;
+        }
     }
-
-    qDebug() << "Sideload package unpacked.";
-    appDownloadFinished(id);
 }
 
 QList<QUuid> Pebble::installedAppIds()
@@ -784,7 +791,13 @@ void Pebble::appDownloadFinished(const QString &id)
         qWarning() << "Error scanning downloaded app. Won't install on watch";
         return;
     }
-    m_blobDB->insertAppMetaData(m_appManager->info(uuid));
+    // Stop running pebble app to avoid race-condition with JSkit stop
+    if (m_jskitManager->currentApp().uuid() == uuid) {
+        m_appMsgManager->closeApp(uuid);
+    }
+    // Force app replacement to allow update from store/sdk
+    m_blobDB->insertAppMetaData(m_appManager->info(uuid),true);
+    // The app will be re-launched here anyway
     m_pendingInstallations.append(uuid);
 }
 
