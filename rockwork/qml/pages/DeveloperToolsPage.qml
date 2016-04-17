@@ -39,7 +39,8 @@ Page {
     property var _menu_calls: {
         "stop": function(){rockPool.stopService()},
         "restart": function(){rockPool.restartService()},
-        "logs": function(){sendLogsDocker.show()}
+        "logs": function(){if(devConnDocker.open){devConnDocker.hide()};sendLogsDocker.show()},
+        "dcon": function(){if(sendLogsDocker.open){sendLogsDocker.hide()};devConnDocker.show()}
     }
 
     //Creating the menu list this way to allow the text field to be translatable (http://askubuntu.com/a/476331)
@@ -55,7 +56,7 @@ Page {
         devMenuModel.clear();
 
         devMenuModel.append({
-            icon: "developer",
+            icon: "setting",
             text: qsTr("Disable Service"),
             page: "",
             call: "stop"
@@ -73,6 +74,12 @@ Page {
             call: null
         });
         devMenuModel.append({
+            icon: "developer",
+            text: qsTr("Developer Connection"),
+            page: "",
+            call: "dcon"
+        });
+        devMenuModel.append({
             icon: "task",
             text: qsTr("Report problem"),
             page: "",
@@ -84,6 +91,94 @@ Page {
             page: "ImportPackagePage.qml",
             call: null
         });
+    }
+
+    DockedPanel {
+        id: devConnDocker
+        width: parent.width
+        height: devContent.childrenRect.height
+        dock: Dock.Bottom
+        open: false
+        //z:5
+        Rectangle {
+            anchors.fill: parent
+            color: "black"
+            opacity: 0.66
+        }
+
+        Column {
+            id: devContent
+            width: parent.width
+            SectionHeader {
+                text: qsTr("Developer Connection Settings")
+            }
+
+            IconTextSwitch {
+                width: parent.width
+                text: qsTr("Enable Connection")
+                icon.source: "image://theme/icon-s-high-importance"
+                description: qsTr("Enable Developer Connection Service")
+                onCheckedChanged: root.pebble.devConnEnabled=checked
+                checked: root.pebble.devConnEnabled
+            }
+            Row {
+                width: parent.width
+                TextField {
+                    id: devConPort
+                    property bool changed: false
+                    width: parent.width / 2 - Theme.paddingSmall
+                    label: qsTr("Listen Port")
+                    placeholderText: "9000"
+                    validator: IntValidator {bottom: 1025; top: 65535}
+                    inputMethodHints: Qt.ImhDigitsOnly
+                    onTextChanged: changed = true
+                    color: errorHighlight? "red" : Theme.primaryColor
+                    Component.onCompleted: {
+                        text = root.pebble.devConListenPort
+                        changed = false
+                    }
+                }
+                Button {
+                    width: parent.width / 2 - Theme.paddingSmall
+                    text: qsTr("Apply")
+                    enabled: devConPort.changed && !devConPort.acceptableInput
+                    onClicked: {
+                        root.pebble.devConListenPort=devConPort.text
+                        devConPort.changed = false
+                    }
+                }
+            }
+            IconTextSwitch {
+                width: parent.width
+                text: qsTr("Enable")+" CloudPebble"
+                description: qsTr("Enable DeveloperConnection over CloudPebble")
+                icon.source: "image://theme/icon-s-cloud-upload"
+                checked: root.pebble.devConnCloudEnabled
+                onCheckedChanged: root.pebble.devConnCloudEnabled=checked
+            }
+            SectionHeader {
+                text: qsTr("Runtime Status")
+            }
+            TextSwitch {
+                width: parent.width
+                automaticCheck: false
+                text: qsTr("DeveloperConnection Status")
+                description: qsTr("DeveloperConnection port listening state")
+                checked: root.pebble.devConnServerRunning
+            }
+            TextSwitch {
+                width: parent.width
+                automaticCheck: false
+                text: qsTr("CloudPebble Status")
+                description: qsTr("Indicates CloudPebble connection state")
+                checked: root.pebble.devConCloudConnected
+            }
+            Button {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: qsTr("Close")
+                onClicked: devConnDocker.hide()
+            }
+        }
     }
 
     DockedPanel {

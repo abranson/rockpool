@@ -33,6 +33,8 @@ Pebble::Pebble(const QDBusObjectPath &path, QObject *parent):
     QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "ProfileWhenConnectedChanged", this, SIGNAL(profileWhenConnectedChanged()));
     QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "ProfileWhenDisconnectedChanged", this, SIGNAL(profileWhenDisconnectedChanged()));
     QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "CalendarSyncEnabledChanged", this, SIGNAL(calendarSyncEnabledChanged()));
+    QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "DevConnectionChanged", this, SLOT(devConStateChanged(bool)));
+    QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "DevConnCloudChanged", this, SLOT(devConCloudChanged(bool)));
 
     dataChanged();
     refreshApps();
@@ -190,6 +192,55 @@ bool Pebble::calendarSyncEnabled() const
 void Pebble::setCalendarSyncEnabled(bool enabled)
 {
     m_iface->call("SetCalendarSyncEnabled", enabled);
+}
+
+bool Pebble::devConnEnabled() const
+{
+    return fetchProperty("DevConnectionEnabled").toBool();
+}
+void Pebble::setDevConnEnabled(bool enabled)
+{
+    m_iface->call("SetDevConnEnabled", enabled);
+}
+
+bool Pebble::devConnCloudEnabled() const
+{
+    return fetchProperty("DevConnCloudEnabled").toBool();
+}
+void Pebble::setDevConnCloudEnabled(bool enabled)
+{
+    m_iface->call("SetDevConnCloudEnabled",enabled);
+}
+
+quint16 Pebble::devConListenPort() const
+{
+    return (quint16)fetchProperty("DevConnListenPort").toInt();
+}
+void Pebble::setDevConListenPort(quint16 port)
+{
+    m_iface->call("SetDevConnListenPort",port);
+}
+
+bool Pebble::devConnServerRunning() const
+{
+    return fetchProperty("DevConnectionState").toBool();
+}
+
+bool Pebble::devConCloudConnected() const
+{
+    return fetchProperty("DevConnCloudState").toBool();
+}
+
+void Pebble::devConStateChanged(bool state)
+{
+    qDebug() << "DevCon state hase changed:" << (state?"running":"stopped");
+    emit devConnServerRunningChanged();
+}
+
+void Pebble::devConCloudChanged(bool state)
+{
+    qDebug() << "DevConCloud state changed:" << (state?"connected":"disconnected");
+    emit devConCloudConnectedChanged();
 }
 
 void Pebble::configurationClosed(const QString &uuid, const QString &url)

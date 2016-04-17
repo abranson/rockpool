@@ -152,6 +152,16 @@ Page {
                             anchors.horizontalCenter: parent.horizontalCenter
                             visible: root.pebble.connected && root.pebble.upgradingFirmware
                         }
+                        Image {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            source: "image://theme/icon-s-developer"
+                            visible: root.pebble.devConnServerRunning
+                        }
+                        Label {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            text: qsTr("Running")
+                            visible: root.pebble.devConnServerRunning
+                        }
                     }
                 }
 
