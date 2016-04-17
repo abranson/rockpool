@@ -101,12 +101,15 @@ void SailfishPlatform::onTimeChanged() {
 
 void SailfishPlatform::onNotification(watchfish::Notification *notification) {
 
-    qDebug() << "Got new notification for watch: " << notification->id();
+    qDebug() << "Got new notification for watch: " << notification->owner() << notification->summary();
 
-    Notification n(notification->sender());
+    //HACK: ignore group notifications
+   if (notification->category().endsWith(".group")) return;
+
+    QString owner = notification->originPackage().isEmpty()?notification->owner():notification->originPackage();
+    Notification n(owner);
     if (notification->owner() == "twitter-notifications-client") {
         n.setType(Notification::NotificationTypeTwitter);
-        n.setSender("Twitter");
     } else if (notification->category() == "x-nemo.email") {
         if (notification->sender().toLower().contains("gmail")) {
             n.setType(Notification::NotificationTypeGMail);
@@ -115,34 +118,35 @@ void SailfishPlatform::onNotification(watchfish::Notification *notification) {
         else {
             n.setType(Notification::NotificationTypeEmail);
             n.setSender(notification->sender());
+            n.setSourceId(notification->sender());
         }
     } else if (notification->owner() == "facebook-notifications-client") {
         n.setType(Notification::NotificationTypeFacebook);
-        n.setSender("Facebook");
-    } else if (notification->category().startsWith("x-nemo.messaging.sms")) {
+    } else if (notification->category() == "x-nemo.messaging.sms") {
         n.setType(Notification::NotificationTypeSMS);
         n.setSender("SMS");
+        n.setSourceId("SMS");
+    } else if (notification->category() == "x-nemo.messaging.im") {
+        n.setType(Notification::NotificationTypeSMS);
+        n.setSender(notification->sender());
+        n.setSourceId(notification->sender());
     } else if (notification->originPackage() == "org.telegram.messenger"
                || notification->category().startsWith("harbour.sailorgram")) {
         n.setType(Notification::NotificationTypeTelegram);
-        n.setSender("Telegram");
     } else if (notification->originPackage() == "com.google.android.apps.babel"
                || notification->owner() == "harbour-hangish") {
         n.setType(Notification::NotificationTypeHangout);
-        n.setSender("Hangouts");
     } else if (notification->originPackage() == "com.whatsapp"
                || notification->owner().toLower().contains("whatsup")) {
         n.setType(Notification::NotificationTypeWhatsApp);
-        n.setSender("Whatsapp");
-    } else if (notification->sender().contains("indicator-datetime")) {
-        n.setType(Notification::NotificationTypeReminder);
-        n.setSender("reminders");
     } else {
         n.setType(Notification::NotificationTypeGeneric);
+        n.setSender(notification->sender());
     }
     n.setSubject(notification->summary());
     n.setBody(notification->body());
     n.setIcon(notification->icon());
+
     foreach (const QString &action, notification->actions()) {
         if (action == "default") {
             n.setActToken(action);

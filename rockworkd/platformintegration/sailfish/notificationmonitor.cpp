@@ -164,6 +164,10 @@ void NotificationMonitorPrivate::processIncomingNotification(quint32 id, const P
 	n->setSummary(proto.summary);
 	n->setBody(proto.body);
 	n->setIcon(proto.appIcon);
+    if (n->icon().isEmpty())
+        n->setIcon(proto.hints.value("x-nemo-icon"));
+    if (n->icon().isEmpty())
+        n->setIcon(proto.hints.value("x-nemo-preview-icon"));
 
 	// Handle nemo specific stuff
 	QDateTime timestamp = QDateTime::fromString(proto.hints["x-nemo-timestamp"], Qt::ISODate);
@@ -204,8 +208,8 @@ void NotificationMonitorPrivate::processIncomingNotification(quint32 id, const P
     }
 	if (is_new_notification) {
         _notifs.insert(id, n);
-        emit q->notification(n);
 	}
+    emit q->notification(n);
 }
 
 void NotificationMonitorPrivate::processCloseNotification(quint32 id, quint32 reason)

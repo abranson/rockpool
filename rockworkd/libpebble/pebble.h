@@ -73,8 +73,9 @@ public:
     };
 public slots:
     QVariantMap notificationsFilter() const;
-    void setNotificationFilter(const QString &sourceId, NotificationFilter enabled, const QString &icon);
-    void setNotificationFilter(const QString &sourceId, NotificationFilter enabled);
+    void setNotificationFilter(const QString &sourceId, const QString &name, const QString &icon, const NotificationFilter enabled);
+    void setNotificationFilter(const QString &sourceId, const NotificationFilter enabled);
+    QString findNotificationData(const QString &sourceId, const QString &key);
     void sendSimpleNotification(const QUuid &uuid, const QString &title, const QString &body);
     void sendNotification(const Notification &notification);
 
@@ -138,7 +139,7 @@ private slots:
 signals:
     void pebbleConnected();
     void pebbleDisconnected();
-    void notificationFilterChanged(const QString &sourceId, NotificationFilter enabled, const QString &icon);
+    void notificationFilterChanged(const QString &sourceId, const QString &name, const QString &icon, const NotificationFilter enabled);
     void musicControlPressed(MusicControlButton control);
     void installedAppsChanged();
     void openURL(const QString &uuid, const QString &url);

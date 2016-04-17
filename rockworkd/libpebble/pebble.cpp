@@ -296,48 +296,86 @@ QString Pebble::storagePath() const
 {
     QVariantMap ret;
     QString settingsFile = m_storagePath + "/notifications.conf";
-    QString iconFile = m_storagePath + "/notificationIcons.conf";
     QSettings s(settingsFile, QSettings::IniFormat);
-    QSettings i(iconFile, QSettings::IniFormat);
-    foreach (const QString &key, s.allKeys()) {
-        if(!key.isEmpty()) {
-            QVariantMap notif;
-            if (s.value(key).toString() == "true")
-                notif.insert("enabled", Pebble::NotificationEnabled);
-            else
-                notif.insert("enabled", Pebble::NotificationFilter(s.value(key).toInt()));
-            notif.insert("icon", i.value(key).toString());
-            qDebug() << key << notif.value("icon") << notif.value("enabled");
-            ret.insert(key, notif);
-        }
+
+    foreach (const QString &group, s.childGroups()) {
+        s.beginGroup(group);
+        QVariantMap notif;
+        notif.insert("enabled", Pebble::NotificationFilter(s.value("enabled").toInt()));
+        notif.insert("icon", s.value("icon").toString());
+        notif.insert("name", s.value("name").toString());
+        ret.insert(group, notif);
+        s.endGroup();
     }
     return ret;
 }
 
-void Pebble::setNotificationFilter(const QString &sourceId, NotificationFilter enabled)
-{
-    QVariantMap notifFilter = notificationsFilter().value(sourceId).toMap();
-    setNotificationFilter(sourceId, enabled, notifFilter.value("icon").toString());
-}
-
-void Pebble::setNotificationFilter(const QString &sourceId, NotificationFilter enabled, const QString &icon)
+void Pebble::setNotificationFilter(const QString &sourceId, const NotificationFilter enabled)
 {
     QString settingsFile = m_storagePath + "/notifications.conf";
-    QString iconFile = m_storagePath + "/notificationIcons.conf";
     QSettings s(settingsFile, QSettings::IniFormat);
-    QSettings i(iconFile, QSettings::IniFormat);
-    qDebug() << "Setting" << sourceId << "with icon" << icon << "to" << enabled << "while it's" << s.value(sourceId,2).toInt();
+    s.beginGroup(sourceId);
+    if (s.value("enabled").toInt() != enabled) {
+        s.setValue("enabled", enabled);
+        emit notificationFilterChanged(sourceId, s.value("name").toString(), s.value("icon").toString(), enabled);
+    }
+    s.endGroup();
+}
+
+void Pebble::setNotificationFilter(const QString &sourceId, const QString &name, const QString &icon, const NotificationFilter enabled)
+{
+    QString settingsFile = m_storagePath + "/notifications.conf";
+    QSettings s(settingsFile, QSettings::IniFormat);
+    qDebug() << "Setting" << sourceId << ":" << name << "with icon" << icon << "to" << enabled;
     bool changed = false;
-    if (!s.contains(sourceId) || s.value(sourceId).toInt() != enabled) {
-        s.setValue(sourceId, enabled);
+    s.beginGroup(sourceId);
+    if (s.value("enabled").toInt() != enabled) {
+        s.setValue("enabled", enabled);
         changed = true;
     }
-    if (!i.contains(sourceId) || i.value(sourceId).toString() != icon) {
-        i.setValue(sourceId, icon);
+
+    if (!icon.isEmpty() && s.value("icon").toString() != icon) {
+        s.setValue("icon", icon);
         changed = true;
     }
+    else if (s.value("icon").toString().isEmpty()) {
+        s.setValue("icon", findNotificationData(sourceId, "Icon"));
+        changed = true;
+    }
+
+    if (!name.isEmpty() && s.value("name").toString() != name) {
+        s.setValue("name", name);
+        changed = true;
+    }
+    else if (s.value("name").toString().isEmpty()) {
+        s.setValue("name", findNotificationData(sourceId, "Name"));
+        changed = true;
+    }
+
     if (changed)
-        emit notificationFilterChanged(sourceId, enabled, icon);
+        emit notificationFilterChanged(sourceId, s.value("name").toString(), s.value("icon").toString(), enabled);
+    s.endGroup();
+
+}
+
+QString Pebble::findNotificationData(const QString &sourceId, const QString &key)
+{
+    qDebug() << "Looking for notification" << key << "for" << sourceId << "in launchers.";
+    QStringList appsDirs = QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation);
+    foreach (const QString &appsDir, appsDirs) {
+        QDir dir(appsDir);
+        QFileInfoList entries = dir.entryInfoList({"*.desktop"});
+        foreach (const QFileInfo &appFile, entries) {
+            QSettings s(appFile.absoluteFilePath(), QSettings::IniFormat);
+            s.beginGroup("Desktop Entry");
+            if (appFile.baseName() == sourceId
+                    || s.value("Exec").toString() == sourceId
+                    || s.value("X-apkd-packageName").toString() == sourceId) {
+                return s.value(key).toString();
+            }
+        }
+    }
+    return 0;
 }
 
 void Pebble::sendSimpleNotification(const QUuid &uuid, const QString &title, const QString &body) {
@@ -356,7 +394,7 @@ void Pebble::sendNotification(const Notification &notification)
         return;
     }
     // In case it wasn't there before, make sure to write it to the config now so it will appear in the config app.
-    setNotificationFilter(notification.sourceId(), NotificationEnabled, notification.icon());
+    setNotificationFilter(notification.sourceId(), notification.sender(), notification.icon(), NotificationEnabled);
 
     qDebug() << "Sending notification from source" << notification.sourceId() << "to watch";
 

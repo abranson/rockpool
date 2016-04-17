@@ -105,7 +105,7 @@ private slots:
     void dataChanged();
     void pebbleConnected();
     void pebbleDisconnected();
-    void notificationFilterChanged(const QString &sourceId, int enabled, const QString &icon);
+    void notificationFilterChanged(const QString &sourceId, const QString &name, const QString &icon, const int enabled);
     void refreshNotifications();
     void refreshApps();
     void appsSorted();

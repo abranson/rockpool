@@ -42,9 +42,9 @@ QHash<int, QByteArray> NotificationSourceModel::roleNames() const
     return roles;
 }
 
-void NotificationSourceModel::insert(const QString &sourceId, const int enabled, const QString &icon)
+void NotificationSourceModel::insert(const QString &sourceId, const QString &name, const QString &icon, const int enabled)
 {
-    qDebug() << "Notification filter " << sourceId << enabled << icon;
+    qDebug() << "Notification filter " << sourceId << name << icon << enabled;
 
     int idx = -1;
     for (int i = 0; i < m_sources.count(); i++) {
@@ -58,54 +58,19 @@ void NotificationSourceModel::insert(const QString &sourceId, const int enabled,
         emit dataChanged(index(idx), index(idx), {RoleEnabled});
     } else {
         beginInsertRows(QModelIndex(), m_sources.count(), m_sources.count());
-        NotificationSourceItem item = fromDesktopFile(sourceId, icon);
+        NotificationSourceItem item = createNotificationItem(sourceId, name, icon);
         item.m_enabled = enabled;
         m_sources.append(item);
         endInsertRows();
     }
 }
 
-NotificationSourceItem NotificationSourceModel::fromDesktopFile(const QString &sourceId, const QString &icon)
+NotificationSourceItem NotificationSourceModel::createNotificationItem(const QString &sourceId, const QString &name, const QString &icon)
 {
     NotificationSourceItem ret;
     ret.m_id = sourceId;
-    ret.m_displayName = sourceId;
-    ret.m_icon = icon;
-
-    if (!icon.isEmpty()) return ret;
-
-    qDebug() << "Looking for icon for " << sourceId << " in launchers.";
-    QStringList appsDirs = QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation);
-    foreach (const QString &appsDir, appsDirs) {
-        QDir dir(appsDir);
-        QFileInfoList entries = dir.entryInfoList({"*.desktop"});
-        foreach (const QFileInfo &appFile, entries) {
-            QSettings s(appFile.absoluteFilePath(), QSettings::IniFormat);
-            s.beginGroup("Desktop Entry");
-            if (s.value("Name").toString() == sourceId) {
-                ret.m_icon = s.value("Icon").toString();
-                return ret;
-            }
-        }
-    }
-
-    // Hacks for known icons - only needed for configs generated < 0.9-5
-    if (sourceId.startsWith("Twitter"))
-        ret.m_icon = "graphic-service-twitter";
-    else if (sourceId.startsWith("GMail"))
-        ret.m_icon = "graphic-service-google";
-    else if (sourceId.startsWith("Facebook"))
-        ret.m_icon = "graphic-service-facebook";
-    else if (sourceId.startsWith("Transfers"))
-        ret.m_icon = "icon-lock-transfer";
-    else if (sourceId.startsWith("Missed calls"))
-        ret.m_icon = "icon-lock-missed-call";
-    else if (sourceId.startsWith("Accounts"))
-        ret.m_icon = "icon-launcher-accounts";
-    else if(sourceId.indexOf("@")>=0)
-        ret.m_icon = "graphic-service-generic-mail";
-    else
-        ret.m_icon = "icon-lock-information";
+    ret.m_displayName = name.isEmpty()?sourceId:name;
+    ret.m_icon = icon.isEmpty()?"icon-lock-information":icon;
 
     return ret;
 }
