@@ -218,7 +218,7 @@
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="32"/>
         <source>Candidate firmware version: %1</source>
-        <translation>Firmware version: %1 candicate</translation>
+        <translation>Firmware version candidate: %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="39"/>
@@ -375,7 +375,7 @@
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="38"/>
         <source>Really Delete?</source>
-        <translation>Réellement supprimer ?</translation>
+        <translation>Confirmer suppression</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="44"/>
