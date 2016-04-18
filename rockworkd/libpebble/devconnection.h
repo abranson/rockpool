@@ -73,7 +73,7 @@ public:
         OCProxyAuthResponse,    // 9 {0,1}
         OCPhoneConfigResponse,  // a
         OCRelayEmulator,        // b
-        OCTimelineOperation     // c
+        OCTimelineOperation     // c {char(0x1|0x2),json}
     };
 
     bool isValid() {return m_sock != nullptr;}

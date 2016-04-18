@@ -7,6 +7,7 @@
 #include <QWebSocketServer>
 #include <QWebSocket>
 #include <QTemporaryFile>
+#include <QJsonDocument>
 
 #include <QDebug>
 
@@ -273,6 +274,37 @@ public:
         }
     }
 };
+class DevPacketTimeline: public DevPacket
+{
+public:
+    DevPacketTimeline(QByteArray &data, QWebSocket *sock, DevConnection *srv):
+        DevPacket(data,sock,srv)
+    {
+        m_sock=sock;
+        m_cmd = m_data.at(1);
+        m_data.remove(0,2);
+        QJsonParseError jpe;
+        m_json=QJsonDocument::fromJson(m_data,&jpe);
+        qDebug() << "Got packet with payload" << m_data << jpe.errorString();
+        m_data.truncate(0);
+        m_data.append(char(OCTimelineOperation));
+    }
+    bool isRequest() const { return true;}
+    bool isReply() const { return true;}
+    void execute() {
+        if(m_cmd==1) {
+            qDebug() << "Add pin" << m_json.toJson(QJsonDocument::JsonFormat::Indented);
+        } else if(m_cmd==2) {
+            qDebug() << "Del pin" << m_json.toJson(QJsonDocument::JsonFormat::Indented);
+        }
+        m_data.append(char(0));
+        m_sock->sendBinaryMessage(m_data);
+        m_sock=nullptr;
+    }
+private:
+    char m_cmd;
+    QJsonDocument m_json;
+};
 
 DevPacket * DevPacket::CreatePacket(QByteArray &data, QWebSocket *sock, DevConnection *srv)
 {
@@ -280,12 +312,12 @@ DevPacket * DevPacket::CreatePacket(QByteArray &data, QWebSocket *sock, DevConne
     switch (opcode) {
     case OCPhoneServerInfo:
         return new DevPacketPInfo(data,sock,srv);
-        break;
     case OCRelayToWatch:
         return new DevPacketRelay(data,sock,srv);
-        break;
     case OCInstallBundle:
         return new DevPacketInstall(data,sock,srv);
+    case OCTimelineOperation:
+        return new DevPacketTimeline(data,sock,srv);
     default:
         throw QException();
     }
