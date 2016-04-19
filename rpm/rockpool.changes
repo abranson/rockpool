@@ -1,3 +1,9 @@
+* Mon Apr 18 2016 Andrew Branson <github@andrewbranson.net> 0.10-1
+- Rewritten notification filtering. Resets current filters.
+- Simplify bluetooth reconnection
+- WebSocket support in JS apps
+- French translation
+
 * Sun Apr 10 2016 Andrew Branson <github@andrewbranson.net> 0.9-4
 - Fix old notification settings defaulting to off
 
