@@ -35,6 +35,7 @@ Requires:
 - sailfishsilica-qt5 >= 0.10.9
 - systemd-user-session-targets
 - nemo-qml-plugin-dbus-qt5
+- qt5-qtwebsockets
 - quazip
 Files:
 - '%{_bindir}'

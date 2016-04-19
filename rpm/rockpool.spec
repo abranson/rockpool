@@ -23,6 +23,7 @@ Source100:  rockpool.yaml
 Requires:   sailfishsilica-qt5 >= 0.10.9
 Requires:   systemd-user-session-targets
 Requires:   nemo-qml-plugin-dbus-qt5
+Requires:   qt5-qtwebsockets
 Requires:   quazip
 BuildRequires:  pkgconfig(Qt5DBus)
 BuildRequires:  pkgconfig(Qt5Bluetooth)
