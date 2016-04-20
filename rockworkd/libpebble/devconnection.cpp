@@ -16,14 +16,15 @@
 DevConnection * DevConnection::s_instance=0;
 QtMessageHandler DevConnection::s_omh=0;
 QMutex mtx;
+QStringList ml={"D","W","C","F"};
 void DevConnection::appLogBroadcast(QtMsgType t, const QMessageLogContext &ctx, const QString &msg)
 {
     mtx.lock();
     if(s_omh)
-        s_omh(t,ctx,msg+"*");
+        s_omh(t,ctx,msg);
     if(s_instance) {
         QByteArray m(1,char(DevPacket::OCPhoneAppLog));
-        m.append(msg.toUtf8());
+        m.append(QString("[%1] %2:%3 %4").arg(ml.at(t)).arg(ctx.function).arg(ctx.line).arg(msg).toUtf8());
         QMetaObject::invokeMethod(s_instance,"broadcast",Qt::QueuedConnection,Q_ARG(QByteArray,m));
     }
     mtx.unlock();
@@ -218,8 +219,10 @@ void DevConnection::broadcast(const QByteArray &msg)
         foreach (sock, m_clients) {
             sock->sendBinaryMessage(msg);
         }
+#ifdef DEVCON_VERBOSE
         if(msg.at(0)<2)
             qDebug() << "Broadcast" << (msg.at(0)==1?"outMsg":"inMsg") << msg.toHex();
+#endif
     }
 }
 
