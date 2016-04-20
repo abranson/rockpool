@@ -14,7 +14,7 @@
 - Gecko confirm handler and settings page header (showing page url)
 
 * Fri Apr 08 2016 Andrew Branson <github@andrewbranson.net> 0.9-2
-- Add third notification filter - hide only when phone is unlocked
+- Add third notification filter state - show only when phone is locked
 
 * Fri Apr 08 2016 Andrew Branson <github@andrewbranson.net> 0.9-1
 - Switched web engine to Gecko with QtMozEmbed, which should fix most app settings problems.

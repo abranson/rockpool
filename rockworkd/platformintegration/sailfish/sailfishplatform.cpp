@@ -128,7 +128,7 @@ void SailfishPlatform::onNotification(watchfish::Notification *notification) {
         n.setSourceId("SMS");
     } else if (notification->category() == "x-nemo.messaging.im") {
         n.setType(Notification::NotificationTypeSMS);
-        n.setSender(notification->sender());
+        n.setSender("Instant Message");
         n.setSourceId(notification->sender());
     } else if (notification->originPackage() == "org.telegram.messenger"
                || notification->category().startsWith("harbour.sailorgram")) {
@@ -145,7 +145,8 @@ void SailfishPlatform::onNotification(watchfish::Notification *notification) {
     }
     n.setSubject(notification->summary());
     n.setBody(notification->body());
-    n.setIcon(notification->icon());
+    if (!notification->icon().startsWith("/opt/alien/data/notificationIcon/")) //these are temporary, don't store them
+        n.setIcon(notification->icon());
 
     foreach (const QString &action, notification->actions()) {
         if (action == "default") {
