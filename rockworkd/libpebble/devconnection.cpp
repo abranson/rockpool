@@ -9,7 +9,25 @@
 #include <QTemporaryFile>
 #include <QJsonDocument>
 
+#include <QMutex>
 #include <QDebug>
+
+// App logging
+DevConnection * DevConnection::s_instance=0;
+QtMessageHandler DevConnection::s_omh=0;
+QMutex mtx;
+void DevConnection::appLogBroadcast(QtMsgType t, const QMessageLogContext &ctx, const QString &msg)
+{
+    mtx.lock();
+    if(s_omh)
+        s_omh(t,ctx,msg+"*");
+    if(s_instance) {
+        QByteArray m(1,char(DevPacket::OCPhoneAppLog));
+        m.append(msg.toUtf8());
+        QMetaObject::invokeMethod(s_instance,"broadcast",Qt::QueuedConnection,Q_ARG(QByteArray,m));
+    }
+    mtx.unlock();
+}
 
 DevConnection::DevConnection(Pebble *pebble, WatchConnection *connection):
     QObject(pebble),
@@ -21,10 +39,13 @@ DevConnection::DevConnection(Pebble *pebble, WatchConnection *connection):
     QObject::connect(connection, &WatchConnection::watchDisconnected, this, &DevConnection::onWatchDisconnected);
     QObject::connect(connection, &WatchConnection::rawIncomingMsg, this, &DevConnection::onRawIncomingMsg);
     QObject::connect(connection, &WatchConnection::rawOutgoingMsg, this, &DevConnection::onRawOutgoingMsg);
+    DevConnection::s_instance=this;
+    DevConnection::s_omh=0;
 }
 DevConnection::~DevConnection()
 {
     disableConnection();
+    s_instance = 0;
 }
 
 bool DevConnection::enabled() const
@@ -67,7 +88,8 @@ void DevConnection::setPort(quint16 port) {
 }
 void DevConnection::setCloudEnabled(bool enabled)
 {
-    Q_UNUSED(enabled); // no idea how it works
+    // no idea how it works
+    qDebug() << "Request to" << (enabled?"enable":"disable") << "cloud connection";
     // Pebble-tool connects to wss://cloudpebble-ws-proxy-prod.herokuapp.com/tool
     // But what does phone do - need to capture with mitm (:TODO:)
 }
@@ -91,27 +113,28 @@ void DevConnection::onRawOutgoingMsg(const QByteArray &msg)
     data.prepend(char(1));
     broadcast(data);
 }
-void DevConnection::onAppLogMsg(const QByteArray &msg)
-{
-    QByteArray data=QByteArray(QString(msg).toUtf8());
-    data.prepend(char(2));
-    broadcast(data);
-    qDebug() << "Broadcast appLog: " << data.toHex();
-}
 
 // other api slots
 void DevConnection::disableConnection()
 {
     if(m_qtwsServer) {
-        delete m_qtwsServer;
+        m_qtwsServer->close();
+        m_qtwsServer->deleteLater();
         m_qtwsServer = nullptr;
         emit serverStateChanged(false);
+    }
+    if(s_omh) {
+        mtx.lock();
+        qInstallMessageHandler(s_omh);
+        s_omh = 0;
+        mtx.unlock();
+        qDebug() << "Turned off custom log handler";
     }
     if(m_clients.length()>0) {
         QWebSocket *sock;
         foreach (sock, m_clients) {
             sock->close();
-            delete sock;
+            sock->deleteLater();
         }
         m_clients.clear();
     }
@@ -131,8 +154,10 @@ void DevConnection::enableConnection(quint16 port)
         if(m_qtwsServer->listen(QHostAddress::Any,m_port)) {
             qDebug() << "DevConnection listening on *:" << m_port;
             emit serverStateChanged(true);
+            if(s_omh == 0)
+                s_omh = qInstallMessageHandler(appLogBroadcast);
         } else {
-            qWarning() << "Error listening on " << port << ": " << m_qtwsServer->errorString();
+            qWarning() << "Error listening on" << port << ": " << m_qtwsServer->errorString();
             delete m_qtwsServer;
             m_qtwsServer = nullptr;
         }
@@ -152,7 +177,7 @@ void DevConnection::socketConnected()
 {
     QWebSocket *sock = m_qtwsServer->nextPendingConnection();
     m_clients.append(sock);
-    qDebug() << "Accepted new connection from " << sock->peerAddress().toString();
+    qDebug() << "Accepted new connection from" << sock->peerAddress().toString();
     QObject::connect(sock,&QWebSocket::textMessageReceived,this,&DevConnection::textDataReceived);
     QObject::connect(sock,&QWebSocket::binaryMessageReceived,this,&DevConnection::rawDataReceived);
     QObject::connect(sock,&QWebSocket::disconnected,this,&DevConnection::socketDisconnected);
@@ -160,17 +185,15 @@ void DevConnection::socketConnected()
 void DevConnection::socketDisconnected()
 {
      QWebSocket *sock = qobject_cast<QWebSocket *>(sender());
-     qDebug() << "Client disconnected: " << sock->peerAddress().toString();
      m_clients.removeAll(sock);
-     delete sock;
+     sock->deleteLater();
+     qDebug() << "Client disconnected:" << sock->peerAddress().toString();
 }
 void DevConnection::textDataReceived(QString msg)
 {
     // We aren't supposed to receive sms are we? remove this sun-over-bij
      QWebSocket *sock = qobject_cast<QWebSocket *>(sender());
      sock->close();
-     m_clients.removeAll(sock);
-     delete sock;
      // what did he say anyway?
      qWarning() << "Unexpected Text Message received while waiting for ByteArray:" << msg;
 }
@@ -181,10 +204,11 @@ void DevConnection::rawDataReceived(QByteArray data)
         DevPacket *pkt = DevPacket::CreatePacket(data,sock,this);
         pkt->execute();
         if(!pkt->isValid()) {
-            delete pkt;
+            pkt->deleteLater();
+            qDebug() << "Packet has no pending tasks, deleting";
         }
      } catch(QException &e) {
-         qWarning() << "DevPacket not understood: " << data;
+         qWarning() << "DevPacket not understood:" << data;
      }
 }
 void DevConnection::broadcast(const QByteArray &msg)
@@ -192,14 +216,10 @@ void DevConnection::broadcast(const QByteArray &msg)
     if(m_clients.length()>0) {
         QWebSocket *sock;
         foreach (sock, m_clients) {
-            if(sock->sendBinaryMessage(msg)!=msg.size()) {
-                qWarning() << "Failure while sending to " << sock->peerAddress().toString();
-                sock->close();
-                m_clients.removeAll(sock);
-                delete sock;
-            }
+            sock->sendBinaryMessage(msg);
         }
-        qDebug() << "Broadcast " << (msg.at(0)==1?"outMsg":"inMsg") << ": " << msg.toHex();
+        if(msg.at(0)<2)
+            qDebug() << "Broadcast" << (msg.at(0)==1?"outMsg":"inMsg") << msg.toHex();
     }
 }
 
@@ -224,13 +244,11 @@ public:
     DevPacketRelay(QByteArray &data, QWebSocket *sock, DevConnection *srv):
         DevPacket(data,sock,srv)
     {
-        m_sock=sock;
+        qDebug() << "Relay this (" << m_data.toHex() << ") to pebble";
     }
-
     bool isRequest() const { return true;}
     bool isReply() const { return true;}
     void execute() {
-        qDebug() << "Relay this (" << m_data.toHex() << ") to pebble";
         m_srv->sendToWatch(m_data.right(m_data.size()-1));
     }
 };
@@ -265,7 +283,7 @@ public:
             f.write(m_data);
             f.flush();
             f.close();
-            qDebug() << "Installing bundle from file " << f.fileName();
+            qDebug() << "Installing bundle from file" << f.fileName();
             m_srv->installBundle(f.fileName());
             m_data.fill('\0',4);
             m_data.prepend('\5');
