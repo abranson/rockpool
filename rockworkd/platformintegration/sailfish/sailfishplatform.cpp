@@ -104,12 +104,17 @@ void SailfishPlatform::onNotification(watchfish::Notification *notification) {
     qDebug() << "Got new notification for watch: " << notification->owner() << notification->summary();
 
     //HACK: ignore group notifications
-   if (notification->category().endsWith(".group")) return;
+   if (notification->category().endsWith(".group")) {
+       qDebug() << "Skipping group notification.";
+       return;
+   }
 
     QString owner = notification->originPackage().isEmpty()?notification->owner():notification->originPackage();
+    if (owner.isEmpty()) owner = notification->sender();
     Notification n(owner);
     if (notification->owner() == "twitter-notifications-client") {
         n.setType(Notification::NotificationTypeTwitter);
+        n.setSourceId("Twitter");
     } else if (notification->category() == "x-nemo.email") {
         if (notification->sender().toLower().contains("gmail")) {
             n.setType(Notification::NotificationTypeGMail);
@@ -122,6 +127,7 @@ void SailfishPlatform::onNotification(watchfish::Notification *notification) {
         }
     } else if (notification->owner() == "facebook-notifications-client") {
         n.setType(Notification::NotificationTypeFacebook);
+        n.setSender("Facebook");
     } else if (notification->category() == "x-nemo.messaging.sms") {
         n.setType(Notification::NotificationTypeSMS);
         n.setSender("SMS");
