@@ -162,38 +162,43 @@
         <translation>Інструменти Розробника</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="58"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="59"/>
         <source>Disable Service</source>
         <translation>Відключити Сервіс</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="64"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="65"/>
+        <source>Restart Service</source>
+        <translation type="unfinished">Перезапустити Службу</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="71"/>
         <source>Screenshots</source>
         <translation>Знімки Екрану</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="70"/>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="92"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="77"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="99"/>
         <source>Report problem</source>
         <translation>Повідомити про Проблему</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="76"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="83"/>
         <source>Install app or watchface from file</source>
         <translation>Встановити додаток з файлу</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="105"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="112"/>
         <source>Preparing logs package...</source>
         <translation>Підготовка пакету журналів...</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="146"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="153"/>
         <source>Send watch logs</source>
         <translation>Відіслати журнал з годинника</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="155"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="162"/>
         <source>Cancel</source>
         <translation>Відмінити</translation>
     </message>
@@ -435,77 +440,77 @@
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="19"/>
         <source>About</source>
-        <translation>Про Програму</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="25"/>
         <source>Developer tools</source>
-        <translation>Інструменти Розробника</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="112"/>
-        <source>Connected</source>
-        <translation>Підключено</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="112"/>
-        <source>Disconnected</source>
-        <translation>Відключено</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="120"/>
+        <source>Connected</source>
+        <translation type="unfinished">Підключено</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/MainMenuPage.qml" line="120"/>
+        <source>Disconnected</source>
+        <translation type="unfinished">Відключено</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/MainMenuPage.qml" line="128"/>
         <source>Update Available</source>
-        <translation>Нова Прошивка</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="142"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="150"/>
         <source>Upgrading...</source>
-        <translation>Оновлення...</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="154"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="162"/>
         <source>Your Pebble smartwatch is disconnected. Please make sure it is powered on, within range and it is paired properly in the Bluetooth System Settings.</source>
-        <translation>Ваш годинник Pebble зараз відключен. Будьласка перевірте що він включен, є в досязі та чинно спарений з сістемою Bluetooth.</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="164"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="172"/>
         <source>Open Bluetooth Settings</source>
-        <translation>Відкрити Налаштування Bluetooth</translation>
+        <translation type="unfinished">Відкрити Налаштування Bluetooth</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="171"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="179"/>
         <source>Your Pebble smartwatch is in factory mode and needs to be initialized.</source>
-        <translation>Ваш годинник Pebble знаходиться в спеціальному режимі та потребує ініціалізації.</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="180"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="188"/>
         <source>Initialize Pebble</source>
-        <translation>Ініціалізувати Pebble</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="249"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="257"/>
         <source>Notifications</source>
-        <translation>Повідомленнями</translation>
+        <translation type="unfinished">Повідомлення</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="254"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="262"/>
         <source>Watch Apps</source>
-        <translation>Додатками</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="260"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="268"/>
         <source>Watchfaces</source>
-        <translation>Циферблатами</translation>
+        <translation type="unfinished">Циферблати</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="273"/>
-        <source>Firmware</source>
-        <translation>Прошивкою</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="266"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="274"/>
         <source>Settings</source>
-        <translation>Налаштування</translation>
+        <translation type="unfinished">Налаштування</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/MainMenuPage.qml" line="281"/>
+        <source>Firmware</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -534,6 +539,11 @@
         <location filename="../qml/pages/NotificationsPage.qml" line="75"/>
         <source>Always Disabled</source>
         <translation>Завжди Вимкнуто</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/NotificationsPage.qml" line="81"/>
+        <source>Forget</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

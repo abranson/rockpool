@@ -22,21 +22,25 @@ This application supports the Pebble v3 firmware in Sailfish (i.e. Pebble Time, 
 
 ## Building
 
-* The project used to build in Qt Creator with no specific changes, but it requires the 'quazip-devel' library to be installed on the build VM because Pkgconfig doesn't work for that. Since we switched to the Gecko web engine for the app settings page, building has got a bit more complicated:
+Rockpool requires some extra packages to be installed on the MerSDK to be able to build. Since we switched to the Gecko web engine for the app settings page and added QtWebSockets, building has got a bit more complicated:
 
-* qtmozembed-qt5-devel is needed on the MerSDK. That requires manual intervention as well, because the repository containing the package is missing in default MerSDK VM, and the prerequisite packages (dependencies) are hooked to the different versions, hence it raises a conflict which would need to be manually resolved.
+  * quazip-devel, qtmozembed-qt5-devel, and qt5-qtwebsockets-devel are needed on the MerSDK. That requires manual intervention, because the repositories containing the latter two packages need to be added to the MerSDK VM, and the prerequisite packages (dependencies) of qtmozembed are hooked to the different versions, hence it raises a conflict which would need to be manually resolved.
 
 You would need to perform following steps:
 
-* SSH to the MerSDK as mersdk user
-* Enter the scratchbox as root for package installation 
-  * Phone: sb2 -t SailfishOS-armv7hl -R -m sdk-install
-  * Tablet: sb2 -t SailfishOS-i486 -R -m sdk-install
-* Add mer-core repository
-  * Phone: zypper ar -f http://repo.merproject.org/obs/mer-core:/armv7hl:/devel/Core_armv7hl/ mer-core
-  * Tablet: zypper ar -f http://repo.merproject.org/obs/mer-core:/i486:/devel/Core_i486/ mer-core
-* Install required package and explicit conflicting down-chain (zypper install xulrunner-qt5 qtmozembed-qt5 qtmozembed-qt5-devel)
-* When zypper complains about conflicts - choose option 3 (proceed with broken dependencies)
+  * SSH to the MerSDK as mersdk user
+  * Enter the scratchbox as root for package installation 
+    * Phone: sb2 -t SailfishOS-armv7hl -R -m sdk-install
+    * Tablet: sb2 -t SailfishOS-i486 -R -m sdk-install
+  * Add quazip first, to make sure we get the stable version if there's a newer one in mer-core (zypper install quazip-devel)
+  * Add mer-core repository
+    * Phone: zypper ar -f http://repo.merproject.org/obs/mer-core:/armv7hl:/devel/Core_armv7hl/ mer-core
+    * Tablet: zypper ar -f http://repo.merproject.org/obs/mer-core:/i486:/devel/Core_i486/ mer-core
+  * Add my repo for QtWebSockets
+    * zypper ar -f http://sailfish.openrepos.net/abranson/personal/main openrepos-abranson
+  * Install required package and explicit conflicting down-chain (zypper install xulrunner-qt5 qtmozembed-qt5 qtmozembed-qt5-devel qt5-qtwebsockets-devel qt5-qtwebsockets)
+  * When zypper complains about conflicts - choose option 3 (proceed with broken dependencies)
+  * In QtCreator 
 
 ## The thanks
 

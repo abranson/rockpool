@@ -162,38 +162,43 @@
         <translation>Outils de développement</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="58"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="59"/>
         <source>Disable Service</source>
         <translation>Désactiver le service</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="64"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="65"/>
+        <source>Restart Service</source>
+        <translation type="unfinished">Redémarrer le Service</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="71"/>
         <source>Screenshots</source>
         <translation>Captures d&apos;écran</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="70"/>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="92"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="77"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="99"/>
         <source>Report problem</source>
         <translation>Rapporter un problème</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="76"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="83"/>
         <source>Install app or watchface from file</source>
         <translation>Installer une application ou une watchface depuis un fichier</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="105"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="112"/>
         <source>Preparing logs package...</source>
         <translation>Préparation du package de journaux...</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="146"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="153"/>
         <source>Send watch logs</source>
         <translation>Envoyer les journaux de la montre</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="155"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="162"/>
         <source>Cancel</source>
         <translation>Annuler</translation>
     </message>
@@ -434,77 +439,77 @@
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="19"/>
         <source>About</source>
-        <translation>À propos</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="25"/>
         <source>Developer tools</source>
-        <translation>Outils pour les développeurs</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="112"/>
-        <source>Connected</source>
-        <translation>Connecté</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="112"/>
-        <source>Disconnected</source>
-        <translation>Disconnected</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="120"/>
+        <source>Connected</source>
+        <translation type="unfinished">Connecté</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/MainMenuPage.qml" line="120"/>
+        <source>Disconnected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/MainMenuPage.qml" line="128"/>
         <source>Update Available</source>
-        <translation>Mise à jour disponible</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="142"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="150"/>
         <source>Upgrading...</source>
-        <translation>Mise à jour...</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="154"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="162"/>
         <source>Your Pebble smartwatch is disconnected. Please make sure it is powered on, within range and it is paired properly in the Bluetooth System Settings.</source>
-        <translation>Votre smartwatch Pebble est déconnectée. SVP assurez-vous qu&apos;elle est sous tension, à portée, et correctement appairée dans les Paramètres Bluetooth Système.</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="164"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="172"/>
         <source>Open Bluetooth Settings</source>
-        <translation>Ouvrir les paramètres Bluetooth</translation>
+        <translation type="unfinished">Ouvrir les paramètres Bluetooth</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="171"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="179"/>
         <source>Your Pebble smartwatch is in factory mode and needs to be initialized.</source>
-        <translation>Votre smartwatch Pebble est en paramétrage usine et nécéssite d&apos;être initialisée.</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="180"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="188"/>
         <source>Initialize Pebble</source>
-        <translation>Initialiser Pebble</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="249"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="257"/>
         <source>Notifications</source>
-        <translation>Notifications</translation>
+        <translation type="unfinished">Notifications</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="254"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="262"/>
         <source>Watch Apps</source>
-        <translation>Watch Apps</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="260"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="268"/>
         <source>Watchfaces</source>
-        <translation>Watchfaces</translation>
+        <translation type="unfinished">Watchfaces</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="266"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="274"/>
         <source>Settings</source>
-        <translation>Paramètres</translation>
+        <translation type="unfinished">Paramètres</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="273"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="281"/>
         <source>Firmware</source>
-        <translation>Firmware</translation>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -533,6 +538,11 @@
         <location filename="../qml/pages/NotificationsPage.qml" line="75"/>
         <source>Always Disabled</source>
         <translation>Toujours Désactivé</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/NotificationsPage.qml" line="81"/>
+        <source>Forget</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
