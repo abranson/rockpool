@@ -67,6 +67,11 @@ void DBusPebble::SetNotificationFilter(const QString &sourceId, int enabled)
     m_pebble->setNotificationFilter(sourceId, Pebble::NotificationFilter(enabled));
 }
 
+void DBusPebble::ForgetNotificationFilter(const QString &sourceId)
+{
+    m_pebble->forgetNotificationFilter(sourceId);
+}
+
 void DBusPebble::InstallApp(const QString &id)
 {
     qDebug() << "installapp called" << id;

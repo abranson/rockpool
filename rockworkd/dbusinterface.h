@@ -49,6 +49,7 @@ public slots:
 
     QVariantMap NotificationsFilter() const;
     void SetNotificationFilter(const QString &sourceId, int enabled);
+    void ForgetNotificationFilter(const QString &sourceId);
 
     void InstallApp(const QString &id);
     void SideloadApp(const QString &packageFile);

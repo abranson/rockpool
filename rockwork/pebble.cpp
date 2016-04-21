@@ -310,6 +310,11 @@ void Pebble::setNotificationFilter(const QString &sourceId, int enabled)
     m_iface->call("SetNotificationFilter", sourceId, enabled);
 }
 
+void Pebble::forgetNotificationFilter(const QString &sourceId)
+{
+    m_iface->call("ForgetNotificationFilter", sourceId);
+}
+
 void Pebble::moveApp(const QString &uuid, int toIndex)
 {
     // This is a bit tricky:

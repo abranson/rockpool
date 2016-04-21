@@ -54,8 +54,14 @@ void NotificationSourceModel::insert(const QString &sourceId, const QString &nam
     }
 
     if (idx >= 0) {
-        m_sources[idx].m_enabled = enabled;
-        emit dataChanged(index(idx), index(idx), {RoleEnabled});
+        if (enabled >= 0) {
+            m_sources[idx].m_enabled = enabled;
+            emit dataChanged(index(idx), index(idx), {RoleEnabled});
+        } else {
+            beginRemoveRows(QModelIndex(), idx, idx);
+            m_sources.removeAt(idx);
+            endRemoveRows();
+        }
     } else {
         beginInsertRows(QModelIndex(), m_sources.count(), m_sources.count());
         NotificationSourceItem item = createNotificationItem(sourceId, name, icon);

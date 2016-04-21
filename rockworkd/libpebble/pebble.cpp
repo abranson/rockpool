@@ -322,6 +322,14 @@ void Pebble::setNotificationFilter(const QString &sourceId, const NotificationFi
     s.endGroup();
 }
 
+void Pebble::forgetNotificationFilter(const QString &sourceId) {
+    if (sourceId.isEmpty()) return; // don't remove everything by accident
+    QString settingsFile = m_storagePath + "/notifications.conf";
+    QSettings s(settingsFile, QSettings::IniFormat);
+    s.remove(sourceId);
+    emit notificationFilterChanged(sourceId, "", "", NotificationForgotten);
+}
+
 void Pebble::setNotificationFilter(const QString &sourceId, const QString &name, const QString &icon, const NotificationFilter enabled)
 {
     QString settingsFile = m_storagePath + "/notifications.conf";

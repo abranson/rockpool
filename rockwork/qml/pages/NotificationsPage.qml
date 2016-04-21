@@ -77,6 +77,10 @@ Page {
                     highlighted: !enabled
                     enabled: model.enabled !== 0
                 }
+                MenuItem {
+                    text: qsTr("Forget")
+                    onClicked: root.pebble.forgetNotificationFilter(model.id)
+                }
             }
         }
     }

@@ -66,15 +66,18 @@ public:
     bool recovery() const;
 
     QString storagePath() const;
+    QString imagePath() const;
     enum NotificationFilter {
-        NotificationDisabled,
-        NotificationDisabledActive,
-        NotificationEnabled
+        NotificationForgotten = -1,
+        NotificationDisabled = 0,
+        NotificationDisabledActive = 1,
+        NotificationEnabled = 2
     };
 public slots:
     QVariantMap notificationsFilter() const;
     void setNotificationFilter(const QString &sourceId, const QString &name, const QString &icon, const NotificationFilter enabled);
     void setNotificationFilter(const QString &sourceId, const NotificationFilter enabled);
+    void forgetNotificationFilter(const QString &sourceId);
     QString findNotificationData(const QString &sourceId, const QString &key);
     void sendSimpleNotification(const QUuid &uuid, const QString &title, const QString &body);
     void sendNotification(const Notification &notification);
