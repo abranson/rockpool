@@ -70,6 +70,10 @@ ApplicationWindow {
         console.log("Request to stop and disable service");
         serviceController.stopService()
     }
+    function restartService() {
+        console.log("Request to restart service");
+        serviceController.restartService()
+    }
 
     function loadStack() {
         if (pebbles.connectedToService) {

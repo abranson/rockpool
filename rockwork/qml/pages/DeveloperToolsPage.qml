@@ -38,6 +38,7 @@ Page {
     }
     property var _menu_calls: {
         "stop": function(){rockPool.stopService()},
+        "restart": function(){rockPool.restartService()},
         "logs": function(){sendLogsDocker.show()}
     }
 
@@ -58,6 +59,12 @@ Page {
             text: qsTr("Disable Service"),
             page: "",
             call: "stop"
+        });
+        devMenuModel.append({
+            icon: "developer",
+            text: qsTr("Restart Service"),
+            page: "",
+            call: "restart"
         });
         devMenuModel.append({
             icon: "time",
