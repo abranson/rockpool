@@ -28,7 +28,9 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
     QObject(parent),
     m_address(address)
 {
-    m_storagePath = QStandardPaths::writableLocation(QStandardPaths::DataLocation) + "/" + m_address.toString().replace(':', '_') + "/";
+    QString watchPath = m_address.toString().replace(':', '_');
+    m_storagePath = QStandardPaths::writableLocation(QStandardPaths::DataLocation) + "/" + watchPath + "/";
+    m_imagePath = QStandardPaths::writableLocation(QStandardPaths::PicturesLocation) + "/Pebble/" + watchPath + "/";
 
     m_connection = new WatchConnection(this);
     QObject::connect(m_connection, &WatchConnection::watchConnected, this, &Pebble::onPebbleConnected);
@@ -290,6 +292,11 @@ void Pebble::dumpLogs(const QString &fileName) const
 QString Pebble::storagePath() const
 {
     return m_storagePath;
+}
+
+QString Pebble::imagePath() const
+{
+    return m_imagePath;
 }
 
  QVariantMap Pebble::notificationsFilter() const

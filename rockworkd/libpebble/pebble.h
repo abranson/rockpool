@@ -189,6 +189,7 @@ private:
     DataLoggingEndpoint *m_dataLogEndpoint;
 
     QString m_storagePath;
+    QString m_imagePath;
     QList<QUuid> m_pendingInstallations;
     QUuid m_lastSyncedAppUuid;
 

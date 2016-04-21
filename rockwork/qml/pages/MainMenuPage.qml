@@ -50,50 +50,58 @@ Page {
                     Item {
                         width: watchImage.width
                         height: watchImage.height
-                        Image {
-                            id: watchImage
-                            fillMode: Image.PreserveAspectFit
-                            anchors.centerIn: parent
-                            source: modelModel.get(root.pebble.model).image
-                            height: (sourceSize.height ? sourceSize.height : 350)
-                            width: (sourceSize.width ? sourceSize.width : 251)
-                        }
-
-                        Image {
-                            id: image
-                            anchors.centerIn: parent
-                            source: "file://" + root.pebble.screenshots.latestScreenshot
-                            fillMode: Image.PreserveAspectFit
-                            visible: false
-                        }
-                        Component.onCompleted: {
-                            if (!root.pebble.screenshots.latestScreenshot) {
-                                root.pebble.requestScreenshot()
-                            }
-                        }
-                        OpacityMask {
-                            anchors.centerIn: parent
-                            width: maskRect.width
-                            height: maskRect.height
-                            source: image
-                            maskSource: maskRect
-                            cached: true
-                        }
-                        Rectangle {
-                            id: maskRect
-                            width: image.width
-                            height: image.height
-                            anchors.centerIn: parent
-                            color: "transparent"
-                            visible: false
-                            property bool isRound: modelModel.get(root.pebble.model - 1).shape === "round"
-                            Rectangle {
-                                color: "blue"
+                        MouseArea {
+                            width: watchImage.width
+                            height: watchImage.height
+                            Image {
+                                id: watchImage
+                                fillMode: Image.PreserveAspectFit
                                 anchors.centerIn: parent
-                                height: image.height
-                                width: parent.isRound ? height : height * 0.9
-                                radius: parent.isRound ? height / 2 : 0
+                                source: modelModel.get(root.pebble.model).image
+                                height: (sourceSize.height ? sourceSize.height : 350)
+                                width: (sourceSize.width ? sourceSize.width : 251)
                             }
+
+                            Image {
+                                id: image
+                                anchors.centerIn: parent
+                                source: "file://" + root.pebble.screenshots.latestScreenshot
+                                fillMode: Image.PreserveAspectFit
+                                visible: false
+                            }
+                            Component.onCompleted: {
+                                if (!root.pebble.screenshots.latestScreenshot) {
+                                    root.pebble.requestScreenshot()
+                                }
+                            }
+                            OpacityMask {
+                                anchors.centerIn: parent
+                                width: maskRect.width
+                                height: maskRect.height
+                                source: image
+                                maskSource: maskRect
+                                cached: true
+                            }
+                            Rectangle {
+                                id: maskRect
+                                width: image.width
+                                height: image.height
+                                anchors.centerIn: parent
+                                color: "transparent"
+                                visible: false
+                                property bool isRound: modelModel.get(root.pebble.model - 1).shape === "round"
+                                Rectangle {
+                                    color: "blue"
+                                    anchors.centerIn: parent
+                                    height: image.height
+                                    width: parent.isRound ? height : height * 0.9
+                                    radius: parent.isRound ? height / 2 : 0
+                                }
+                            }
+
+                            onClicked: pageStack.push(Qt.resolvedUrl("ScreenshotsPage.qml"), {
+                                                          pebble: root.pebble
+                                                      })
                         }
                     }
                     Column {
