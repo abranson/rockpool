@@ -32,7 +32,7 @@ void ScreenshotEndpoint::removeScreenshot(const QString &filename)
 
 QStringList ScreenshotEndpoint::screenshots() const
 {
-    QDir dir(m_pebble->imagePath() + "/screenshots/");
+    QDir dir(m_pebble->imagePath());
 
     // move old screenshots to the new location
     QDir oldDir(m_pebble->storagePath() + "/screenshots/");
@@ -44,7 +44,7 @@ QStringList ScreenshotEndpoint::screenshots() const
                 oldDir.rename(filename, dir.absoluteFilePath(filename));
             }
         }
-        if (oldDir.entryList(QDir::AllEntries).size() == 0) {
+        if (oldDir.entryList(QDir::Files).size() == 0) {
             qDebug() << "Old screenshot directory empty. Deleting";
             oldDir.removeRecursively();
         }
@@ -52,7 +52,7 @@ QStringList ScreenshotEndpoint::screenshots() const
 
     QStringList ret;
     foreach (const QString &filename, dir.entryList(QDir::Files)) {
-        ret << m_pebble->imagePath() + "/screenshots/" + filename;
+        ret << m_pebble->imagePath() + filename;
     }
     return ret;
 }
@@ -125,7 +125,7 @@ void ScreenshotEndpoint::handleScreenshotData(const QByteArray &data)
         }
 
         QImage image = QImage((uchar*)output.data(), m_width, m_height, QImage::Format_RGB888);
-        QDir dir(m_pebble->imagePath() + "/screenshots/");
+        QDir dir(m_pebble->imagePath());
         if (!dir.exists()) {
             dir.mkpath(dir.absolutePath());
         }

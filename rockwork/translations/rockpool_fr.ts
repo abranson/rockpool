@@ -616,12 +616,12 @@
         <translation>Supprimer</translation>
     </message>
     <message>
-        <location filename="../qml/pages/ScreenshotsPage.qml" line="64"/>
+        <location filename="../qml/pages/ScreenshotsPage.qml" line="65"/>
         <source>Really Delete?</source>
         <translation>Supprimer réellement ? </translation>
     </message>
     <message>
-        <location filename="../qml/pages/ScreenshotsPage.qml" line="69"/>
+        <location filename="../qml/pages/ScreenshotsPage.qml" line="72"/>
         <source>Cancel</source>
         <translation>Annuler</translation>
     </message>

@@ -61,7 +61,10 @@ Page {
             Button {
                 text: qsTr("Delete")
                 onClicked: {
-                    grid.currentItem.remorseAction(qsTr("Really Delete?"),function(){root.pebble.removeScreenshot(filename)});
+                    var index = grid.currentIndex;
+                    grid.currentItem.remorseAction(qsTr("Really Delete?"),function(){
+                        root.pebble.removeScreenshot(root.pebble.screenshots.get(index))
+                    });
                     grid.currentIndex=-1;
                 }
             }
