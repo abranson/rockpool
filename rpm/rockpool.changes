@@ -1,3 +1,11 @@
+* Mon Apr 25 2016 Andrew Branson <github@andrewbranson.net> 0.10-2
+- Fixed ownerless notification filters (e.g. Situations)
+- Option to delete obsolete notification filters
+- Move screenshot directory (and existing screenshots) to trackable Pictures directory
+- Tap watch image as a shortcut to screenshot page
+- Service restart option on developer tools
+- Don't use temporary android notification icons
+
 * Mon Apr 18 2016 Andrew Branson <github@andrewbranson.net> 0.10-1
 - Rewritten notification filtering. Resets current filters.
 - Simplify bluetooth reconnection
