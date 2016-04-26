@@ -29,7 +29,13 @@ AppStoreClient::AppStoreClient(QObject *parent):
 
 ApplicationsModel *AppStoreClient::model() const
 {
-    return m_model;
+    return (f_model==0)? m_model : f_model;
+}
+
+void AppStoreClient::setModel(ApplicationsModel *p_model)
+{
+    f_model = p_model;
+    emit modelChanged();
 }
 
 int AppStoreClient::limit() const
@@ -223,19 +229,45 @@ void AppStoreClient::fetchAppDetails(const QString &appId)
     QNetworkReply * reply = m_nam->get(request);
     connect(reply, &QNetworkReply::finished, [this, reply, appId]() {
         reply->deleteLater();
-        AppItem *item = m_model->findByStoreId(appId);
+        AppItem *item = model()->findByStoreId(appId);
         if (!item) {
             qWarning() << "Can't find item with id" << appId;
             return;
         }
         QJsonDocument jsonDoc = QJsonDocument::fromJson(reply->readAll());
+        if(jsonDoc.isEmpty()) {
+            qDebug() << "Not a store app" << appId << "or problem with store connection" << reply->errorString();
+            return;
+        } else
+            qDebug() << "Attempting to parse for" << appId << item->category() << "cat";
         QVariantMap replyMap = jsonDoc.toVariant().toMap().value("data").toList().first().toMap();
-        if (replyMap.contains("header_images") && replyMap.value("header_images").toList().count() > 0) {
-            item->setHeaderImage(replyMap.value("header_images").toList().first().toMap().value("orig").toString());
+        if(!item->category().isNull()) { // This is store item, category is always set
+            item->setVersion(replyMap.value("latest_release").toMap().value("version").toString());
+            if (replyMap.contains("header_images") && replyMap.value("header_images").toList().count() > 0) {
+                item->setHeaderImage(replyMap.value("header_images").toList().first().toMap().value("orig").toString());
+            }
+            item->setVendor(replyMap.value("author").toString());
+            item->setIsWatchFace(replyMap.value("type").toString() == "watchface");
+        } else { // This is phone item (installedApps) - category not preserved
+            qDebug() << "Fetching data for app" << appId;// << jsonDoc.toJson(QJsonDocument::Indented);
+            QVariantMap flatMap,cmpMap = replyMap.value("compatibility").toMap();
+            foreach(const QString &key, cmpMap.keys()) {
+                if(cmpMap.value(key).toMap().value("supported").toBool()) {
+                    //qDebug() << "Adding compatibility for" << appId << key;
+                    if(cmpMap.value(key).toMap().contains("firmware")) {
+                        flatMap.insert(key,cmpMap.value(key).toMap().value("firmware").toMap().value("major").toInt());
+                    } else {
+                        flatMap.insert(key,1);
+                    }
+                }
+            }
+            item->setLatest(replyMap.value("latest_release").toMap().value("version").toString());
+            item->setChangeLog(replyMap.value("changelog").toList());
+            item->setCompanion(!replyMap.value("companions").toMap().value("android").isNull() || !replyMap.value("companions").toMap().value("ios").isNull());
+            item->setCompatibility(flatMap);
+            QModelIndex mi = model()->index(model()->indexOf(item));
+            emit model()->dataChanged(mi,mi);
         }
-        item->setVendor(replyMap.value("author").toString());
-        item->setVersion(replyMap.value("latest_release").toMap().value("version").toString());
-        item->setIsWatchFace(replyMap.value("type").toString() == "watchface");
     });
 }
 

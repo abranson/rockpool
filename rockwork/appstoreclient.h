@@ -11,7 +11,7 @@ class AppStoreClient : public QObject
 {
     Q_OBJECT
     Q_ENUMS(Type)
-    Q_PROPERTY(ApplicationsModel* model READ model CONSTANT)
+    Q_PROPERTY(ApplicationsModel* model READ model WRITE setModel NOTIFY modelChanged)
     Q_PROPERTY(int limit READ limit WRITE setLimit NOTIFY limitChanged)
     Q_PROPERTY(QString hardwarePlatform READ hardwarePlatform WRITE setHardwarePlatform NOTIFY hardwarePlatformChanged)
     Q_PROPERTY(bool busy READ busy NOTIFY busyChanged)
@@ -26,6 +26,7 @@ public:
     explicit AppStoreClient(QObject *parent = 0);
 
     ApplicationsModel *model() const;
+    void setModel(ApplicationsModel *p_model);
 
     int limit() const;
     void setLimit(int limit);
@@ -43,6 +44,7 @@ signals:
     void hardwarePlatformChanged();
     void busyChanged();
     void enableCategoriesChanged();
+    void modelChanged();
 
 public slots:
     void fetchHome(Type type);
@@ -59,6 +61,7 @@ private:
 private:
     QNetworkAccessManager *m_nam;
     ApplicationsModel *m_model;
+    ApplicationsModel *f_model = 0;
     int m_limit = 20;
     QString m_hardwarePlatform;
     bool m_busy = false;
