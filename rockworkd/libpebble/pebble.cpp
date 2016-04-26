@@ -555,19 +555,28 @@ void Pebble::sideloadApp(const QString &packageFile)
             qWarning() << "Error parsing App metadata" << targetFile << "at" << td.path();
             return;
         }
-        id = info.uuid().toString().mid(1,36);
-        QDir ad;
-        if(ad.mkpath(m_storagePath + "apps/" + id)) {
-
-            if(!ZipHelper::unpackArchive(targetFile, m_storagePath + "apps/" + id)) {
-                    qWarning() << "Error unpacking App zip file" << targetFile << "to" << m_storagePath + "apps/" + id;
-                    return;
-            }
-            qDebug() << "Sideload package unpacked to" << m_storagePath + "apps/" + id;
-            appDownloadFinished(id);
+        if(installedAppIds().contains(info.uuid())) {
+            id = appInfo(info.uuid()).storeId(); // Existing app, upgrade|downgrade|overwrite
         } else {
-            qWarning() << "Cannot create app dir" << m_storagePath + "apps/" + id;
+            id = info.uuid().toString().mid(1,36); // Install new app under apps/uuid/
+            QDir ad;
+            if(!ad.mkpath(m_storagePath + "apps/" + id)) {
+                qWarning() << "Cannot create app dir" << m_storagePath + "apps/" + id;
+                return;
+            }
         }
+
+        if(!ZipHelper::unpackArchive(targetFile, m_storagePath + "apps/" + id)) {
+                qWarning() << "Error unpacking App zip file" << targetFile << "to" << m_storagePath + "apps/" + id;
+                return;
+        }
+        qDebug() << "Sideload package unpacked to" << m_storagePath + "apps/" + id;
+        // Store the file. Sideloaded file will likely be of the same name/version
+        QString newFile = m_storagePath + "apps/" + id + "/v"+info.versionLabel()+".pbw";
+        if(QFile::exists(newFile))
+            QFile::remove(newFile);
+        QFile::rename(targetFile,newFile);
+        appDownloadFinished(id);
     }
 }
 
