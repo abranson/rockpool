@@ -56,13 +56,13 @@ Page {
         devMenuModel.clear();
 
         devMenuModel.append({
-            icon: "setting",
+            icon: "low-importance",
             text: qsTr("Disable Service"),
             page: "",
             call: "stop"
         });
         devMenuModel.append({
-            icon: "developer",
+            icon: "sync",
             text: qsTr("Restart Service"),
             page: "",
             call: "restart"
