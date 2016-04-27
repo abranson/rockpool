@@ -8,6 +8,8 @@ ListItem {
     property string name: ""
     property string iconSource: ""
     property string vendor: ""
+    property string version: ""
+    property string candidate: ""
     property bool hasSettings: false
     property bool isSystemApp: false
     property bool isLastApp: true
@@ -16,12 +18,20 @@ ListItem {
     signal deleteApp
     signal configureApp
     signal moveApp(int dir)
+    signal upgrade
 
     contentHeight: Theme.itemSizeMedium
     width: parent.width
 
     menu: ContextMenu {
         closeOnActivation: true
+        MenuItem {
+            text: (candidate ? qsTr("Upgrade") + " " + version +  " >> " + candidate : qsTr("Version") + " " + version)
+            onClicked: root.upgrade()
+            enabled: candidate && candidate != version
+            visible: !isSystemApp
+        }
+
         MenuItem {
             text: qsTr("Launch")
             onClicked: root.launchApp()
@@ -75,6 +85,11 @@ ListItem {
                 text: root.vendor
                 font.pixelSize: Theme.fontSizeSmall
             }
+        }
+        Image {
+            source: "image://theme/icon-s-update"
+            visible: candidate && candidate != version
+            anchors.verticalCenter: parent.verticalCenter
         }
     }
     onClicked: showMenu()

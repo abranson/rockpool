@@ -129,6 +129,45 @@
     </message>
 </context>
 <context>
+    <name>AppUpgradePage</name>
+    <message>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="24"/>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="25"/>
+        <source>Upgrading</source>
+        <translation>Aktualisieren</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="49"/>
+        <source>Version</source>
+        <translation>Version</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="77"/>
+        <source>Upgrade</source>
+        <translation>Aktualisierung</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="77"/>
+        <source>Upgrading...</source>
+        <translation>Aktualisieren...</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="77"/>
+        <source>Needs Companion</source>
+        <translation>Companion benötigt</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="93"/>
+        <source>Compatibility</source>
+        <translation>Kompatibilität</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="175"/>
+        <source>Change Log</source>
+        <translation>Änderungsprotokoll</translation>
+    </message>
+</context>
+<context>
     <name>ContentPeerPickerPage</name>
     <message>
         <location filename="../qml/pages/ContentPeerPickerPage.qml" line="16"/>
@@ -162,43 +201,113 @@
         <translation>Entwicklerwerkzeuge</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="59"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="60"/>
         <source>Disable Service</source>
         <translation>Dienst deaktivieren</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="65"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="66"/>
         <source>Restart Service</source>
-        <translation type="unfinished">Dienst neu starten</translation>
+        <translation>Dienst neu starten</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="71"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="72"/>
         <source>Screenshots</source>
         <translation>Screenshots</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="77"/>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="99"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="78"/>
+        <source>Developer Connection</source>
+        <translation>Entwickleranschluss</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="84"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="194"/>
         <source>Report problem</source>
         <translation>Problem melden</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="83"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="90"/>
         <source>Install app or watchface from file</source>
         <translation>Installieren App oder Zifferblatt aus Datei</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="112"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="113"/>
+        <source>Developer Connection Settings</source>
+        <translation>Entwickleranschluss Einstellungen</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="118"/>
+        <source>Enable Connection</source>
+        <translation>Anschluss aktivieren</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="120"/>
+        <source>Enable Developer Connection Service</source>
+        <translation>Entwickleranschluss Dienst Aktivieren</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="130"/>
+        <source>Listen Port</source>
+        <translation>Port mithören</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="143"/>
+        <source>Apply</source>
+        <translation>Übernehmen</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="153"/>
+        <source>Enable</source>
+        <translation>Anlassen</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="154"/>
+        <source>Enable DeveloperConnection over CloudPebble</source>
+        <translation>Entwickleranschluss um die CloudPebble anlassen</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="160"/>
+        <source>Runtime Status</source>
+        <translation>Aktueller Zustand</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="165"/>
+        <source>DeveloperConnection Status</source>
+        <translation>Stand des Entwickleranschlusses</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="166"/>
+        <source>DeveloperConnection port listening state</source>
+        <translation>Zeigt ob Entwikleranschluss lokaler Port mithört</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="172"/>
+        <source>CloudPebble Status</source>
+        <translation>Zustand der CloudPebble</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="173"/>
+        <source>Indicates CloudPebble connection state</source>
+        <translation>Zeigt ob Entwikleranschluss mit der CloudPebble verbunden ist</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="178"/>
+        <source>Close</source>
+        <translation>Schließen</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="207"/>
         <source>Preparing logs package...</source>
         <translation>Logbuch vorbereiten...</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="153"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="248"/>
         <source>Send watch logs</source>
         <translation>Senden Uhr Protokolle</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="162"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="257"/>
         <source>Cancel</source>
         <translation>Abbrechen</translation>
     </message>
@@ -363,32 +472,42 @@
 <context>
     <name>InstalledAppDelegate</name>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="26"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="29"/>
+        <source>Upgrade</source>
+        <translation>Aktualisierung</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="29"/>
+        <source>Version</source>
+        <translation>Version</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="36"/>
         <source>Launch</source>
         <translation>Starten</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="30"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="40"/>
         <source>Settings</source>
         <translation>Einstellungen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="35"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="45"/>
         <source>Delete</source>
         <translation>Löschen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="38"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="48"/>
         <source>Really Delete?</source>
         <translation>Wirklich löschen?</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="44"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="54"/>
         <source>Move Up</source>
         <translation>Nach oben verschieben</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="49"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="59"/>
         <source>Move Down</source>
         <translation>Nach unten verschieben</translation>
     </message>
@@ -396,27 +515,27 @@
 <context>
     <name>InstalledAppsPage</name>
     <message>
-        <location filename="../qml/pages/InstalledAppsPage.qml" line="18"/>
+        <location filename="../qml/pages/InstalledAppsPage.qml" line="23"/>
         <source>Add New</source>
         <translation>Neue hinzufügen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppsPage.qml" line="27"/>
+        <location filename="../qml/pages/InstalledAppsPage.qml" line="32"/>
         <source>Apps &amp; Watchfaces</source>
         <translation>Apps &amp; Zifferblätter</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppsPage.qml" line="27"/>
+        <location filename="../qml/pages/InstalledAppsPage.qml" line="32"/>
         <source>Apps</source>
         <translation>Anwendungen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppsPage.qml" line="27"/>
+        <location filename="../qml/pages/InstalledAppsPage.qml" line="32"/>
         <source>Watchfaces</source>
         <translation>Zifferblätter</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppsPage.qml" line="73"/>
+        <location filename="../qml/pages/InstalledAppsPage.qml" line="86"/>
         <source>Save Apps Order</source>
         <translation>App-Reihenfolge speichern</translation>
     </message>
@@ -439,77 +558,82 @@
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="19"/>
         <source>About</source>
-        <translation type="unfinished"></translation>
+        <translation>Über</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="25"/>
         <source>Developer tools</source>
-        <translation type="unfinished"></translation>
+        <translation>Entwicklerwerkzeuge</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="120"/>
         <source>Connected</source>
-        <translation type="unfinished">Verbunden</translation>
+        <translation>Verbunden</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="120"/>
         <source>Disconnected</source>
-        <translation type="unfinished">Getrennt</translation>
+        <translation>Getrennt</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="128"/>
         <source>Update Available</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktualisierung verfügbar</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="150"/>
         <source>Upgrading...</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktualisieren...</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="162"/>
-        <source>Your Pebble smartwatch is disconnected. Please make sure it is powered on, within range and it is paired properly in the Bluetooth System Settings.</source>
-        <translation type="unfinished"></translation>
+        <source>Running</source>
+        <translation>Laufend</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="172"/>
+        <source>Your Pebble smartwatch is disconnected. Please make sure it is powered on, within range and it is paired properly in the Bluetooth System Settings.</source>
+        <translation>Ihre Pebble Smartwatch ist nicht verbunden. Bitte stellen Sie sicher, dass es eingeschaltet ist, in Reichweite, und in den Bluetooth-Systemeinstellungen richtig gepaart ist.</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/MainMenuPage.qml" line="182"/>
         <source>Open Bluetooth Settings</source>
-        <translation type="unfinished">Bluetooth-Einstellungen öffnen</translation>
+        <translation>Bluetooth-Einstellungen öffnen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="179"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="189"/>
         <source>Your Pebble smartwatch is in factory mode and needs to be initialized.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ihre Pebble Smartwatch ist im Werksmodus und muss initialisiert werden.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="188"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="198"/>
         <source>Initialize Pebble</source>
-        <translation type="unfinished"></translation>
+        <translation>Pebble initialisieren</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="257"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="267"/>
         <source>Notifications</source>
-        <translation type="unfinished">Benachrichtigungen</translation>
+        <translation>Benachrichtigungen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="262"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="272"/>
         <source>Watch Apps</source>
-        <translation type="unfinished"></translation>
+        <translation>Anwendungen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="268"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="278"/>
         <source>Watchfaces</source>
-        <translation type="unfinished">Zifferblätter</translation>
+        <translation>Zifferblätter</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="274"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="284"/>
         <source>Settings</source>
-        <translation type="unfinished">Einstellungen</translation>
+        <translation>Einstellungen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="281"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="291"/>
         <source>Firmware</source>
-        <translation type="unfinished"></translation>
+        <translation>Firmware</translation>
     </message>
 </context>
 <context>
@@ -532,17 +656,17 @@
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="69"/>
         <source>Disabled When Active</source>
-        <translation type="unfinished"></translation>
+        <translation>Deaktiviert wenn aktiv</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="75"/>
         <source>Always Disabled</source>
-        <translation type="unfinished"></translation>
+        <translation>Immer deaktiviert</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="81"/>
         <source>Forget</source>
-        <translation type="unfinished"></translation>
+        <translation>Verlernen</translation>
     </message>
 </context>
 <context>
@@ -656,7 +780,7 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="48"/>
         <source>Automatic Profile</source>
-        <translation type="unfinished"></translation>
+        <translation>Automatisches Profil</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="56"/>
@@ -669,7 +793,7 @@
         <location filename="../qml/pages/SettingsPage.qml" line="79"/>
         <location filename="../qml/pages/SettingsPage.qml" line="89"/>
         <source>no change</source>
-        <translation type="unfinished"></translation>
+        <translation>Keine Änderung</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="76"/>

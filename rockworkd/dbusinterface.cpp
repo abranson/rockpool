@@ -20,6 +20,8 @@ DBusPebble::DBusPebble(Pebble *pebble, QObject *parent):
     connect(pebble, &Pebble::imperialUnitsChanged, this, &DBusPebble::ImperialUnitsChanged);
     connect(pebble, &Pebble::profileConnectionSwitchChanged, this, &DBusPebble::onProfileConnectionSwitchChanged);
     connect(pebble, &Pebble::calendarSyncEnabledChanged, this, &DBusPebble::CalendarSyncEnabledChanged);
+    connect(pebble, &Pebble::devConServerStateChanged, this, &DBusPebble::DevConnectionChanged);
+    connect(pebble, &Pebble::devConCloudStateChanged, this, &DBusPebble::DevConnCloudChanged);
 }
 
 QString DBusPebble::Address() const
@@ -70,6 +72,46 @@ void DBusPebble::SetNotificationFilter(const QString &sourceId, int enabled)
 void DBusPebble::ForgetNotificationFilter(const QString &sourceId)
 {
     m_pebble->forgetNotificationFilter(sourceId);
+}
+
+bool DBusPebble::DevConnectionEnabled() const
+{
+    return m_pebble->devConEnabled();
+}
+
+quint16 DBusPebble::DevConnListenPort() const
+{
+    return m_pebble->devConListenPort();
+}
+
+bool DBusPebble::DevConnCloudEnabled() const
+{
+    return m_pebble->devConCloudEnabled();
+}
+
+void DBusPebble::SetDevConnEnabled(bool enabled)
+{
+    m_pebble->setDevConEnabled(enabled);
+}
+
+void DBusPebble::SetDevConnListenPort(quint16 port)
+{
+    m_pebble->setDevConListenPort(port);
+}
+
+void DBusPebble::SetDevConnCloudEnabled(bool enabled)
+{
+    m_pebble->setDevConCloudEnabled(enabled);
+}
+
+bool DBusPebble::DevConnectionState() const
+{
+    return m_pebble->devConServerState();
+}
+
+bool DBusPebble::DevConnCloudState() const
+{
+    return m_pebble->devConCloudState();
 }
 
 void DBusPebble::InstallApp(const QString &id)

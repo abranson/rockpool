@@ -30,6 +30,11 @@ class Pebble : public QObject
     Q_PROPERTY(QString profileWhenConnected READ profileWhenConnected WRITE setProfileWhenConnected NOTIFY profileWhenConnectedChanged)
     Q_PROPERTY(QString profileWhenDisconnected READ profileWhenDisconnected WRITE setProfileWhenDisconnected NOTIFY profileWhenDisconnectedChanged)
     Q_PROPERTY(bool calendarSyncEnabled READ calendarSyncEnabled WRITE setCalendarSyncEnabled NOTIFY calendarSyncEnabledChanged)
+    Q_PROPERTY(bool devConnEnabled READ devConnEnabled WRITE setDevConnEnabled NOTIFY devConnEnabledChanged)
+    Q_PROPERTY(bool devConnCloudEnabled READ devConnCloudEnabled WRITE setDevConnCloudEnabled NOTIFY devConnCloudEnabledChanged)
+    Q_PROPERTY(quint16 devConListenPort READ devConListenPort WRITE setDevConListenPort NOTIFY devConListenPortChanged)
+    Q_PROPERTY(bool devConnServerRunning READ devConnServerRunning NOTIFY devConnServerRunningChanged)
+    Q_PROPERTY(bool devConCloudConnected READ devConCloudConnected NOTIFY devConCloudConnectedChanged)
 
 public:
     explicit Pebble(const QDBusObjectPath &path, QObject *parent = 0);
@@ -69,6 +74,12 @@ public:
     bool calendarSyncEnabled() const;
     void setCalendarSyncEnabled(bool enabled);
 
+    bool devConnServerRunning() const;
+    bool devConCloudConnected() const;
+    bool devConnEnabled() const;
+    bool devConnCloudEnabled() const;
+    quint16 devConListenPort() const;
+
 public slots:
     void setNotificationFilter(const QString &sourceId, int enabled);
     void forgetNotificationFilter(const QString &sourceId);
@@ -84,6 +95,10 @@ public slots:
     void performFirmwareUpgrade();
     void dumpLogs(const QString &filename);
 
+    void setDevConnEnabled(bool enabled);
+    void setDevConnCloudEnabled(bool enabled);
+    void setDevConListenPort(quint16 port);
+
 signals:
     void connectedChanged();
     void hardwarePlatformChanged();
@@ -96,6 +111,11 @@ signals:
     void profileWhenDisconnectedChanged();
     void profileWhenConnectedChanged();
     void calendarSyncEnabledChanged();
+    void devConnEnabledChanged();
+    void devConnCloudEnabledChanged();
+    void devConListenPortChanged();
+    void devConnServerRunningChanged();
+    void devConCloudConnectedChanged();
 
     void openURL(const QString &uuid, const QString &url);
 
@@ -114,6 +134,8 @@ private slots:
     void screenshotAdded(const QString &filename);
     void screenshotRemoved(const QString &filename);
     void refreshFirmwareUpdateInfo();
+    void devConStateChanged(bool state);
+    void devConCloudChanged(bool state);
 
 private:
     QDBusObjectPath m_path;

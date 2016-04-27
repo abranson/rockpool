@@ -47,6 +47,12 @@ QVariant ApplicationsModel::data(const QModelIndex &index, int role) const
         return m_apps.at(index.row())->collection();
     case RoleHasCompanion:
         return m_apps.at(index.row())->companion();
+    case RoleChangeLog:
+        return m_apps.at(index.row())->changeLog();
+    case RoleLatest:
+        return m_apps.at(index.row())->latest();
+    case RoleCompatibility:
+        return m_apps.at(index.row())->compatibility();
     }
 
     return QVariant();
@@ -70,6 +76,9 @@ QHash<int, QByteArray> ApplicationsModel::roleNames() const
     roles.insert(RoleGroupId, "groupId");
     roles.insert(RoleCollection, "collection");
     roles.insert(RoleHasCompanion, "companion");
+    roles.insert(RoleChangeLog,"changeLog");
+    roles.insert(RoleLatest,"latest");
+    roles.insert(RoleCompatibility,"compatibility");
     return roles;
 }
 
@@ -400,3 +409,32 @@ QString AppItem::headerImage() const
     return m_headerImage;
 }
 
+QVariantList AppItem::changeLog() const
+{
+    return m_changeLog;
+}
+
+QString AppItem::latest() const
+{
+    return m_latest;
+}
+void AppItem::setLatest(const QString version)
+{
+    m_latest = version;
+    emit latestChanged();
+}
+
+QVariantMap AppItem::compatibility() const
+{
+    return m_compatibility;
+}
+void AppItem::setCompatibility(const QVariantMap &map)
+{
+    m_compatibility = map;
+    emit compatibilityChanged();
+}
+void AppItem::setChangeLog(const QVariantList &log)
+{
+    m_changeLog = log;
+    emit changeLogChanged();
+}

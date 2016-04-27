@@ -17,12 +17,14 @@
 #include "platforminterface.h"
 #include "ziphelper.h"
 #include "dataloggingendpoint.h"
+#include "devconnection.h"
 
 #include "QDir"
 #include <QDateTime>
 #include <QStandardPaths>
 #include <QSettings>
 #include <QTimeZone>
+#include <QTemporaryDir>
 
 Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
     QObject(parent),
@@ -119,6 +121,18 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
     QObject::connect(m_connection, &WatchConnection::watchConnected, this, &Pebble::profileSwitchRequired);
     QObject::connect(m_connection, &WatchConnection::watchDisconnected, this, &Pebble::profileSwitchRequired);
     QObject::connect(this, &Pebble::profileConnectionSwitchChanged, this, &Pebble::profileSwitchRequired);
+
+    m_devConnection = new DevConnection(this, m_connection);
+    QObject::connect(m_devConnection, &DevConnection::serverStateChanged, this, &Pebble::devConServerStateChanged);
+    QObject::connect(m_devConnection, &DevConnection::cloudStateChanged, this, &Pebble::devConCloudStateChanged);
+    settings.beginGroup("devConnection");
+    // DeveloperConnection is a backdoor to the pebble, it has no authentication whatsoever.
+    // Dont ever enable it automatically, only on-demand by explicit user request!!111
+    //m_devConnection->setEnabled(settings.value("enabled", true).toBool());
+    m_devConnection->setPort(settings.value("listenPort", 9000).toInt());
+    m_devConnection->setCloudEnabled(settings.value("useCloud", true).toBool()); // not implemented yet
+    settings.endGroup();
+
 }
 
 QBluetoothAddress Pebble::address() const
@@ -243,6 +257,39 @@ bool Pebble::recovery() const
 bool Pebble::upgradingFirmware() const
 {
     return m_firmwareDownloader->upgrading();
+}
+
+bool Pebble::devConEnabled() const
+{
+    return m_devConnection->enabled();
+}
+void Pebble::setDevConEnabled(bool enabled)
+{
+    m_devConnection->setEnabled(enabled);
+}
+quint16 Pebble::devConListenPort() const
+{
+    return m_devConnection->listenPort();
+}
+void Pebble::setDevConListenPort(quint16 port)
+{
+    m_devConnection->setPort(port);
+}
+bool Pebble::devConServerState() const
+{
+    return m_devConnection->serverState();
+}
+bool Pebble::devConCloudEnabled() const
+{
+    return m_devConnection->cloudEnabled();
+}
+void Pebble::setDevConCloudEnabled(bool enabled)
+{
+    m_devConnection->setCloudEnabled(enabled);
+}
+bool Pebble::devConCloudState() const
+{
+    return m_devConnection->cloudState();
 }
 
 void Pebble::setHealthParams(const HealthParams &healthParams)
@@ -496,26 +543,41 @@ void Pebble::sideloadApp(const QString &packageFile)
     targetFile.remove("file://");
 
     QString id;
-    int i = 0;
-    do {
-        QDir dir(m_storagePath + "/apps/sideload" + QString::number(i));
-        if (!dir.exists()) {
-            if (!dir.mkpath(dir.absolutePath())) {
-                qWarning() << "Error creating dir for unpacking. Cannot install package" << packageFile;
+    QTemporaryDir td;
+    if(td.isValid()) {
+        if (!ZipHelper::unpackArchive(targetFile, td.path())) {
+            qWarning() << "Error unpacking App zip file" << targetFile << "to" << td.path();
+            return;
+        }
+        qDebug() << "Pre-scanning app" << td.path();
+        AppInfo info(td.path());
+        if (!info.isValid()) {
+            qWarning() << "Error parsing App metadata" << targetFile << "at" << td.path();
+            return;
+        }
+        if(installedAppIds().contains(info.uuid())) {
+            id = appInfo(info.uuid()).storeId(); // Existing app, upgrade|downgrade|overwrite
+        } else {
+            id = info.uuid().toString().mid(1,36); // Install new app under apps/uuid/
+            QDir ad;
+            if(!ad.mkpath(m_storagePath + "apps/" + id)) {
+                qWarning() << "Cannot create app dir" << m_storagePath + "apps/" + id;
                 return;
             }
-            id = "sideload" + QString::number(i);
         }
-        i++;
-    } while (id.isEmpty());
 
-    if (!ZipHelper::unpackArchive(targetFile, m_storagePath + "/apps/" + id)) {
-        qWarning() << "Error unpacking App zip file" << targetFile << "to" << m_storagePath + "/apps/" + id;
-        return;
+        if(!ZipHelper::unpackArchive(targetFile, m_storagePath + "apps/" + id)) {
+                qWarning() << "Error unpacking App zip file" << targetFile << "to" << m_storagePath + "apps/" + id;
+                return;
+        }
+        qDebug() << "Sideload package unpacked to" << m_storagePath + "apps/" + id;
+        // Store the file. Sideloaded file will likely be of the same name/version
+        QString newFile = m_storagePath + "apps/" + id + "/v"+info.versionLabel()+".pbw";
+        if(QFile::exists(newFile))
+            QFile::remove(newFile);
+        QFile::rename(targetFile,newFile);
+        appDownloadFinished(id);
     }
-
-    qDebug() << "Sideload package unpacked.";
-    appDownloadFinished(id);
 }
 
 QList<QUuid> Pebble::installedAppIds()
@@ -750,7 +812,13 @@ void Pebble::appDownloadFinished(const QString &id)
         qWarning() << "Error scanning downloaded app. Won't install on watch";
         return;
     }
-    m_blobDB->insertAppMetaData(m_appManager->info(uuid));
+    // Stop running pebble app to avoid race-condition with JSkit stop
+    if (m_jskitManager->currentApp().uuid() == uuid) {
+        m_appMsgManager->closeApp(uuid);
+    }
+    // Force app replacement to allow update from store/sdk
+    m_blobDB->insertAppMetaData(m_appManager->info(uuid),true);
+    // The app will be re-launched here anyway
     m_pendingInstallations.append(uuid);
 }
 

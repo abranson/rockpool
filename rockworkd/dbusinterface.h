@@ -32,6 +32,9 @@ signals:
     void ProfileWhenDisconnectedChanged();
     void CalendarSyncEnabledChanged();
 
+    void DevConnectionChanged(const bool state);
+    void DevConnCloudChanged(const bool state);
+
 public slots:
     QString Address() const;
     QString Name() const;
@@ -50,6 +53,15 @@ public slots:
     QVariantMap NotificationsFilter() const;
     void SetNotificationFilter(const QString &sourceId, int enabled);
     void ForgetNotificationFilter(const QString &sourceId);
+
+    bool DevConnectionEnabled() const;
+    quint16 DevConnListenPort() const;
+    bool DevConnectionState() const;
+    bool DevConnCloudEnabled() const;
+    bool DevConnCloudState() const;
+    void SetDevConnEnabled(bool enabled);
+    void SetDevConnCloudEnabled(bool enabled);
+    void SetDevConnListenPort(quint16 port);
 
     void InstallApp(const QString &id);
     void SideloadApp(const QString &packageFile);

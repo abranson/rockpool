@@ -1,7 +1,5 @@
 #include "appdownloader.h"
-#include "watchconnection.h"
-#include "watchdatareader.h"
-#include "watchdatawriter.h"
+#include "pebble.h"
 #include "ziphelper.h"
 
 #include <QNetworkAccessManager>
@@ -22,7 +20,6 @@ void AppDownloader::downloadApp(const QString &id)
 {
     QNetworkRequest request(QUrl("https://api2.getpebble.com/v2/apps/id/" + id));
     QNetworkReply *reply = m_nam->get(request);
-    reply->setProperty("storeId", id);
     connect(reply, &QNetworkReply::finished, this, &AppDownloader::appJsonFetched);
 }
 
@@ -30,8 +27,6 @@ void AppDownloader::appJsonFetched()
 {
     QNetworkReply *reply = static_cast<QNetworkReply*>(sender());
     reply->deleteLater();
-
-    QString storeId = reply->property("storeId").toString();
 
     if (reply->error() != QNetworkReply::NoError) {
         qWarning() << "Error fetching App Json" << reply->errorString();
@@ -57,16 +52,29 @@ void AppDownloader::appJsonFetched()
         return;
     }
 
+    QString appid = appMap.value("id").toString();
+    QUuid quuid = appMap.value("uuid").toUuid();
     QDir dir;
-    dir.mkpath(m_storagePath + storeId);
+    Pebble *p = (Pebble *)parent();
+    if(p->installedAppIds().contains(quuid)) {
+        AppInfo ai = p->appInfo(quuid);
+        QString exId = ai.storeId();
+        if(appid != exId && !dir.exists(m_storagePath+appid) && dir.exists(m_storagePath+exId)) {
+            dir.rename(m_storagePath+exId,m_storagePath+appid);
+        } else if(appid != exId) {
+            qWarning() << "App exists but dir is out of sync:" << exId << "<!>" << appid;
+        }
+    } else {
+        dir.mkpath(m_storagePath + appid);
+    }
 
     QString iconFile = appMap.value("list_image").toMap().value("144x144").toString();
     QNetworkRequest request(iconFile);
     QNetworkReply *imageReply = m_nam->get(request);
     qDebug() << "fetching image" << iconFile;
-    connect(imageReply, &QNetworkReply::finished, [this, imageReply, storeId]() {
+    connect(imageReply, &QNetworkReply::finished, [this, imageReply, appid]() {
         imageReply->deleteLater();
-        QString targetFile = m_storagePath + storeId + "/list_image.png";
+        QString targetFile = m_storagePath + appid + "/list_image.png";
         qDebug() << "saving image to" << targetFile;
         QFile f(targetFile);
         if (f.open(QFile::WriteOnly)) {
@@ -74,15 +82,16 @@ void AppDownloader::appJsonFetched()
             f.close();
         }
     });
-
-    fetchPackage(pbwFileUrl, storeId);
+    appid += ("/v" + appMap.value("latest_release").toMap().value("version").toString() + ".pbw");
+    fetchPackage(pbwFileUrl, appid);
 }
 
-void AppDownloader::fetchPackage(const QString &url, const QString &storeId)
+void AppDownloader::fetchPackage(const QString &url, const QString &file)
 {
     QNetworkRequest request(url);
     QNetworkReply *reply = m_nam->get(request);
-    reply->setProperty("storeId", storeId);
+    qDebug() << "Fetching app to" << file;
+    reply->setProperty("file", file);
     connect(reply, &QNetworkReply::finished, this, &AppDownloader::packageFetched);
 }
 
@@ -91,9 +100,9 @@ void AppDownloader::packageFetched()
     QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
     reply->deleteLater();
 
-    QString storeId = reply->property("storeId").toString();
+    QString file = reply->property("file").toString();
 
-    QFile f(m_storagePath + storeId + "/" + reply->request().url().fileName() + ".zip");
+    QFile f(m_storagePath + file);
     if (!f.open(QFile::WriteOnly | QFile::Truncate)) {
         qWarning() << "Error opening file for writing";
         return;
@@ -102,12 +111,12 @@ void AppDownloader::packageFetched()
     f.flush();
     f.close();
 
-    QString zipName = m_storagePath + storeId + "/" + reply->request().url().fileName() + ".zip";
+    QString appid = file.split("/").first();
 
-    if (!ZipHelper::unpackArchive(zipName, m_storagePath + storeId)) {
+    if (!ZipHelper::unpackArchive(m_storagePath+file, m_storagePath + appid)) {
         qWarning() << "Error unpacking App zip file";
         return;
     }
 
-    emit downloadFinished(storeId);
+    emit downloadFinished(appid);
 }

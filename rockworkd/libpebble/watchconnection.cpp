@@ -111,7 +111,12 @@ void WatchConnection::writeToPebble(Endpoint endpoint, const QByteArray &data)
     msg.append(endpoint & 0xFF);
 
     msg.append(data);
+    writeRawData(msg);
+    emit rawOutgoingMsg(msg);
+}
 
+void WatchConnection::writeRawData(const QByteArray &msg)
+{
     //qDebug() << "Writing:" << msg.toHex();
     m_socket->write(msg);
 }
@@ -187,6 +192,7 @@ void WatchConnection::readyRead()
 
     QByteArray data = m_socket->read(headerLength + messageLength);
 //    qDebug() << "Have message for endpoint:" << endpoint << "data:" << data.toHex();
+    emit rawIncomingMsg(data);
 
     data = data.right(data.length() - 4);
 

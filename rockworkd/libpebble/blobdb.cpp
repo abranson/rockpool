@@ -335,7 +335,7 @@ void BlobDB::clearApps()
     s.remove("");
 }
 
-void BlobDB::insertAppMetaData(const AppInfo &info)
+void BlobDB::insertAppMetaData(const AppInfo &info,const bool force)
 {
     if (!m_pebble->connected()) {
         qWarning() << "Pebble is not connected. Cannot install app";
@@ -343,7 +343,7 @@ void BlobDB::insertAppMetaData(const AppInfo &info)
     }
 
     QSettings s(m_blobDBStoragePath + "/appsyncstate.conf", QSettings::IniFormat);
-    if (s.value(info.uuid().toString(), false).toBool()) {
+    if (s.value(info.uuid().toString(), false).toBool() && !force) {
         qWarning() << "App already in DB. Not syncing again";
         return;
     }

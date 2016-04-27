@@ -45,7 +45,7 @@ public:
     void syncCalendar(const QList<CalendarEvent> &events);
 
     void clearApps();
-    void insertAppMetaData(const AppInfo &info);
+    void insertAppMetaData(const AppInfo &info, const bool force=false);
     void removeApp(const AppInfo &info);
 
     void insert(BlobDBId database, const TimelineItem &item);

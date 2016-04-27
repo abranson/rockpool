@@ -8,11 +8,16 @@ Page {
     property var pebble: null
     property bool showWatchApps: false
     property bool showWatchFaces: false
+    property var model: showWatchApps ? pebble.installedApps : pebble.installedWatchfaces
 
+    AppStoreClient {
+        id: client
+        hardwarePlatform: pebble.hardwarePlatform
+        model: root.model
+    }
     SilicaListView {
         id: listView
         anchors.fill: parent
-        //pullDownMenu:
         PullDownMenu {
             MenuItem {
                 text: qsTr("Add New")
@@ -27,13 +32,15 @@ Page {
             title: showWatchApps ? (showWatchFaces ? qsTr("Apps & Watchfaces") : qsTr("Apps")) : qsTr("Watchfaces")
         }
 
-        model: root.showWatchApps ? root.pebble.installedApps : root.pebble.installedWatchfaces
+        model: root.model
         clip: true
 
         delegate: InstalledAppDelegate {
             uuid: model.uuid
             name: model.name
             vendor: model.vendor
+            version: model.version
+            candidate: (model.latest && model.latest !== model.version)?model.latest:""
             iconSource: model.icon
             isLastApp: !listView.model.get(index+1)
             isSystemApp: model.isSystemApp
@@ -43,6 +50,12 @@ Page {
             onLaunchApp: pebble.launchApp(model.uuid)
             onConfigureApp: root.configureApp(model.uuid)
             onMoveApp: root.moveApp(index,dir)
+            Component.onCompleted: if(!model.isSystemApp && !model.latest) { client.fetchAppDetails(model.storeId) }
+            onUpgrade: pageStack.push(Qt.resolvedUrl("AppUpgradePage.qml"), {
+                                           pebble: root.pebble,
+                                           app_model: root.model,
+                                           app_index: index
+                                      })
         }
         VerticalScrollDecorator {}
     }

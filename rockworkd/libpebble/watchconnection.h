@@ -117,6 +117,7 @@ public:
     QByteArray buildData(QStringList data);
     QByteArray buildMessageData(uint lead, QStringList data);
 
+    void writeRawData(const QByteArray &data);
     void writeToPebble(Endpoint endpoint, const QByteArray &data);
     void systemMessage(SystemMessage msg);
 
@@ -126,6 +127,9 @@ signals:
     void watchConnected();
     void watchDisconnected();
     void watchConnectionFailed();
+
+    void rawOutgoingMsg(QByteArray &msg);
+    void rawIncomingMsg(QByteArray &msg);
 
 private:
     void scheduleReconnect();

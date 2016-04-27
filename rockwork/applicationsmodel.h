@@ -29,6 +29,9 @@ class AppItem: public QObject
     Q_PROPERTY(QString groupId READ groupId NOTIFY groupIdChanged)
     Q_PROPERTY(QString groupKind READ groupKind NOTIFY groupKindChanged)
 
+    Q_PROPERTY(QVariantList changeLog READ changeLog NOTIFY changeLogChanged)
+    Q_PROPERTY(QString latest READ latest WRITE setLatest NOTIFY latestChanged)
+    Q_PROPERTY(QVariantMap compatibility READ compatibility NOTIFY compatibilityChanged)
 
 public:
     AppItem(QObject *parent = 0);
@@ -79,6 +82,13 @@ public:
     void setGroupId(const QString &groupId, const GroupKind kind = GroupCollection);
     void setGroupKind(const GroupKind kind);
 
+    // For installed app upgrade
+    QVariantList changeLog() const;
+    QVariantMap compatibility() const;
+    QString latest() const;
+    void setLatest(const QString version);
+    void setCompatibility(const QVariantMap &map);
+    void setChangeLog(const QVariantList &log);
 
 signals:
     void versionChanged();
@@ -87,6 +97,9 @@ signals:
     void isWatchFaceChanged();
     void groupIdChanged();
     void groupKindChanged();
+    void changeLogChanged();
+    void latestChanged();
+    void compatibilityChanged();
 
 private:
     QString m_storeId;
@@ -109,6 +122,10 @@ private:
     GroupKind m_groupKind;
 
     QString m_headerImage;
+
+    QVariantList m_changeLog;
+    QString m_latest;
+    QVariantMap m_compatibility;
 };
 
 class ApplicationsModel : public QAbstractListModel
@@ -132,7 +149,10 @@ public:
         RoleCategory,
         RoleGroupId,
         RoleCollection,
-        RoleHasCompanion
+        RoleHasCompanion,
+        RoleChangeLog,
+        RoleLatest,
+        RoleCompatibility
     };
 
     ApplicationsModel(QObject *parent = nullptr);
