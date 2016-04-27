@@ -52,8 +52,8 @@ void AppDownloader::appJsonFetched()
         return;
     }
 
-    QString appid = reply->property("storeId").toString();
-    QUuid quuid = QUuid(appMap.value("uuid").toUuid());
+    QString appid = appMap.value("id").toString();
+    QUuid quuid = appMap.value("uuid").toUuid();
     QDir dir;
     Pebble *p = (Pebble *)parent();
     if(p->installedAppIds().contains(quuid)) {
