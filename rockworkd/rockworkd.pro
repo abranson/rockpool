@@ -140,13 +140,24 @@ testing: {
     QT += qml quick
 }
 
-INSTALLS += target systemd
+INSTALLS += target systemd layout
 
 systemd.files = $${TARGET}.service
 systemd.path = /usr/lib/systemd/user
+
+SHARED_DATA_PATH = /usr/share/$${TARGET}
+#fetch from https://github.com/pebble/pypkjs/blob/master/pypkjs/timeline/layouts.json
+# https://raw.githubusercontent.com/pebble/pypkjs/master/pypkjs/timeline/layouts.json
+JSON_FILES = libpebble/layouts.json
+layout.files = $${JSON_FILES}
+layout.path = $${SHARED_DATA_PATH}
+
+DISTFILES += JSON_FILES
 
 # Default rules for deployment.
 target.path = /usr/bin
 
 RESOURCES += \
     libpebble/jskit/jsfiles.qrc
+
+DEFINES += 'SHARED_DATA_PATH=\\"$${SHARED_DATA_PATH}\\"'

@@ -30,6 +30,50 @@ TimelineManager::TimelineManager(Pebble *pebble, WatchConnection *connection):
 
         m_calendarEntries.append(event);
     }
+    QFile lf(QString(SHARED_DATA_PATH)+QString("/layouts.json"));
+    lf.open(QFile::ReadOnly);
+    qDebug() << "Loading layouts file from" << lf.fileName() << lf.errorString();
+    QJsonParseError jpe;
+    QJsonDocument lj = QJsonDocument::fromJson(lf.readAll(),&jpe);
+    lf.close();
+    qDebug() << "Parsed with results" << jpe.errorString();
+    QVariantMap lm = lj.toVariant().toMap();
+    QVariantMap attributes = lm.value("attributes").toMap();
+    QVariantMap resources = lm.value("resources").toMap();
+    QVariantMap layouts = lm.value("layouts").toMap();
+    m_attributes.clear();
+    foreach(const QString &key,attributes.keys()) {
+        Attr a;
+        a.id = attributes.value(key).toMap().value("id").toInt();
+        a.max = attributes.value(key).toMap().value("max_length").toInt();
+        a.type = attributes.value(key).toMap().value("type").toString();
+        a.note = attributes.value(key).toMap().value("note").toString();
+        m_attributes.insert(key,a);
+    }
+    qDebug() << "Added" << m_attributes.size() << "attributes";
+    m_resources.clear();
+    foreach(const QString &key, resources.keys()) {
+        m_resources.insert(key,resources.value(key).toInt());
+    }
+    qDebug() << "Added" << m_resources.size() << "resources";
+    m_layouts.clear();
+    foreach(const QString &key, layouts.keys()) {
+        m_layouts.insert(key,layouts.value(key).toInt());
+    }
+    qDebug() << "Added" << m_layouts.size() << "layout types";
+}
+
+Attr TimelineManager::getAttr(const QString &key) const
+{
+    return m_attributes.value(key);
+}
+quint8 TimelineManager::getLayout(const QString &key) const
+{
+    return m_layouts.value(key);
+}
+TimelineAttribute::ResID TimelineManager::getRes(const QString &key) const
+{
+    return m_resources.value(key);
 }
 
 void TimelineManager::actionInvoked(const QByteArray &actionReply)
@@ -56,27 +100,27 @@ void TimelineManager::actionInvoked(const QByteArray &actionReply)
     } else {
         switch (actionId) {
         case 0: { // Dismiss
-            TimelineAttribute textAttribute(TimelineAttribute::TypeSubtitle, "Dismissed!");
+            TimelineAttribute textAttribute(getAttr("subtitle").id, "Dismissed!");
             attributes.append(textAttribute);
-            TimelineAttribute iconAttribute(TimelineAttribute::TypeLargeIcon, TimelineAttribute::IconIDResultDismissed);
+            TimelineAttribute iconAttribute(getAttr("largeIcon").id, getRes("system://images/RESULT_DISMISSED"));
             attributes.append(iconAttribute);
             emit removeNotification(notification.uuid());
             status = BlobDB::StatusSuccess;
             break;
         }
         case 1: { // Mute source
-            TimelineAttribute textAttribute(TimelineAttribute::TypeSubtitle, "Muted!");
+            TimelineAttribute textAttribute(getAttr("subtitle").id, "Muted!");
             attributes.append(textAttribute);
-            TimelineAttribute iconAttribute(TimelineAttribute::TypeLargeIcon, TimelineAttribute::IconIDResultMute);
+            TimelineAttribute iconAttribute(getAttr("largeIcon").id, getRes("system://images/RESULT_MUTE"));
             attributes.append(iconAttribute);
             emit muteSource(sourceId);
             status = BlobDB::StatusSuccess;
             break;
         }
         case 2: { // Open on phone
-            TimelineAttribute textAttribute(TimelineAttribute::TypeSubtitle, "Opened!");
+            TimelineAttribute textAttribute(getAttr("subtitle").id, "Opened!");
             attributes.append(textAttribute);
-            TimelineAttribute iconAttribute(TimelineAttribute::TypeLargeIcon, TimelineAttribute::IconIDResultSent);
+            TimelineAttribute iconAttribute(getAttr("largeIcon").id, getRes("system://images/RESULT_SENT"));
             attributes.append(iconAttribute);
             qDebug() << "opening" << notification.actToken();
             emit actionTriggered(notification.uuid(), notification.actToken());
@@ -84,9 +128,9 @@ void TimelineManager::actionInvoked(const QByteArray &actionReply)
             break;
         }
         default: { // Dunno lol
-            TimelineAttribute textAttribute(TimelineAttribute::TypeSubtitle, "Action failed!");
+            TimelineAttribute textAttribute(getAttr("subtitle").id, "Action failed!");
             attributes.append(textAttribute);
-            TimelineAttribute iconAttribute(TimelineAttribute::TypeLargeIcon, TimelineAttribute::IconIDResultFailed);
+            TimelineAttribute iconAttribute(getAttr("largeIcon").id, getRes("system://images/RESULT_FAILED"));
             attributes.append(iconAttribute);
             status = BlobDB::StatusError;
         }
@@ -103,76 +147,27 @@ void TimelineManager::actionInvoked(const QByteArray &actionReply)
     }
     m_connection->writeToPebble(WatchConnection::EndpointActionHandler, reply);
 }
-
+const ResMap TimelineManager::NotificationMap[16]  = {
+    {"system://images/NOTIFICATION_GENERIC","",-1},
+    {"system://images/GENERIC_EMAIL","e mails",TimelineAttribute::ColorGray},
+    {"system://images/GENERIC_SMS","SMS",TimelineAttribute::ColorGray2},
+    {"system://images/NOTIFICATION_FACEBOOK","Facebook",TimelineAttribute::ColorBlue},
+    {"system://images/NOTIFICATION_TWITTER","Twitter",TimelineAttribute::ColorBlue2},
+    {"system://images/NOTIFICATION_TELEGRAM","Telegram",TimelineAttribute::ColorLightBlue},
+    {"system://images/NOTIFICATION_WHATSAPP","WhatsApp",TimelineAttribute::ColorGreen},
+    {"system://images/NOTIFICATION_GOOGLE_HANGOUTS","Google Hangouts",TimelineAttribute::ColorGreen},
+    {"system://images/NOTIFICATION_GMAIL","GMail",-1},
+    {"system://images/TIMELINE_WEATHER","Weather Notifications",-1},
+    {"system://images/MUSIC_EVENT","",-1},
+    {"system://images/TIMELINE_MISSED_CALL","call notifications",-1},
+    {"system://images/ALARM_CLOCK","",-1},
+    {"system://images/NOTIFICATION_REMINDER","reminders",-1},
+    {"system://images/NOTIFICATION_FLAG","",-1}
+};
 void TimelineManager::sendNotification(const Notification &notification)
 {
     qDebug() << "inserting notification into blobdb:" << notification.type();
-    TimelineAttribute::IconID iconId = TimelineAttribute::IconIDNotificationGeneric;
-    TimelineAttribute::Color color = TimelineAttribute::ColorRed;
-    QString muteName;
-    switch (notification.type()) {
-    case Notification::NotificationTypeFacebook:
-        iconId = TimelineAttribute::IconIDNotificationFacebook;
-        color = TimelineAttribute::ColorBlue;
-        muteName = "Facebook";
-        break;
-    case Notification::NotificationTypeFlag:
-        iconId = TimelineAttribute::IconIDNotificationFlag;
-        break;
-    case Notification::NotificationTypeGeneric:
-        iconId = TimelineAttribute::IconIDNotificationGeneric;
-        break;
-    case Notification::NotificationTypeGMail:
-        iconId = TimelineAttribute::IconIDNotificationGMail;
-        muteName = "GMail";
-        break;
-    case Notification::NotificationTypeHangout:
-        iconId = TimelineAttribute::IconIDNotificationGoogleHangouts;
-        color = TimelineAttribute::ColorGreen;
-        muteName = "Google Hangout";
-        break;
-    case Notification::NotificationTypeMissedCall:
-        iconId = TimelineAttribute::IconIDTimelineMissedCall;
-        muteName = gettext("call notifications");
-        break;
-    case Notification::NotificationTypeMusic:
-        iconId = TimelineAttribute::IconIDAudioCasette;
-        break;
-    case Notification::NotificationTypeReminder:
-        iconId = TimelineAttribute::IconIDTimelineCalendar;
-        // TRANSLATORS: notifications for calendar reminders
-        muteName = gettext("reminders");
-        break;
-    case Notification::NotificationTypeTelegram:
-        iconId = TimelineAttribute::IconIDNotificationTelegram;
-        color = TimelineAttribute::ColorLightBlue;
-        muteName = "Telegram";
-        break;
-    case Notification::NotificationTypeTwitter:
-        iconId = TimelineAttribute::IconIDNotificationTwitter;
-        color = TimelineAttribute::ColorBlue2;
-        muteName = "Twitter";
-        break;
-    case Notification::NotificationTypeWeather:
-        iconId = TimelineAttribute::IconIDTimelineWeather;
-        muteName = gettext("weather notifications");
-        break;
-    case Notification::NotificationTypeWhatsApp:
-        iconId = TimelineAttribute::IconIDNotificationWhatsapp;
-        color = TimelineAttribute::ColorGreen;
-        muteName = "WhatsApp";
-        break;
-    case Notification::NotificationTypeSMS:
-        muteName = gettext("SMS");
-        iconId = TimelineAttribute::IconIDGenericSMS;
-        break;
-    case Notification::NotificationTypeEmail:
-        muteName = gettext("e mails");
-        iconId = TimelineAttribute::IconIDGenericEmail;
-        break;
-    default:
-        iconId = TimelineAttribute::IconIDNotificationGeneric;
-    }
+    ResMap notice = TimelineManager::NotificationMap[notification.type()];
 
     QUuid itemUuid = notification.uuid();
     TimelineItem timelineItem(itemUuid, TimelineItem::TypeNotification);
@@ -180,46 +175,47 @@ void TimelineManager::sendNotification(const Notification &notification)
 
     timelineItem.setParentId(QUuid("ed429c16-f674-4220-95da-454f303f15e2"));
 
-    TimelineAttribute titleAttribute(TimelineAttribute::TypeTitle, notification.sender().remove(QRegExp("<[^>]*>")).left(64).toUtf8());
+    TimelineAttribute titleAttribute(getAttr("title").id, notification.sender().remove(QRegExp("<[^>]*>")).left(64).toUtf8());
     timelineItem.appendAttribute(titleAttribute);
 
-    TimelineAttribute subjectAttribute(TimelineAttribute::TypeSubtitle, notification.subject().remove(QRegExp("<[^>]*>")).left(64).toUtf8());
+    TimelineAttribute subjectAttribute(getAttr("subtitle").id, notification.subject().remove(QRegExp("<[^>]*>")).left(64).toUtf8());
     timelineItem.appendAttribute(subjectAttribute);
 
-    TimelineAttribute bodyAttribute(TimelineAttribute::TypeBody, notification.body().remove(QRegExp("<[^>]*>")).toUtf8());
+    TimelineAttribute bodyAttribute(getAttr("body").id, notification.body().remove(QRegExp("<[^>]*>")).toUtf8());
     timelineItem.appendAttribute(bodyAttribute);
 
-    TimelineAttribute tinyIconAttribute(TimelineAttribute::TypeTinyIcon, iconId);
+    TimelineAttribute tinyIconAttribute(getAttr("tinyIcon").id, getRes(notice.icon));
     timelineItem.appendAttribute(tinyIconAttribute);
 
-    TimelineAttribute smallIconAttribute(TimelineAttribute::TypeSmallIcon, iconId);
+    TimelineAttribute smallIconAttribute(getAttr("smallIcon").id, getRes(notice.icon));
     timelineItem.appendAttribute(smallIconAttribute);
 
-    TimelineAttribute largeIconAttribute(TimelineAttribute::TypeLargeIcon, iconId);
+    TimelineAttribute largeIconAttribute(getAttr("largeIcon").id, getRes(notice.icon));
     timelineItem.appendAttribute(largeIconAttribute);
 
-    TimelineAttribute iconAttribute(TimelineAttribute::TypeTinyIcon, iconId);
+    TimelineAttribute iconAttribute(getAttr("tinyIcon").id, getRes(notice.icon));
     timelineItem.appendAttribute(iconAttribute);
 
-    TimelineAttribute colorAttribute(TimelineAttribute::TypeColor, color);
+    TimelineAttribute colorAttribute(getAttr("primaryColor").id,
+            (notice.color>=0 ? (TimelineAttribute::Color)notice.color : TimelineAttribute::ColorRed));
     timelineItem.appendAttribute(colorAttribute);
 
     TimelineAction dismissAction(0, TimelineAction::TypeDismiss);
-    TimelineAttribute dismissAttribute(TimelineAttribute::TypeTitle, gettext("Dismiss"));
+    TimelineAttribute dismissAttribute(getAttr("title").id, gettext("Dismiss"));
     dismissAction.appendAttribute(dismissAttribute);
     timelineItem.appendAction(dismissAction);
 
-    if (!muteName.isEmpty()) {
+    if (!notice.mute.isEmpty()) {
         TimelineAction muteAction(1, TimelineAction::TypeGeneric);
 
-        TimelineAttribute muteActionAttribute(TimelineAttribute::TypeTitle, QString::fromUtf8(gettext("Mute %1")).arg(muteName).toUtf8());
+        TimelineAttribute muteActionAttribute(getAttr("title").id, QString::fromUtf8(gettext("Mute %1")).arg(notice.mute).toUtf8());
         muteAction.appendAttribute(muteActionAttribute);
         timelineItem.appendAction(muteAction);
     }
 
     if (!notification.actToken().isEmpty()) {
         TimelineAction actAction(2, TimelineAction::TypeGeneric);
-        TimelineAttribute actActionAttribute(TimelineAttribute::TypeTitle, gettext("Open on phone"));
+        TimelineAttribute actActionAttribute(getAttr("title").id, gettext("Open on phone"));
         actAction.appendAttribute(actActionAttribute);
         timelineItem.appendAction(actAction);
     }
@@ -238,11 +234,12 @@ void TimelineManager::insertTimelinePin(const QUuid &uuid, TimelineItem::Layout 
     TimelineItem item(uuid, TimelineItem::TypePin, flag, startTime, duration);
     item.setLayout(layout);
 
-    TimelineAttribute titleAttribute(TimelineAttribute::TypeTitle, title.toUtf8());
+    TimelineAttribute titleAttribute(getAttr("title").id, title.toUtf8());
     item.appendAttribute(titleAttribute);
 
     if (!description.isEmpty()) {
-        TimelineAttribute bodyAttribute(TimelineAttribute::TypeBody, description.left(128).toUtf8());
+        Attr a = getAttr("body");
+        TimelineAttribute bodyAttribute(a.id, description.left(a.max).toUtf8());
         item.appendAttribute(bodyAttribute);
     }
 
@@ -250,20 +247,20 @@ void TimelineManager::insertTimelinePin(const QUuid &uuid, TimelineItem::Layout 
 //    item.appendAttribute(iconAttribute);
 
     if (!fields.isEmpty()) {
-        TimelineAttribute fieldNames(TimelineAttribute::TypeFieldNames, fields.keys());
+        TimelineAttribute fieldNames(getAttr("headings").id, fields.keys());
         item.appendAttribute(fieldNames);
 
-        TimelineAttribute fieldValues(TimelineAttribute::TypeFieldValues, fields.values());
+        TimelineAttribute fieldValues(getAttr("paragraphs").id, fields.values());
         item.appendAttribute(fieldValues);
     }
 
     if (recurring) {
-        TimelineAttribute guess(TimelineAttribute::TypeRecurring, 0x01);
+        TimelineAttribute guess(0x1f, (quint8)0x01);
         item.appendAttribute(guess);
     }
 
     TimelineAction dismissAction(0, TimelineAction::TypeDismiss);
-    TimelineAttribute dismissAttribute(TimelineAttribute::TypeTitle, "Dismiss");
+    TimelineAttribute dismissAttribute(getAttr("title").id, "Dismiss");
     dismissAction.appendAttribute(dismissAttribute);
     item.appendAction(dismissAction);
 
@@ -282,30 +279,30 @@ void TimelineManager::insertReminder(const QUuid &uuid, const QUuid &parentId, c
     TimelineItem item(uuid, TimelineItem::TypeReminder, TimelineItem::FlagSingleEvent, remindTime, 0);
     item.setParentId(parentId);
 
-    TimelineAttribute titleAttribute(TimelineAttribute::TypeTitle, title.toUtf8());
+    TimelineAttribute titleAttribute(getAttr("title").id, title.toUtf8());
     item.appendAttribute(titleAttribute);
 
-    TimelineAttribute subjectAttribute(TimelineAttribute::TypeSubtitle, subtitle.toUtf8());
+    TimelineAttribute subjectAttribute(getAttr("subtitle").id, subtitle.toUtf8());
     item.appendAttribute(subjectAttribute);
 
-    TimelineAttribute bodyAttribute(TimelineAttribute::TypeBody, body.toUtf8());
+    TimelineAttribute bodyAttribute(getAttr("body").id, body.toUtf8());
     item.appendAttribute(bodyAttribute);
 
-    TimelineAttribute iconAttribute(TimelineAttribute::TypeTinyIcon, TimelineAttribute::IconIDAlarmClock);
+    TimelineAttribute iconAttribute(getAttr("tinyIcon").id, getRes("system://images/ALARM_CLOCK"));
     item.appendAttribute(iconAttribute);
 
     TimelineAction dismissAction(0, TimelineAction::TypeDismiss);
-    TimelineAttribute dismissAttribute(TimelineAttribute::TypeTitle, "Dismiss");
+    TimelineAttribute dismissAttribute(getAttr("title").id, "Dismiss");
     dismissAction.appendAttribute(dismissAttribute);
     item.appendAction(dismissAction);
 
     TimelineAction openPinAction(0, TimelineAction::TypeOpenPin);
-    TimelineAttribute openPinAttribute(TimelineAttribute::TypeTitle, "More");
+    TimelineAttribute openPinAttribute(getAttr("title").id, "More");
     openPinAction.appendAttribute(openPinAttribute);
     item.appendAction(openPinAction);
 
     TimelineAction muteAction(0, TimelineAction::TypeGeneric);
-    TimelineAttribute muteAttribute(TimelineAttribute::TypeTitle, "Mute");
+    TimelineAttribute muteAttribute(getAttr("title").id, "Mute");
     muteAction.appendAttribute(muteAttribute);
     item.appendAction(muteAction);
 
@@ -402,5 +399,4 @@ CalendarEvent TimelineManager::findCalendarEvent(const QString &id)
     }
     return CalendarEvent();
 }
-
 

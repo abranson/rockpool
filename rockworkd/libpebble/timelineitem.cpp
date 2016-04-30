@@ -105,13 +105,14 @@ void TimelineAttribute::setContent(const QString &content)
     m_content = content.toUtf8();
 }
 
-void TimelineAttribute::setContent(TimelineAttribute::IconID iconId)
+void TimelineAttribute::setContent(ResID data)
 {
     m_content.clear();
-    m_content.append((quint8)iconId);
-    m_content.append('\0');
-    m_content.append('\0');
-    m_content.append(0x80);
+    quint32 le = qToLittleEndian((quint32)data);
+    m_content.append(((quint8 *)(&le))[0]);
+    m_content.append(((quint8 *)(&le))[1]);
+    m_content.append(((quint8 *)(&le))[2]);
+    m_content.append(((quint8 *)(&le))[3]);
 }
 
 void TimelineAttribute::setContent(TimelineAttribute::Color color)

@@ -10,6 +10,8 @@
 class TimelineAttribute
 {
 public:
+    typedef quint32 ResID;
+    /*
     enum Type {
         TypeTitle = 0x01,
         TypeSubtitle = 0x02,
@@ -119,7 +121,7 @@ public:
         IconIDRewardGood = 103,
         IconIDRewardAverage = 104
     };
-
+    */
     enum Color {
         ColorWhite = 0x00,
         ColorBlack = 0x80,
@@ -145,41 +147,41 @@ public:
         ColorYellow = 0xBC
     };
 
-    TimelineAttribute(Type type, const QByteArray &content):
+    TimelineAttribute(quint8 type, const QByteArray &content):
         m_type(type),
         m_content(content)
     {}
 
-    TimelineAttribute(Type type, IconID iconId):
+    TimelineAttribute(quint8 type, ResID data):
         m_type(type)
     {
-        setContent(iconId);
+        setContent(data);
     }
-    TimelineAttribute(Type type, Color color):
+    TimelineAttribute(quint8 type, Color color):
         m_type(type)
     {
         setContent(color);
     }
-    TimelineAttribute(Type type, const QStringList &values):
+    TimelineAttribute(quint8 type, const QStringList &values):
         m_type(type)
     {
         setContent(values);
     }
-    TimelineAttribute(Type type, quint8 data):
+    TimelineAttribute(quint8 type, quint8 data):
         m_type(type)
     {
         setContent(data);
     }
 
     void setContent(const QString &content);
-    void setContent(IconID iconId);
+    void setContent(quint32 data);
     void setContent(Color color);
     void setContent(const QStringList &values);
     void setContent(quint8 data);
 
     QByteArray serialize() const;
 private:
-    Type m_type;
+    quint8 m_type;
     QByteArray m_content;
 };
 
