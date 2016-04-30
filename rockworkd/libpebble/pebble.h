@@ -27,6 +27,7 @@ class FirmwareDownloader;
 class WatchLogEndpoint;
 class DataLoggingEndpoint;
 class DevConnection;
+class TimelineManager;
 
 class Pebble : public QObject
 {
@@ -53,6 +54,7 @@ public:
 
     bool connected() const;
     void connect();
+    BlobDB *blobdb() const;
 
     QDateTime softwareBuildTime() const;
     QString softwareVersion() const;
@@ -211,6 +213,7 @@ private:
     HealthParams m_healthParams;
     bool m_imperialUnits = false;
     DevConnection *m_devConnection;
+    TimelineManager *m_timelineManager;
 };
 
 /*

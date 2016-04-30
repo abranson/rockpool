@@ -54,6 +54,7 @@ SOURCES += main.cpp \
     libpebble/blobdb.cpp \
     libpebble/timelineitem.cpp \
     libpebble/notification.cpp \
+    libpebble/timelinemanager.cpp \
     platformintegration/sailfish/organizeradapter.cpp \
     libpebble/calendarevent.cpp \
     libpebble/appmetadata.cpp \
@@ -115,6 +116,7 @@ HEADERS += \
     libpebble/timelineitem.h \
     libpebble/notification.h \
     libpebble/calendarevent.h \
+    libpebble/timelinemanager.h \
     libpebble/appmetadata.h \
     libpebble/appdownloader.h \
     libpebble/enums.h \

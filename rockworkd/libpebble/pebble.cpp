@@ -18,6 +18,7 @@
 #include "ziphelper.h"
 #include "dataloggingendpoint.h"
 #include "devconnection.h"
+#include "timelinemanager.h"
 
 #include "QDir"
 #include <QDateTime>
@@ -71,10 +72,12 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
     QObject::connect(m_appMsgManager, &AppMsgManager::appStarted, this, &Pebble::appStarted);
 
     m_blobDB = new BlobDB(this, m_connection);
-    QObject::connect(m_blobDB, &BlobDB::muteSource, this, &Pebble::muteNotificationSource);
-    QObject::connect(m_blobDB, &BlobDB::actionTriggered, Core::instance()->platform(), &PlatformInterface::actionTriggered);
-    QObject::connect(m_blobDB, &BlobDB::removeNotification, Core::instance()->platform(), &PlatformInterface::removeNotification);
     QObject::connect(m_blobDB, &BlobDB::appInserted, this, &Pebble::appInstalled);
+
+    m_timelineManager = new TimelineManager(this, m_connection);
+    QObject::connect(m_timelineManager, &TimelineManager::muteSource, this, &Pebble::muteNotificationSource);
+    QObject::connect(m_timelineManager, &TimelineManager::actionTriggered, Core::instance()->platform(), &PlatformInterface::actionTriggered);
+    QObject::connect(m_timelineManager, &TimelineManager::removeNotification, Core::instance()->platform(), &PlatformInterface::removeNotification);
     QObject::connect(Core::instance()->platform(), &PlatformInterface::organizerItemsChanged, this, &Pebble::syncCalendar);
 
     m_appDownloader = new AppDownloader(m_storagePath, this);
@@ -165,6 +168,11 @@ void Pebble::connect()
 {
     qDebug() << "Connecting to Pebble:" << m_name << m_address.toString();
     m_connection->connectPebble(m_address);
+}
+
+BlobDB * Pebble::blobdb() const
+{
+    return m_blobDB;
 }
 
 QDateTime Pebble::softwareBuildTime() const
@@ -463,7 +471,7 @@ void Pebble::sendNotification(const Notification &notification)
     if (m_softwareVersion < "v3.0") {
         m_notificationEndpoint->sendLegacyNotification(notification);
     } else {
-        m_blobDB->insertNotification(notification);
+        m_timelineManager->sendNotification(notification);
     }
 }
 
@@ -474,7 +482,7 @@ void Pebble::clearAppDB()
 
 void Pebble::clearTimeline()
 {
-    m_blobDB->clearTimeline();
+    m_timelineManager->clearTimeline();
 }
 
 void Pebble::setCalendarSyncEnabled(bool enabled)
@@ -486,7 +494,7 @@ void Pebble::setCalendarSyncEnabled(bool enabled)
     emit calendarSyncEnabledChanged();
 
     if (!m_calendarSyncEnabled) {
-        m_blobDB->clearTimeline();
+        m_timelineManager->clearTimeline();
     } else {
         syncCalendar(Core::instance()->platform()->organizerItems());
     }
@@ -528,7 +536,7 @@ void Pebble::setProfileWhen(const bool connected, const QString &profile)
 void Pebble::syncCalendar(const QList<CalendarEvent> &items)
 {
     if (connected() && m_calendarSyncEnabled) {
-        m_blobDB->syncCalendar(items);
+        m_timelineManager->syncCalendar(items);
     }
 }
 
