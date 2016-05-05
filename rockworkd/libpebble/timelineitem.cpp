@@ -22,6 +22,11 @@ QUuid TimelineItem::itemId() const
     return m_itemId;
 }
 
+TimelineItem::Type TimelineItem::type() const
+{
+    return m_type;
+}
+
 void TimelineItem::setParentId(QUuid parentId) {
     m_parentId = parentId;
 }
@@ -105,20 +110,44 @@ void TimelineAttribute::setContent(const QString &content)
     m_content = content.toUtf8();
 }
 
-void TimelineAttribute::setContent(ResID data)
+void TimelineAttribute::setContent(quint32 data)
+{
+    quint32 le = qToLittleEndian(data);
+    setContent((le32 *)&le);
+}
+void TimelineAttribute::setContent(qint32 data)
+{
+    qint32 le = qToLittleEndian(data);
+    setContent((le32 *)&le);
+}
+void TimelineAttribute::setContent(quint16 data)
+{
+    quint16 le = qToLittleEndian(data);
+    setContent((le16 *)&le);
+}
+void TimelineAttribute::setContent(qint16 data)
+{
+    qint16 le = qToLittleEndian(data);
+    setContent((le16 *)&le);
+}
+void TimelineAttribute::setContent(le32 *le)
 {
     m_content.clear();
-    quint32 le = qToLittleEndian((quint32)data);
-    m_content.append(((quint8 *)(&le))[0]);
-    m_content.append(((quint8 *)(&le))[1]);
-    m_content.append(((quint8 *)(&le))[2]);
-    m_content.append(((quint8 *)(&le))[3]);
+    m_content.append(((quint8 *)(le))[0]);
+    m_content.append(((quint8 *)(le))[1]);
+    m_content.append(((quint8 *)(le))[2]);
+    m_content.append(((quint8 *)(le))[3]);
+}
+void TimelineAttribute::setContent(le16 *le)
+{
+    m_content.clear();
+    m_content.append(((quint8 *)(le))[0]);
+    m_content.append(((quint8 *)(le))[1]);
 }
 
 void TimelineAttribute::setContent(TimelineAttribute::Color color)
 {
-    m_content.clear();
-    m_content.append((quint8)color);
+    setContent((quint8)color);
 }
 
 void TimelineAttribute::setContent(const QStringList &values)
