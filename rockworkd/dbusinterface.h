@@ -50,6 +50,7 @@ public slots:
     void PerformFirmwareUpgrade();
     bool UpgradingFirmware() const;
 
+    void insertTimelinePin(const QString &jsonPin);
     QVariantMap NotificationsFilter() const;
     void SetNotificationFilter(const QString &sourceId, int enabled);
     void ForgetNotificationFilter(const QString &sourceId);

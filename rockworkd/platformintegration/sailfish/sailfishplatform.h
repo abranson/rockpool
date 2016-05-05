@@ -42,6 +42,7 @@ public:
 
 public slots:
     void onNotification(watchfish::Notification *notification);
+    void newNotificationPin(watchfish::Notification *notification);
     void handleClosedNotification(watchfish::Notification::CloseReason reason);
     void onTimeChanged();
     void updateMusicStatus();

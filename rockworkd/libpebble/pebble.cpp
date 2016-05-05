@@ -26,6 +26,8 @@
 #include <QSettings>
 #include <QTimeZone>
 #include <QTemporaryDir>
+#include <QJsonDocument>
+#include <QJsonObject>
 
 Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
     QObject(parent),
@@ -48,6 +50,7 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
 
     m_notificationEndpoint = new NotificationEndpoint(this, m_connection);
     QObject::connect(Core::instance()->platform(), &PlatformInterface::notificationReceived, this, &Pebble::sendNotification);
+    QObject::connect(Core::instance()->platform(), &PlatformInterface::newTimelinePin, this, &Pebble::insertPin);
 
     m_musicEndpoint = new MusicEndpoint(this, m_connection);
     m_musicEndpoint->setMusicMetadata(Core::instance()->platform()->musicMetaData());
@@ -90,6 +93,7 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
     m_firmwareDownloader = new FirmwareDownloader(this, m_connection);
     QObject::connect(m_firmwareDownloader, &FirmwareDownloader::updateAvailableChanged, this, &Pebble::slotUpdateAvailableChanged);
     QObject::connect(m_firmwareDownloader, &FirmwareDownloader::upgradingChanged, this, &Pebble::upgradingFirmwareChanged);
+    QObject::connect(m_firmwareDownloader, &FirmwareDownloader::layoutsChanged, m_timelineManager, &TimelineManager::reloadLayouts);
 
     m_logEndpoint = new WatchLogEndpoint(this, m_connection);
     QObject::connect(m_logEndpoint, &WatchLogEndpoint::logsFetched, this, &Pebble::logsDumped);
@@ -474,6 +478,51 @@ void Pebble::sendNotification(const Notification &notification)
         m_timelineManager->sendNotification(notification);
     }
 }
+void Pebble::insertPin(const QJsonDocument &json)
+{
+    QJsonObject pinObj = json.object();
+    if(!pinObj.contains("guid")) {
+        QUuid guid;
+        if(pinObj.contains("id")) {
+            guid = PlatformInterface::idToGuid(json.object().value("id").toString());
+        } else {
+            guid = QUuid::createUuid();
+            qWarning() << "Neither GUID nor ID field present, generating random, pin control will be limited";
+        }
+        pinObj.insert("guid",guid.toString());
+    }
+    if(pinObj.contains("type") && pinObj.value("type").toString() == "notification") {
+        QStringList dataSource = pinObj.value("dataSource").toString().split(":");
+        if(dataSource.count() > 1) {
+            QString parent = dataSource.takeLast();
+            QString sourceId = dataSource.first();
+            if(dataSource.count() > 1) { // Escape colon in the srcId
+                sourceId = dataSource.join("%3A");
+                pinObj.insert("dataSource",QString("%1:%2").arg(sourceId).arg(parent));
+            }
+            QVariantMap notifFilter = notificationsFilter().value(sourceId).toMap();
+            NotificationFilter f = NotificationFilter(notifFilter.value("enabled", QVariant(NotificationEnabled)).toInt());
+            if (f==NotificationDisabled || (f==Pebble::NotificationDisabledActive && Core::instance()->platform()->deviceIsActive())) {
+                qDebug() << "Notifications for" << sourceId << "disabled.";
+                Core::instance()->platform()->removeNotification(QUuid(pinObj.value("guid").toString()));
+                return;
+            }
+            // In case it wasn't there before, make sure to write it to the config now so it will appear in the config app.
+            setNotificationFilter(sourceId, pinObj.value("source").toString(), pinObj.value("sourceIcon").toString(), NotificationEnabled);
+        }
+    }
+    if(!json.object().contains("dataSource")) {
+        QString parent = PlatformInterface::idToGuid("dbus").toString().mid(1,36);
+        if(pinObj.contains("source")) {
+            pinObj.insert("dataSource",QString("%1:%2").arg(pinObj.value("source").toString()).arg(parent));
+        } else {
+            pinObj.insert("dataSource",QString("genericDbus:%1").arg(parent));
+        }
+    }
+    QJsonDocument arg(pinObj);
+    qDebug() << "Inserting pin" << arg.toJson();
+    m_timelineManager->insertTimelinePin(arg);
+}
 
 void Pebble::clearAppDB()
 {
@@ -857,6 +906,7 @@ void Pebble::appStarted(const QUuid &uuid)
 
 void Pebble::muteNotificationSource(const QString &source)
 {
+    qDebug() << "Request to mute" << source;
     setNotificationFilter(source, NotificationDisabled);
 }
 

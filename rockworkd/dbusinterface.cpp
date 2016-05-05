@@ -74,6 +74,21 @@ void DBusPebble::ForgetNotificationFilter(const QString &sourceId)
     m_pebble->forgetNotificationFilter(sourceId);
 }
 
+void DBusPebble::insertTimelinePin(const QString &jsonPin)
+{
+    QJsonParseError jpe;
+    QJsonDocument json = QJsonDocument::fromJson(jsonPin.toUtf8(),&jpe);
+    if(jpe.error != QJsonParseError::NoError) {
+        qWarning() << "Cannot parse JSON Pin:" << jpe.errorString() << jsonPin;
+        return;
+    }
+    if(json.isEmpty() || !json.isObject()) {
+        qWarning() << "Empty or flat JSON Pin constructed, ignoring" << jsonPin;
+        return;
+    }
+    m_pebble->insertPin(json);
+}
+
 bool DBusPebble::DevConnectionEnabled() const
 {
     return m_pebble->devConEnabled();

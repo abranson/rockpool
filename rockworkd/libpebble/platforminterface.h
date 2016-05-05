@@ -5,13 +5,21 @@
 #include "libpebble/musicmetadata.h"
 
 #include <QObject>
+#include <QJsonDocument>
 
+static const QUuid uuid_ns_dns("6ba7b810-9dad-11d1-80b4-00c04fd430c8");
 class PlatformInterface: public QObject
 {
     Q_OBJECT
 public:
     PlatformInterface(QObject *parent = 0): QObject(parent) {}
     virtual ~PlatformInterface() {}
+    // App Specific Resources for Pins. Initialized in core.cpp
+    // type: {icon, color, [mute_name, [...]]}
+    static const QHash<QString,QStringList> AppResMap;
+    static inline QUuid idToGuid(QString id) {
+        return QUuid::createUuidV5(uuid_ns_dns,QString("%1.pin.rockpool.nemomobile.org").arg(id));
+    }
 
 // Device state
 public:
@@ -29,6 +37,7 @@ signals:
     void notificationRemoved(const QUuid &uuid);
     void musicPlayStateChanged(const MusicPlayState &playState);
     void timeChanged();
+    void newTimelinePin(QJsonDocument pin);
 
 // Music
 public:

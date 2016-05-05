@@ -147,7 +147,7 @@ systemd.path = /usr/lib/systemd/user
 
 SHARED_DATA_PATH = /usr/share/$${TARGET}
 #fetch from https://github.com/pebble/pypkjs/blob/master/pypkjs/timeline/layouts.json
-# https://raw.githubusercontent.com/pebble/pypkjs/master/pypkjs/timeline/layouts.json
+# or better extract from latest firmware blob (pbz)
 JSON_FILES = libpebble/layouts.json
 layout.files = $${JSON_FILES}
 layout.path = $${SHARED_DATA_PATH}
@@ -160,4 +160,9 @@ target.path = /usr/bin
 RESOURCES += \
     libpebble/jskit/jsfiles.qrc
 
-DEFINES += 'SHARED_DATA_PATH=\\"$${SHARED_DATA_PATH}\\"'
+CONFIG(release, debug|release) {
+    DEFINES += 'SHARED_DATA_PATH=\\"$${SHARED_DATA_PATH}\\"'
+}
+CONFIG(debug, debug|release) {
+    DEFINES += 'SHARED_DATA_PATH=\\"/opt/sdk/rockpool$${SHARED_DATA_PATH}\\"'
+}

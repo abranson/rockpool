@@ -89,6 +89,7 @@ public slots:
     QString findNotificationData(const QString &sourceId, const QString &key);
     void sendSimpleNotification(const QUuid &uuid, const QString &title, const QString &body);
     void sendNotification(const Notification &notification);
+    void insertPin(const QJsonDocument &json);
 
     void setDevConEnabled(bool enabled);
     void setDevConListenPort(quint16 port);
