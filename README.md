@@ -45,7 +45,7 @@ After that, the package will build. QtCreator will warn you that Qt websockets c
 
 ## The thanks
 
-* Ruslan N. Marchenko - Sailfish UI
+* Ruslan N. Marchenko - Sailfish UI, Developer mode and much more
 * Javispedro - Contributor to Pebbled, author of Saltoq and libwatchfish.
 * Michael Zanetti - Author of RockWork
 * Tomasz Sterna - Author of Pebbled
