@@ -40,16 +40,8 @@ You would need to perform following steps:
     * zypper ar -f http://sailfish.openrepos.net/abranson/personal/main openrepos-abranson
   * Install required package and explicit conflicting down-chain (zypper install xulrunner-qt5 qtmozembed-qt5 qtmozembed-qt5-devel qt5-qtwebsockets-devel qt5-qtwebsockets)
   * When zypper complains about conflicts - choose option 3 (proceed with broken dependencies)
-  * In QtCreator 
 
-* Websockets are used in Pebble for DeveloperConnection and JSKit.WebSockets. Jolla uses Qt5.2 which lacks native websockets support. However there are builds for Qt5.2 and even specifically for jolla already available. To build with websockets support you need to add qt5-qtwebsockets-devel package to the MerSDK from [sfietkonstantin's merproject](http://repo.merproject.org/obs/home:/sfietkonstantin:/sailfish:/latest/sailfishos/) or [coderus' openrepo](https://sailfish.openrepos.net/coderus/personal/main/) repository, for example:
- * zypper ar -c repo-url websockets
- * zypper refresh - and confirm downloading unsigned repodata
-
-After that build-time dependency will be automatically resolved by QtCreator/MerSDK during the build. To run that however you'd still need to add it manually on the phone:
- * ssh to the phone and elevate permissions with devel-su (use System Settings -> Developer Mode for details)
- * add repository containing qt5-qtwebsockets package used for build (ssu ar http://repo.merproject.org/obs/home:/sfietkonstantin:/sailfish:/latest/sailfishos/ websockets)
- * refresh the repodata (pkcon refresh) - now you can use Deploy As RPM SDK Run feature to install freshly built RPM with dependencies.
+After that, the package will build. QtCreator will warn you that Qt websockets can't be found, but you can fix that by syncing the target in the 'SailfishOS' pane. To install your package on your phone or tablet, you'll need to add my openrepo. The easiest way to do this is with warehouse, though you'll have to do it manually if you're using the emulator.
 
 ## The thanks
 
