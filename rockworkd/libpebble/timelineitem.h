@@ -75,6 +75,7 @@ public:
     void setContent(le16 *data);
 
     QByteArray serialize() const;
+    quint8 type() { return m_type;}
 private:
     quint8 m_type;
     QByteArray m_content;
@@ -119,6 +120,7 @@ class TimelineItem: public PebblePacket
 {
 public:
     enum Type {
+        TypeInvalid = 0,
         TypeNotification = 1,
         TypePin = 2,
         TypeReminder = 3
@@ -143,8 +145,6 @@ public:
     TimelineItem(const QUuid &uuid, Type type, Flags flags = FlagNone, const QDateTime &timestamp = QDateTime::currentDateTime(), quint16 duration = 0);
 
     QUuid itemId() const;
-
-    Type type() const;
 
     void setParentId(QUuid parentId);
     void setLayout(quint8 layout);

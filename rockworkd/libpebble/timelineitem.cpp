@@ -22,11 +22,6 @@ QUuid TimelineItem::itemId() const
     return m_itemId;
 }
 
-TimelineItem::Type TimelineItem::type() const
-{
-    return m_type;
-}
-
 void TimelineItem::setParentId(QUuid parentId) {
     m_parentId = parentId;
 }
