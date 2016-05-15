@@ -28,11 +28,22 @@ public:
         OperationClear = 0x05
     };
 
-    enum Status {
-        StatusSuccess = 0x00,
-        StatusError = 0x01
+    enum Response {
+        ResponseSuccess = 0x00, // ACK
+        ResponseError = 0x01    // NACK
     };
 
+    enum Status {
+        StatusIgnore = 0x0,
+        StatusSuccess = 0x1,
+        StatusFailure = 0x2,
+        StatusInvalOp = 0x3,
+        StatusInvalId = 0x4,
+        StatusInvalData = 0x5,
+        StatusNoSuchKey = 0x6,
+        StatusDbIsFull = 0x7,
+        StatusDbIsStale = 0x8
+    };
 
     explicit BlobDB(Pebble *pebble, WatchConnection *connection);
 
@@ -53,6 +64,7 @@ private slots:
 
 signals:
     void appInserted(const QUuid &uuid);
+    void blobCommandResult(BlobDBId db, Operation cmd, const QUuid &uuid, Status ack);
 
 private:
     quint16 generateToken();

@@ -73,6 +73,7 @@ void BlobDB::removeApp(const AppInfo &info)
 void BlobDB::insert(BlobDBId database, const TimelineItem &item)
 {
     if (!m_connection->isConnected()) {
+        emit blobCommandResult(database,OperationInsert,item.itemId(),StatusIgnore);
         return;
     }
     BlobCommand *cmd = new BlobCommand();
@@ -143,22 +144,35 @@ void BlobDB::setUnits(bool imperial)
     m_commandQueue.append(cmd);
     sendNext();
 }
+static QString BlobDBErrMsg[9]={"Unknown",
+                         "Success",
+                         "General Failure",
+                         "Invalid Operation",
+                         "Invalid BlobId",
+                         "Invalid Data",
+                         "No Such UUID",
+                         "BlobDb is Full",
+                         "BlobDb is Stale"
+                        };
 
 void BlobDB::blobCommandReply(const QByteArray &data)
 {
     WatchDataReader reader(data);
     quint16 token = reader.readLE<quint16>();
-    quint8 status = reader.read<quint8>();
+    Status status = (Status)reader.read<quint8>();
     if (m_currentCommand->m_token != token) {
         qWarning() << "Received reply for unexpected token";
-    } else if (status != 0x01) {
-        qWarning() << "Blob Command failed:" << status;
+    } else if (status != StatusSuccess) {
+        qWarning() << "Blob Command failed:" << status << BlobDBErrMsg[status];
+        emit blobCommandResult(m_currentCommand->m_database, m_currentCommand->m_command, QUuid::fromRfc4122(m_currentCommand->m_key), status);
     } else { // All is well
         if (m_currentCommand->m_database == BlobDBIdApp && m_currentCommand->m_command == OperationInsert) {
             QSettings s(m_blobDBStoragePath + "/appsyncstate.conf", QSettings::IniFormat);
             QUuid appUuid = QUuid::fromRfc4122(m_currentCommand->m_key);
             s.setValue(appUuid.toString(), true);
             emit appInserted(appUuid);
+        } else {
+            emit blobCommandResult(m_currentCommand->m_database, m_currentCommand->m_command, QUuid::fromRfc4122(m_currentCommand->m_key), status);
         }
     }
 
