@@ -8,6 +8,7 @@
 #include <QWebSocket>
 #include <QTemporaryFile>
 #include <QJsonDocument>
+#include <QJsonObject>
 
 #include <QMutex>
 #include <QDebug>
@@ -40,6 +41,8 @@ DevConnection::DevConnection(Pebble *pebble, WatchConnection *connection):
     QObject::connect(connection, &WatchConnection::watchDisconnected, this, &DevConnection::onWatchDisconnected);
     QObject::connect(connection, &WatchConnection::rawIncomingMsg, this, &DevConnection::onRawIncomingMsg);
     QObject::connect(connection, &WatchConnection::rawOutgoingMsg, this, &DevConnection::onRawOutgoingMsg);
+    QObject::connect(this, &DevConnection::insertPin, m_pebble, &Pebble::insertPin);
+    QObject::connect(this, &DevConnection::removePin, m_pebble, &Pebble::removePin);
     DevConnection::s_instance=this;
     DevConnection::s_omh=0;
 }
@@ -315,7 +318,9 @@ public:
     void execute() {
         if(m_cmd==1) {
             qDebug() << "Add pin" << m_json.toJson(QJsonDocument::JsonFormat::Indented);
+            emit m_srv->insertPin(m_json.object());
         } else if(m_cmd==2) {
+            emit m_srv->removePin(m_json.object().value("guid").toString());
             qDebug() << "Del pin" << m_json.toJson(QJsonDocument::JsonFormat::Indented);
         }
         m_data.append(char(0));
