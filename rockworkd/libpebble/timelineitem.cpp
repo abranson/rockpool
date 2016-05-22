@@ -140,11 +140,6 @@ void TimelineAttribute::setContent(le16 *le)
     m_content.append(((quint8 *)(le))[1]);
 }
 
-void TimelineAttribute::setContent(TimelineAttribute::Color color)
-{
-    setContent((quint8)color);
-}
-
 void TimelineAttribute::setContent(const QStringList &values)
 {
     m_content.clear();

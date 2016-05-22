@@ -12,30 +12,6 @@ class TimelineAttribute
 public:
     typedef quint32 le32;
     typedef quint16 le16;
-    enum Color {
-        ColorWhite = 0x00,
-        ColorBlack = 0x80,
-        ColorDarkBlue = 0x81,
-        ColorBlue = 0x82,
-        ColorLightBlue = 0x83,
-        ColorDarkGreen = 0x84,
-        ColorGray = 0x85,
-        ColorBlue2 = 0x86,
-        ColorLightBlue2 = 0x87,
-        ColorGreen = 0x88,
-        ColorOliveGreen = 0x89,
-        ColorLightGreen = 0x90,
-        ColorViolet = 0x91,
-        ColorViolet2 = 0x91,
-        ColorBlue3 = 0x92,
-        ColorBrown = 0x93,
-        ColorGray2 = 0x94,
-        ColorBlue4 = 0x95,
-        ColorBlue5 = 0x96,
-        ColorRed = 0xA0,
-        ColorOrange = 0xB8,
-        ColorYellow = 0xBC
-    };
 
     TimelineAttribute(quint8 type, const QByteArray &content):
         m_type(type),
@@ -46,11 +22,6 @@ public:
         m_type(type)
     {
         setContent(data);
-    }
-    TimelineAttribute(quint8 type, Color color):
-        m_type(type)
-    {
-        setContent(color);
     }
     TimelineAttribute(quint8 type, const QStringList &values):
         m_type(type)
@@ -68,7 +39,6 @@ public:
     void setContent(qint16 data);
     void setContent(quint32 data);
     void setContent(quint16 data);
-    void setContent(Color color);
     void setContent(const QStringList &values);
     void setContent(quint8 data);
     void setContent(le32 *data);
