@@ -32,16 +32,18 @@ public:
     void hangupCall(uint cookie) override;
     QHash<QString, QString> getCategoryParams(QString category);
 
-    QList<CalendarEvent> organizerItems() const override;
+    //QList<CalendarEvent> organizerItems() const override;
+    void syncOrganizer() const override;
+    void stopOrganizer() const override;
     MusicPlayState getMusicPlayState() const override;
 
-    void actionTriggered(const QUuid &uuid, const QString &actToken) const override;
+    void actionTriggered(const QUuid &uuid, const QString &actToken, const QJsonObject &param) const override;
     void removeNotification(const QUuid &uuid) const override;
     bool deviceIsActive() const override;
     void setProfile(const QString &profile) const override;
 
 public slots:
-    void onNotification(watchfish::Notification *notification);
+    //void onNotification(watchfish::Notification *notification);
     void newNotificationPin(watchfish::Notification *notification);
     void handleClosedNotification(watchfish::Notification::CloseReason reason);
     void onTimeChanged();

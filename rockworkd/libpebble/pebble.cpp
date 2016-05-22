@@ -28,6 +28,7 @@
 #include <QTemporaryDir>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QJsonArray>
 
 Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
     QObject(parent),
@@ -49,8 +50,8 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
     m_dataLogEndpoint = new DataLoggingEndpoint(this, m_connection);
 
     m_notificationEndpoint = new NotificationEndpoint(this, m_connection);
-    QObject::connect(Core::instance()->platform(), &PlatformInterface::notificationReceived, this, &Pebble::sendNotification);
     QObject::connect(Core::instance()->platform(), &PlatformInterface::newTimelinePin, this, &Pebble::insertPin);
+    QObject::connect(Core::instance()->platform(), &PlatformInterface::delTimelinePin, this, &Pebble::removePin);
 
     m_musicEndpoint = new MusicEndpoint(this, m_connection);
     m_musicEndpoint->setMusicMetadata(Core::instance()->platform()->musicMetaData());
@@ -81,7 +82,6 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
     QObject::connect(m_timelineManager, &TimelineManager::muteSource, this, &Pebble::muteNotificationSource);
     QObject::connect(m_timelineManager, &TimelineManager::actionTriggered, Core::instance()->platform(), &PlatformInterface::actionTriggered);
     QObject::connect(m_timelineManager, &TimelineManager::removeNotification, Core::instance()->platform(), &PlatformInterface::removeNotification);
-    QObject::connect(Core::instance()->platform(), &PlatformInterface::organizerItemsChanged, this, &Pebble::syncCalendar);
 
     m_appDownloader = new AppDownloader(m_storagePath, this);
     QObject::connect(m_appDownloader, &AppDownloader::downloadFinished, this, &Pebble::appDownloadFinished);
@@ -453,43 +453,29 @@ QString Pebble::findNotificationData(const QString &sourceId, const QString &key
 }
 
 void Pebble::sendSimpleNotification(const QUuid &uuid, const QString &title, const QString &body) {
-    Notification notif = Notification(appInfo(uuid).shortName());
-    notif.setSubject(title);
-    notif.setBody(body);
-    sendNotification(notif);
+    QJsonObject pin,layout;
+    pin.insert("id",QString("%1.%1").arg(appInfo(uuid).shortName(),QDateTime::currentDateTimeUtc().toTime_t()));
+    pin.insert("dataSource",QString("%1:%1").arg(uuid.toString().mid(1,36),uuid.toString().mid(1,36)));
+    pin.insert("type",QString("notification"));
+    pin.insert("source",QString("App %1").arg(appInfo(uuid).shortName()));
+    layout.insert("title",title);
+    layout.insert("body",body);
+    layout.insert("type",QString("genericNotification"));
+    pin.insert("layout",layout);
+    insertPin(pin); // run through normal validation and filtering
 }
-
-void Pebble::sendNotification(const Notification &notification)
+void Pebble::insertPin(const QJsonObject &json)
 {
-    QVariantMap notifFilter = notificationsFilter().value(notification.sourceId()).toMap();
-    NotificationFilter f = NotificationFilter(notifFilter.value("enabled", QVariant(NotificationEnabled)).toInt());
-    if (f==NotificationDisabled || (f==Pebble::NotificationDisabledActive && Core::instance()->platform()->deviceIsActive())) {
-        qDebug() << "Notifications for" << notification.sourceId() << "disabled.";
-        return;
-    }
-    // In case it wasn't there before, make sure to write it to the config now so it will appear in the config app.
-    setNotificationFilter(notification.sourceId(), notification.sender(), notification.icon(), NotificationEnabled);
-
-    qDebug() << "Sending notification from source" << notification.sourceId() << "to watch";
-
-    if (m_softwareVersion < "v3.0") {
-        m_notificationEndpoint->sendLegacyNotification(notification);
-    } else {
-        m_timelineManager->sendNotification(notification);
-    }
-}
-void Pebble::insertPin(const QJsonDocument &json)
-{
-    QJsonObject pinObj = json.object();
+    QJsonObject pinObj(json);
     if(!pinObj.contains("guid")) {
         QUuid guid;
         if(pinObj.contains("id")) {
-            guid = PlatformInterface::idToGuid(json.object().value("id").toString());
+            guid = PlatformInterface::idToGuid(pinObj.value("id").toString());
         } else {
             guid = QUuid::createUuid();
             qWarning() << "Neither GUID nor ID field present, generating random, pin control will be limited";
         }
-        pinObj.insert("guid",guid.toString());
+        pinObj.insert("guid",guid.toString().mid(1,36));
     }
     if(pinObj.contains("type") && pinObj.value("type").toString() == "notification") {
         QStringList dataSource = pinObj.value("dataSource").toString().split(":");
@@ -509,9 +495,17 @@ void Pebble::insertPin(const QJsonDocument &json)
             }
             // In case it wasn't there before, make sure to write it to the config now so it will appear in the config app.
             setNotificationFilter(sourceId, pinObj.value("source").toString(), pinObj.value("sourceIcon").toString(), NotificationEnabled);
+            // Build mute action so that we can mute event passing through this section
+            QJsonArray actions = pinObj.value("actions").toArray();
+            QJsonObject mute;
+            mute.insert("type",QString("mute"));
+            QString sender = pinObj.value("createNotification").toObject().value("layout").toObject().value("sender").toString();
+            mute.insert("title",QString(sender.isEmpty()?"Mute":"Mute "+sender));
+            actions.append(mute);
+            pinObj.insert("actions",actions);
         }
     }
-    if(!json.object().contains("dataSource")) {
+    if(!pinObj.contains("dataSource")) {
         QString parent = PlatformInterface::idToGuid("dbus").toString().mid(1,36);
         if(pinObj.contains("source")) {
             pinObj.insert("dataSource",QString("%1:%2").arg(pinObj.value("source").toString()).arg(parent));
@@ -519,9 +513,17 @@ void Pebble::insertPin(const QJsonDocument &json)
             pinObj.insert("dataSource",QString("genericDbus:%1").arg(parent));
         }
     }
-    QJsonDocument arg(pinObj);
-    qDebug() << "Inserting pin" << arg.toJson();
-    m_timelineManager->insertTimelinePin(arg);
+    // These must be present for retention and updates
+    if(!pinObj.contains("createTime"))
+        pinObj.insert("createTime",QDateTime::currentDateTimeUtc().toString(Qt::ISODate));
+    if(!pinObj.contains("updateTime"))
+        pinObj.insert("updateTime",QDateTime::currentDateTimeUtc().toString(Qt::ISODate));
+    qDebug() << "Inserting pin" << QJsonDocument(pinObj).toJson();
+    m_timelineManager->insertTimelinePin(pinObj);
+}
+void Pebble::removePin(const QString &guid)
+{
+    m_timelineManager->removeTimelinePin(guid);
 }
 
 void Pebble::clearAppDB()
@@ -531,7 +533,12 @@ void Pebble::clearAppDB()
 
 void Pebble::clearTimeline()
 {
-    m_timelineManager->clearTimeline();
+    m_timelineManager->clearTimeline(PlatformInterface::UUID);
+}
+
+void Pebble::syncCalendar()
+{
+    Core::instance()->platform()->syncOrganizer();
 }
 
 void Pebble::setCalendarSyncEnabled(bool enabled)
@@ -543,9 +550,10 @@ void Pebble::setCalendarSyncEnabled(bool enabled)
     emit calendarSyncEnabledChanged();
 
     if (!m_calendarSyncEnabled) {
-        m_timelineManager->clearTimeline();
+        Core::instance()->platform()->stopOrganizer();
+        m_timelineManager->clearTimeline(PlatformInterface::UUID);
     } else {
-        syncCalendar(Core::instance()->platform()->organizerItems());
+        Core::instance()->platform()->syncOrganizer();
     }
 
     QSettings settings(m_storagePath + "/appsettings.conf", QSettings::IniFormat);
@@ -580,13 +588,6 @@ void Pebble::setProfileWhen(const bool connected, const QString &profile)
 
     settings.setValue(connected?"connected":"disconnected", *profileWhen);
     settings.endGroup();
-}
-
-void Pebble::syncCalendar(const QList<CalendarEvent> &items)
-{
-    if (connected() && m_calendarSyncEnabled) {
-        m_timelineManager->syncCalendar(items);
-    }
 }
 
 void Pebble::installApp(const QString &id)
@@ -803,7 +804,7 @@ void Pebble::pebbleVersionReceived(const QByteArray &data)
             qDebug() << "Pebble sync state unclear. Resetting Pebble watch.";
             resetPebble();
         } else {
-            syncCalendar(Core::instance()->platform()->organizerItems());
+            Core::instance()->platform()->syncOrganizer();
             syncApps();
             m_blobDB->setHealthParams(m_healthParams);
             m_blobDB->setUnits(m_imperialUnits);
@@ -913,7 +914,7 @@ void Pebble::muteNotificationSource(const QString &source)
 void Pebble::resetPebble()
 {
     clearTimeline();
-    syncCalendar(Core::instance()->platform()->organizerItems());
+    Core::instance()->platform()->syncOrganizer();
 
     clearAppDB();
     syncApps();

@@ -49,7 +49,10 @@ void Core::init()
     m_dbusInterface = new DBusInterface(this);
 }
 
-// App Specific Resources for Pins. appType: {icon, color, [mute_name, [...]]}
+const QString PlatformInterface::SysID("ed429c16-f674-4220-95da-454f303f15e2");
+const QUuid PlatformInterface::UUID(PlatformInterface::SysID);
+
+// App Specific Resources for Pins. appType: {icon, color, [sender, [...]]}
 const QHash<QString,QStringList> PlatformInterface::AppResMap = {
     {"generic",{"system://images/NOTIFICATION_GENERIC","red"}},
     {"email",{"system://images/GENERIC_EMAIL","gray","E-Mails"}},

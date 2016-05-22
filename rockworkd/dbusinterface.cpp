@@ -86,7 +86,7 @@ void DBusPebble::insertTimelinePin(const QString &jsonPin)
         qWarning() << "Empty or flat JSON Pin constructed, ignoring" << jsonPin;
         return;
     }
-    m_pebble->insertPin(json);
+    m_pebble->insertPin(json.object());
 }
 
 bool DBusPebble::DevConnectionEnabled() const

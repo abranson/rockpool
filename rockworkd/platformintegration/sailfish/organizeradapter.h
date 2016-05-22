@@ -1,7 +1,6 @@
 #ifndef ORGANIZERADAPTER_H
 #define ORGANIZERADAPTER_H
 
-#include "libpebble/calendarevent.h"
 #include <QObject>
 #include <QTimer>
 #include <extendedcalendar.h>
@@ -22,11 +21,11 @@ class OrganizerAdapter : public QObject, public mKCal::ExtendedStorageObserver
 public:
     explicit OrganizerAdapter(QObject *parent = 0);
     ~OrganizerAdapter();
-    QList<CalendarEvent> items() const;
-    QString normalizeCalendarName(QString name);
 
 public slots:
     void scheduleRefresh();
+    void reSync();
+    void disable();
 
 protected:
     void storageModified(mKCal::ExtendedStorage *storage, const QString &info) Q_DECL_OVERRIDE;
@@ -37,10 +36,14 @@ private slots:
     void refresh();
 
 signals:
-    void itemsChanged(const QList<CalendarEvent> &items);
+    void newTimelinePin(const QJsonObject &pin);
+    void delTimelinePin(const QString &guid);
 
 private:
-    QList<CalendarEvent> m_items;
+    QString normalizeCalendarName(QString name);
+    void setSchedule(int interval);
+    QHash<QString,KDateTime> m_track;
+    bool m_disabled = false;
     mKCal::ExtendedCalendar::Ptr _calendar;
     mKCal::ExtendedStorage::Ptr _calendarStorage;
     QTimer *_refreshTimer;

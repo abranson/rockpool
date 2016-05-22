@@ -3,13 +3,13 @@
 
 #include "musicmetadata.h"
 #include "notification.h"
-#include "calendarevent.h"
 #include "appinfo.h"
 #include "healthparams.h"
 
 #include <QObject>
 #include <QBluetoothAddress>
 #include <QBluetoothLocalDevice>
+#include <QDateTime>
 #include <QTimer>
 
 class WatchConnection;
@@ -88,14 +88,15 @@ public slots:
     void forgetNotificationFilter(const QString &sourceId);
     QString findNotificationData(const QString &sourceId, const QString &key);
     void sendSimpleNotification(const QUuid &uuid, const QString &title, const QString &body);
-    void sendNotification(const Notification &notification);
-    void insertPin(const QJsonDocument &json);
+    void insertPin(const QJsonObject &json);
+    void removePin(const QString &guid);
 
     void setDevConEnabled(bool enabled);
     void setDevConListenPort(quint16 port);
     void setDevConCloudEnabled(bool enabled);
 
     void clearTimeline();
+    void syncCalendar();
     void setCalendarSyncEnabled(bool enabled);
     bool calendarSyncEnabled() const;
 
@@ -148,7 +149,6 @@ private slots:
     void resetPebble();
     void syncApps();
     void syncTime();
-    void syncCalendar(const QList<CalendarEvent> &items);
 
     void slotUpdateAvailableChanged();
 
