@@ -152,7 +152,7 @@ void TimelinePin::remove() const
 }
 void TimelinePin::erase() const
 {
-    if(!m_deleted) return;
+    if(m_sent) return;
     QFile::remove(m_manager->m_timelineStoragePath + "/" + m_uuid.toString().mid(1,36));
     m_manager->removePin(m_uuid);
 }
@@ -287,14 +287,13 @@ const QJsonArray & TimelinePin::getActions() const
     buildActions();
     return m_actions;
 }
-QList<TimelineAttribute> TimelinePin::handleAction(TimelineAction::Type type, quint8 id, const QJsonObject &param) const
+QList<TimelineAttribute> TimelinePin::handleAction(TimelineAction::Type atype, quint8 id, const QJsonObject &param) const
 {
     if(m_actions.isEmpty()) {
         qWarning() << "Action for re-serialized event - platform event must already be missing";
         buildActions();
     }
-    Q_UNUSED(type)
-    Q_UNUSED(param)
+    Q_UNUSED(atype)
     QJsonObject action = m_actions.at(id).toObject();
     QString a_type = action.value("type").toString();
     QList<TimelineAttribute> attributes;
@@ -305,6 +304,10 @@ QList<TimelineAttribute> TimelinePin::handleAction(TimelineAction::Type type, qu
         remove();
         attributes.append(m_manager->parseAttribute("largeIcon",QString("system://images/RESULT_DISMISSED")));
         attributes.append({m_manager->getAttr("subtitle").id,"Dismissed!"});
+    } else if(a_type == "remove" && type() == TimelineItem::TypePin) {
+        remove();
+        attributes.append(m_manager->parseAttribute("largeIcon",QString("system://images/RESULT_DELETED")));
+        attributes.append({m_manager->getAttr("subtitle").id,"Removed!"});
     } else {
         emit m_manager->actionTriggered(m_uuid,a_type, param);
         attributes.append(m_manager->parseAttribute("largeIcon",QString("system://images/RESULT_SENT")));
@@ -329,6 +332,7 @@ QList<TimelineAttribute> TimelinePin::handleAction(TimelineAction::Type type, qu
 #include "calendarevent.h"
 TimelineManager::TimelineManager(Pebble *pebble, WatchConnection *connection):
     QObject(pebble),
+    m_tmr_maintenance(new QTimer(this)),
     m_pebble(pebble),
     m_connection(connection)
 {
@@ -372,6 +376,8 @@ TimelineManager::TimelineManager(Pebble *pebble, WatchConnection *connection):
                 evt.insert("dataSource",QString("calendarEvent:%1").arg(PlatformInterface::SysID));
                 evt.insert("time",event.startTime().toString(Qt::ISODate));
                 evt.insert("duration",event.startTime().secsTo(event.endTime()) / 60);
+                if(event.isAllDay())
+                    evt.insert("allDay",true);
                 QJsonObject layout;
                 layout.insert("type",QString("calendarPin"));
                 layout.insert("title",event.title());
@@ -397,7 +403,7 @@ TimelineManager::TimelineManager(Pebble *pebble, WatchConnection *connection):
                     layout.insert("paragraphs",QJsonArray::fromStringList(paragraphs));
                 }
                 if(event.recurring())
-                    layout.insert("displayRecurring",1);
+                    layout.insert("displayRecurring",QString("recurring"));
                 evt.insert("layout",layout);
 
                 if(!event.reminder().isNull()) {
@@ -438,12 +444,10 @@ TimelineManager::TimelineManager(Pebble *pebble, WatchConnection *connection):
         }
     }
 #endif // DATA_MIGRATION
-    m_tmr_maintenance.setSingleShot(true); // doMaintenance re-arms the timer
-    m_tmr_maintenance.setInterval(300000); // 300 sec - 5min - should be good for normal run
-    QObject::connect(&m_tmr_maintenance, &QTimer::timeout, this, &TimelineManager::doMaintenance);
+    connect(m_tmr_maintenance, &QTimer::timeout, this, &TimelineManager::doMaintenance);
     // Also run maintenance cycle on watch connection - to redeliver notifications and stuff
-    QObject::connect(connection, &WatchConnection::watchConnected, this, &TimelineManager::doMaintenance,Qt::QueuedConnection);
-    m_tmr_maintenance.start();
+    connect(connection, &WatchConnection::watchConnected, this, &TimelineManager::doMaintenance, Qt::QueuedConnection);
+    m_tmr_maintenance->start(60000); // 1min is too frequent, but on sleeping sailfish it's more like 5-10min, so ok.
 }
 
 void TimelineManager::reloadLayouts() {
@@ -813,8 +817,11 @@ quint32 TimelineManager::pinCount(const QUuid *parent)
 
 void TimelineManager::doMaintenance()
 {
-    if(m_tmr_maintenance.isActive()) // prevent doublefire
-        m_tmr_maintenance.stop();
+    int rt = m_tmr_maintenance->remainingTime();
+    if(rt > 0 && rt < 3000) {
+        qDebug() << "Skipping maintenance cycle because scheduled will fire in" << rt;
+        return; // We will catch up in 5 sec.
+    }
     // TODO: make window knobs configurable
     // End is future boundary - now+7. 7 is calendar window, pypkjs uses +4.
     time_t window_end = QDateTime::currentDateTimeUtc().addDays(m_future_days).toTime_t();
@@ -850,6 +857,7 @@ void TimelineManager::doMaintenance()
                          if(pin->type()==TimelineItem::TypeNotification && it.key() < event_horizon) {
                             qDebug() << "Discarding stale notification" << guid;
                             cleanup.append(pin);
+                            emit removeNotification(guid);
                         } else {
                             qDebug() << "Resending unsent pin" << guid;
                             pin->send();
@@ -857,14 +865,17 @@ void TimelineManager::doMaintenance()
                     } if(pin->deleted() && pin->type()==TimelineItem::TypeNotification) {
                         qDebug() << "Removing dismissed event" << guid;
                         cleanup.append(pin);
-                    } else {
-                        qDebug() << "Keeping pin" << guid;
+                        // Dismiss should emit removeNotification
+                    //} else {
+                    //    qDebug() << "Keeping pin" << guid;
                     }
                 } else {
                     // Out of the window - clean'em'up
                     if(pin->sent()) {
                         qDebug() << "Revoking obsolete pin" << guid;
                         pin->remove();
+                        // will be sent for all pins, but platform should cope with ignoring irrelevant.
+                        emit removeNotification(guid);
                     } else {
                         // We don't really care what state it is now, just clean unsent up
                         qDebug() << "Discarding obsolete pin" << guid;
@@ -880,8 +891,6 @@ void TimelineManager::doMaintenance()
     qDebug() << "Cleaning up" << cleanup.size() << "discarded pins";
     foreach(const TimelinePin*pin,cleanup)
         pin->erase();
-    //qDebug() << "Maintenance finished. Rearming timer for next cycle";
-    m_tmr_maintenance.start();
 }
 
 // Don't call these directly, pin will call it when needed

@@ -64,7 +64,7 @@ public:
     const TimelinePin makeNotification(const TimelinePin *old) const;
     const QList<TimelinePin> makeReminders() const;
     const QJsonArray & getActions() const;
-    QList<TimelineAttribute> handleAction(TimelineAction::Type type, quint8 id, const QJsonObject &param) const;
+    QList<TimelineAttribute> handleAction(TimelineAction::Type atype, quint8 id, const QJsonObject &param) const;
     void updateTopics(const TimelinePin &pin);
 
     // watch operations
@@ -147,10 +147,11 @@ private:
     QHash<QString,QList<QUuid>> m_idx_subscription;
     // All should be updated in atomic syncronized transaction to prevent retention/sync timer race condition
     QMutex m_mtx_pinStorage;
-    QTimer m_tmr_maintenance;
+    QTimer *m_tmr_maintenance;
     //QTimer m_tmr_websync;
 
-    // Timeline window knobs
+    // Timeline window knobs. Pebble doesn't show future further than 48hrs ahead.
+    // However it keeps pins on watches and shows them once the time has come
     int m_future_days = 7;
     int m_past_days = -2;
     int m_event_fadeout = -3600;

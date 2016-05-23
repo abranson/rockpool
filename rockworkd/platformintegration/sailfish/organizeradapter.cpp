@@ -97,31 +97,35 @@ void OrganizerAdapter::refresh()
                 qDebug() << "Event " << incidence->summary() << " ignored because calendar " << notebook->name() << " excluded. ";
                 continue;
             }
-            pinLayout.insert("backgrounColor",nemoSettings.value("colors/"+notebook->uid(),"vividcerulean").toString());
+            pinLayout.insert("backgroundColor",nemoSettings.value("colors/"+notebook->uid(),"vividcerulean").toString());
             headings.append("Calendar");
             paragraphs.append(normalizeCalendarName(notebook->name()));
         }
 
         if (incidence->recurs()) {
-            calPin.insert("id",incidence->uid() + start.toString());
+            calPin.insert("id",incidence->uid() + QString::number(start.toUTC().toTime_t()));
             calPin.insert("guid",PlatformInterface::idToGuid(calPin.value("id").toString()).toString().mid(1,36));
-            pinLayout.insert("displayRecurring",1);
+            pinLayout.insert("displayRecurring",QString("recurring"));
         } else {
             calPin.insert("id",incidence->uid());
             calPin.insert("guid",incidence->uid());
         }
         if(m_track.contains(calPin.value("guid").toString())) {
             todel.removeAll(calPin.value("guid").toString());
-            if(m_track.value(calPin.value("guid").toString()) == incidence->lastModified())
+            if(m_track.value(calPin.value("guid").toString()).toUtc() == incidence->lastModified().toUtc())
                 continue;
         }
         m_track.insert(calPin.value("guid").toString(),incidence->lastModified());
-        calPin.insert("createTime",incidence->created().toString());
-        calPin.insert("updateTime",incidence->lastModified().toString());
-        calPin.insert("time",start.toString());
+        calPin.insert("createTime",incidence->created().toUtc().toString());
+        calPin.insert("updateTime",incidence->lastModified().toUtc().toString());
+        calPin.insert("time",start.toUTC().toString(Qt::ISODate));
         calPin.insert("dataSource",QString("calendarEvent:%1").arg(PlatformInterface::SysID));
         if(incidence->hasDuration())
             calPin.insert("duration",incidence->duration().asSeconds() / 60);
+        if(incidence->allDay()) {
+            calPin.insert("allDay",true);
+            qDebug() << "Preparing all-day event, the reported duration is (sec)" << incidence->duration().asSeconds();
+        }
         pinLayout.insert("type",QString("calendarPin"));
         pinLayout.insert("title",incidence->summary());
         if(!incidence->description().isEmpty())

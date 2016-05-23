@@ -145,7 +145,7 @@ INSTALLS += target systemd layout
 systemd.files = $${TARGET}.service
 systemd.path = /usr/lib/systemd/user
 
-SHARED_DATA_PATH = /usr/share/$${TARGET}
+SHARED_DATA_PATH = /usr/share/$$replace(TARGET,d,)
 #fetch from https://github.com/pebble/pypkjs/blob/master/pypkjs/timeline/layouts.json
 # or better extract from latest firmware blob (pbz)
 JSON_FILES = libpebble/layouts.json
