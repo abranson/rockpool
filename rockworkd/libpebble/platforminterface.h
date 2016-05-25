@@ -5,13 +5,24 @@
 #include "libpebble/musicmetadata.h"
 
 #include <QObject>
+#include <QJsonObject>
 
+static const QUuid uuid_ns_dns("6ba7b810-9dad-11d1-80b4-00c04fd430c8");
 class PlatformInterface: public QObject
 {
     Q_OBJECT
 public:
     PlatformInterface(QObject *parent = 0): QObject(parent) {}
     virtual ~PlatformInterface() {}
+    // App Specific Resources for Pins. Initialized in core.cpp
+    // type: {icon, color, [mute_name, [...]]}
+    static const QHash<QString,QStringList> AppResMap;
+    // UUID_NOTIFICATIONS_DATA_SOURCE - allows built-in actions to be relayed back to system, eg. dismiss
+    const static QString SysID;
+    const static QUuid UUID;
+    static inline QUuid idToGuid(QString id) {
+        return QUuid::createUuidV5(uuid_ns_dns,QString("%1.pin.rockpool.nemomobile.org").arg(id));
+    }
 
 // Device state
 public:
@@ -22,13 +33,14 @@ signals:
 
 // Notifications
 public:
-    virtual void actionTriggered(const QUuid &uuid, const QString &actToken) const = 0;
+    virtual void actionTriggered(const QUuid &uuid, const QString &actToken, const QJsonObject &param) const = 0;
     virtual void removeNotification(const QUuid &uuid) const = 0;
 signals:
     void notificationReceived(const Notification &notification);
     void notificationRemoved(const QUuid &uuid);
     void musicPlayStateChanged(const MusicPlayState &playState);
     void timeChanged();
+    void newTimelinePin(const QJsonObject &pin);
 
 // Music
 public:
@@ -49,9 +61,10 @@ public:
 
 // Organizer
 public:
-    virtual QList<CalendarEvent> organizerItems() const = 0;
+    virtual void syncOrganizer() const = 0;
+    virtual void stopOrganizer() const = 0;
 signals:
-    void organizerItemsChanged(const QList<CalendarEvent> &items);
+    void delTimelinePin(const QString &guid);
 
 };
 

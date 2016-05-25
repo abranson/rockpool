@@ -28,6 +28,7 @@ public slots:
 signals:
     void updateAvailableChanged();
     void upgradingChanged();
+    void layoutsChanged();
 
 private slots:
     void systemMessageReceived(const QByteArray &data);

@@ -119,6 +119,13 @@ void FirmwareDownloader::performUpgrade()
             return;
         }
 
+        if(QFile::exists(path + "/layouts.json.auto")) {
+            if(QFile::exists(m_pebble->storagePath() + "/layouts.json.auto"))
+                QFile::remove(m_pebble->storagePath() + "/layouts.json.auto");
+            QFile::rename(path+"/layouts.json.auto",m_pebble->storagePath()+"/layouts.json.auto");
+            emit layoutsChanged();
+        }
+
         qDebug() << "** Starting firmware upgrade **";
         m_bundlePath = path;
         m_connection->systemMessage(WatchConnection::SystemMessageFirmwareStart);

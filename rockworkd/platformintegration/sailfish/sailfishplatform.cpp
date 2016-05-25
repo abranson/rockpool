@@ -11,6 +11,9 @@
 #include <QDBusConnection>
 #include <QDebug>
 #include <QSettings>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
 
 SailfishPlatform::SailfishPlatform(QObject *parent):
     PlatformInterface(parent)
@@ -21,7 +24,8 @@ SailfishPlatform::SailfishPlatform(QObject *parent):
 
     // Notifications
     m_notificationMonitor = new watchfish::NotificationMonitor(this);
-    connect(m_notificationMonitor, &watchfish::NotificationMonitor::notification, this, &SailfishPlatform::onNotification);
+    //connect(m_notificationMonitor, &watchfish::NotificationMonitor::notification, this, &SailfishPlatform::onNotification);
+    connect(m_notificationMonitor, &watchfish::NotificationMonitor::notification, this, &SailfishPlatform::newNotificationPin);
 
     // Calls
     m_voiceCallManager = new VoiceCallManager(this);
@@ -35,7 +39,8 @@ SailfishPlatform::SailfishPlatform(QObject *parent):
 
     // Organizer
     m_organizerAdapter = new OrganizerAdapter(this);
-    connect(m_organizerAdapter, &OrganizerAdapter::itemsChanged, this, &PlatformInterface::organizerItemsChanged);
+    connect(m_organizerAdapter, &OrganizerAdapter::newTimelinePin, this, &PlatformInterface::newTimelinePin);
+    connect(m_organizerAdapter, &OrganizerAdapter::delTimelinePin, this, &PlatformInterface::delTimelinePin);
     connect(m_wallTimeMonitor, &watchfish::WallTimeMonitor::timezoneChanged, m_organizerAdapter, &OrganizerAdapter::scheduleRefresh);
 
     // Device - MCE
@@ -98,74 +103,157 @@ void SailfishPlatform::onActiveVoiceCallStatusChanged()
 void SailfishPlatform::onTimeChanged() {
     emit timeChanged();
 }
+struct AppID {
+    QString type;
+    QString sender;
+    QString srcId;
+};
 
-void SailfishPlatform::onNotification(watchfish::Notification *notification) {
-
-    qDebug() << "Got new notification for watch: " << notification->owner() << notification->summary();
-
-    //HACK: ignore group notifications
-   if (notification->category().endsWith(".group")) {
-       qDebug() << "Skipping group notification.";
-       return;
-   }
-
+AppID getAppID(watchfish::Notification *notification)
+{
     QString owner = notification->originPackage().isEmpty()?notification->owner():notification->originPackage();
     if (owner.isEmpty()) owner = notification->sender();
-    Notification n(owner);
+    AppID ret;
     if (notification->owner() == "twitter-notifications-client") {
-        n.setType(Notification::NotificationTypeTwitter);
-        n.setSourceId("Twitter");
+        ret.type="twitter";
+        ret.srcId=notification->owner();
+        ret.sender="Twitter";
     } else if (notification->category() == "x-nemo.email") {
         if (notification->sender().toLower().contains("gmail")) {
-            n.setType(Notification::NotificationTypeGMail);
-            n.setSender("GMail");
-        }
-        else {
-            n.setType(Notification::NotificationTypeEmail);
-            n.setSender(notification->sender());
-            n.setSourceId(notification->sender());
+            ret.type="gmail";
+            ret.sender="GMail";
+            ret.srcId=notification->category()+"%3Agmail";
+        } else {
+            ret.type="email";
+            ret.sender=notification->sender();
+            ret.srcId=QString("mailto%3A")+notification->sender();
         }
     } else if (notification->owner() == "facebook-notifications-client") {
-        n.setType(Notification::NotificationTypeFacebook);
-        n.setSender("Facebook");
+        ret.type="facebook";
+        ret.sender="Facebook";
+        ret.srcId=notification->owner();
     } else if (notification->category() == "x-nemo.messaging.sms") {
-        n.setType(Notification::NotificationTypeSMS);
-        n.setSender("SMS");
-        n.setSourceId("SMS");
+        ret.type="sms";
+        ret.sender="SMS";
+        ret.srcId=ret.sender;
     } else if (notification->category() == "x-nemo.messaging.im") {
-        n.setType(Notification::NotificationTypeSMS);
-        n.setSender("Instant Message");
-        n.setSourceId(notification->sender());
-    } else if (notification->originPackage() == "org.telegram.messenger"
-               || notification->category().startsWith("harbour.sailorgram")) {
-        n.setType(Notification::NotificationTypeTelegram);
-    } else if (notification->originPackage() == "com.google.android.apps.babel"
-               || notification->owner() == "harbour-hangish") {
-        n.setType(Notification::NotificationTypeHangout);
-    } else if (notification->originPackage() == "com.whatsapp"
-               || notification->owner().toLower().contains("whatsup")) {
-        n.setType(Notification::NotificationTypeWhatsApp);
+        ret.type="hangouts";
+        ret.sender=notification->sender();
+        ret.srcId=notification->category();
+    } else if (notification->originPackage() == "org.telegram.messenger" || notification->category().startsWith("harbour.sailorgram")) {
+        ret.type="telegram";
+        ret.sender="Telegram";
+        ret.srcId=owner;
+    } else if (notification->originPackage() == "com.google.android.apps.babel" || notification->owner() == "harbour-hangish") {
+        ret.type="hangouts";
+        ret.sender="Hangouts";
+        ret.srcId=owner;
+    } else if (notification->originPackage() == "com.whatsapp" || notification->owner().toLower().contains("whatsup")) {
+        ret.type="whatsapp";
+        ret.sender="WhatsApp";
+        ret.srcId=owner;
     } else {
-        n.setType(Notification::NotificationTypeGeneric);
-        n.setSender(notification->sender());
+        ret.type="generic";
+        ret.sender=notification->sender();
+        ret.srcId=owner;
     }
-    n.setSubject(notification->summary());
-    n.setBody(notification->body());
-    if (!notification->icon().startsWith("/opt/alien/data/notificationIcon/")) //these are temporary, don't store them
-        n.setIcon(notification->icon());
+    return ret;
+}
 
-    foreach (const QString &action, notification->actions()) {
-        if (action == "default") {
-            n.setActToken(action);
+void SailfishPlatform::newNotificationPin(watchfish::Notification *notification)
+{
+    qDebug() << "Got new notification from platform:" << notification->owner() << notification->summary();
+    //HACK: ignore group notifications
+    if (notification->category().endsWith(".group")) {
+        qDebug() << "Skipping group notification.";
+        return;
+    }
+    QJsonObject pin;
+    AppID a = getAppID(notification);
+    pin.insert("id",QString("%1.%2.%3").arg(a.sender).arg(notification->timestamp().toTime_t()).arg(notification->id()));
+    QUuid guid = PlatformInterface::idToGuid(pin.value("id").toString());
+    pin.insert("guid",guid.toString().mid(1,36));
+    pin.insert("type",QString("notification"));
+    pin.insert("dataSource",QString("%1:%2").arg(a.srcId).arg(PlatformInterface::SysID));
+    pin.insert("source",a.sender);
+    if (!notification->icon().startsWith("/opt/alien/data/notificationIcon/")) //these are temporary, don't store them
+        pin.insert("sourceIcon",notification->icon());
+
+    QJsonArray actions;
+    // Dismiss action is added implicitly by TimelinePin class
+    // Response is a PoC for canned messages
+    QJsonObject response;
+    response.insert("type",QString("response"));
+    response.insert("title",QString("Response"));
+    QStringList worms={"Aye","Nay"};
+    response.insert("cannedResponse",QJsonArray::fromStringList(worms));
+    actions.append(response);
+    // Explicit open* will override implicit one
+    foreach (const QString &actToken, notification->actions()) {
+        if (actToken == "default") {
+            qDebug() << "found action" << actToken;
+            QJsonObject action;
+            action.insert("type",QString("open:%1").arg(actToken));
+            action.insert("title",QString("Open on Phone"));
+            actions.append(action);
             break;
         }
     }
-    connect(notification, &watchfish::Notification::closed,
-            this, &SailfishPlatform::handleClosedNotification);
-    qDebug() << "have act token" << n.actToken();
-    qDebug() << "mapping " << &n << " to " << notification;
-    m_notifs.insert(n.uuid(), notification);
-    emit notificationReceived(n);
+    pin.insert("actions",actions);
+
+    QJsonObject layout;
+    layout.insert("type",QString("commNotification"));
+    layout.insert("title",a.sender);
+    layout.insert("subtitle",notification->summary());
+    layout.insert("body",notification->body());
+
+    QStringList res = PlatformInterface::AppResMap.contains(a.type) ? PlatformInterface::AppResMap.value(a.type) : PlatformInterface::AppResMap.value("unknown");
+    layout.insert("tinyIcon",res.at(0));
+    layout.insert("backgroundColor",res.at(1));
+    if(res.count()>2 && !res.at(2).isEmpty()) {
+        // Sender is sent back as part of canned message response, need to put there smth more useful
+        layout.insert("sender",res.at(2));
+    }
+
+    pin.insert("layout",layout);
+
+    connect(notification, &watchfish::Notification::closed, this, &SailfishPlatform::handleClosedNotification);
+    m_notifs.insert(guid, notification); // keep for the action. TimelineManager will take care cleaning it up
+
+    qDebug() << "Emitting new pin" << pin.value("id").toString() << pin.value("dataSource").toString() << pin.value("guid").toString();
+    emit newTimelinePin(pin);
+}
+
+void SailfishPlatform::syncOrganizer() const
+{
+    m_organizerAdapter->reSync();
+}
+void SailfishPlatform::stopOrganizer() const
+{
+    m_organizerAdapter->disable();
+}
+
+void SailfishPlatform::actionTriggered(const QUuid &uuid, const QString &actToken, const QJsonObject &param) const
+{
+    qDebug() << "Triggering notification" << uuid << "action" << actToken << QJsonDocument(param).toJson();
+    watchfish::Notification *notif = m_notifs.value(uuid);
+    if (notif) {
+        if(actToken.split(":").first()=="open")
+            notif->invokeAction(actToken.split(":").last());
+    } else
+        qDebug() << "Not found";
+}
+
+void SailfishPlatform::removeNotification(const QUuid &uuid) const
+{
+    qDebug() << "Removing notification " << uuid;
+    watchfish::Notification *notif = m_notifs.value(uuid);
+    if (notif) {
+        notif->close();
+        m_notifs.remove(uuid);
+    }
+    else
+        qDebug() << "Not found";
 }
 
 void SailfishPlatform::handleClosedNotification(watchfish::Notification::CloseReason reason) {
@@ -176,7 +264,7 @@ void SailfishPlatform::handleClosedNotification(watchfish::Notification::CloseRe
     while (it != m_notifs.end()) {
         if (it.value()->id() == n->id()) {
             qDebug() << "Found notification to remove " << it.key();
-            emit notificationRemoved(it.key());
+            emit delTimelinePin(it.key().toString()); // Not sure we want it, but why not?
             m_notifs.remove(it.key());
             return;
         }
@@ -222,35 +310,6 @@ MusicMetaData SailfishPlatform::musicMetaData() const
 void SailfishPlatform::hangupCall(uint cookie)
 {
     m_voiceCallManager->hangUp(cookie);
-}
-
-QList<CalendarEvent> SailfishPlatform::organizerItems() const
-{
-    return m_organizerAdapter->items();
-}
-
-void SailfishPlatform::actionTriggered(const QUuid &uuid, const QString &actToken) const
-{
-    qDebug() << "Triggering notification " << uuid << " action " << actToken;
-    watchfish::Notification *notif = m_notifs.value(uuid);
-    if (notif) {
-        notif->invokeAction(actToken);
-        removeNotification(uuid);
-    }
-    else
-        qDebug() << "Not found";
-}
-
-void SailfishPlatform::removeNotification(const QUuid &uuid) const
-{
-    qDebug() << "Removing notification " << uuid;
-    watchfish::Notification *notif = m_notifs.value(uuid);
-    if (notif) {
-        notif->close();
-        m_notifs.remove(uuid);
-    }
-    else
-        qDebug() << "Not found";
 }
 
 void SailfishPlatform::fetchMusicMetadata()

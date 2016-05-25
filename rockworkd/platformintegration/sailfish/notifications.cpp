@@ -20,6 +20,7 @@
 #include <QtDBus/QDBusPendingCall>
 #include <QtDBus/QDBusMessage>
 #include "notifications.h"
+#include <QDebug>
 
 namespace watchfish
 {
@@ -290,8 +291,13 @@ void Notification::invokeAction(const QString &action)
 		const Action &a = d->actions[action];
 		if (!a.service.isEmpty()) {
 			QDBusMessage msg = QDBusMessage::createMethodCall(a.service, a.path, a.iface, a.method);
+			qDebug() << "Preparing call" << a.service << a.path << a.iface << a.method << msg.signature();
 			foreach (const QString &arg, a.args) {
-				msg << arg;
+				QDataStream ds(QByteArray::fromBase64(arg.toUtf8()));
+				QVariant var;
+				ds >> var;
+				msg << var;
+				qDebug() << "Added argument" << var;
 			}
 			QDBusConnection::sessionBus().asyncCall(msg);
 		}

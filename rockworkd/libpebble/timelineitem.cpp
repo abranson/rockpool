@@ -105,19 +105,39 @@ void TimelineAttribute::setContent(const QString &content)
     m_content = content.toUtf8();
 }
 
-void TimelineAttribute::setContent(TimelineAttribute::IconID iconId)
+void TimelineAttribute::setContent(quint32 data)
 {
-    m_content.clear();
-    m_content.append((quint8)iconId);
-    m_content.append('\0');
-    m_content.append('\0');
-    m_content.append(0x80);
+    quint32 le = qToLittleEndian(data);
+    setContent((le32 *)&le);
 }
-
-void TimelineAttribute::setContent(TimelineAttribute::Color color)
+void TimelineAttribute::setContent(qint32 data)
+{
+    qint32 le = qToLittleEndian(data);
+    setContent((le32 *)&le);
+}
+void TimelineAttribute::setContent(quint16 data)
+{
+    quint16 le = qToLittleEndian(data);
+    setContent((le16 *)&le);
+}
+void TimelineAttribute::setContent(qint16 data)
+{
+    qint16 le = qToLittleEndian(data);
+    setContent((le16 *)&le);
+}
+void TimelineAttribute::setContent(le32 *le)
 {
     m_content.clear();
-    m_content.append((quint8)color);
+    m_content.append(((quint8 *)(le))[0]);
+    m_content.append(((quint8 *)(le))[1]);
+    m_content.append(((quint8 *)(le))[2]);
+    m_content.append(((quint8 *)(le))[3]);
+}
+void TimelineAttribute::setContent(le16 *le)
+{
+    m_content.clear();
+    m_content.append(((quint8 *)(le))[0]);
+    m_content.append(((quint8 *)(le))[1]);
 }
 
 void TimelineAttribute::setContent(const QStringList &values)

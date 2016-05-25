@@ -26,6 +26,8 @@ public:
 signals:
     void serverStateChanged(bool state);
     void cloudStateChanged(bool state);
+    void insertPin(const QJsonObject &pin);
+    void removePin(const QString &guid);
 
 public slots:
     void enableConnection(quint16 port);

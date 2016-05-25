@@ -8,7 +8,6 @@
 #include "appmetadata.h"
 
 #include <QObject>
-#include <QDateTime>
 
 class BlobDB : public QObject
 {
@@ -29,20 +28,24 @@ public:
         OperationClear = 0x05
     };
 
-    enum Status {
-        StatusSuccess = 0x00,
-        StatusError = 0x01
+    enum Response {
+        ResponseSuccess = 0x00, // ACK
+        ResponseError = 0x01    // NACK
     };
 
+    enum Status {
+        StatusIgnore = 0x0,
+        StatusSuccess = 0x1,
+        StatusFailure = 0x2,
+        StatusInvalOp = 0x3,
+        StatusInvalId = 0x4,
+        StatusInvalData = 0x5,
+        StatusNoSuchKey = 0x6,
+        StatusDbIsFull = 0x7,
+        StatusDbIsStale = 0x8
+    };
 
     explicit BlobDB(Pebble *pebble, WatchConnection *connection);
-
-    void insertNotification(const Notification &notification);
-    void insertTimelinePin(const QUuid &uuid, TimelineItem::Layout layout, bool isAllDay, const QDateTime &startTime, const QDateTime &endTime, const QString &title, const QString &description, const QMap<QString, QString> fields, bool recurring);
-    void removeTimelinePin(const QUuid &uuid);
-    void insertReminder(const QUuid &uuid, const QUuid &parentId, const QString &title, const QString &subtitle, const QString &body, const QDateTime &remindTime);
-    void clearTimeline();
-    void syncCalendar(const QList<CalendarEvent> &events);
 
     void clearApps();
     void insertAppMetaData(const AppInfo &info, const bool force=false);
@@ -57,15 +60,11 @@ public:
 
 private slots:
     void blobCommandReply(const QByteArray &data);
-    void actionInvoked(const QByteArray &data);
-    void sendActionReply();
     void sendNext();
 
 signals:
-    void muteSource(const QString &sourceId);
-    void removeNotification(const QUuid &uuid);
-    void actionTriggered(const QUuid &uuid, const QString &actToken);
     void appInserted(const QUuid &uuid);
+    void blobCommandResult(BlobDBId db, Operation cmd, const QUuid &uuid, Status ack);
 
 private:
     quint16 generateToken();
@@ -88,11 +87,6 @@ private:
 
     Pebble *m_pebble;
     WatchConnection *m_connection;
-
-    QHash<QUuid, Notification> m_notificationSources;
-
-    QList<CalendarEvent> m_calendarEntries;
-    CalendarEvent findCalendarEvent(const QString &id);
 
     HealthParams m_healthParams;
 

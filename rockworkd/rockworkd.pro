@@ -54,6 +54,7 @@ SOURCES += main.cpp \
     libpebble/blobdb.cpp \
     libpebble/timelineitem.cpp \
     libpebble/notification.cpp \
+    libpebble/timelinemanager.cpp \
     platformintegration/sailfish/organizeradapter.cpp \
     libpebble/calendarevent.cpp \
     libpebble/appmetadata.cpp \
@@ -115,6 +116,7 @@ HEADERS += \
     libpebble/timelineitem.h \
     libpebble/notification.h \
     libpebble/calendarevent.h \
+    libpebble/timelinemanager.h \
     libpebble/appmetadata.h \
     libpebble/appdownloader.h \
     libpebble/enums.h \
@@ -138,13 +140,29 @@ testing: {
     QT += qml quick
 }
 
-INSTALLS += target systemd
+INSTALLS += target systemd layout
 
 systemd.files = $${TARGET}.service
 systemd.path = /usr/lib/systemd/user
+
+SHARED_DATA_PATH = /usr/share/$$replace(TARGET,d,)
+#fetch from https://github.com/pebble/pypkjs/blob/master/pypkjs/timeline/layouts.json
+# or better extract from latest firmware blob (pbz)
+JSON_FILES = libpebble/layouts.json
+layout.files = $${JSON_FILES}
+layout.path = $${SHARED_DATA_PATH}
+
+DISTFILES += JSON_FILES
 
 # Default rules for deployment.
 target.path = /usr/bin
 
 RESOURCES += \
     libpebble/jskit/jsfiles.qrc
+
+CONFIG(release, debug|release) {
+    DEFINES += 'SHARED_DATA_PATH=\\"$${SHARED_DATA_PATH}\\"'
+}
+CONFIG(debug, debug|release) {
+    DEFINES += 'SHARED_DATA_PATH=\\"/opt/sdk/rockpool$${SHARED_DATA_PATH}\\"'
+}

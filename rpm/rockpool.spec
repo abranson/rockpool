@@ -34,6 +34,7 @@ BuildRequires:  pkgconfig(Qt5Core)
 BuildRequires:  pkgconfig(Qt5Network)
 BuildRequires:  pkgconfig(Qt5Location)
 BuildRequires:  pkgconfig(qt5-boostable)
+BuildRequires:  pkgconfig(Qt5WebSockets)
 BuildRequires:  pkgconfig(mpris-qt5)
 BuildRequires:  pkgconfig(timed-qt5)
 BuildRequires:  pkgconfig(mlite5)
@@ -94,6 +95,7 @@ update-desktop-database
 %{_bindir}
 %{_datadir}/%{name}/qml
 %{_datadir}/%{name}/jsm
+%{_datadir}/%{name}/layouts.json
 %{_datadir}/%{name}/translations
 %{_datadir}/applications/%{name}.desktop
 %{_datadir}/icons/hicolor/86x86/apps/%{name}.png
