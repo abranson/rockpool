@@ -72,7 +72,7 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
     m_appMsgManager = new AppMsgManager(this, m_appManager, m_connection);
     m_jskitManager = new JSKitManager(this, m_connection, m_appManager, m_appMsgManager, this);
     QObject::connect(m_jskitManager, &JSKitManager::openURL, this, &Pebble::openURL);
-    QObject::connect(m_jskitManager, &JSKitManager::appNotification, this, &Pebble::sendSimpleNotification);
+    QObject::connect(m_jskitManager, &JSKitManager::appNotification, this, &Pebble::insertPin);
     QObject::connect(m_appMsgManager, &AppMsgManager::appStarted, this, &Pebble::appStarted);
 
     m_blobDB = new BlobDB(this, m_connection);
@@ -452,18 +452,6 @@ QString Pebble::findNotificationData(const QString &sourceId, const QString &key
     return 0;
 }
 
-void Pebble::sendSimpleNotification(const QUuid &uuid, const QString &title, const QString &body) {
-    QJsonObject pin,layout;
-    pin.insert("id",QString("%1.%1").arg(appInfo(uuid).shortName(),QDateTime::currentDateTimeUtc().toTime_t()));
-    pin.insert("dataSource",QString("%1:%1").arg(uuid.toString().mid(1,36),uuid.toString().mid(1,36)));
-    pin.insert("type",QString("notification"));
-    pin.insert("source",QString("App %1").arg(appInfo(uuid).shortName()));
-    layout.insert("title",title);
-    layout.insert("body",body);
-    layout.insert("type",QString("genericNotification"));
-    pin.insert("layout",layout);
-    insertPin(pin); // run through normal validation and filtering
-}
 void Pebble::insertPin(const QJsonObject &json)
 {
     QJsonObject pinObj(json);

@@ -38,7 +38,7 @@ public:
     AppInfo currentApp();
 
 signals:
-    void appNotification(const QUuid &uuid, const QString &title, const QString &body);
+    void appNotification(const QJsonObject &pin);
     void openURL(const QString &uuid, const QString &url);
 
 private slots:

@@ -1,6 +1,7 @@
 #include <QUrl>
 #include <QCryptographicHash>
 #include <QSettings>
+#include <QJsonObject>
 
 #include "jskitpebble.h"
 #include "jskitxmlhttprequest.h"
@@ -41,7 +42,16 @@ void JSKitPebble::removeEventListener(const QString &type, QJSValue function)
 void JSKitPebble::showSimpleNotificationOnPebble(const QString &title, const QString &body)
 {
     qCDebug(l) << "showSimpleNotificationOnPebble" << title << body;
-    emit m_mgr->appNotification(m_appInfo.uuid(), title, body);
+    QJsonObject pin,layout;
+    pin.insert("id", QString("%1:%2").arg(m_appInfo.shortName(), QDateTime::currentDateTimeUtc().toMSecsSinceEpoch()));
+    pin.insert("dataSource", QString("%1:%2").arg(m_appInfo.uuid().toString().mid(1,36), m_appInfo.uuid().toString().mid(1,36)));
+    pin.insert("type", QString("notification"));
+    pin.insert("source", QString(m_appInfo.shortName()));
+    layout.insert("title", title);
+    layout.insert("body", body);
+    layout.insert("type", QString("genericNotification"));
+    pin.insert("layout", layout);
+    emit m_mgr->appNotification(pin);
 }
 
 uint JSKitPebble::sendAppMessage(QJSValue message, QJSValue callbackForAck, QJSValue callbackForNack)

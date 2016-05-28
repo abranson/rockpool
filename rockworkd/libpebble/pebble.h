@@ -87,7 +87,6 @@ public slots:
     void setNotificationFilter(const QString &sourceId, const NotificationFilter enabled);
     void forgetNotificationFilter(const QString &sourceId);
     QString findNotificationData(const QString &sourceId, const QString &key);
-    void sendSimpleNotification(const QUuid &uuid, const QString &title, const QString &body);
     void insertPin(const QJsonObject &json);
     void removePin(const QString &guid);
 
