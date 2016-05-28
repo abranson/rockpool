@@ -930,8 +930,21 @@ void Pebble::syncTime()
 void Pebble::slotUpdateAvailableChanged()
 {
     qDebug() << "update available" << m_firmwareDownloader->updateAvailable() << m_firmwareDownloader->candidateVersion();
-    if (m_firmwareDownloader->updateAvailable())
+    if (m_firmwareDownloader->updateAvailable()) {
+        QJsonObject pin;
+        pin.insert("id",QString("PebbleFirmware.%1").arg(QDateTime::currentDateTimeUtc().toMSecsSinceEpoch()));
+        pin.insert("type",QString("notification"));
+        pin.insert("source",QString("Pebble Firmware Updates"));
+        pin.insert("dataSource",QString("PebbleFirmware:%1").arg(PlatformInterface::SysID));
+        QJsonObject layout;
+        layout.insert("subtitle", QString("Pebble firmware %1 available").arg(m_firmwareDownloader->candidateVersion()));
+        layout.insert("body",m_firmwareDownloader->releaseNotes());
+        layout.insert("type",QString("notification"));
+        pin.insert("layout",layout);
+        insertPin(pin);
+
         m_connection->systemMessage(WatchConnection::SystemMessageFirmwareAvailable);
+    }
     emit updateAvailableChanged();
 }
 
