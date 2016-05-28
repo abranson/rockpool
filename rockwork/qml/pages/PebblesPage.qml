@@ -13,13 +13,11 @@ Page {
             MenuItem {
                 text: qsTr("Bluetooth Settings")
                 onClicked: rockPool.startBT()
-                enabled: pebbles.count>0
-                visible: enabled
             }
-            /*MenuItem {
-                text: "Refresh"
-                onClicked: rescan()
-            }*/
+            MenuItem {
+                text: qsTr("Restart service")
+                onClicked: rockPool.restartService()
+            }
         }
 
         delegate: ListItem {
