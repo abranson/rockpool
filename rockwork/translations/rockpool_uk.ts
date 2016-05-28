@@ -688,22 +688,27 @@
         <translation>Налаштування Bluetooth</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PebblesPage.qml" line="37"/>
+        <location filename="../qml/pages/PebblesPage.qml" line="18"/>
+        <source>Restart service</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PebblesPage.qml" line="35"/>
         <source>Connected</source>
         <translation>Підключено</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PebblesPage.qml" line="37"/>
+        <location filename="../qml/pages/PebblesPage.qml" line="35"/>
         <source>Disconnected</source>
         <translation>Відключено</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PebblesPage.qml" line="57"/>
+        <location filename="../qml/pages/PebblesPage.qml" line="55"/>
         <source>No Pebble smartwatches configured yet. Please connect your Pebble smartwatch using System Settings.</source>
         <translation>Відсутня жодна конфігурація годинників Pebble. Будьласка підключьте Pebble в Налаштуванні Сістеми.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PebblesPage.qml" line="66"/>
+        <location filename="../qml/pages/PebblesPage.qml" line="64"/>
         <source>Open Bluetooth Settings</source>
         <translation>Відкрити Налаштування Bluetooth</translation>
     </message>

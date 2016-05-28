@@ -1,3 +1,15 @@
+* Sat May 28 2016 Andrew Branson <github@andrewbranson.net> 1.0-alpha1
+- Rewrite entire timeline engine using proper JSON pins, to be compatible with websync
+- Add watch notification when new pebble firmware available
+
+* Fri May 12 2016 Andrew Branson <github@andrewbranson.net> 0.11-2
+- Added service restart option when no pebbles found
+
+* Thu Apr 28 2016 Andrew Branson <github@andrewbranson.net> 0.11-1
+- Watch App and Watchface upgrades
+- Developer mode
+- Screenshots moved to Gallery
+
 * Mon Apr 25 2016 Andrew Branson <github@andrewbranson.net> 0.10-2
 - Fixed ownerless notification filters (e.g. Situations)
 - Option to delete obsolete notification filters

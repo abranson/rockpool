@@ -1,2 +1,2 @@
-VERSION = "0.10-2"
+VERSION = "1.0-alpha1"
 DEFINES += VERSION=\\\"$$VERSION\\\"
