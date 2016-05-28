@@ -85,7 +85,7 @@ TimelinePin::TimelinePin(const QString &fileName, TimelineManager *manager):
 {
     QFile f_pin(m_manager->m_timelineStoragePath + "/" + fileName);
     if(!f_pin.open(QFile::ReadOnly | QFile::Text)) {
-        qWarning() << "Canot open pin snapshot at" << f_pin.fileName() << f_pin.errorString();
+        qWarning() << "Cannot open pin snapshot at" << f_pin.fileName() << f_pin.errorString();
         return;
     }
     QString create = f_pin.readLine();
@@ -973,7 +973,7 @@ void TimelineManager::insertTimelinePin(const QJsonObject &json)
         if(!pin.guid().isNull() && !pin.layout().isEmpty() && !pin.kind().isEmpty() && !pin.parent().isNull())
             pin.send();
         else
-            qWarning() << "Malformed notification, ignoring";
+            qWarning() << (pin.guid().isNull()?"GUID":"") << (pin.layout().isEmpty()?"Layout":"") << (pin.kind().isEmpty()?"Kind":"") << (pin.parent().isNull()?"Parent":"") << "missing from notification, ignoring.";
         return;
     }
     // Below logic is mimicking reference implementation at pypkjs

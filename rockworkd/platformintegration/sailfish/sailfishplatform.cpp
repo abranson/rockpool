@@ -3,7 +3,6 @@
 #include "voicecallhandler.h"
 #include "voicecallmanager.h"
 #include "organizeradapter.h"
-#include "syncmonitorclient.h"
 #include "musiccontroller.h"
 #include "notificationmonitor.h"
 #include "walltimemonitor.h"
@@ -130,27 +129,23 @@ AppID getAppID(watchfish::Notification *notification)
         }
     } else if (notification->owner() == "facebook-notifications-client") {
         ret.type="facebook";
-        ret.sender="Facebook";
         ret.srcId=notification->owner();
     } else if (notification->category() == "x-nemo.messaging.sms") {
         ret.type="sms";
         ret.sender="SMS";
         ret.srcId=ret.sender;
     } else if (notification->category() == "x-nemo.messaging.im") {
-        ret.type="hangouts";
+        ret.type="sms";
         ret.sender=notification->sender();
         ret.srcId=notification->category();
     } else if (notification->originPackage() == "org.telegram.messenger" || notification->category().startsWith("harbour.sailorgram")) {
         ret.type="telegram";
-        ret.sender="Telegram";
         ret.srcId=owner;
     } else if (notification->originPackage() == "com.google.android.apps.babel" || notification->owner() == "harbour-hangish") {
         ret.type="hangouts";
-        ret.sender="Hangouts";
         ret.srcId=owner;
     } else if (notification->originPackage() == "com.whatsapp" || notification->owner().toLower().contains("whatsup")) {
         ret.type="whatsapp";
-        ret.sender="WhatsApp";
         ret.srcId=owner;
     } else {
         ret.type="generic";
