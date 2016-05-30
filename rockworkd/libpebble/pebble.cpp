@@ -937,9 +937,10 @@ void Pebble::slotUpdateAvailableChanged()
         pin.insert("source",QString("Pebble Firmware Updates"));
         pin.insert("dataSource",QString("PebbleFirmware:%1").arg(PlatformInterface::SysID));
         QJsonObject layout;
-        layout.insert("subtitle", QString("Pebble firmware %1 available").arg(m_firmwareDownloader->candidateVersion()));
+        layout.insert("title", QString("Pebble firmware %1 available").arg(m_firmwareDownloader->candidateVersion()));
         layout.insert("body",m_firmwareDownloader->releaseNotes());
-        layout.insert("type",QString("notification"));
+        layout.insert("type",QString("genericNotification"));
+        layout.insert("tinyIcon",QString("system://images/NOTIFICATION_FLAG"));
         pin.insert("layout",layout);
         insertPin(pin);
 
