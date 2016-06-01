@@ -55,7 +55,7 @@ SOURCES += main.cpp \
     libpebble/timelineitem.cpp \
     libpebble/notification.cpp \
     libpebble/timelinemanager.cpp \
-    platformintegration/sailfish/organizeradapter.cpp \
+    libpebble/timelinesync.cpp \
     libpebble/calendarevent.cpp \
     libpebble/appmetadata.cpp \
     libpebble/appdownloader.cpp \
@@ -66,6 +66,7 @@ SOURCES += main.cpp \
     libpebble/ziphelper.cpp \
     libpebble/healthparams.cpp \
     libpebble/dataloggingendpoint.cpp \
+    platformintegration/sailfish/organizeradapter.cpp \
     platformintegration/sailfish/musiccontroller.cpp \
     platformintegration/sailfish/notificationmonitor.cpp \
     platformintegration/sailfish/notifications.cpp \
@@ -116,6 +117,7 @@ HEADERS += \
     libpebble/timelineitem.h \
     libpebble/notification.h \
     libpebble/calendarevent.h \
+    libpebble/timelinesync.h \
     libpebble/timelinemanager.h \
     libpebble/appmetadata.h \
     libpebble/appdownloader.h \

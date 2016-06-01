@@ -98,6 +98,7 @@ private:
     static const BlobDB::BlobDBId item2blob[4];
 };
 
+
 class TimelineManager : public QObject
 {
     Q_OBJECT
@@ -114,8 +115,15 @@ public:
     void removeTimelinePin(const QString &guid);
     void clearTimeline(const QUuid &parent);
 
+    void setTimelineWindow(int daysPast, int eventFadeout, int daysFuture);
+    int daysPast() const {return m_past_days;}
+    int daysFuture() const {return m_future_days;}
+    int secsEventFadeout() const {return m_event_fadeout;}
+
 public slots:
     void reloadLayouts();
+    void wipeTimeline(const QString &kind);
+    void wipeSubscription(const QString &topic);
 
 signals:
     void muteSource(const QString &sourceId);
@@ -148,7 +156,6 @@ private:
     // All should be updated in atomic syncronized transaction to prevent retention/sync timer race condition
     QMutex m_mtx_pinStorage;
     QTimer *m_tmr_maintenance;
-    //QTimer m_tmr_websync;
 
     // Timeline window knobs. Pebble doesn't show future further than 48hrs ahead.
     // However it keeps pins on watches and shows them once the time has come

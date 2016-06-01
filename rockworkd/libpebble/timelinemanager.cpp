@@ -6,7 +6,6 @@
 #include "watchdatawriter.h"
 
 #include <QColor>
-#include <QNetworkAccessManager>
 #include <QDir>
 
 #include <libintl.h>
@@ -320,11 +319,14 @@ QList<TimelineAttribute> TimelinePin::handleAction(TimelineAction::Type atype, q
  * @brief TimelineManager::TimelineManager
  * @param pebble
  * @param connection
+ *
  * Constructs Timeline Manager for given Pebble instance with given transport connection to pebble
  * It will try to load legacy calendar events from blobdb storage, converting them to timeline pin
- *   During construction it loads layouts.json.auto which will be either taken from packaged hard
+ *
+ * During construction it loads layouts.json.auto which will be either taken from packaged hard
  * copy or stashed during latest firmware upgrade.
- *   Once all pins are loaded - maintenance cycle is scheduled to cleanup/resend/retain pins.
+ *
+ * Once all pins are loaded - maintenance cycle is scheduled to cleanup/resend/retain pins.
  * Additionally maintenance cycle is enforced on pebble connection - to resend pending pins.
  */
 // Enable calendar migration
@@ -815,6 +817,13 @@ quint32 TimelineManager::pinCount(const QUuid *parent)
         return m_pin_idx_guid.count();
 }
 
+void TimelineManager::setTimelineWindow(int daysPast, int eventFadeout, int daysFuture)
+{
+    m_past_days = daysPast;
+    m_event_fadeout = eventFadeout;
+    m_future_days = daysFuture;
+}
+
 void TimelineManager::doMaintenance()
 {
     int rt = m_tmr_maintenance->remainingTime();
@@ -866,6 +875,9 @@ void TimelineManager::doMaintenance()
                         qDebug() << "Removing dismissed event" << guid;
                         cleanup.append(pin);
                         // Dismiss should emit removeNotification
+                    } if(pin->sent() && !pin->sendable()) {
+                        qDebug() << "Pending deleteion for pin, removing" << guid;
+                        pin->remove();
                     //} else {
                     //    qDebug() << "Keeping pin" << guid;
                     }
@@ -914,6 +926,25 @@ void TimelineManager::clearTimeline(const QUuid &parent)
         m_pebble->blobdb()->clear(BlobDB::BlobDBIdPin);
 }
 
+void TimelineManager::wipeTimeline(const QString &kind)
+{
+    // Let's do simple traversal till we find better way to handle that
+    foreach(const TimelinePin &pin,m_pin_idx_guid.values()) {
+        if(pin.kind()==kind)
+            pin.remove();
+    }
+}
+
+void TimelineManager::wipeSubscription(const QString &topic)
+{
+    foreach (const QUuid &guid, m_idx_subscription.value(topic)) {
+        TimelinePin *pin = getPin(guid);
+        if(pin) {
+            pin->remove();
+        }
+    }
+}
+
 void TimelineManager::blobdbAckHandler(BlobDB::BlobDBId db, BlobDB::Operation cmd, const QUuid &uuid, BlobDB::Status ack)
 {
     switch(db) {
@@ -950,6 +981,7 @@ void TimelineManager::blobdbAckHandler(BlobDB::BlobDBId db, BlobDB::Operation cm
             break;
         default:
             pin->setDeleted(false);
+            pin->setSendable(false);
         }
         pin->flush();
     } else if(cmd == BlobDB::OperationClear) {

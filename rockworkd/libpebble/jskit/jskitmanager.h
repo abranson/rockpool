@@ -37,6 +37,8 @@ public:
     void setConfigurationId(const QUuid &uuid);
     AppInfo currentApp();
 
+    Pebble* pebble() const {return m_pebble;}
+
 signals:
     void appNotification(const QJsonObject &pin);
     void openURL(const QString &uuid, const QString &url);
