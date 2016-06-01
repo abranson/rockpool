@@ -50,6 +50,11 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
     m_dataLogEndpoint = new DataLoggingEndpoint(this, m_connection);
 
     m_notificationEndpoint = new NotificationEndpoint(this, m_connection);
+    m_timelineManager = new TimelineManager(this, m_connection);
+    QObject::connect(m_timelineManager, &TimelineManager::muteSource, this, &Pebble::muteNotificationSource);
+    QObject::connect(m_timelineManager, &TimelineManager::actionTriggered, Core::instance()->platform(), &PlatformInterface::actionTriggered);
+    QObject::connect(m_timelineManager, &TimelineManager::removeNotification, Core::instance()->platform(), &PlatformInterface::removeNotification);
+
     QObject::connect(Core::instance()->platform(), &PlatformInterface::newTimelinePin, this, &Pebble::insertPin);
     QObject::connect(Core::instance()->platform(), &PlatformInterface::delTimelinePin, this, &Pebble::removePin);
 
@@ -77,11 +82,6 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
 
     m_blobDB = new BlobDB(this, m_connection);
     QObject::connect(m_blobDB, &BlobDB::appInserted, this, &Pebble::appInstalled);
-
-    m_timelineManager = new TimelineManager(this, m_connection);
-    QObject::connect(m_timelineManager, &TimelineManager::muteSource, this, &Pebble::muteNotificationSource);
-    QObject::connect(m_timelineManager, &TimelineManager::actionTriggered, Core::instance()->platform(), &PlatformInterface::actionTriggered);
-    QObject::connect(m_timelineManager, &TimelineManager::removeNotification, Core::instance()->platform(), &PlatformInterface::removeNotification);
 
     m_appDownloader = new AppDownloader(m_storagePath, this);
     QObject::connect(m_appDownloader, &AppDownloader::downloadFinished, this, &Pebble::appDownloadFinished);
@@ -177,6 +177,11 @@ void Pebble::connect()
 BlobDB * Pebble::blobdb() const
 {
     return m_blobDB;
+}
+
+TimelineManager * Pebble::timeline() const
+{
+    return m_timelineManager;
 }
 
 QDateTime Pebble::softwareBuildTime() const
@@ -646,6 +651,7 @@ void Pebble::removeApp(const QUuid &uuid)
     qDebug() << "Should remove app:" << uuid;
     m_blobDB->removeApp(m_appManager->info(uuid));
     m_appManager->removeApp(uuid);
+    m_timelineManager->syncLocker(true);
 }
 
 void Pebble::launchApp(const QUuid &uuid)
@@ -796,6 +802,7 @@ void Pebble::pebbleVersionReceived(const QByteArray &data)
             syncApps();
             m_blobDB->setHealthParams(m_healthParams);
             m_blobDB->setUnits(m_imperialUnits);
+            m_timelineManager->syncLocker();
         }
         version.setValue("syncedWithVersion", QStringLiteral(VERSION));
 
@@ -882,6 +889,7 @@ void Pebble::appInstalled(const QUuid &uuid) {
             m_appMsgManager->launchApp(settings.value("watchface").toUuid());
         }
     }
+    m_timelineManager->syncLocker();
 }
 
 void Pebble::appStarted(const QUuid &uuid)

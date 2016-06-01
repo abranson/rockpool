@@ -67,7 +67,7 @@ signals:
     void blobCommandResult(BlobDBId db, Operation cmd, const QUuid &uuid, Status ack);
 
 private:
-    quint16 generateToken();
+    static inline quint16 generateToken();
     AppMetadata appInfoToMetadata(const AppInfo &info, HardwarePlatform hardwarePlatform);
 
 private:

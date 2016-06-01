@@ -55,6 +55,7 @@ public:
     bool connected() const;
     void connect();
     BlobDB *blobdb() const;
+    TimelineManager *timeline() const;
 
     QDateTime softwareBuildTime() const;
     QString softwareVersion() const;
