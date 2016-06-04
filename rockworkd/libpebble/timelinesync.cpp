@@ -115,7 +115,6 @@ void TimelineSync::doWebsync()
             qWarning() << "Cannot parse response" << err;
             return;
         }
-        qDebug() << "Got stuff to work on" << obj;
         if(obj.contains("error")) {
             if(obj.value("error").toString()=="Unauthorized") {
                 m_oauthToken.clear();
@@ -127,13 +126,17 @@ void TimelineSync::doWebsync()
             return;
         }
         if(obj.value("mustResync").toBool()) {
+            qDebug() << "Timeline forces full resync to" << obj.value("syncURL").toString();
             emit wipePinKind("web");
             emit syncUrlChanged(obj.value("syncURL").toString());
             return;
         }
         QJsonArray arr = obj.value("updates").toArray();
-        for(int i=0;i<arr.size();i++) {
-            emit timelineOp(arr.at(i).toObject());
+        if(arr.count()>0) {
+            qDebug() << "Got stuff to work on" << obj;
+            for(int i=0;i<arr.size();i++) {
+                emit timelineOp(arr.at(i).toObject());
+            }
         }
         if(obj.contains("nextPageURL")) {
             emit syncUrlChanged(obj.value("nextPageURL").toString());
@@ -164,6 +167,7 @@ void TimelineSync::webOpHandler(const QJsonObject &op)
 
 void TimelineSync::timelineApiQuery(const QByteArray &verb, const QString &url, void *ctx, void (*ack)(void *, const QJsonObject &), void (*nack)(void *, const QString &), const QString &token) const
 {
+    qDebug() << "API call for" << verb << url << token;
     QNetworkReply *rpl = m_nam->sendCustomRequest(authedRequest(url,token),verb);
     connect(rpl,&QNetworkReply::finished,[this,rpl,ctx,ack,nack](){
         QString err;
