@@ -28,7 +28,7 @@
 TimelineSync::TimelineSync(Pebble *pebble, TimelineManager *manager):
   QObject(pebble),
   m_tmr_websync(new QTimer(this)),
-  m_nam(new QNetworkAccessManager(this)),
+  m_nam(pebble->nam()),
   m_pebble(pebble),
   m_manager(manager)
 {

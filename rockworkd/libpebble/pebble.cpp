@@ -1,6 +1,5 @@
 #include "pebble.h"
 #include "watchconnection.h"
-#include "notificationendpoint.h"
 #include "watchdatareader.h"
 #include "watchdatawriter.h"
 #include "musicendpoint.h"
@@ -19,6 +18,7 @@
 #include "dataloggingendpoint.h"
 #include "devconnection.h"
 #include "timelinemanager.h"
+#include "timelinesync.h"
 
 #include "QDir"
 #include <QDateTime>
@@ -29,10 +29,12 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QNetworkAccessManager>
 
 Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
     QObject(parent),
-    m_address(address)
+    m_address(address),
+    m_nam(new QNetworkAccessManager(this))
 {
     QString watchPath = m_address.toString().replace(':', '_');
     m_storagePath = QStandardPaths::writableLocation(QStandardPaths::DataLocation) + "/" + watchPath + "/";
@@ -49,7 +51,9 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
 
     m_dataLogEndpoint = new DataLoggingEndpoint(this, m_connection);
 
-    m_notificationEndpoint = new NotificationEndpoint(this, m_connection);
+    m_blobDB = new BlobDB(this, m_connection);
+    QObject::connect(m_blobDB, &BlobDB::appInserted, this, &Pebble::appInstalled);
+
     m_timelineManager = new TimelineManager(this, m_connection);
     QObject::connect(m_timelineManager, &TimelineManager::muteSource, this, &Pebble::muteNotificationSource);
     QObject::connect(m_timelineManager, &TimelineManager::actionTriggered, Core::instance()->platform(), &PlatformInterface::actionTriggered);
@@ -74,14 +78,14 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
     QObject::connect(m_appManager, &AppManager::appsChanged, this, &Pebble::installedAppsChanged);
     QObject::connect(m_appManager, &AppManager::idMismatchDetected, this, &Pebble::resetPebble);
 
+    m_timelineSync = new TimelineSync(this,m_timelineManager);
+    QObject::connect(m_timelineSync, &TimelineSync::oauthTokenChanged, this, &Pebble::oauthTokenChanged);
+
     m_appMsgManager = new AppMsgManager(this, m_appManager, m_connection);
     m_jskitManager = new JSKitManager(this, m_connection, m_appManager, m_appMsgManager, this);
     QObject::connect(m_jskitManager, &JSKitManager::openURL, this, &Pebble::openURL);
     QObject::connect(m_jskitManager, &JSKitManager::appNotification, this, &Pebble::insertPin);
     QObject::connect(m_appMsgManager, &AppMsgManager::appStarted, this, &Pebble::appStarted);
-
-    m_blobDB = new BlobDB(this, m_connection);
-    QObject::connect(m_blobDB, &BlobDB::appInserted, this, &Pebble::appInstalled);
 
     m_appDownloader = new AppDownloader(m_storagePath, this);
     QObject::connect(m_appDownloader, &AppDownloader::downloadFinished, this, &Pebble::appDownloadFinished);
@@ -140,6 +144,16 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
     m_devConnection->setCloudEnabled(settings.value("useCloud", true).toBool()); // not implemented yet
     settings.endGroup();
 
+    settings.beginGroup("timeline");
+    m_timelineManager->setTimelineWindow(
+        // Future boundary of the timeline window - used for pin validation & retention
+        settings.value("futureDays",m_timelineManager->daysFuture()).toInt(),
+        // Past boundary of the timeline window - used for pin validation & retention
+        settings.value("pastDays",m_timelineManager->daysPast()).toInt(),
+        // Time after which undelivered notifications are considered obsolete
+        settings.value("eventFadeout",m_timelineManager->secsEventFadeout()).toInt()
+    );
+    settings.endGroup();
 }
 
 QBluetoothAddress Pebble::address() const
@@ -174,14 +188,37 @@ void Pebble::connect()
     m_connection->connectPebble(m_address);
 }
 
+QNetworkAccessManager * Pebble::nam() const
+{
+    return m_nam;
+}
+
 BlobDB * Pebble::blobdb() const
 {
     return m_blobDB;
 }
 
-TimelineManager * Pebble::timeline() const
+TimelineSync * Pebble::tlSync() const
 {
-    return m_timelineManager;
+    return m_timelineSync;
+}
+
+void Pebble::setOAuthToken(const QString &token)
+{
+    m_timelineSync->setOAuthToken(token);
+}
+
+const QString Pebble::oauthToken() const
+{
+    return m_timelineSync->oauthToken();
+}
+const QString Pebble::accountName() const
+{
+    return m_timelineSync->accountName();
+}
+const QString Pebble::accountEmail() const
+{
+    return m_timelineSync->accountEmail();
 }
 
 QDateTime Pebble::softwareBuildTime() const
@@ -651,7 +688,7 @@ void Pebble::removeApp(const QUuid &uuid)
     qDebug() << "Should remove app:" << uuid;
     m_blobDB->removeApp(m_appManager->info(uuid));
     m_appManager->removeApp(uuid);
-    m_timelineManager->syncLocker(true);
+    m_timelineSync->syncLocker(true);
 }
 
 void Pebble::launchApp(const QUuid &uuid)
@@ -802,7 +839,7 @@ void Pebble::pebbleVersionReceived(const QByteArray &data)
             syncApps();
             m_blobDB->setHealthParams(m_healthParams);
             m_blobDB->setUnits(m_imperialUnits);
-            m_timelineManager->syncLocker();
+            m_timelineSync->syncLocker();
         }
         version.setValue("syncedWithVersion", QStringLiteral(VERSION));
 
@@ -889,7 +926,7 @@ void Pebble::appInstalled(const QUuid &uuid) {
             m_appMsgManager->launchApp(settings.value("watchface").toUuid());
         }
     }
-    m_timelineManager->syncLocker();
+    m_timelineSync->syncLocker();
 }
 
 void Pebble::appStarted(const QUuid &uuid)

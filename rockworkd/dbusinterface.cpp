@@ -22,6 +22,7 @@ DBusPebble::DBusPebble(Pebble *pebble, QObject *parent):
     connect(pebble, &Pebble::calendarSyncEnabledChanged, this, &DBusPebble::CalendarSyncEnabledChanged);
     connect(pebble, &Pebble::devConServerStateChanged, this, &DBusPebble::DevConnectionChanged);
     connect(pebble, &Pebble::devConCloudStateChanged, this, &DBusPebble::DevConnCloudChanged);
+    connect(pebble, &Pebble::oauthTokenChanged, this, &DBusPebble::oauthTokenChanged);
 }
 
 QString DBusPebble::Address() const
@@ -87,6 +88,23 @@ void DBusPebble::insertTimelinePin(const QString &jsonPin)
         return;
     }
     m_pebble->insertPin(json.object());
+}
+
+void DBusPebble::setOAuthToken(const QString &token)
+{
+    m_pebble->setOAuthToken(token);
+}
+QString DBusPebble::oauthToken() const
+{
+    return m_pebble->oauthToken();
+}
+QString DBusPebble::accountName() const
+{
+    return m_pebble->accountName();
+}
+QString DBusPebble::accountEmail() const
+{
+    return m_pebble->accountEmail();
 }
 
 bool DBusPebble::DevConnectionEnabled() const

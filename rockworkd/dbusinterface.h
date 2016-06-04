@@ -35,6 +35,8 @@ signals:
     void DevConnectionChanged(const bool state);
     void DevConnCloudChanged(const bool state);
 
+    void oauthTokenChanged(const QString &token);
+
 public slots:
     QString Address() const;
     QString Name() const;
@@ -49,6 +51,11 @@ public slots:
     QString FirmwareReleaseNotes() const;
     void PerformFirmwareUpgrade();
     bool UpgradingFirmware() const;
+
+    QString accountName() const;
+    QString accountEmail() const;
+    QString oauthToken() const;
+    void setOAuthToken(const QString &token);
 
     void insertTimelinePin(const QString &jsonPin);
     QVariantMap NotificationsFilter() const;

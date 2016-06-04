@@ -18,7 +18,7 @@ FirmwareDownloader::FirmwareDownloader(Pebble *pebble, WatchConnection *connecti
     m_pebble(pebble),
     m_connection(connection)
 {
-    m_nam = new QNetworkAccessManager(this);
+    m_nam = pebble->nam();
 
     m_connection->registerEndpointHandler(WatchConnection::EndpointSystemMessage, this, "systemMessageReceived");
 }

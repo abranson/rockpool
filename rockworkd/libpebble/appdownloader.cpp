@@ -13,7 +13,8 @@ AppDownloader::AppDownloader(const QString &storagePath, QObject *parent) :
     QObject(parent),
     m_storagePath(storagePath + "/apps/")
 {
-    m_nam = new QNetworkAccessManager(this);
+    //m_nam = new QNetworkAccessManager(this);
+    m_nam = ((Pebble*)parent)->nam();
 }
 
 void AppDownloader::downloadApp(const QString &id)

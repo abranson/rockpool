@@ -13,7 +13,6 @@
 #include <QTimer>
 
 class WatchConnection;
-class NotificationEndpoint;
 class MusicEndpoint;
 class PhoneCallEndpoint;
 class AppManager;
@@ -28,6 +27,10 @@ class WatchLogEndpoint;
 class DataLoggingEndpoint;
 class DevConnection;
 class TimelineManager;
+class TimelineSync;
+
+class QNetworkAccessManager;
+
 
 class Pebble : public QObject
 {
@@ -55,7 +58,7 @@ public:
     bool connected() const;
     void connect();
     BlobDB *blobdb() const;
-    TimelineManager *timeline() const;
+    TimelineSync *tlSync() const;
 
     QDateTime softwareBuildTime() const;
     QString softwareVersion() const;
@@ -82,7 +85,12 @@ public:
     bool devConServerState() const;
     bool devConCloudEnabled() const;
     bool devConCloudState() const;
+    const QString oauthToken() const;
+    const QString accountName() const;
+    const QString accountEmail() const;
+    QNetworkAccessManager *nam() const;
 public slots:
+    void setOAuthToken(const QString &token);
     QVariantMap notificationsFilter() const;
     void setNotificationFilter(const QString &sourceId, const QString &name, const QString &icon, const NotificationFilter enabled);
     void setNotificationFilter(const QString &sourceId, const NotificationFilter enabled);
@@ -171,6 +179,7 @@ signals:
     void healtParamsChanged();
     void devConServerStateChanged(bool state);
     void devConCloudStateChanged(bool state);
+    void oauthTokenChanged(const QString &token);
 private:
     void setHardwareRevision(HardwareRevision hardwareRevision);
 
@@ -189,7 +198,6 @@ private:
     bool m_recovery = false;
 
     WatchConnection *m_connection;
-    NotificationEndpoint *m_notificationEndpoint;
     MusicEndpoint *m_musicEndpoint;
     PhoneCallEndpoint *m_phoneCallEndpoint;
     AppManager *m_appManager;
@@ -215,6 +223,8 @@ private:
     bool m_imperialUnits = false;
     DevConnection *m_devConnection;
     TimelineManager *m_timelineManager;
+    TimelineSync *m_timelineSync;
+    QNetworkAccessManager *m_nam;
 };
 
 /*
