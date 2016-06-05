@@ -75,6 +75,16 @@ void DBusPebble::ForgetNotificationFilter(const QString &sourceId)
     m_pebble->forgetNotificationFilter(sourceId);
 }
 
+QVariantMap DBusPebble::cannedResponses() const
+{
+    return m_pebble->cannedMessages();
+}
+
+void DBusPebble::setCannedResponses(const QVariantMap &cans)
+{
+    m_pebble->setCannedMessages(cans);
+}
+
 void DBusPebble::insertTimelinePin(const QString &jsonPin)
 {
     QJsonParseError jpe;

@@ -33,7 +33,7 @@ struct Action
 	QString path;
 	QString iface;
 	QString method;
-	QStringList args;
+	QVariantList args;
 };
 }
 
@@ -281,7 +281,19 @@ void Notification::addDBusAction(const QString &action, const QString &service, 
 	a.path = path;
 	a.iface = iface;
 	a.method = method;
-	a.args = args;
+	foreach (const QString &arg, args) {
+		QDataStream ds(QByteArray::fromBase64(arg.toUtf8()));
+		QVariant var;
+		ds >> var;
+		a.args << var;
+		qDebug() << "Added argument" << var;
+	}
+}
+
+QVariantList Notification::actionArgs(const QString &action) const
+{
+    Q_D(const Notification);
+    return d->actions.value(action).args;
 }
 
 void Notification::invokeAction(const QString &action)
@@ -291,14 +303,8 @@ void Notification::invokeAction(const QString &action)
 		const Action &a = d->actions[action];
 		if (!a.service.isEmpty()) {
 			QDBusMessage msg = QDBusMessage::createMethodCall(a.service, a.path, a.iface, a.method);
-			qDebug() << "Preparing call" << a.service << a.path << a.iface << a.method << msg.signature();
-			foreach (const QString &arg, a.args) {
-				QDataStream ds(QByteArray::fromBase64(arg.toUtf8()));
-				QVariant var;
-				ds >> var;
-				msg << var;
-				qDebug() << "Added argument" << var;
-			}
+			msg.setArguments(a.args);
+			qDebug() << "Preparing call" << a.service << a.path << a.iface << a.method << msg.signature() << msg.arguments();
 			QDBusConnection::sessionBus().asyncCall(msg);
 		}
 	}

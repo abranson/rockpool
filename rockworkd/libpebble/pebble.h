@@ -89,6 +89,8 @@ public:
     const QString accountName() const;
     const QString accountEmail() const;
     QNetworkAccessManager *nam() const;
+    QVariantMap cannedMessages() const;
+    void setCannedMessages(const QVariantMap &cans) const;
 public slots:
     void setOAuthToken(const QString &token);
     QVariantMap notificationsFilter() const;

@@ -54,6 +54,19 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
     m_blobDB = new BlobDB(this, m_connection);
     QObject::connect(m_blobDB, &BlobDB::appInserted, this, &Pebble::appInstalled);
 
+    QHash<QString,QStringList> cans;
+    QSettings cMsgs(m_storagePath + "/canned_messages.conf", QSettings::IniFormat);
+    foreach(const QString &grp,cMsgs.childGroups()) {
+        int msgn = cMsgs.beginReadArray(grp);
+        QStringList msgs;
+        for(int i=0;i<msgn;i++) {
+            cMsgs.setArrayIndex(i);
+            msgs.append(cMsgs.value("msg").toString());
+        }
+        cMsgs.endArray();
+        cans.insert(grp,msgs);
+    }
+    Core::instance()->platform()->setCannedResponses(cans);
     m_timelineManager = new TimelineManager(this, m_connection);
     QObject::connect(m_timelineManager, &TimelineManager::muteSource, this, &Pebble::muteNotificationSource);
     QObject::connect(m_timelineManager, &TimelineManager::actionTriggered, Core::instance()->platform(), &PlatformInterface::actionTriggered);
@@ -400,6 +413,32 @@ QString Pebble::imagePath() const
     return m_imagePath;
 }
 
+QVariantMap Pebble::cannedMessages() const
+{
+    QVariantMap ret;
+    QHash<QString,QStringList> cans = Core::instance()->platform()->cannedResponses();
+    foreach(const QString &grp,cans.keys())
+        ret.insert(grp,QVariant(cans.value(grp)));
+    return ret;
+}
+
+void Pebble::setCannedMessages(const QVariantMap &cans) const
+{
+    QSettings cMsgs(m_storagePath + "/canned_messages.conf", QSettings::IniFormat);
+    QHash<QString,QStringList> pass;
+    foreach(const QString &grp,cans.keys()) {
+        QStringList msgs = cans.value(grp).toStringList();
+        cMsgs.beginWriteArray(grp,msgs.count());
+        for(int i=0;i<msgs.count();i++) {
+            cMsgs.setArrayIndex(i);
+            cMsgs.setValue("msg",msgs.at(i));
+        }
+        cMsgs.endArray();
+        pass.insert(grp,msgs);
+    }
+    Core::instance()->platform()->setCannedResponses(pass);
+}
+
  QVariantMap Pebble::notificationsFilter() const
 {
     QVariantMap ret;
@@ -529,7 +568,7 @@ void Pebble::insertPin(const QJsonObject &json)
             QJsonArray actions = pinObj.value("actions").toArray();
             QJsonObject mute;
             mute.insert("type",QString("mute"));
-            QString sender = pinObj.value("createNotification").toObject().value("layout").toObject().value("sender").toString();
+            QString sender = pinObj.contains("sourceName") ? pinObj.value("sourceName").toString() : pinObj.value("source").toString();
             mute.insert("title",QString(sender.isEmpty()?"Mute":"Mute "+sender));
             actions.append(mute);
             pinObj.insert("actions",actions);

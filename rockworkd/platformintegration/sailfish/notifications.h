@@ -110,6 +110,7 @@ public:
 
 	QStringList actions() const;
 	void addDBusAction(const QString &action, const QString &service, const QString &path, const QString &iface, const QString &method, const QStringList &args = QStringList());
+	QVariantList actionArgs(const QString &action) const;
 
 public slots:
 	void invokeAction(const QString &action);

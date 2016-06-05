@@ -62,6 +62,9 @@ public slots:
     void SetNotificationFilter(const QString &sourceId, int enabled);
     void ForgetNotificationFilter(const QString &sourceId);
 
+    QVariantMap cannedResponses() const;
+    void setCannedResponses(const QVariantMap &cans);
+
     bool DevConnectionEnabled() const;
     quint16 DevConnListenPort() const;
     bool DevConnectionState() const;

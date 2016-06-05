@@ -35,6 +35,8 @@ signals:
 public:
     virtual void actionTriggered(const QUuid &uuid, const QString &actToken, const QJsonObject &param) const = 0;
     virtual void removeNotification(const QUuid &uuid) const = 0;
+    virtual const QHash<QString,QStringList>& cannedResponses() const = 0;
+    virtual void setCannedResponses(const QHash<QString,QStringList> &cans) = 0;
 signals:
     void notificationReceived(const Notification &notification);
     void notificationRemoved(const QUuid &uuid);

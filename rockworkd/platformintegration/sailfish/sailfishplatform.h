@@ -32,7 +32,6 @@ public:
     void hangupCall(uint cookie) override;
     QHash<QString, QString> getCategoryParams(QString category);
 
-    //QList<CalendarEvent> organizerItems() const override;
     void syncOrganizer() const override;
     void stopOrganizer() const override;
     MusicPlayState getMusicPlayState() const override;
@@ -42,8 +41,11 @@ public:
     bool deviceIsActive() const override;
     void setProfile(const QString &profile) const override;
 
+    const QHash<QString,QStringList>& cannedResponses() const override;
+    void setCannedResponses(const QHash<QString, QStringList> &cans) override;
+
 public slots:
-    //void onNotification(watchfish::Notification *notification);
+    void telepathyResponse(const watchfish::Notification *n, const QJsonObject &param) const;
     void newNotificationPin(watchfish::Notification *notification);
     void handleClosedNotification(watchfish::Notification::CloseReason reason);
     void onTimeChanged();
@@ -66,6 +68,7 @@ private:
     watchfish::MusicController *m_musicController;
     watchfish::NotificationMonitor *m_notificationMonitor;
     watchfish::WallTimeMonitor *m_wallTimeMonitor;
+    QHash<QString,QStringList> m_cans;
 };
 
 #endif // SAILFISHPLATFORM_H
