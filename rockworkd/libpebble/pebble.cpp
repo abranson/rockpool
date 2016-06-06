@@ -159,12 +159,12 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
 
     settings.beginGroup("timeline");
     m_timelineManager->setTimelineWindow(
-        // Future boundary of the timeline window - used for pin validation & retention
-        settings.value("futureDays",m_timelineManager->daysFuture()).toInt(),
         // Past boundary of the timeline window - used for pin validation & retention
         settings.value("pastDays",m_timelineManager->daysPast()).toInt(),
         // Time after which undelivered notifications are considered obsolete
-        settings.value("eventFadeout",m_timelineManager->secsEventFadeout()).toInt()
+        settings.value("eventFadeout",m_timelineManager->secsEventFadeout()).toInt(),
+        // Future boundary of the timeline window - used for pin validation & retention
+        settings.value("futureDays",m_timelineManager->daysFuture()).toInt()
     );
     settings.endGroup();
 }

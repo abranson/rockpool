@@ -33,7 +33,7 @@ TimelineSync::TimelineSync(Pebble *pebble, TimelineManager *manager):
   m_manager(manager)
 {
     m_timelineStoragePath = pebble->storagePath() + "timeline";
-    m_ini = new QSettings(m_timelineStoragePath + "/manager.ini",QSettings::IniFormat);
+    m_ini = new QSettings(m_timelineStoragePath + "/sync.ini",QSettings::IniFormat);
     // Next URL to be used for sync (or last used if there was a crash)
     m_syncUrl = m_ini->value("syncUrl").toString();
     // OAuth2 token retreived from https://auth-client.getpebble.com/en_US/
