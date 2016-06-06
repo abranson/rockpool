@@ -141,11 +141,14 @@ public:
             Ack ack;
             Nak nak;
         } * context = new ctx({ack,nak});
-        timelineApiQuery("PUT",subscriptionsUrl + "/" + topic,context,[](void*c,const QJsonObject &obj){
+        timelineApiQuery("POST",subscriptionsUrl + "/" + topic,context,[](void*c,const QJsonObject &obj){
             ((struct ctx*)c)->ack(obj.value("id").toString());
             delete ((struct ctx*)c);
         },[](void*c,const QString &err){
-            ((struct ctx*)c)->nak(err);
+            if(err.endsWith(" OK"))
+                ((struct ctx*)c)->ack("OK");
+            else
+                ((struct ctx*)c)->nak(err);
             delete ((struct ctx*)c);
         },token);
     }
@@ -162,7 +165,10 @@ public:
             ((struct ctx*)c)->ack(obj.value("id").toString());
             delete ((struct ctx*)c);
         },[](void*c,const QString &err){
-            ((struct ctx*)c)->nak(err);
+            if(err.endsWith(" OK"))
+                ((struct ctx*)c)->ack("OK");
+            else
+                ((struct ctx*)c)->nak(err);
             delete ((struct ctx*)c);
         },token);
     }

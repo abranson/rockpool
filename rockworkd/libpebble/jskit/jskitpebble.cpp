@@ -101,7 +101,7 @@ uint JSKitPebble::sendAppMessage(QJSValue message, QJSValue callbackForAck, QJSV
 
 void JSKitPebble::getTimelineToken(QJSValue successCallback, QJSValue failureCallback)
 {
-    getTokenInternal([this,&successCallback](){
+    getTokenInternal([this,successCallback]()mutable{
         if(successCallback.isCallable()) {
             successCallback.call(QJSValueList({m_timelineToken}));
         }
@@ -111,12 +111,13 @@ void JSKitPebble::getTimelineToken(QJSValue successCallback, QJSValue failureCal
 void JSKitPebble::timelineSubscribe(const QString &topic, QJSValue successCallback, QJSValue failureCallback)
 {
     getTokenInternal([this,topic,&successCallback,&failureCallback](){
-        m_mgr->pebble()->tlSync()->topicSubscribe(m_timelineToken,topic,[this,&successCallback,topic](const QString &ok){
+        m_mgr->pebble()->tlSync()->topicSubscribe(m_timelineToken,topic,[this,successCallback,topic](const QString &ok)mutable{
             qCDebug(l) << "Successfully subscribed to" << topic << ok;
             if(successCallback.isCallable()) {
                 successCallback.call(QJSValueList({ok}));
             }
-        },[&failureCallback](const QString &err){
+        },[this,topic,failureCallback](const QString &err)mutable{
+            qCDebug(l) << "Cannot subscribe to" << topic << err;
             if (failureCallback.isCallable()) {
                 failureCallback.call(QJSValueList({err}));
             }
@@ -126,13 +127,14 @@ void JSKitPebble::timelineSubscribe(const QString &topic, QJSValue successCallba
 
 void JSKitPebble::timelineUnsubscribe(const QString &topic, QJSValue successCallback, QJSValue failureCallback)
 {
-    getTokenInternal([this,topic,&successCallback,&failureCallback](){
-        m_mgr->pebble()->tlSync()->topicUnsubscribe(m_timelineToken,topic,[this,&successCallback,topic](const QString &ok){
-            qCDebug(l) << "Successfully subscribed to" << topic << ok;
+    getTokenInternal([this,topic,&successCallback,failureCallback]()mutable{
+        m_mgr->pebble()->tlSync()->topicUnsubscribe(m_timelineToken,topic,[this,successCallback,topic](const QString &ok)mutable{
+            qCDebug(l) << "Successfully unsubscribed from" << topic << ok;
             if(successCallback.isCallable()) {
                 successCallback.call(QJSValueList({ok}));
             }
-        },[&failureCallback](const QString &err){
+        },[this,topic,failureCallback](const QString &err)mutable{
+            qCDebug(l) << "Cannot unsubscribe from" << topic << err;
             if (failureCallback.isCallable()) {
                 failureCallback.call(QJSValueList({err}));
             }
@@ -143,7 +145,7 @@ void JSKitPebble::timelineUnsubscribe(const QString &topic, QJSValue successCall
 void JSKitPebble::timelineSubscriptions(QJSValue successCallback, QJSValue failureCallback)
 {
     getTokenInternal([this,&successCallback,&failureCallback](){
-        m_mgr->pebble()->tlSync()->getSubscriptions(m_timelineToken,[this,&successCallback](const QStringList &topics){
+        m_mgr->pebble()->tlSync()->getSubscriptions(m_timelineToken,[this,successCallback](const QStringList &topics)mutable{
             qCDebug(l) << "Successfully fetched subscriptions:" << topics.join(", ");
             if(successCallback.isCallable()) {
                 QJSValue argArray = m_mgr->engine()->newArray(topics.size());
@@ -152,7 +154,7 @@ void JSKitPebble::timelineSubscriptions(QJSValue successCallback, QJSValue failu
                 }
                 successCallback.call(QJSValueList({argArray}));
             }
-        },[&failureCallback](const QString &err){
+        },[failureCallback](const QString &err)mutable{
             if (failureCallback.isCallable()) {
                 failureCallback.call(QJSValueList({err}));
             }
@@ -168,7 +170,7 @@ void JSKitPebble::getTokenInternal(Func ack, QJSValue &failureCallback)
         return;
     }
     m_mgr->pebble()->tlSync()->getTimelineToken(m_appInfo.uuid(),
-       [this,&failureCallback,ack](const QString &ret){
+       [this,failureCallback,ack](const QString &ret)mutable{
         m_timelineToken = ret;
         if(m_timelineToken.isEmpty()) {
             if (failureCallback.isCallable()) {
@@ -177,7 +179,7 @@ void JSKitPebble::getTokenInternal(Func ack, QJSValue &failureCallback)
         } else {
             ack();
         }
-    }, [&failureCallback](const QString &err){
+    }, [failureCallback](const QString &err)mutable{
         if (failureCallback.isCallable()) {
             failureCallback.call(QJSValueList({err}));
         }

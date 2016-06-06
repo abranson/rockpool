@@ -91,7 +91,8 @@ QJsonObject processJsonReply(QNetworkReply *rpl, QString &err)
                 return obj;
             }
         } else {
-            err.append("Cannot parse response: ").append(jpe.errorString());
+            err.append(QString("Cannot parse response: %1 %2").arg(jpe.errorString(),QString(data)));
+            qDebug() << "Cannot parse" << data;
         }
     } else {
         err.append("HTTP Error: ").append(rpl->errorString());
