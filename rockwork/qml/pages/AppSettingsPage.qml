@@ -61,6 +61,11 @@ Page {
                 break;
             }
 
+            case "embed:prompt": {
+                dialogLoader.prompt("prompt",data);
+                break;
+            }
+
             case "embed:pebble": {
                 if(data.action === "close") {
                     pebble.configurationClosed(appSettings.uuid, data.uri);
@@ -87,6 +92,7 @@ Page {
         focus: true
         anchors.fill: parent
         property bool singleChoice: true
+        property bool promptValue: false
         property string dlgTitle: qsTr("Alert")
         property string dlgText: qsTr("Something going wrong")
         property string acceptStr: qsTr("Accept")
@@ -95,27 +101,44 @@ Page {
         property string dlgMsg: ""
 
         function alert(data) {
-            sourceComponent = cmpDialog;
             singleChoice=true;
+            promptValue = false;
             dlgTitle=data.title;
             dlgText=data.text;
             dlgData=data;
+            sourceComponent = cmpDialog;
             dlgMsg="alert";
         }
         function confirm(msg,data) {
-            sourceComponent = cmpDialog;
             singleChoice = false;
+            promptValue = false;
             dlgTitle = data.title;
             dlgText = data.text;
-            dlgMsg = msg;
             dlgData = data;
+            sourceComponent = cmpDialog;
+            dlgMsg = msg;
         }
 
-        function accept() {
+        function prompt(msg,data) {
+            singleChoice = false;
+            promptValue = true;
+            dlgTitle = data.title;
+            dlgText = data.text;
+            dlgData = data;
+            sourceComponent = cmpDialog;
+            dlgMsg = msg;
+        }
+
+        function accept(promptval) {
             sourceComponent = null;
             if(dlgMsg) {
                 console.log("Sending accept for",dlgMsg+"response")
-                webview.sendAsyncMessage(dlgMsg+"response", {"accepted": true,"winid":dlgData.winid})
+                var ret = {"accepted": true,"winid":dlgData.winid};
+                //if(dlgData.checkmsg)
+                //    ret["checkval"] = chkField.value
+                if(promptval)
+                    ret["promptvalue"] = promptval;
+                webview.sendAsyncMessage(dlgMsg+"response", ret)
                 dlgMsg = "";
             }
         }
@@ -141,7 +164,7 @@ Page {
                 }
                 Button {
                     text: dialogLoader.acceptStr
-                    onClicked: dialogLoader.accept()
+                    onClicked: dialogLoader.accept(cmpDlgPrompt.enabled ? cmpDlgPrompt.text : "")
                     enabled: !dialogLoader.singleChoice
                     visible: enabled
                 }
@@ -166,6 +189,13 @@ Page {
                         width: parent.width
                         wrapMode: Text.WordWrap
                         text: dialogLoader.dlgText
+                    }
+                    TextField {
+                        id: cmpDlgPrompt
+                        width: parent.width
+                        text: dialogLoader.dlgData.defaultValue
+                        enabled: dialogLoader.promptValue
+                        visible: enabled
                     }
                 }
             }
