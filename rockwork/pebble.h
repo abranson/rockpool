@@ -35,6 +35,12 @@ class Pebble : public QObject
     Q_PROPERTY(quint16 devConListenPort READ devConListenPort WRITE setDevConListenPort NOTIFY devConListenPortChanged)
     Q_PROPERTY(bool devConnServerRunning READ devConnServerRunning NOTIFY devConnServerRunningChanged)
     Q_PROPERTY(bool devConCloudConnected READ devConCloudConnected NOTIFY devConCloudConnectedChanged)
+    Q_PROPERTY(QString oauthToken READ oauthToken WRITE setOAuthToken NOTIFY oauthTokenChanged)
+    Q_PROPERTY(QString accountName READ accountName NOTIFY oauthTokenChanged)
+    Q_PROPERTY(QString accountEmail READ accountEmail NOTIFY oauthTokenChanged)
+    Q_PROPERTY(int timelineWindowStart MEMBER m_timelienWindowStart)
+    Q_PROPERTY(int timelineWindowFade MEMBER m_timelienWindowFade)
+    Q_PROPERTY(int timelineWindowEnd MEMBER m_timelienWindowEnd)
 
 public:
     explicit Pebble(const QDBusObjectPath &path, QObject *parent = 0);
@@ -79,6 +85,9 @@ public:
     bool devConnEnabled() const;
     bool devConnCloudEnabled() const;
     quint16 devConListenPort() const;
+    QString oauthToken() const;
+    QString accountName() const;
+    QString accountEmail() const;
 
 public slots:
     void setNotificationFilter(const QString &sourceId, int enabled);
@@ -98,6 +107,8 @@ public slots:
     void setDevConnEnabled(bool enabled);
     void setDevConnCloudEnabled(bool enabled);
     void setDevConListenPort(quint16 port);
+    void setOAuthToken(const QString &token);
+    void setTimelineWindow();
 
 signals:
     void connectedChanged();
@@ -116,6 +127,7 @@ signals:
     void devConListenPortChanged();
     void devConnServerRunningChanged();
     void devConCloudConnectedChanged();
+    void oauthTokenChanged();
 
     void openURL(const QString &uuid, const QString &url);
 
@@ -158,6 +170,10 @@ private:
     QString m_firmwareReleaseNotes;
     QString m_candidateVersion;
     bool m_upgradingFirmware = false;
+
+    qint32 m_timelienWindowStart;
+    qint32 m_timelienWindowFade;
+    qint32 m_timelienWindowEnd;
 };
 
 #endif // PEBBLE_H

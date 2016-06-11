@@ -70,6 +70,17 @@ Page {
                 if(data.action === "close") {
                     pebble.configurationClosed(appSettings.uuid, data.uri);
                     pageStack.pop();
+                } else if(data.action === "login") {
+                    var params = data.query.split("&");
+                    for(var i = 0;i<params.length; i++) {
+                        if(params[i].substr(0,13) === "access_token=") {
+                            var kv = params[i].split("=");
+                            console.log("Found token",kv[1]);
+                            pebble.setOAuthToken(kv[1]);
+                            break;
+                        }
+                    }
+                    pageStack.pop();
                 }
                 break;
             }
@@ -129,13 +140,13 @@ Page {
             dlgMsg = msg;
         }
 
-        function accept(promptval) {
+        function accept(promptval,checkval) {
             sourceComponent = null;
             if(dlgMsg) {
                 console.log("Sending accept for",dlgMsg+"response")
                 var ret = {"accepted": true,"winid":dlgData.winid};
-                //if(dlgData.checkmsg)
-                //    ret["checkval"] = chkField.value
+                if(dlgData.checkmsg)
+                    ret["checkval"] = checkval
                 if(promptval)
                     ret["promptvalue"] = promptval;
                 webview.sendAsyncMessage(dlgMsg+"response", ret)
@@ -164,7 +175,7 @@ Page {
                 }
                 Button {
                     text: dialogLoader.acceptStr
-                    onClicked: dialogLoader.accept(cmpDlgPrompt.enabled ? cmpDlgPrompt.text : "")
+                    onClicked: dialogLoader.accept(cmpDlgPrompt.enabled ? cmpDlgPrompt.text : "", acptBox.checked)
                     enabled: !dialogLoader.singleChoice
                     visible: enabled
                 }
@@ -196,6 +207,19 @@ Page {
                         text: dialogLoader.dlgData.defaultValue
                         enabled: dialogLoader.promptValue
                         visible: enabled
+                    }
+                    Label {
+                        width: parent.width
+                        wrapMode: Text.WordWrap
+                        visible: "checkmsg" in dialogLoader.dlgData
+                        text: visible ? dialogLoader.dlgData.checkmsg : ""
+                    }
+                    TextSwitch {
+                        id: acptBox
+                        width: parent.width
+                        text: qsTr("Accept")
+                        visible: "checkmsg" in dialogLoader.dlgData
+                        checked: visible ? dialogLoader.dlgData.checkval : false
                     }
                 }
             }

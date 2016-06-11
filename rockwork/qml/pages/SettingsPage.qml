@@ -5,12 +5,15 @@ Page {
     id: root
 
     property var pebble: null
+    property string oauth: (pebble) ? pebble.oauthToken : ""
 
     SilicaFlickable {
         anchors.fill: parent
         anchors.margins: Theme.horizontalPageMargin
+        contentHeight: content.height
 
         Column {
+            id: content
             width: parent.width
             spacing: Theme.paddingSmall
 
@@ -18,15 +21,9 @@ Page {
                 title: qsTr("Settings")
             }
 
-            TextSwitch {
-                width: parent.width
-                text: qsTr("Sync calendar to timeline")
-                checked: root.pebble.calendarSyncEnabled
-                onClicked: {
-                    root.pebble.calendarSyncEnabled = checked
-                }
+            SectionHeader {
+                text: qsTr("General")
             }
-
             ComboBox {
                 width: parent.width
                 label: qsTr("Distance Units")
@@ -44,12 +41,73 @@ Page {
                 currentIndex: (root.pebble.imperialUnits) ? 1 : 0
             }
 
+            SectionHeader {
+                text: qsTr("Timeline")
+            }
+
+            TextSwitch {
+                width: parent.width
+                text: qsTr("Sync calendar to timeline")
+                checked: root.pebble.calendarSyncEnabled
+                onClicked: {
+                    root.pebble.calendarSyncEnabled = checked
+                }
+            }
+            TextField {
+                width: parent.width
+                label: qsTr("Timeline Window Start (days ago)")
+                placeholderText: label
+                inputMethodHints: Qt.ImhDigitsOnly
+                text: pebble.timelineWindowStart
+            }
+            TextField {
+                width: parent.width
+                label: qsTr("Timeline Window End (days ahead)")
+                placeholderText: label
+                inputMethodHints: Qt.ImhDigitsOnly
+                text: pebble.timelineWindowEnd
+            }
+            TextField {
+                width: parent.width
+                label: qsTr("Notification re-delivery expiration (seconds)")
+                placeholderText: label
+                inputMethodHints: Qt.ImhDigitsOnly
+                text: pebble.timelineWindowFade
+            }
+            Button {
+                width: parent.width
+                text: qsTr("Set Timeline Window")
+                onClicked: pebble.setTimelineWindow()
+            }
+
+            SectionHeader {
+                text: qsTr("Active Timeline WebSync account")
+            }
             Label {
+                width: parent.width
+                visible: (pebble && oauth)
+                text: visible ? pebble.accountName : ""
+            }
+            Label {
+                width: parent.width
+                visible: (pebble && oauth)
+                text: visible ? pebble.accountEmail : ""
+            }
+            Button {
+                width: parent.width
+                text: oauth ? qsTr("Logout") : qsTr("Login")
+                onClicked: if(oauth) {
+                               pebble.setOAuthToken("")
+                           } else {
+                               pageStack.push(Qt.resolvedUrl("AppSettingsPage.qml"), {
+                                              url: "https://auth-client.getpebble.com/en_US/",
+                                              pebble: pebble
+                                          })
+                           }
+            }
+
+            SectionHeader {
                 text: qsTr("Automatic Profile")
-                font.family: Theme.fontFamilyHeading
-                color: Theme.highlightColor
-                anchors.right: parent.right
-                anchors.rightMargin: Theme.paddingMedium
             }
             ComboBox {
                 width: parent.width

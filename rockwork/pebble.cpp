@@ -35,6 +35,7 @@ Pebble::Pebble(const QDBusObjectPath &path, QObject *parent):
     QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "CalendarSyncEnabledChanged", this, SIGNAL(calendarSyncEnabledChanged()));
     QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "DevConnectionChanged", this, SLOT(devConStateChanged(bool)));
     QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "DevConnCloudChanged", this, SLOT(devConCloudChanged(bool)));
+    QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "oauthTokenChanged", this, SIGNAL(oauthTokenChanged(const QString &)));
 
     dataChanged();
     refreshApps();
@@ -243,6 +244,31 @@ void Pebble::devConCloudChanged(bool state)
     emit devConCloudConnectedChanged();
 }
 
+QString Pebble::oauthToken() const
+{
+    return fetchProperty("oauthToken").toString();
+}
+
+void Pebble::setOAuthToken(const QString &token)
+{
+    m_iface->call("setOAuthToken",token);
+}
+
+QString Pebble::accountName() const
+{
+    return fetchProperty("accountName").toString();
+}
+
+QString Pebble::accountEmail() const
+{
+    return fetchProperty("accountEmail").toString();
+}
+
+void Pebble::setTimelineWindow()
+{
+    m_iface->call("setTimelineWindow",-m_timelienWindowStart,-m_timelienWindowFade,m_timelienWindowEnd);
+}
+
 void Pebble::configurationClosed(const QString &uuid, const QString &url)
 {
     m_iface->call("ConfigurationClosed", uuid, url.mid(17));
@@ -310,6 +336,9 @@ void Pebble::dataChanged()
         m_connected = connected;
         emit connectedChanged();
     }
+    m_timelienWindowStart = -fetchProperty("timelineWindowStart").toInt();
+    m_timelienWindowFade = -fetchProperty("timelineWindowFade").toInt();
+    m_timelienWindowEnd = fetchProperty("timelineWindowEnd").toInt();
 }
 
 void Pebble::pebbleConnected()
