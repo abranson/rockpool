@@ -359,6 +359,34 @@ bool Pebble::devConCloudState() const
     return m_devConnection->cloudState();
 }
 
+qint32 Pebble::timelineWindowStart() const
+{
+    return m_timelineManager->daysPast();
+}
+qint32 Pebble::timelineWindowFade() const
+{
+    return m_timelineManager->secsEventFadeout();
+}
+qint32 Pebble::timelineWindowEnd() const
+{
+    return m_timelineManager->daysFuture();
+}
+void Pebble::setTimelineWindow(qint32 start, qint32 fade, qint32 end)
+{
+    if(start>=0 || start > end) {
+        qWarning() << "Ignoring invalid timeline window: start" << start << "end" << end;
+        return;
+    }
+    if(fade > 0)
+        fade = -fade;
+    m_timelineManager->setTimelineWindow(start,fade,end);
+    QSettings setts(m_storagePath + "/appsettings.conf", QSettings::IniFormat);
+    setts.beginGroup("timeline");
+    setts.setValue("daysPast",start);
+    setts.setValue("eventFadeout",fade);
+    setts.setValue("futureDays",end);
+}
+
 void Pebble::setHealthParams(const HealthParams &healthParams)
 {
     m_healthParams = healthParams;

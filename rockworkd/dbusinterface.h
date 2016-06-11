@@ -57,6 +57,11 @@ public slots:
     QString oauthToken() const;
     void setOAuthToken(const QString &token);
 
+    void setTimelineWindow(qint32 start, qint32 fade, qint32 end);
+    qint32 timelineWindowStart() const;
+    qint32 timelineWindowFade() const;
+    qint32 timelineWindowEnd() const;
+
     void insertTimelinePin(const QString &jsonPin);
     QVariantMap NotificationsFilter() const;
     void SetNotificationFilter(const QString &sourceId, int enabled);

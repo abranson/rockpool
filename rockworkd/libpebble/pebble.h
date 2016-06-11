@@ -91,7 +91,12 @@ public:
     QNetworkAccessManager *nam() const;
     QVariantMap cannedMessages() const;
     void setCannedMessages(const QVariantMap &cans) const;
+    qint32 timelineWindowStart() const;
+    qint32 timelineWindowFade() const;
+    qint32 timelineWindowEnd() const;
+
 public slots:
+    void setTimelineWindow(qint32 start, qint32 fade, qint32 end);
     void setOAuthToken(const QString &token);
     QVariantMap notificationsFilter() const;
     void setNotificationFilter(const QString &sourceId, const QString &name, const QString &icon, const NotificationFilter enabled);

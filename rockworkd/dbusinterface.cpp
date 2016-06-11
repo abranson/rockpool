@@ -85,6 +85,23 @@ void DBusPebble::setCannedResponses(const QVariantMap &cans)
     m_pebble->setCannedMessages(cans);
 }
 
+qint32 DBusPebble::timelineWindowStart() const
+{
+    return m_pebble->timelineWindowStart();
+}
+qint32 DBusPebble::timelineWindowFade() const
+{
+    return m_pebble->timelineWindowFade();
+}
+qint32 DBusPebble::timelineWindowEnd() const
+{
+    return m_pebble->timelineWindowEnd();
+}
+void DBusPebble::setTimelineWindow(qint32 start, qint32 fade, qint32 end)
+{
+    m_pebble->setTimelineWindow(start,fade,end);
+}
+
 void DBusPebble::insertTimelinePin(const QString &jsonPin)
 {
     QJsonParseError jpe;
