@@ -1,31 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1" language="ru" sourcelanguage="en">
+<TS version="2.0" language="ru" sourcelanguage="en">
 <context>
     <name>AppSettingsPage</name>
     <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="90"/>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="107"/>
         <source>Alert</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="91"/>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="108"/>
         <source>Something going wrong</source>
         <translation>Что-то пошло не так</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="92"/>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="109"/>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="220"/>
         <source>Accept</source>
         <translation>Принять</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="93"/>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="217"/>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="110"/>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="271"/>
         <source>Cancel</source>
         <translation>Отмена</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="221"/>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="275"/>
         <source>Select</source>
         <translation>Выбрать</translation>
     </message>
@@ -691,7 +692,7 @@
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="18"/>
         <source>Restart service</source>
-        <translation type="unfinished"></translation>
+        <translation>Перезапустить Сервис</translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="35"/>
@@ -760,50 +761,95 @@
 <context>
     <name>SettingsPage</name>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="18"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="21"/>
         <source>Settings</source>
         <translation>Настройки</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="32"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="25"/>
+        <source>General</source>
+        <translation>J,obt</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="29"/>
         <source>Distance Units</source>
         <translation>Еденицы длинны</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="35"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="32"/>
         <source>Metric</source>
         <translation>Метрические</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="38"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="35"/>
         <source>Imperial</source>
         <translation>Британские</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="23"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="45"/>
+        <source>Timeline</source>
+        <translation>Лента</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="50"/>
         <source>Sync calendar to timeline</source>
         <translation>Синхронизировать Календарь с лентой сообщений</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="48"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="58"/>
+        <source>Timeline Window Start (days ago)</source>
+        <translation>Начало ленты (дней тому)</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="65"/>
+        <source>Timeline Window End (days ahead)</source>
+        <translation>Конец Ленты (через дней)</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="72"/>
+        <source>Notification re-delivery expiration (seconds)</source>
+        <translation>Доставлять сообщение в течении (секнуд)</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="79"/>
+        <source>Set Timeline Window</source>
+        <translation>Установить Окно Ленты</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="84"/>
+        <source>Active Timeline WebSync account</source>
+        <translation>Активный Акаунт Синхронизации</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="98"/>
+        <source>Logout</source>
+        <translation>Выйти</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="98"/>
+        <source>Login</source>
+        <translation>Зайти</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="110"/>
         <source>Automatic Profile</source>
         <translation>Автоматический Профиль</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="56"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="114"/>
         <source>Connected</source>
         <translation>Подключен</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="59"/>
-        <location filename="../qml/pages/SettingsPage.qml" line="69"/>
-        <location filename="../qml/pages/SettingsPage.qml" line="79"/>
-        <location filename="../qml/pages/SettingsPage.qml" line="89"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="117"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="127"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="137"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="147"/>
         <source>no change</source>
         <translation>без изменений</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="76"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="134"/>
         <source>Disconnected</source>
         <translation>Отключен</translation>
     </message>

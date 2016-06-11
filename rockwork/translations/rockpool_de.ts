@@ -1,31 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1" language="de" sourcelanguage="en">
+<TS version="2.0" language="de" sourcelanguage="en">
 <context>
     <name>AppSettingsPage</name>
     <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="90"/>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="107"/>
         <source>Alert</source>
         <translation>Alarm</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="91"/>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="108"/>
         <source>Something going wrong</source>
         <translation>Stimmt etwas nicht</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="92"/>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="109"/>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="220"/>
         <source>Accept</source>
         <translation>Annehmen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="93"/>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="217"/>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="110"/>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="271"/>
         <source>Cancel</source>
         <translation>Abbrechen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="221"/>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="275"/>
         <source>Select</source>
         <translation>Wählen</translation>
     </message>
@@ -689,7 +690,7 @@
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="18"/>
         <source>Restart service</source>
-        <translation type="unfinished"></translation>
+        <translation>Dienst neu starten</translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="35"/>
@@ -758,50 +759,95 @@
 <context>
     <name>SettingsPage</name>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="18"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="21"/>
         <source>Settings</source>
         <translation>Einstellungen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="32"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="25"/>
+        <source>General</source>
+        <translation>Allgemeines</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="29"/>
         <source>Distance Units</source>
         <translation>Distanz Einheiten</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="35"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="32"/>
         <source>Metric</source>
         <translation>Metrisch</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="38"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="35"/>
         <source>Imperial</source>
         <translation>Angloamerikanische</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="23"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="45"/>
+        <source>Timeline</source>
+        <translation>Chronik</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="50"/>
         <source>Sync calendar to timeline</source>
         <translation>Kalender zu Chronik synchronisieren</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="48"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="58"/>
+        <source>Timeline Window Start (days ago)</source>
+        <translation>Anfang des Zeitraums (vorige Tage)</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="65"/>
+        <source>Timeline Window End (days ahead)</source>
+        <translation>Ende des Zeitraums (nächste Tage)</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="72"/>
+        <source>Notification re-delivery expiration (seconds)</source>
+        <translation>Benachrichtigungen liefern werend (secs)</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="79"/>
+        <source>Set Timeline Window</source>
+        <translation>Zeitraum der Chronik Stellen</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="84"/>
+        <source>Active Timeline WebSync account</source>
+        <translation>Aktueles Chronik Sync Konto</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="98"/>
+        <source>Logout</source>
+        <translation>Abmelden</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="98"/>
+        <source>Login</source>
+        <translation>Anmelden</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="110"/>
         <source>Automatic Profile</source>
         <translation>Automatisches Profil</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="56"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="114"/>
         <source>Connected</source>
         <translation>Verbunden</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="59"/>
-        <location filename="../qml/pages/SettingsPage.qml" line="69"/>
-        <location filename="../qml/pages/SettingsPage.qml" line="79"/>
-        <location filename="../qml/pages/SettingsPage.qml" line="89"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="117"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="127"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="137"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="147"/>
         <source>no change</source>
         <translation>Keine Änderung</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="76"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="134"/>
         <source>Disconnected</source>
         <translation>Getrennt</translation>
     </message>
