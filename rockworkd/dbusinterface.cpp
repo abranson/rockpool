@@ -117,6 +117,15 @@ void DBusPebble::insertTimelinePin(const QString &jsonPin)
     m_pebble->insertPin(json.object());
 }
 
+bool DBusPebble::syncAppsFromCloud() const
+{
+    return m_pebble->syncAppsFromCloud();
+}
+void DBusPebble::setSyncAppsFromCloud(bool enable)
+{
+    m_pebble->setSyncAppsFromCloud(enable);
+}
+
 void DBusPebble::setOAuthToken(const QString &token)
 {
     m_pebble->setOAuthToken(token);

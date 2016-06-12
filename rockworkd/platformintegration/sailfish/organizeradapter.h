@@ -24,7 +24,7 @@ public:
 
 public slots:
     void scheduleRefresh();
-    void reSync();
+    void reSync(quint32 end);
     void disable();
 
 protected:
@@ -47,6 +47,8 @@ private:
     mKCal::ExtendedCalendar::Ptr _calendar;
     mKCal::ExtendedStorage::Ptr _calendarStorage;
     QTimer *_refreshTimer;
+    quint32 m_windowStart = 2;
+    quint32 m_windowEnd = 7;
 };
 
 #endif // ORGANIZERADAPTER_H

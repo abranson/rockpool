@@ -85,6 +85,7 @@ public:
     bool devConServerState() const;
     bool devConCloudEnabled() const;
     bool devConCloudState() const;
+    bool syncAppsFromCloud() const;
     const QString oauthToken() const;
     const QString accountName() const;
     const QString accountEmail() const;
@@ -98,6 +99,7 @@ public:
 public slots:
     void setTimelineWindow(qint32 start, qint32 fade, qint32 end);
     void setOAuthToken(const QString &token);
+    void setSyncAppsFromCloud(bool enable);
     QVariantMap notificationsFilter() const;
     void setNotificationFilter(const QString &sourceId, const QString &name, const QString &icon, const NotificationFilter enabled);
     void setNotificationFilter(const QString &sourceId, const NotificationFilter enabled);

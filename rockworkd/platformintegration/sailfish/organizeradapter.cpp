@@ -56,10 +56,11 @@ void OrganizerAdapter::setSchedule(int interval)
     }
 }
 
-void OrganizerAdapter::reSync()
+void OrganizerAdapter::reSync(quint32 end)
 {
     m_track.clear();
     m_disabled = false;
+    m_windowEnd = end;
     setSchedule(10);
 }
 void OrganizerAdapter::disable()
@@ -73,16 +74,16 @@ void OrganizerAdapter::refresh()
     if(m_disabled)
         return;
     QStringList todel = m_track.keys();
-    QDate today = QDate::currentDate();
-    QDate endDate = today.addDays(7);
+    QDate startDate = QDate::currentDate().addDays(-m_windowStart);
+    QDate endDate = QDate::currentDate().addDays(m_windowEnd);
     _calendarStorage->loadRecurringIncidences();
-    _calendarStorage->load(today, endDate);
+    _calendarStorage->load(startDate, endDate);
 
     //TODO: Didn't know about nemo-qml-plugin-calendar, we should probably use this instead of mKCal
     //We have to use it to detect which calendars have been turned off, and
     QSettings nemoSettings("nemo", "nemo-qml-plugin-calendar");
 
-    auto events = _calendar->rawExpandedEvents(today, endDate, true, true);
+    auto events = _calendar->rawExpandedEvents(startDate, endDate, true, true);
     for (const auto &expanded : events) {
         const QDateTime &start = expanded.first.dtStart;
         KCalCore::Incidence::Ptr incidence = expanded.second;

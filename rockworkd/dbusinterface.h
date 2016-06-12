@@ -56,6 +56,8 @@ public slots:
     QString accountEmail() const;
     QString oauthToken() const;
     void setOAuthToken(const QString &token);
+    bool syncAppsFromCloud() const;
+    void setSyncAppsFromCloud(bool enable);
 
     void setTimelineWindow(qint32 start, qint32 fade, qint32 end);
     qint32 timelineWindowStart() const;

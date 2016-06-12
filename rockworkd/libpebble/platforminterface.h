@@ -63,7 +63,7 @@ public:
 
 // Organizer
 public:
-    virtual void syncOrganizer() const = 0;
+    virtual void syncOrganizer(quint32 end) const = 0;
     virtual void stopOrganizer() const = 0;
 signals:
     void delTimelinePin(const QString &guid);

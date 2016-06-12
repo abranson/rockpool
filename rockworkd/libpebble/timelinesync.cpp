@@ -195,10 +195,12 @@ void TimelineSync::setOAuthToken(const QString &token)
         if(m_tmr_websync->isActive())
             m_tmr_websync->stop();
         m_ini->remove("accountId");
+        m_accountId = "";
         m_syncUrl = "";
         m_ini->remove("syncUrl");
         emit wipePinKind("web");
         m_locker.clear();
+        emit oauthTokenChanged(m_oauthToken);
     } else {
         // Try to validate token by requesting accountId and comparing it to current
         qDebug() << "Validating OAuth token" << token;
@@ -232,7 +234,7 @@ void TimelineSync::setOAuthToken(const QString &token)
                 }
             } else
                 qWarning() << err;
-            emit oauthTokenChanged(QString());
+            setOAuthToken(QString());
         });
     }
 }

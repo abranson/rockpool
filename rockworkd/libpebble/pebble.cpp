@@ -216,6 +216,15 @@ TimelineSync * Pebble::tlSync() const
     return m_timelineSync;
 }
 
+bool Pebble::syncAppsFromCloud() const
+{
+    return m_timelineSync->syncFromCloud();
+}
+void Pebble::setSyncAppsFromCloud(bool enable)
+{
+    m_timelineSync->setSyncFromCloud(enable);
+}
+
 void Pebble::setOAuthToken(const QString &token)
 {
     m_timelineSync->setOAuthToken(token);
@@ -385,6 +394,9 @@ void Pebble::setTimelineWindow(qint32 start, qint32 fade, qint32 end)
     setts.setValue("daysPast",start);
     setts.setValue("eventFadeout",fade);
     setts.setValue("futureDays",end);
+    // Since window has changed try to re-sync timeline
+    emit m_timelineSync->syncUrlChanged("");
+    syncCalendar(); // and calendar
 }
 
 void Pebble::setHealthParams(const HealthParams &healthParams)
@@ -635,7 +647,7 @@ void Pebble::clearTimeline()
 
 void Pebble::syncCalendar()
 {
-    Core::instance()->platform()->syncOrganizer();
+    Core::instance()->platform()->syncOrganizer(m_timelineManager->daysFuture());
 }
 
 void Pebble::setCalendarSyncEnabled(bool enabled)
@@ -650,7 +662,7 @@ void Pebble::setCalendarSyncEnabled(bool enabled)
         Core::instance()->platform()->stopOrganizer();
         m_timelineManager->clearTimeline(PlatformInterface::UUID);
     } else {
-        Core::instance()->platform()->syncOrganizer();
+        syncCalendar();
     }
 
     QSettings settings(m_storagePath + "/appsettings.conf", QSettings::IniFormat);
@@ -902,7 +914,7 @@ void Pebble::pebbleVersionReceived(const QByteArray &data)
             qDebug() << "Pebble sync state unclear. Resetting Pebble watch.";
             resetPebble();
         } else {
-            Core::instance()->platform()->syncOrganizer();
+            syncCalendar();
             syncApps();
             m_blobDB->setHealthParams(m_healthParams);
             m_blobDB->setUnits(m_imperialUnits);
@@ -1014,7 +1026,7 @@ void Pebble::muteNotificationSource(const QString &source)
 void Pebble::resetPebble()
 {
     clearTimeline();
-    Core::instance()->platform()->syncOrganizer();
+    syncCalendar();
 
     clearAppDB();
     syncApps();

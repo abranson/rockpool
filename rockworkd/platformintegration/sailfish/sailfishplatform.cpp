@@ -244,9 +244,9 @@ void SailfishPlatform::newNotificationPin(watchfish::Notification *notification)
     emit newTimelinePin(pin);
 }
 
-void SailfishPlatform::syncOrganizer() const
+void SailfishPlatform::syncOrganizer(quint32 end) const
 {
-    m_organizerAdapter->reSync();
+    m_organizerAdapter->reSync(end);
 }
 void SailfishPlatform::stopOrganizer() const
 {
