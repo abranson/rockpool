@@ -6,6 +6,7 @@ Page {
 
     property var pebble: null
     property string oauth: (pebble) ? pebble.oauthToken : ""
+    property bool timelineWindowChanged: false
 
     SilicaFlickable {
         anchors.fill: parent
@@ -53,12 +54,21 @@ Page {
                     root.pebble.calendarSyncEnabled = checked
                 }
             }
+            TextSwitch {
+                width: parent.width
+                text: qsTr("Sync Apps from Cloud")
+                checked: root.pebble.syncAppsFromCloud
+                onClicked: {
+                    root.pebble.syncAppsFromCloud = checked
+                }
+            }
             TextField {
                 width: parent.width
                 label: qsTr("Timeline Window Start (days ago)")
                 placeholderText: label
                 inputMethodHints: Qt.ImhDigitsOnly
                 text: pebble.timelineWindowStart
+                onTextChanged: timelineWindowChanged=true
             }
             TextField {
                 width: parent.width
@@ -66,6 +76,7 @@ Page {
                 placeholderText: label
                 inputMethodHints: Qt.ImhDigitsOnly
                 text: pebble.timelineWindowEnd
+                onTextChanged: timelineWindowChanged=true
             }
             TextField {
                 width: parent.width
@@ -73,11 +84,13 @@ Page {
                 placeholderText: label
                 inputMethodHints: Qt.ImhDigitsOnly
                 text: pebble.timelineWindowFade
+                onTextChanged: timelineWindowChanged=true
             }
             Button {
                 width: parent.width
                 text: qsTr("Set Timeline Window")
-                onClicked: pebble.setTimelineWindow()
+                onClicked: {pebble.setTimelineWindow();timelineWindowChanged=false}
+                enabled: timelineWindowChanged
             }
 
             SectionHeader {
@@ -97,7 +110,8 @@ Page {
                 width: parent.width
                 text: oauth ? qsTr("Logout") : qsTr("Login")
                 onClicked: if(oauth) {
-                               pebble.setOAuthToken("")
+                               pebble.setOAuthToken("");
+                               oauth = "";
                            } else {
                                pageStack.push(Qt.resolvedUrl("AppSettingsPage.qml"), {
                                               url: "https://auth-client.getpebble.com/en_US/",

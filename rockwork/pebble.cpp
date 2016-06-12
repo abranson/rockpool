@@ -35,7 +35,7 @@ Pebble::Pebble(const QDBusObjectPath &path, QObject *parent):
     QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "CalendarSyncEnabledChanged", this, SIGNAL(calendarSyncEnabledChanged()));
     QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "DevConnectionChanged", this, SLOT(devConStateChanged(bool)));
     QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "DevConnCloudChanged", this, SLOT(devConCloudChanged(bool)));
-    QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "oauthTokenChanged", this, SIGNAL(oauthTokenChanged(const QString &)));
+    QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "oauthTokenChanged", this, SLOT(setOAuthToken(QString)));
 
     dataChanged();
     refreshApps();
@@ -252,6 +252,9 @@ QString Pebble::oauthToken() const
 void Pebble::setOAuthToken(const QString &token)
 {
     m_iface->call("setOAuthToken",token);
+    emit oauthTokenChanged();
+    emit accountNameChanged();
+    emit accountEmailChanged();
 }
 
 QString Pebble::accountName() const
@@ -262,6 +265,16 @@ QString Pebble::accountName() const
 QString Pebble::accountEmail() const
 {
     return fetchProperty("accountEmail").toString();
+}
+
+bool Pebble::syncAppsFromCloud() const
+{
+    return fetchProperty("syncAppsFromCloud").toBool();
+}
+void Pebble::setSyncAppsFromCloud(bool enable)
+{
+    m_iface->call("setSyncAppsFromCloud",enable);
+    emit syncAppsFromCloudChanged();
 }
 
 void Pebble::setTimelineWindow()

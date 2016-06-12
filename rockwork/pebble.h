@@ -35,9 +35,10 @@ class Pebble : public QObject
     Q_PROPERTY(quint16 devConListenPort READ devConListenPort WRITE setDevConListenPort NOTIFY devConListenPortChanged)
     Q_PROPERTY(bool devConnServerRunning READ devConnServerRunning NOTIFY devConnServerRunningChanged)
     Q_PROPERTY(bool devConCloudConnected READ devConCloudConnected NOTIFY devConCloudConnectedChanged)
+    Q_PROPERTY(bool syncAppsFromCloud READ syncAppsFromCloud WRITE setSyncAppsFromCloud NOTIFY syncAppsFromCloudChanged)
     Q_PROPERTY(QString oauthToken READ oauthToken WRITE setOAuthToken NOTIFY oauthTokenChanged)
-    Q_PROPERTY(QString accountName READ accountName NOTIFY oauthTokenChanged)
-    Q_PROPERTY(QString accountEmail READ accountEmail NOTIFY oauthTokenChanged)
+    Q_PROPERTY(QString accountName READ accountName NOTIFY accountNameChanged)
+    Q_PROPERTY(QString accountEmail READ accountEmail NOTIFY accountEmailChanged)
     Q_PROPERTY(int timelineWindowStart MEMBER m_timelienWindowStart)
     Q_PROPERTY(int timelineWindowFade MEMBER m_timelienWindowFade)
     Q_PROPERTY(int timelineWindowEnd MEMBER m_timelienWindowEnd)
@@ -88,6 +89,7 @@ public:
     QString oauthToken() const;
     QString accountName() const;
     QString accountEmail() const;
+    bool syncAppsFromCloud() const;
 
 public slots:
     void setNotificationFilter(const QString &sourceId, int enabled);
@@ -108,6 +110,7 @@ public slots:
     void setDevConnCloudEnabled(bool enabled);
     void setDevConListenPort(quint16 port);
     void setOAuthToken(const QString &token);
+    void setSyncAppsFromCloud(bool enable);
     void setTimelineWindow();
 
 signals:
@@ -127,7 +130,11 @@ signals:
     void devConListenPortChanged();
     void devConnServerRunningChanged();
     void devConCloudConnectedChanged();
+
     void oauthTokenChanged();
+    void accountNameChanged();
+    void accountEmailChanged();
+    void syncAppsFromCloudChanged();
 
     void openURL(const QString &uuid, const QString &url);
 
