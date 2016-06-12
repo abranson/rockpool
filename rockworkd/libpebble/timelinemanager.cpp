@@ -370,7 +370,7 @@ TimelineManager::TimelineManager(Pebble *pebble, WatchConnection *connection):
             CalendarEvent event;
             event.loadFromCache(calCache, fi.fileName().right(QUuid().toString().length()));
             // Discard legacy pin if we have one already
-            if(getPin(event.uuid())==nullptr) {
+            if(!pinExists(event.uuid())) {
                 QJsonObject evt;
                 evt.insert("id",event.id());
                 evt.insert("guid",event.uuid().toString().mid(1,36));
@@ -791,6 +791,11 @@ void TimelineManager::removePin(const QUuid &guid)
     }
 }
 
+bool TimelineManager::pinExists(const QUuid &guid) const
+{
+    return m_pin_idx_guid.contains(guid);
+}
+
 TimelinePin * TimelineManager::getPin(const QUuid &guid)
 {
     if(m_pin_idx_guid.contains(guid))
@@ -1001,11 +1006,11 @@ void TimelineManager::insertTimelinePin(const QJsonObject &json)
     qDebug() << "Incoming pin:" << QJsonDocument(obj).toJson();
     TimelinePin pin(obj,this);
     if(pin.type() == TimelineItem::TypeNotification) {
-        // No persistence checks for volatile (system) notification. Nevertheless do some sanity checks
-        if(!pin.guid().isNull() && !pin.layout().isEmpty() && !pin.kind().isEmpty() && !pin.parent().isNull())
+        // Simple persistence checks for volatile (system) notification. Also do some sanity checks
+        if(!pin.guid().isNull() && !pin.layout().isEmpty() && !pin.kind().isEmpty() && !pin.parent().isNull() && !pinExists(pin.guid()))
             pin.send();
         else
-            qWarning() << (pin.guid().isNull()?"GUID":"") << (pin.layout().isEmpty()?"Layout":"") << (pin.kind().isEmpty()?"Kind":"") << (pin.parent().isNull()?"Parent":"") << "missing from notification, ignoring.";
+            qWarning() << (pin.guid().isNull()?"GUID":"") << (pin.layout().isEmpty()?"Layout":"") << (pin.kind().isEmpty()?"Kind":"") << (pin.parent().isNull()?"Parent":"") << (pinExists(pin.guid())?"Notification pin exists,":"missing from notification,") << "ignoring.";
         return;
     }
     // Below logic is mimicking reference implementation at pypkjs

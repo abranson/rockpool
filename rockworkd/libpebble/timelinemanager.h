@@ -140,6 +140,7 @@ private:
     void remove(const class TimelinePin &pin);
     void addPin(const class TimelinePin &pin);
     quint32 pinCount(const QUuid *parent = 0);
+    bool pinExists(const QUuid &guid) const;
     TimelinePin * getPin(const QUuid &guid);
     void removePin(const QUuid &guid);
     const TimelinePin::PtrList pinKids(const QUuid &parent);
