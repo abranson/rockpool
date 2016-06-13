@@ -35,6 +35,7 @@ Page {
             webview.loadFrameScript("chrome://embedlite/content/SelectAsyncHelper.js");
             webview.addMessageListeners(
                         [
+                            "embed:permissions",
                             "embed:selectasync",
                             "embed:select",
                             "embed:alert",
@@ -48,6 +49,11 @@ Page {
         onRecvAsyncMessage: {
             console.log("Message",message);
             switch(message) {
+            case "embed:permissions": {
+                dialogLoader.permissions(data);
+                break;
+            }
+
             case "embed:selectasync": {
                 selectorLoader.show(data);
                 break;
@@ -140,6 +146,18 @@ Page {
             dlgMsg = msg;
         }
 
+        function permissions(data) {
+            console.log("Data",JSON.stringify(data));
+            promptValue = false;
+            singleChoice = false;
+            dlgTitle = data.title;
+            dlgText = qsTr("Host")+" "+data.host+" "+qsTr("requests permission for")+" "+data.title;
+            dlgData = data;
+            dlgData["checkmsg"] = qsTr("Store permission permanently and don't ask again");
+            dlgData["checkval"] = false;
+            sourceComponent = cmpDialog;
+        }
+
         function accept(promptval,checkval) {
             sourceComponent = null;
             if(dlgMsg) {
@@ -151,6 +169,10 @@ Page {
                     ret["promptvalue"] = promptval;
                 webview.sendAsyncMessage(dlgMsg+"response", ret)
                 dlgMsg = "";
+            } else if("host" in dlgData) {
+                console.log("Allowing permisssion",dlgData.title,"for",dlgData.host);
+                webview.sendAsyncMessage("embedui:premissions", { "allow": true, "checkedDontAsk": checkval, "id": dlgData.id });
+                dlgData = {};
             }
         }
         function reject() {
@@ -204,7 +226,7 @@ Page {
                     TextField {
                         id: cmpDlgPrompt
                         width: parent.width
-                        text: dialogLoader.dlgData.defaultValue
+                        text: dialogLoader.promptValue ? dialogLoader.dlgData.defaultValue : ""
                         enabled: dialogLoader.promptValue
                         visible: enabled
                     }
