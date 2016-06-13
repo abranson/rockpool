@@ -32,7 +32,7 @@ public:
     void hangupCall(uint cookie) override;
     QHash<QString, QString> getCategoryParams(QString category);
 
-    void syncOrganizer(quint32 end) const override;
+    void syncOrganizer(qint32 end) const override;
     void stopOrganizer() const override;
     MusicPlayState getMusicPlayState() const override;
 

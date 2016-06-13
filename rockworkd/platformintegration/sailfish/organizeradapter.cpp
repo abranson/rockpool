@@ -56,7 +56,7 @@ void OrganizerAdapter::setSchedule(int interval)
     }
 }
 
-void OrganizerAdapter::reSync(quint32 end)
+void OrganizerAdapter::reSync(qint32 end)
 {
     m_track.clear();
     m_disabled = false;
@@ -74,7 +74,7 @@ void OrganizerAdapter::refresh()
     if(m_disabled)
         return;
     QStringList todel = m_track.keys();
-    QDate startDate = QDate::currentDate().addDays(-m_windowStart);
+    QDate startDate = QDate::currentDate().addDays(m_windowStart);
     QDate endDate = QDate::currentDate().addDays(m_windowEnd);
     _calendarStorage->loadRecurringIncidences();
     _calendarStorage->load(startDate, endDate);
