@@ -4,29 +4,44 @@
 <context>
     <name>AppSettingsPage</name>
     <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="107"/>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="113"/>
         <source>Alert</source>
         <translation>Alarm</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="108"/>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="114"/>
         <source>Something going wrong</source>
         <translation>Stimmt etwas nicht</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="109"/>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="220"/>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="115"/>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="242"/>
         <source>Accept</source>
         <translation>Annehmen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="110"/>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="271"/>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="116"/>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="293"/>
         <source>Cancel</source>
         <translation>Abbrechen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="275"/>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="154"/>
+        <source>Host</source>
+        <translation>Anbieter</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="154"/>
+        <source>requests permission for</source>
+        <translation>fragt um Erlaubnis für</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="156"/>
+        <source>Store permission permanently and don&apos;t ask again</source>
+        <translation>Speichern die Erlaubnis und nicht mehr fragen</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="297"/>
         <source>Select</source>
         <translation>Wählen</translation>
     </message>
@@ -811,7 +826,7 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="83"/>
         <source>Notification re-delivery expiration (seconds)</source>
-        <translation>Benachrichtigungen liefern werend (secs)</translation>
+        <translation>Notiz liefern während (secs)</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="91"/>
