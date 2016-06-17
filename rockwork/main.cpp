@@ -47,12 +47,22 @@ int main(int argc, char *argv[])
     setenv("USE_ASYNC", "1", 1);// Use Qt Assisted event loop instead of native full thread
     setenv("MP_UA", "1", 1);    // Use generic MobilePhone UserAgent string for Gecko
     QString componentPath(DEFAULT_COMPONENTS_PATH);
-    QMozContext::GetInstance()->setProfile(QStandardPaths::writableLocation(QStandardPaths::CacheLocation));
+    QString cachePath(QStandardPaths::writableLocation(QStandardPaths::CacheLocation));
+    QMozContext::GetInstance()->setProfile(cachePath);
+    // Polite way would to emit startupcache-invalidate message to Context, but who cares
+    QFileInfo manifest(QString(ROCKPOOL_DATA_PATH) + QString("jsm/RockpoolJSComponents.manifest"));
+    QFileInfo cache(cachePath + "/.mozilla/startupCache/startupCache.4.little");
+    qDebug() << "Manifest" << manifest.absoluteFilePath() << "modified" << manifest.lastModified().toString();
+    qDebug() << "Cache" << cache.absoluteFilePath() << "modified" << cache.lastModified().toString();
+    if(manifest.exists() && cache.exists() && manifest.lastModified() > cache.lastModified()) {
+        qDebug() << "Purging gecko startupCache at" << cache.absoluteFilePath();
+        QFile::remove(cache.absoluteFilePath());
+    }
     QMozContext::GetInstance()->addComponentManifest(componentPath + QString("components/EmbedLiteBinComponents.manifest"));
     QMozContext::GetInstance()->addComponentManifest(componentPath + QString("components/EmbedLiteJSComponents.manifest"));
     QMozContext::GetInstance()->addComponentManifest(componentPath + QString("chrome/EmbedLiteJSScripts.manifest"));
     QMozContext::GetInstance()->addComponentManifest(componentPath + QString("chrome/EmbedLiteOverrides.manifest"));
-    QMozContext::GetInstance()->addComponentManifest(QString(ROCKPOOL_DATA_PATH) + QString("jsm/RockpoolJSComponents.manifest"));
+    QMozContext::GetInstance()->addComponentManifest(manifest.absoluteFilePath());
     QObject::connect(app.data(), SIGNAL(lastWindowClosed()), QMozContext::GetInstance(), SLOT(stopEmbedding()));
 #endif
     QScopedPointer<QQuickView> view(SailfishApp::createView());
