@@ -100,9 +100,9 @@ void TimelineAction::appendAttribute(const TimelineAttribute &attribute)
     m_attributes.append(attribute);
 }
 
-void TimelineAttribute::setContent(const QString &content)
+void TimelineAttribute::setContent(const QByteArray &content)
 {
-    m_content = content.toUtf8();
+    m_content = content;
 }
 
 void TimelineAttribute::setContent(quint32 data)

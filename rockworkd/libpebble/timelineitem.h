@@ -34,7 +34,7 @@ public:
         setContent(data);
     }
 
-    void setContent(const QString &content);
+    void setContent(const QByteArray &content);
     void setContent(qint32 data);
     void setContent(qint16 data);
     void setContent(quint32 data);

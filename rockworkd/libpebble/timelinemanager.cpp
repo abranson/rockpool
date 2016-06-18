@@ -582,7 +582,7 @@ TimelineAttribute TimelineManager::parseAttribute(const QString &key, const QJso
     }
     TimelineAttribute attribute(attr.id,QByteArray());
     if(attr.type == "string-string") {
-        attribute.setContent(val.toString().remove(QRegExp("<[^>]*>")).left((attr.max ? attr.max : 64)-1));
+        attribute.setContent(val.toString().remove(QRegExp("<[^>]*>")).toUtf8().left((attr.max ? attr.max : 64)-1));
     } else if(attr.type == "uri-resource_id") {
         if(getRes(val.toString())==0) {
             qWarning() << "Non-existing Resource URI, ignoring" << key << val.toString();
