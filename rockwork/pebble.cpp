@@ -130,11 +130,11 @@ QString Pebble::candidateVersion() const
     return m_candidateVersion;
 }
 
-QVariantMap Pebble::healthParams() const
+QVariantMap Pebble::fetchVarMap(const QString &propertyName) const
 {
-    QDBusMessage m = m_iface->call("HealthParams");
+    QDBusMessage m = m_iface->call(propertyName);
     if (m.type() == QDBusMessage::ErrorMessage || m.arguments().count() == 0) {
-        qWarning() << "Could not fetch health params" << m.errorMessage();
+        qWarning() << "Could not fetch" << propertyName << m.errorMessage();
         return QVariantMap();
     }
 
@@ -143,8 +143,35 @@ QVariantMap Pebble::healthParams() const
     QVariantMap mapEntryVariant;
     arg >> mapEntryVariant;
 
-    qDebug() << "have health params" << mapEntryVariant;
+    qDebug() << "have" << propertyName << mapEntryVariant;
     return mapEntryVariant;
+}
+
+QVariantMap Pebble::cannedResponses() const
+{
+    return fetchVarMap("cannedResponses");
+}
+void Pebble::setCannedResponses(const QVariantMap &cans)
+{
+    QVariantMap _cans;
+    if(cans.values().first().type()!=QVariant::StringList) {
+        foreach(const QString &key, cans.keys()) {
+            QStringList msgs;
+            foreach(const QVariant &msg,cans.value(key).toMap().values()) {
+                msgs.append(msg.toString());
+            }
+            _cans.insert(key,msgs);
+        }
+    } else
+        _cans = cans;
+    qDebug() << "Setting canned responses" << _cans;
+    m_iface->call("setCannedResponses", _cans);
+    emit cannedResponsesChanged();
+}
+
+QVariantMap Pebble::healthParams() const
+{
+    return fetchVarMap("HealthParams");
 }
 
 void Pebble::setHealthParams(const QVariantMap &healthParams)
@@ -375,20 +402,26 @@ void Pebble::pebbleDisconnected()
 void Pebble::notificationFilterChanged(const QString &sourceId, const QString &name, const QString &icon, const int enabled)
 {
     m_notifications->insert(sourceId, name, icon, enabled);
+    emit notificationsFilterChanged();
+}
+
+QVariantMap Pebble::notificationsFilter() const
+{
+    QVariantMap mapEntryVariant = fetchVarMap("NotificationsFilter");
+    QVariantMap ret;
+
+    foreach (const QString &sourceId, mapEntryVariant.keys()) {
+        const QDBusArgument &arg2 = qvariant_cast<QDBusArgument>(mapEntryVariant.value(sourceId));
+        QVariantMap notifEntry;
+        arg2 >> notifEntry;
+        ret.insert(sourceId, notifEntry);
+    }
+    return ret;
 }
 
 void Pebble::refreshNotifications()
 {
-    QDBusMessage m = m_iface->call("NotificationsFilter");
-    if (m.type() == QDBusMessage::ErrorMessage || m.arguments().count() == 0) {
-        qWarning() << "Could not fetch notifications filter" << m.errorMessage();
-        return;
-    }
-
-    const QDBusArgument &arg = m.arguments().first().value<QDBusArgument>();
-
-    QVariantMap mapEntryVariant;
-    arg >> mapEntryVariant;
+    QVariantMap mapEntryVariant = fetchVarMap("NotificationsFilter");
 
     foreach (const QString &sourceId, mapEntryVariant.keys()) {
         const QDBusArgument &arg2 = qvariant_cast<QDBusArgument>(mapEntryVariant.value(sourceId));
@@ -401,11 +434,13 @@ void Pebble::refreshNotifications()
 void Pebble::setNotificationFilter(const QString &sourceId, int enabled)
 {
     m_iface->call("SetNotificationFilter", sourceId, enabled);
+    emit notificationsFilterChanged();
 }
 
 void Pebble::forgetNotificationFilter(const QString &sourceId)
 {
     m_iface->call("ForgetNotificationFilter", sourceId);
+    emit notificationsFilterChanged();
 }
 
 void Pebble::moveApp(const QString &uuid, int toIndex)

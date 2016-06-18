@@ -16,6 +16,7 @@ class Pebble : public QObject
     Q_PROPERTY(QString hardwarePlatform READ hardwarePlatform NOTIFY hardwarePlatformChanged)
     Q_PROPERTY(int model READ model NOTIFY modelChanged)
     Q_PROPERTY(NotificationSourceModel* notifications READ notifications CONSTANT)
+    Q_PROPERTY(QVariantMap notificationsFilter READ notificationsFilter NOTIFY notificationsFilterChanged)
     Q_PROPERTY(ApplicationsModel* installedApps READ installedApps CONSTANT)
     Q_PROPERTY(ApplicationsModel* installedWatchfaces READ installedWatchfaces CONSTANT)
     Q_PROPERTY(ScreenshotModel* screenshots READ screenshots CONSTANT)
@@ -42,6 +43,7 @@ class Pebble : public QObject
     Q_PROPERTY(int timelineWindowStart MEMBER m_timelienWindowStart)
     Q_PROPERTY(int timelineWindowFade MEMBER m_timelienWindowFade)
     Q_PROPERTY(int timelineWindowEnd MEMBER m_timelienWindowEnd)
+    Q_PROPERTY(QVariantMap cannedResponses READ cannedResponses WRITE setCannedResponses NOTIFY cannedResponsesChanged)
 
 public:
     explicit Pebble(const QDBusObjectPath &path, QObject *parent = 0);
@@ -91,7 +93,11 @@ public:
     QString accountEmail() const;
     bool syncAppsFromCloud() const;
 
+    QVariantMap cannedResponses() const;
+    QVariantMap notificationsFilter() const;
+
 public slots:
+    void setCannedResponses(const QVariantMap &cans);
     void setNotificationFilter(const QString &sourceId, int enabled);
     void forgetNotificationFilter(const QString &sourceId);
     void removeApp(const QString &uuid);
@@ -130,6 +136,8 @@ signals:
     void devConListenPortChanged();
     void devConnServerRunningChanged();
     void devConCloudConnectedChanged();
+    void cannedResponsesChanged();
+    void notificationsFilterChanged();
 
     void oauthTokenChanged();
     void accountNameChanged();
@@ -140,6 +148,7 @@ signals:
 
 private:
     QVariant fetchProperty(const QString &propertyName) const;
+    QVariantMap fetchVarMap(const QString &propertyName) const;
 
 private slots:
     void dataChanged();
