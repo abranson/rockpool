@@ -134,12 +134,12 @@
         <translation>Companion benötigt</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="249"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="223"/>
         <source>Search app or watchface</source>
         <translation>Suche App oder Zifferblatt</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="259"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="226"/>
         <source>Search Results</source>
         <translation>Suchergebnisse</translation>
     </message>
@@ -729,6 +729,59 @@
     </message>
 </context>
 <context>
+    <name>ResponsesPage</name>
+    <message>
+        <location filename="../qml/pages/ResponsesPage.qml" line="17"/>
+        <source>Edit and order quick-response messages</source>
+        <translation>Bearbeiten and gliedern kurze Antworten</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ResponsesPage.qml" line="17"/>
+        <source>New item will be inserted before current selection</source>
+        <translation>Neues Teil wird vor actuelle Auswahl eingefügt</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ResponsesPage.qml" line="21"/>
+        <source>Add New</source>
+        <translation>Neue hinzufügen</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ResponsesPage.qml" line="29"/>
+        <source>Save changes</source>
+        <translation>Änderung speichern</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ResponsesPage.qml" line="54"/>
+        <source>Move Up</source>
+        <translation>Nach oben verschieben</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ResponsesPage.qml" line="59"/>
+        <source>Edit</source>
+        <translation>Bearbeiten</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ResponsesPage.qml" line="67"/>
+        <source>Delete</source>
+        <translation>Löschen</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ResponsesPage.qml" line="69"/>
+        <source>Really Delete?</source>
+        <translation>Wirklich löschen?</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ResponsesPage.qml" line="75"/>
+        <source>Move Down</source>
+        <translation>Nach unten verschieben</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ResponsesPage.qml" line="86"/>
+        <source>Pre-defined response message</source>
+        <translation>Festgelegte Rückmeldungen</translation>
+    </message>
+</context>
+<context>
     <name>ScreenshotsPage</name>
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="23"/>
@@ -774,102 +827,107 @@
 <context>
     <name>SettingsPage</name>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="22"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="26"/>
         <source>Settings</source>
         <translation>Einstellungen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="26"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="30"/>
         <source>General</source>
         <translation>Allgemeines</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="30"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="34"/>
         <source>Distance Units</source>
         <translation>Distanz Einheiten</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="33"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="37"/>
         <source>Metric</source>
         <translation>Metrisch</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="36"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="40"/>
         <source>Imperial</source>
         <translation>Angloamerikanische</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="46"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="50"/>
         <source>Timeline</source>
         <translation>Chronik</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="51"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="55"/>
         <source>Sync calendar to timeline</source>
         <translation>Kalender zu Chronik synchronisieren</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="59"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="63"/>
         <source>Sync Apps from Cloud</source>
         <translation>Anwendungen von Cloud synchronisieren</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="67"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="71"/>
         <source>Timeline Window Start (days ago)</source>
         <translation>Anfang des Zeitraums (vorige Tage)</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="75"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="79"/>
         <source>Timeline Window End (days ahead)</source>
         <translation>Ende des Zeitraums (nächste Tage)</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="83"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="87"/>
         <source>Notification re-delivery expiration (seconds)</source>
         <translation>Notiz liefern während (secs)</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="91"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="95"/>
         <source>Set Timeline Window</source>
         <translation>Zeitraum der Chronik Stellen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="97"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="101"/>
         <source>Active Timeline WebSync account</source>
         <translation>Aktueles Chronik Sync Konto</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="111"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="115"/>
         <source>Logout</source>
         <translation>Abmelden</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="111"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="115"/>
         <source>Login</source>
         <translation>Anmelden</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="124"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="128"/>
         <source>Automatic Profile</source>
         <translation>Automatisches Profil</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="128"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="132"/>
         <source>Connected</source>
         <translation>Verbunden</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="131"/>
-        <location filename="../qml/pages/SettingsPage.qml" line="141"/>
-        <location filename="../qml/pages/SettingsPage.qml" line="151"/>
-        <location filename="../qml/pages/SettingsPage.qml" line="161"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="135"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="145"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="156"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="166"/>
         <source>no change</source>
         <translation>Keine Änderung</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="148"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="153"/>
         <source>Disconnected</source>
         <translation>Getrennt</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="173"/>
+        <source>Canned Messages</source>
+        <translation>Vorgefertigte Rückmeldungen</translation>
     </message>
 </context>
 </TS>

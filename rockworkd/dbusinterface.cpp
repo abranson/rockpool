@@ -79,7 +79,14 @@ QVariantMap DBusPebble::cannedResponses() const
 {
     return m_pebble->cannedMessages();
 }
-
+/**
+ * @brief DBusPebble::setCannedResponses
+ * @param cans aass
+ * Example call:
+ * gdbus call -e -d org.rockwork -o /org/rockwork/XX_XX_XX_XX_XX_XX
+ *  -m org.rockwork.Pebble.setCannedResponses
+ *  "{'x-nemo.messaging.im': <@as ['Aye','Nay','On my way']>;, 'x-nemo.messaging.sms': <@as ['Ok']>}"</pre>
+ */
 void DBusPebble::setCannedResponses(const QVariantMap &cans)
 {
     m_pebble->setCannedMessages(cans);
@@ -102,6 +109,15 @@ void DBusPebble::setTimelineWindow(qint32 start, qint32 fade, qint32 end)
     m_pebble->setTimelineWindow(start,fade,end);
 }
 
+/**
+ * @brief DBusPebble::insertTimelinePin
+ * @param jsonPin
+ * Example usage:
+ * dbus-send --session --dest=org.rockwork --type=method_call --print-reply
+ *  /org/rockwork/XX_XX_XX_XX_XX_XX org.rockwork.Pebble.insertTimelinePin
+ *  string:"$(cat pin.json)"
+ * where pin.json is file with raw pin json object
+ */
 void DBusPebble::insertTimelinePin(const QString &jsonPin)
 {
     QJsonParseError jpe;
