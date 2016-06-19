@@ -118,6 +118,7 @@ public slots:
     void setOAuthToken(const QString &token);
     void setSyncAppsFromCloud(bool enable);
     void setTimelineWindow();
+    void resetTimeline();
 
 signals:
     void connectedChanged();

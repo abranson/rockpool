@@ -868,64 +868,69 @@
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="71"/>
+        <source>Reset Timeline</source>
+        <translation>Chronik rücksetzen</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="76"/>
         <source>Timeline Window Start (days ago)</source>
         <translation>Anfang des Zeitraums (vorige Tage)</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="79"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="84"/>
         <source>Timeline Window End (days ahead)</source>
         <translation>Ende des Zeitraums (nächste Tage)</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="87"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="92"/>
         <source>Notification re-delivery expiration (seconds)</source>
         <translation>Notiz liefern während (secs)</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="95"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="100"/>
         <source>Set Timeline Window</source>
         <translation>Zeitraum der Chronik Stellen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="101"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="106"/>
         <source>Active Timeline WebSync account</source>
         <translation>Aktueles Chronik Sync Konto</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="115"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="120"/>
         <source>Logout</source>
         <translation>Abmelden</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="115"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="120"/>
         <source>Login</source>
         <translation>Anmelden</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="128"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="133"/>
         <source>Automatic Profile</source>
         <translation>Automatisches Profil</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="132"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="137"/>
         <source>Connected</source>
         <translation>Verbunden</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="135"/>
-        <location filename="../qml/pages/SettingsPage.qml" line="145"/>
-        <location filename="../qml/pages/SettingsPage.qml" line="156"/>
-        <location filename="../qml/pages/SettingsPage.qml" line="166"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="140"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="150"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="161"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="171"/>
         <source>no change</source>
         <translation>Keine Änderung</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="153"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="158"/>
         <source>Disconnected</source>
         <translation>Getrennt</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="173"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="178"/>
         <source>Canned Messages</source>
         <translation>Vorgefertigte Rückmeldungen</translation>
     </message>

@@ -66,6 +66,11 @@ Page {
                     root.pebble.syncAppsFromCloud = checked
                 }
             }
+            Button {
+                width: parent.width
+                text: qsTr("Reset Timeline")
+                onClicked: pebble.resetTimeline()
+            }
             TextField {
                 width: parent.width
                 label: qsTr("Timeline Window Start (days ago)")

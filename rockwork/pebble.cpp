@@ -304,6 +304,11 @@ void Pebble::setSyncAppsFromCloud(bool enable)
     emit syncAppsFromCloudChanged();
 }
 
+void Pebble::resetTimeline()
+{
+    m_iface->call("resetTimeline");
+}
+
 void Pebble::setTimelineWindow()
 {
     m_iface->call("setTimelineWindow",-m_timelienWindowStart,-m_timelienWindowFade,m_timelienWindowEnd);
