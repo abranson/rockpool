@@ -329,9 +329,6 @@ QList<TimelineAttribute> TimelinePin::handleAction(TimelineAction::Type atype, q
  * Once all pins are loaded - maintenance cycle is scheduled to cleanup/resend/retain pins.
  * Additionally maintenance cycle is enforced on pebble connection - to resend pending pins.
  */
-// Enable calendar migration
-#define DATA_MIGRATION 1
-#include "calendarevent.h"
 TimelineManager::TimelineManager(Pebble *pebble, WatchConnection *connection):
     QObject(pebble),
     m_tmr_maintenance(new QTimer(this)),
@@ -361,88 +358,18 @@ TimelineManager::TimelineManager(Pebble *pebble, WatchConnection *connection):
         }
     }
 #ifdef DATA_MIGRATION
-    // Migrate legacy calendar events to timeline pins.
+    // It's more safe and efficient to resync than migrate. However to reset timeline
+    // we need connected pebble, which is not the case in construction time.
+    // Better to do it manually then using Reset button in application settings.
     QString calCache = pebble->storagePath() + "blobdb";
     dir=QDir(calCache);
     if(dir.exists()) {
         dir.setNameFilters({"calendarevent-*"});
         foreach (const QFileInfo &fi, dir.entryInfoList()) {
-            CalendarEvent event;
-            event.loadFromCache(calCache, fi.fileName().right(QUuid().toString().length()));
-            // Discard legacy pin if we have one already
-            if(!pinExists(event.uuid())) {
-                QJsonObject evt;
-                evt.insert("id",event.id());
-                evt.insert("guid",event.uuid().toString().mid(1,36));
-                evt.insert("type",QString("pin"));
-                evt.insert("dataSource",QString("calendarEvent:%1").arg(PlatformInterface::SysID));
-                evt.insert("time",event.startTime().toString(Qt::ISODate));
-                evt.insert("duration",event.startTime().secsTo(event.endTime()) / 60);
-                if(event.isAllDay())
-                    evt.insert("allDay",true);
-                QJsonObject layout;
-                layout.insert("type",QString("calendarPin"));
-                layout.insert("title",event.title());
-                if(!event.description().isEmpty())
-                    layout.insert("body",event.description());
-                if(!event.location().isEmpty())
-                    layout.insert("locationName",event.location());
-                QStringList headings,paragraphs;
-                if(!event.calendar().isEmpty()) {
-                    headings.append("Calendar");
-                    paragraphs.append(event.calendar());
-                }
-                if(!event.comment().isEmpty()) {
-                    headings.append("Comments");
-                    paragraphs.append(event.comment());
-                }
-                if(!event.guests().isEmpty()) {
-                    headings.append("Guests");
-                    paragraphs.append(event.guests().join(", "));
-                }
-                if(!headings.isEmpty()) {
-                    layout.insert("headings",QJsonArray::fromStringList(headings));
-                    layout.insert("paragraphs",QJsonArray::fromStringList(paragraphs));
-                }
-                if(event.recurring())
-                    layout.insert("displayRecurring",QString("recurring"));
-                evt.insert("layout",layout);
-
-                if(!event.reminder().isNull()) {
-                    QJsonArray reminders;
-                    QJsonObject reminder;
-                    reminder.insert("time",event.reminder().toString(Qt::ISODate));
-                    QJsonObject rLyt;
-                    rLyt.insert("type",QString("genericReminder"));
-                    rLyt.insert("title",event.title());
-                    rLyt.insert("tinyIcon",QString("system://images/NOTIFICATION_REMINDER"));
-                    if(!event.location().isEmpty())
-                        rLyt.insert("locationName",event.location());
-                    if(!event.description().isEmpty())
-                        rLyt.insert("body",event.description());
-                    reminder.insert("layout",rLyt);
-                    reminders.append(reminder);
-                    evt.insert("reminders",reminders);
-                }
-
-                QJsonArray actions;
-                QJsonObject actSnooze;
-                actSnooze.insert("type",QString("snooze"));
-                actSnooze.insert("title",QString("Snooze"));
-                actions.append(actSnooze);
-                // Dismiss, More and Mute will be added implicitly
-                evt.insert("actions",actions);
-
-                //m_calendarEntries.append(event);
-
-                // This is supposed to be already sent pin, we store it for retain/update purposes
-                // bypassing normal pin insertion process
-                TimelinePin pin(evt,this);
-                pin.setSent(true);
-                pin.flush(); // Store pin to persistent storage
-            }
-            // remove legacy event
-            event.removeFromCache(calCache);
+            dir.remove(fi.fileName());
+        }
+        if(dir.entryInfoList().count()>0) {
+            pebble->resetTimeline();
         }
     }
 #endif // DATA_MIGRATION

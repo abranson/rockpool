@@ -56,7 +56,6 @@ SOURCES += main.cpp \
     libpebble/notification.cpp \
     libpebble/timelinemanager.cpp \
     libpebble/timelinesync.cpp \
-    libpebble/calendarevent.cpp \
     libpebble/appmetadata.cpp \
     libpebble/appdownloader.cpp \
     libpebble/screenshotendpoint.cpp \
@@ -116,7 +115,6 @@ HEADERS += \
     libpebble/blobdb.h \
     libpebble/timelineitem.h \
     libpebble/notification.h \
-    libpebble/calendarevent.h \
     libpebble/timelinesync.h \
     libpebble/timelinemanager.h \
     libpebble/appmetadata.h \
