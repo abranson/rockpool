@@ -449,7 +449,7 @@ TimelineManager::TimelineManager(Pebble *pebble, WatchConnection *connection):
     connect(m_tmr_maintenance, &QTimer::timeout, this, &TimelineManager::doMaintenance);
     // Also run maintenance cycle on watch connection - to redeliver notifications and stuff
     connect(connection, &WatchConnection::watchConnected, this, &TimelineManager::doMaintenance, Qt::QueuedConnection);
-    m_tmr_maintenance->start(60000); // 1min is too frequent, but on sleeping sailfish it's more like 5-10min, so ok.
+    m_tmr_maintenance->start(90000); // 1.5min is too frequent, but on sleeping sailfish it's more like 5-10min, so ok.
 }
 
 void TimelineManager::reloadLayouts() {
@@ -850,7 +850,7 @@ void TimelineManager::doMaintenance()
     QMap<time_t,QList<QUuid>>::iterator it=m_pin_idx_time.end();
     if(!m_pin_idx_time.empty()) do {
         it--;
-        qDebug() << "Iterating timestamp" << it.key() << "with" << it.value().count() << "items";
+        //qDebug() << "Iterating timestamp" << it.key() << "with" << it.value().count() << "items";
         if(it.value().isEmpty()) {
             m_mtx_pinStorage.lock();
             m_pin_idx_time.erase(it);
@@ -924,19 +924,36 @@ void TimelineManager::remove(const TimelinePin &pin)
 
 void TimelineManager::clearTimeline(const QUuid &parent)
 {
-    foreach (const TimelinePin *pin, pinKids(parent)) {
-        pin->remove();
+    if(parent.isNull()) {
+        wipeTimeline();
+    } else {
+        foreach (const TimelinePin *pin, pinKids(parent)) {
+            pin->remove();
+            pin->erase();
+        }
+        if(pinCount()==0) {
+            m_pebble->blobdb()->clear(BlobDB::BlobDBIdPin);
+            m_pebble->blobdb()->clear(BlobDB::BlobDBIdReminder);
+            m_pebble->blobdb()->clear(BlobDB::BlobDBIdNotification);
+        }
     }
-    if(pinCount()==0)
-        m_pebble->blobdb()->clear(BlobDB::BlobDBIdPin);
 }
 
-void TimelineManager::wipeTimeline(const QString &kind)
+void TimelineManager::wipeTimeline(const QString &source)
 {
     // Let's do simple traversal till we find better way to handle that
     foreach(const TimelinePin &pin,m_pin_idx_guid.values()) {
-        if(pin.kind()==kind)
+        if(source.isEmpty()) {
+            pin.erase();
+        } else if(source == pin.source()) {
             pin.remove();
+            pin.erase();
+        }
+    }
+    if(pinCount()==0) {
+        m_pebble->blobdb()->clear(BlobDB::BlobDBIdPin);
+        m_pebble->blobdb()->clear(BlobDB::BlobDBIdReminder);
+        m_pebble->blobdb()->clear(BlobDB::BlobDBIdNotification);
     }
 }
 

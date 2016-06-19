@@ -92,6 +92,11 @@ void DBusPebble::setCannedResponses(const QVariantMap &cans)
     m_pebble->setCannedMessages(cans);
 }
 
+void DBusPebble::resetTimeline()
+{
+    m_pebble->resetTimeline();
+}
+
 qint32 DBusPebble::timelineWindowStart() const
 {
     return m_pebble->timelineWindowStart();

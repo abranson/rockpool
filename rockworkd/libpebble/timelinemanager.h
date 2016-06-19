@@ -34,6 +34,7 @@ public:
     const QUuid & guid() const {return m_uuid;}
     const QUuid & parent() const {return m_parent;}
     QString kind() const {return m_kind;}
+    QString source() const {return m_pin.value("source").toString();}
     TimelineItem::Type type() const {return m_type;}
     BlobDB::BlobDBId blobId() const {return item2blob[m_type];}
     QDateTime time() const  {return (m_time.isValid()?m_time:(m_updated.isValid()?m_updated:m_created));}
@@ -122,7 +123,7 @@ public:
 
 public slots:
     void reloadLayouts();
-    void wipeTimeline(const QString &kind);
+    void wipeTimeline(const QString &kind = QString());
     void wipeSubscription(const QString &topic);
 
 signals:

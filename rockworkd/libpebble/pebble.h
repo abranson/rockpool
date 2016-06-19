@@ -114,6 +114,7 @@ public slots:
 
     void clearTimeline();
     void syncCalendar();
+    void resetTimeline();
     void setCalendarSyncEnabled(bool enabled);
     bool calendarSyncEnabled() const;
 

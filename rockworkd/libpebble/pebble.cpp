@@ -642,7 +642,7 @@ void Pebble::clearAppDB()
 
 void Pebble::clearTimeline()
 {
-    m_timelineManager->clearTimeline(PlatformInterface::UUID);
+    m_timelineManager->wipeTimeline();
 }
 
 void Pebble::syncCalendar()
@@ -1023,10 +1023,16 @@ void Pebble::muteNotificationSource(const QString &source)
     setNotificationFilter(source, NotificationDisabled);
 }
 
-void Pebble::resetPebble()
+void Pebble::resetTimeline()
 {
     clearTimeline();
     syncCalendar();
+    emit m_timelineSync->syncUrlChanged("");
+}
+
+void Pebble::resetPebble()
+{
+    resetTimeline();
 
     clearAppDB();
     syncApps();

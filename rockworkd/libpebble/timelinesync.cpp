@@ -45,7 +45,7 @@ TimelineSync::TimelineSync(Pebble *pebble, TimelineManager *manager):
 
     // websync needs more frequent update to keep apps up-to-whatever-they-need
     connect(m_tmr_websync, &QTimer::timeout, this, &TimelineSync::doWebsync, Qt::QueuedConnection);
-    m_tmr_websync->setInterval(5000); // On sleeping phone would be like 10-30sec
+    m_tmr_websync->setInterval(15000);
     // Make connection to itself queued to prevent recursive closure and yield to event loop
     connect(this, &TimelineSync::timelineOp, this, &TimelineSync::webOpHandler, Qt::QueuedConnection);
     connect(this, &TimelineSync::syncUrlChanged, this, &TimelineSync::resyncUrl,Qt::QueuedConnection);
@@ -106,7 +106,10 @@ void TimelineSync::doWebsync()
         qDebug() << "No valid authentication token, skipping WebSync";
         return;
     }
-    //qDebug() << "Syncing from" << syncUrl();
+    // Attempt to bring up internal state since qt is not tracking it properly
+    if(m_nam->networkAccessible()!=QNetworkAccessManager::Accessible)
+        m_nam->setNetworkAccessible(QNetworkAccessManager::Accessible);
+    qDebug() << "Syncing from" << syncUrl();
     QNetworkReply *rpl = m_nam->get(authedRequest(syncUrl()));
     Q_ASSERT(rpl);
     connect(rpl,&QNetworkReply::finished,[this,rpl](){
