@@ -67,7 +67,8 @@ public:
         EndpointScreenshot = 8000,
 //        watchFILE_MANAGER = 8181,
 //        watchCORE_DUMP = 9000,
-//        watchAUDIO = 10000, // New in 3.x
+        EndpointAudioStream = 10000, // New in 3.x
+        EndpointVoiceControl = 11000,
         EndpointActionHandler = 11440,
         EndpointBlobDB = 45531, // New in 3.x
         EndpointSorting = 0xabcd,
