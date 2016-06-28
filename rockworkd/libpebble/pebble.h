@@ -28,6 +28,9 @@ class DataLoggingEndpoint;
 class DevConnection;
 class TimelineManager;
 class TimelineSync;
+class VoiceEndpoint;
+struct SpeexInfo;
+struct AudioStream;
 
 class QNetworkAccessManager;
 
@@ -151,6 +154,9 @@ public slots:
     QString profileWhen(bool connected) const;
 
     void dumpLogs(const QString &fileName) const;
+    //void voiceSessionResponse(quint8 result, const QUuid &appUuid);
+    void voiceAudioStop();
+    void voiceSessionResult(quint8 result, const QVariantList &sentences);
 
 private slots:
     void onPebbleConnected();
@@ -163,6 +169,9 @@ private slots:
     void appInstalled(const QUuid &uuid);
     void appStarted(const QUuid &uuid);
     void muteNotificationSource(const QString &source);
+    void voiceSessionRequest(const QUuid &appUuid, const SpeexInfo &codec);
+    void voiceAudioStream(quint16 sid, const AudioStream &frames);
+    void voiceSessionClose(quint16 sesId);
 
     void resetPebble();
     void syncApps();
@@ -182,6 +191,10 @@ signals:
     void updateAvailableChanged();
     void upgradingFirmwareChanged();
     void logsDumped(bool success);
+    void voiceSessionSetup(const QString &fileName, const QString &format, const QUuid &appUuid);
+    void voiceSessionStream(const QString &fileName);
+    void voiceSessionDumped(const QString &fileName);
+    void voiceSessionClosed(const QString &fileName);
 
     void calendarSyncEnabledChanged();
     void imperialUnitsChanged();
@@ -220,6 +233,8 @@ private:
     FirmwareDownloader *m_firmwareDownloader;
     WatchLogEndpoint *m_logEndpoint;
     DataLoggingEndpoint *m_dataLogEndpoint;
+    VoiceEndpoint * m_voiceEndpoint;
+    QTemporaryFile* m_voiceSessDump = nullptr;
 
     QString m_storagePath;
     QString m_imagePath;

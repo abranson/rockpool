@@ -19,6 +19,7 @@
 #include "devconnection.h"
 #include "timelinemanager.h"
 #include "timelinesync.h"
+#include "voiceendpoint.h"
 
 #include "QDir"
 #include <QDateTime>
@@ -30,6 +31,7 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QNetworkAccessManager>
+#include <QTemporaryFile>
 
 Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
     QObject(parent),
@@ -114,6 +116,11 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
 
     m_logEndpoint = new WatchLogEndpoint(this, m_connection);
     QObject::connect(m_logEndpoint, &WatchLogEndpoint::logsFetched, this, &Pebble::logsDumped);
+
+    m_voiceEndpoint = new VoiceEndpoint(this, m_connection);
+    QObject::connect(m_voiceEndpoint, &VoiceEndpoint::sessionSetupRequest, this, &Pebble::voiceSessionRequest);
+    QObject::connect(m_voiceEndpoint, &VoiceEndpoint::audioFrame, this, &Pebble::voiceAudioStream);
+    QObject::connect(m_voiceEndpoint, &VoiceEndpoint::sessionCloseNotice, this, &Pebble::voiceSessionClose);
 
     QSettings watchInfo(m_storagePath + "/watchinfo.conf", QSettings::IniFormat);
     m_model = (Model)watchInfo.value("watchModel", (int)ModelUnknown).toInt();
@@ -451,6 +458,83 @@ QString Pebble::storagePath() const
 QString Pebble::imagePath() const
 {
     return m_imagePath;
+}
+
+void Pebble::voiceSessionRequest(const QUuid &appUuid, const SpeexInfo &codec)
+{
+    if(m_voiceSessDump) {
+        m_voiceEndpoint->sessionSetupResponse(VoiceEndpoint::ResInvalidMessage,appUuid);
+        return;
+    }
+    m_voiceSessDump = new QTemporaryFile(this);
+    if(m_voiceSessDump->open()) {
+        QString mime = QString("audio/speex; rate=%1; bitrate=%2; bitstreamver=%3; frame=%4").arg(
+                QString::number(codec.sampleRate),
+                QString::number(codec.bitRate),
+                QString::number(codec.bitstreamVer),
+                QString::number(codec.frameSize));
+        emit voiceSessionSetup(m_voiceSessDump->fileName(),mime,appUuid);
+        m_voiceEndpoint->sessionSetupResponse(VoiceEndpoint::ResSuccess,appUuid);
+        qDebug() << "Opened session for" << mime << "to" << m_voiceSessDump->fileName() << "from" << appUuid.toString();
+    } else {
+        m_voiceSessDump->deleteLater();
+        m_voiceEndpoint->sessionSetupResponse(VoiceEndpoint::ResServiceUnavail,appUuid);
+        m_voiceSessDump = nullptr;
+    }
+}
+void Pebble::voiceSessionClose(quint16 sesId)
+{
+    qDebug() << "Cleaning up and forwarding further closure of session" << sesId << m_voiceSessDump->fileName();
+    emit voiceSessionClosed(m_voiceSessDump->fileName());
+    m_voiceSessDump->deleteLater();
+    m_voiceSessDump = 0;
+}
+void Pebble::voiceAudioStream(quint16 sid, const AudioStream &frames)
+{
+    Q_UNUSED(sid);
+    if(frames.count>0) {
+        if(m_voiceSessDump->pos()==0) {
+            emit voiceSessionStream(m_voiceSessDump->fileName());
+            qDebug() << "Audio Stream has started dumping to" << m_voiceSessDump->fileName();
+        }
+        for(int i=0;i<frames.count;i++) {
+            m_voiceSessDump->write(frames.frames.at(i).data);
+        }
+    } else {
+        qDebug() << "Audio Stream has finished dumping to" << m_voiceSessDump->fileName();
+        m_voiceSessDump->close();
+        emit voiceSessionDumped(m_voiceSessDump->fileName());
+    }
+}
+void Pebble::voiceAudioStop()
+{
+    if(m_voiceSessDump->pos()==0) {
+        qDebug() << "Audio transfer didn't happen at current session, cleaning up" << m_voiceSessDump->fileName();
+        m_voiceEndpoint->sessionSetupResponse(VoiceEndpoint::ResRecognizerError,m_voiceSessDump->property("uuid").toUuid());
+        m_voiceSessDump->deleteLater();
+        emit voiceSessionClosed(m_voiceSessDump->fileName());
+        m_voiceSessDump = nullptr;
+    } else {
+        m_voiceEndpoint->stopAudioStream();
+    }
+}
+void Pebble::voiceSessionResult(quint8 result, const QVariantList &sentences)
+{
+    QList<VoiceEndpoint::Sentence> data;
+    foreach (const QVariant &vl, sentences) {
+        VoiceEndpoint::Sentence st;
+        QVariantList vs = vl.toList();
+        st.count=vs.count();
+        foreach (const QVariant &v, vs) {
+            VoiceEndpoint::Word word;
+            word.confidence = v.toMap().value("confidence").toInt();
+            word.data = v.toMap().value("word").toString().toUtf8();
+            word.length = word.data.length();
+            st.words.append(word);
+        }
+        data.append(st);
+    }
+    m_voiceEndpoint->transcriptionResponse((VoiceEndpoint::Result)result, data, QUuid());
 }
 
 QVariantMap Pebble::cannedMessages() const
