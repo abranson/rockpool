@@ -74,7 +74,7 @@ void SailfishPlatform::onActiveVoiceCallStatusChanged()
 {
     VoiceCallHandler* handler = m_voiceCallManager->activeVoiceCall();
 
-    if (!handler || handler->handlerId() == nullptr) {
+    if (!handler || handler->handlerId().isNull()) {
         return;
     }
 
