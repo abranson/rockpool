@@ -2,7 +2,6 @@
 #define PEBBLE_H
 
 #include "musicmetadata.h"
-#include "notification.h"
 #include "appinfo.h"
 #include "healthparams.h"
 

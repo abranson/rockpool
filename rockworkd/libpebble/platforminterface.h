@@ -30,6 +30,7 @@ public:
     virtual void setProfile(const QString &profile) const = 0;
 signals:
     void deviceActiveChanged();
+    void timeChanged();
 
 // Notifications
 public:
@@ -38,10 +39,6 @@ public:
     virtual const QHash<QString,QStringList>& cannedResponses() const = 0;
     virtual void setCannedResponses(const QHash<QString,QStringList> &cans) = 0;
 signals:
-    void notificationReceived(const Notification &notification);
-    void notificationRemoved(const QUuid &uuid);
-    void musicPlayStateChanged(const MusicPlayState &playState);
-    void timeChanged();
     void newTimelinePin(const QJsonObject &pin);
 
 // Music
@@ -51,6 +48,7 @@ public:
     virtual MusicPlayState getMusicPlayState() const = 0;
 
 signals:
+    void musicPlayStateChanged(const MusicPlayState &playState);
     void musicMetadataChanged(MusicMetaData metaData);
 
 // Phone calls

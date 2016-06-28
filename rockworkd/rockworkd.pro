@@ -26,8 +26,6 @@ SOURCES += main.cpp \
     libpebble/musicmetadata.cpp \
     libpebble/blobdb.cpp \
     libpebble/timelineitem.cpp \
-    libpebble/notification.cpp \
-    libpebble/notificationendpoint.cpp \
     libpebble/timelinemanager.cpp \
     libpebble/timelinesync.cpp \
     libpebble/appmetadata.cpp \
@@ -79,14 +77,12 @@ HEADERS += \
     libpebble/watchdatareader.h \
     libpebble/watchdatawriter.h \
     libpebble/devconnection.h \
-    libpebble/notificationendpoint.h \
     libpebble/musicendpoint.h \
     libpebble/musicmetadata.h \
     libpebble/phonecallendpoint.h \
     libpebble/platforminterface.h \
     libpebble/blobdb.h \
     libpebble/timelineitem.h \
-    libpebble/notification.h \
     libpebble/timelinesync.h \
     libpebble/timelinemanager.h \
     libpebble/appmetadata.h \
