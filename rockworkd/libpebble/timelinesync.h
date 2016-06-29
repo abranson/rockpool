@@ -50,6 +50,9 @@ private slots:
     void webOpHandler(const QJsonObject &op);
     void resyncLocker(bool force=false);
 
+protected:
+    void timerEvent(QTimerEvent *event) override;
+
 private:
     // https://timeline-api.getpebble.com/docs
     static const QString s_internalApi;
@@ -73,7 +76,7 @@ private:
     QNetworkRequest authedRequest(const QString &url, const QString &token = QString()) const;
     //QJsonObject processJsonReply(QNetworkReply *rpl, QString &err) const;
 
-    QTimer *m_tmr_websync;
+    int m_tmr_websync = 0;
     QString m_timelineStoragePath;
     QNetworkAccessManager *m_nam;
     QSettings *m_ini;

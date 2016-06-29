@@ -136,6 +136,9 @@ private slots:
     void blobdbAckHandler(BlobDB::BlobDBId db, BlobDB::Operation cmd, const QUuid &uuid, BlobDB::Status ack);
     void doMaintenance();
 
+protected:
+    void timerEvent(QTimerEvent *event) override;
+
 private:
     void insert(const class TimelinePin &pin);
     void remove(const class TimelinePin &pin);
@@ -157,7 +160,6 @@ private:
     QHash<QString,QList<QUuid>> m_idx_subscription;
     // All should be updated in atomic syncronized transaction to prevent retention/sync timer race condition
     QMutex m_mtx_pinStorage;
-    QTimer *m_tmr_maintenance;
 
     // Timeline window knobs. Pebble doesn't show future further than 48hrs ahead.
     // However it keeps pins on watches and shows them once the time has come

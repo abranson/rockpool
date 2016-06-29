@@ -27,7 +27,6 @@
  */
 TimelineSync::TimelineSync(Pebble *pebble, TimelineManager *manager):
   QObject(pebble),
-  m_tmr_websync(new QTimer(this)),
   m_nam(pebble->nam()),
   m_pebble(pebble),
   m_manager(manager)
@@ -43,17 +42,15 @@ TimelineSync::TimelineSync(Pebble *pebble, TimelineManager *manager):
     // Whether we install apps which are in the locker but missing locally
     m_syncFromCloud = m_ini->value("syncFromCloud").toBool();
 
-    // websync needs more frequent update to keep apps up-to-whatever-they-need
-    connect(m_tmr_websync, &QTimer::timeout, this, &TimelineSync::doWebsync, Qt::QueuedConnection);
-    m_tmr_websync->setInterval(15000);
     // Make connection to itself queued to prevent recursive closure and yield to event loop
     connect(this, &TimelineSync::timelineOp, this, &TimelineSync::webOpHandler, Qt::QueuedConnection);
     connect(this, &TimelineSync::syncUrlChanged, this, &TimelineSync::resyncUrl,Qt::QueuedConnection);
     connect(this,&TimelineSync::wipePinKind,manager,&TimelineManager::wipeTimeline,Qt::QueuedConnection);
     // Shortcut to catch token becoming invalid - invalidates timeline and account info
     connect(this, &TimelineSync::oauthTokenChanged, this, &TimelineSync::setOAuthToken,Qt::QueuedConnection);
+    // websync needs more frequent update to keep apps up-to-whatever-they-need
     if(!m_oauthToken.isEmpty())
-        m_tmr_websync->start();
+        m_tmr_websync = startTimer(30000);
 }
 
 const QString TimelineSync::subscriptionsUrl = "https://timeline-api.getpebble.com/v1/user/subscriptions";
@@ -100,6 +97,13 @@ QJsonObject processJsonReply(QNetworkReply *rpl, QString &err)
     return QJsonObject();
 }
 
+void TimelineSync::timerEvent(QTimerEvent *event)
+{
+    if(event) {
+        doWebsync();
+    }
+}
+
 void TimelineSync::doWebsync()
 {
     if(m_oauthToken.isEmpty()) {
@@ -111,7 +115,6 @@ void TimelineSync::doWebsync()
         m_nam->setNetworkAccessible(QNetworkAccessManager::Accessible);
     qDebug() << "Syncing from" << syncUrl();
     QNetworkReply *rpl = m_nam->get(authedRequest(syncUrl()));
-    Q_ASSERT(rpl);
     connect(rpl,&QNetworkReply::finished,[this,rpl](){
         QString err;
         QJsonObject obj = processJsonReply(rpl,err);
@@ -195,8 +198,10 @@ void TimelineSync::setOAuthToken(const QString &token)
     m_ini->setValue("oauthToken",token);
     if(token.isEmpty()) {
         qDebug() << "Setting empty oauth: disable websync and cleanup web resources";
-        if(m_tmr_websync->isActive())
-            m_tmr_websync->stop();
+        if(m_tmr_websync) {
+            killTimer(m_tmr_websync);
+            m_tmr_websync = 0;
+        }
         m_ini->remove("accountId");
         m_accountId = "";
         m_syncUrl = "";
@@ -215,8 +220,8 @@ void TimelineSync::setOAuthToken(const QString &token)
                 if(obj.contains("id") && obj.value("id").isString()) {
                     if(m_accountId == obj.value("id").toString())
                         return; // it was token refresh
-                    if(!m_tmr_websync->isActive())
-                        m_tmr_websync->start();
+                    if(m_tmr_websync==0)
+                        m_tmr_websync=startTimer(30000);
                     qDebug() << "OAuth Token validated but points to different account" << m_accountId << obj.value("id").toString();
                     m_accountId = obj.value("id").toString();
                     m_ini->setValue("accountId",m_accountId);

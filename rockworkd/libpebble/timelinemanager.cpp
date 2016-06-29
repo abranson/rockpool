@@ -331,7 +331,6 @@ QList<TimelineAttribute> TimelinePin::handleAction(TimelineAction::Type atype, q
  */
 TimelineManager::TimelineManager(Pebble *pebble, WatchConnection *connection):
     QObject(pebble),
-    m_tmr_maintenance(new QTimer(this)),
     m_pebble(pebble),
     m_connection(connection)
 {
@@ -373,10 +372,9 @@ TimelineManager::TimelineManager(Pebble *pebble, WatchConnection *connection):
         }
     }
 #endif // DATA_MIGRATION
-    connect(m_tmr_maintenance, &QTimer::timeout, this, &TimelineManager::doMaintenance);
     // Also run maintenance cycle on watch connection - to redeliver notifications and stuff
     connect(connection, &WatchConnection::watchConnected, this, &TimelineManager::doMaintenance, Qt::QueuedConnection);
-    m_tmr_maintenance->start(90000); // 1.5min is too frequent, but on sleeping sailfish it's more like 5-10min, so ok.
+    startTimer(90000); // 1.5min is too frequent, but on sleeping sailfish it's more like 5-10min, so ok.
 }
 
 void TimelineManager::reloadLayouts() {
@@ -756,14 +754,15 @@ void TimelineManager::setTimelineWindow(int daysPast, int eventFadeout, int days
     m_future_days = daysFuture;
 }
 
+void TimelineManager::timerEvent(QTimerEvent *event)
+{
+    if(event) {
+        doMaintenance();
+    }
+}
+
 void TimelineManager::doMaintenance()
 {
-    int rt = m_tmr_maintenance->remainingTime();
-    if(rt > 0 && rt < 3000) {
-        qDebug() << "Skipping maintenance cycle because scheduled will fire in" << rt;
-        return; // We will catch up in 5 sec.
-    }
-    // TODO: make window knobs configurable
     // End is future boundary - now+7. 7 is calendar window, pypkjs uses +4.
     time_t window_end = QDateTime::currentDateTimeUtc().addDays(m_future_days).toTime_t();
     // Start is past boundary - now-2. This is questionable. Pebble keeps up to 72hrs.
