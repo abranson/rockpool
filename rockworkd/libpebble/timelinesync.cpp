@@ -100,6 +100,8 @@ QJsonObject processJsonReply(QNetworkReply *rpl, QString &err)
 void TimelineSync::timerEvent(QTimerEvent *event)
 {
     if(event) {
+        if(!m_pendingReply.isNull())
+            m_pendingReply->abort();
         doWebsync();
     }
 }
@@ -115,6 +117,7 @@ void TimelineSync::doWebsync()
         m_nam->setNetworkAccessible(QNetworkAccessManager::Accessible);
     qDebug() << "Syncing from" << syncUrl();
     QNetworkReply *rpl = m_nam->get(authedRequest(syncUrl()));
+    m_pendingReply = rpl;
     connect(rpl,&QNetworkReply::finished,[this,rpl](){
         QString err;
         QJsonObject obj = processJsonReply(rpl,err);
@@ -280,6 +283,9 @@ void TimelineSync::fetchLocker(bool force, void (*next)(void*), void *ctx) const
 {
     if(!m_oauthToken.isEmpty() && (m_locker.isEmpty() || force)) {
         qDebug() << "Fetching locker content" << force;
+        // Attempt to bring up internal state since qt is not tracking it properly
+        if(m_nam->networkAccessible()!=QNetworkAccessManager::Accessible)
+            m_nam->setNetworkAccessible(QNetworkAccessManager::Accessible);
         QNetworkReply *rpl = m_nam->get(authedRequest(s_lockerUrl));
         connect(rpl,&QNetworkReply::finished, [this,rpl,next,ctx](){
             QString err;
@@ -307,6 +313,9 @@ void TimelineSync::fetchLocker(bool force, void (*next)(void*), void *ctx) const
 void TimelineSync::resyncLocker(bool force)
 {
     if(m_oauthToken.isEmpty()) return;
+    // Attempt to bring up internal state since qt is not tracking it properly
+    if(m_nam->networkAccessible()!=QNetworkAccessManager::Accessible)
+        m_nam->setNetworkAccessible(QNetworkAccessManager::Accessible);
     qDebug() << "Locker resync: first handle apps missing here:" << (m_syncFromCloud ? "install missing" : "clean the locker");
     if(!m_locker.isEmpty() && (force || m_syncFromCloud)) {
         for(QHash<QUuid,QJsonObject>::const_iterator it=m_locker.begin();it!=m_locker.end();it++) {

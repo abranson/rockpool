@@ -374,7 +374,7 @@ TimelineManager::TimelineManager(Pebble *pebble, WatchConnection *connection):
 #endif // DATA_MIGRATION
     // Also run maintenance cycle on watch connection - to redeliver notifications and stuff
     connect(connection, &WatchConnection::watchConnected, this, &TimelineManager::doMaintenance, Qt::QueuedConnection);
-    startTimer(90000); // 1.5min is too frequent, but on sleeping sailfish it's more like 5-10min, so ok.
+    startTimer(180000);
 }
 
 void TimelineManager::reloadLayouts() {

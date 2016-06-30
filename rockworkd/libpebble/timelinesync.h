@@ -7,7 +7,7 @@
 #include <QVariant>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QTimer>
+#include <QPointer>
 
 QT_FORWARD_DECLARE_CLASS(Pebble)
 QT_FORWARD_DECLARE_CLASS(TimelineManager)
@@ -76,6 +76,7 @@ private:
     QNetworkRequest authedRequest(const QString &url, const QString &token = QString()) const;
     //QJsonObject processJsonReply(QNetworkReply *rpl, QString &err) const;
 
+    QPointer<QNetworkReply> m_pendingReply;
     int m_tmr_websync = 0;
     QString m_timelineStoragePath;
     QNetworkAccessManager *m_nam;
