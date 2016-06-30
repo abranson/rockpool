@@ -205,7 +205,7 @@ void VoiceEndpoint::transcriptionResponse(Result result, const QList<Sentence> &
     if(m_sessId>0) {
         qDebug() << "Results submitted with status" << result << "data" << data.count() << "for" << appUuid.toString();
         if(result == ResSuccess) {
-            if(appUuid == m_appUuid) {
+            if(appUuid.isNull() || appUuid == m_appUuid) {
                 if(data.count()>0) {
                     m_sesResult.append(data);
                     if(m_sesPhase==PhAudioStopped) {

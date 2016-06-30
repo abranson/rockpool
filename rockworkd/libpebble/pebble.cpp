@@ -473,7 +473,7 @@ void Pebble::voiceSessionRequest(const QUuid &appUuid, const SpeexInfo &codec)
                 QString::number(codec.bitRate),
                 QString::number(codec.bitstreamVer),
                 QString::number(codec.frameSize));
-        emit voiceSessionSetup(m_voiceSessDump->fileName(),mime,appUuid);
+        emit voiceSessionSetup(m_voiceSessDump->fileName(),mime,appUuid.toString());
         m_voiceEndpoint->sessionSetupResponse(VoiceEndpoint::ResSuccess,appUuid);
         qDebug() << "Opened session for" << mime << "to" << m_voiceSessDump->fileName() << "from" << appUuid.toString();
     } else {
@@ -518,23 +518,25 @@ void Pebble::voiceAudioStop()
         m_voiceEndpoint->stopAudioStream();
     }
 }
-void Pebble::voiceSessionResult(quint8 result, const QVariantList &sentences)
+void Pebble::voiceSessionResult(const QString &fileName, const QVariantList &sentences)
 {
-    QList<VoiceEndpoint::Sentence> data;
-    foreach (const QVariant &vl, sentences) {
-        VoiceEndpoint::Sentence st;
-        QVariantList vs = vl.toList();
-        st.count=vs.count();
-        foreach (const QVariant &v, vs) {
-            VoiceEndpoint::Word word;
-            word.confidence = v.toMap().value("confidence").toInt();
-            word.data = v.toMap().value("word").toString().toUtf8();
-            word.length = word.data.length();
-            st.words.append(word);
+    if(m_voiceSessDump && m_voiceSessDump->fileName() == fileName) {
+        QList<VoiceEndpoint::Sentence> data;
+        foreach (const QVariant &vl, sentences) {
+            VoiceEndpoint::Sentence st;
+            QVariantList vs = vl.toList();
+            st.count=vs.count();
+            foreach (const QVariant &v, vs) {
+                VoiceEndpoint::Word word;
+                word.confidence = v.toMap().value("confidence").toInt();
+                word.data = v.toMap().value("word").toString().toUtf8();
+                word.length = word.data.length();
+                st.words.append(word);
+            }
+            data.append(st);
         }
-        data.append(st);
+        m_voiceEndpoint->transcriptionResponse(VoiceEndpoint::ResSuccess, data, QUuid());
     }
-    m_voiceEndpoint->transcriptionResponse((VoiceEndpoint::Result)result, data, QUuid());
 }
 
 QVariantMap Pebble::cannedMessages() const

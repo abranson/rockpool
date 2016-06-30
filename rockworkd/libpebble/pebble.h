@@ -155,7 +155,7 @@ public slots:
     void dumpLogs(const QString &fileName) const;
     //void voiceSessionResponse(quint8 result, const QUuid &appUuid);
     void voiceAudioStop();
-    void voiceSessionResult(quint8 result, const QVariantList &sentences);
+    void voiceSessionResult(const QString &fileName, const QVariantList &sentences);
 
 private slots:
     void onPebbleConnected();
@@ -190,7 +190,7 @@ signals:
     void updateAvailableChanged();
     void upgradingFirmwareChanged();
     void logsDumped(bool success);
-    void voiceSessionSetup(const QString &fileName, const QString &format, const QUuid &appUuid);
+    void voiceSessionSetup(const QString &fileName, const QString &format, const QString &appUuid);
     void voiceSessionStream(const QString &fileName);
     void voiceSessionDumped(const QString &fileName);
     void voiceSessionClosed(const QString &fileName);

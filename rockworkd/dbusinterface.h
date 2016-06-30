@@ -37,6 +37,11 @@ signals:
 
     void oauthTokenChanged(const QString &token);
 
+    void voiceSessionSetup(const QString &dumpFile, const QString &contentType, const QString &appUuid);
+    void voiceSessionStream(const QString &dumpFile);
+    void voiceSessionDumped(const QString &dumpFile);
+    void voiceSessionClosed(const QString &dumpFIle);
+
 public slots:
     QString Address() const;
     QString Name() const;
@@ -72,6 +77,8 @@ public slots:
 
     QVariantMap cannedResponses() const;
     void setCannedResponses(const QVariantMap &cans);
+
+    void voiceSessionResult(const QString &dumpFile, const QVariantList &sentences);
 
     bool DevConnectionEnabled() const;
     quint16 DevConnListenPort() const;
