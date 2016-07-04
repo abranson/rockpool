@@ -68,6 +68,7 @@ public:
     HardwareRevision hardwareRevision() const;
     Model model() const;
     HardwarePlatform hardwarePlatform() const;
+    QString platformString() const;
     QString serialNumber() const;
     QString language() const;
     Capabilities capabilities() const;
@@ -142,6 +143,7 @@ public slots:
     QString firmwareReleaseNotes() const;
     void upgradeFirmware() const;
     bool upgradingFirmware() const;
+    void loadLanguagePack(const QString &pblFile) const;
 
     void setHealthParams(const HealthParams &healthParams);
     HealthParams healthParams() const;

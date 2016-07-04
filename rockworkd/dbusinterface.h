@@ -55,6 +55,7 @@ public slots:
     QString CandidateFirmwareVersion() const;
     QString FirmwareReleaseNotes() const;
     void PerformFirmwareUpgrade();
+    void LoadLanguagePack(const QString &pblFile) const;
     bool UpgradingFirmware() const;
 
     QString accountName() const;

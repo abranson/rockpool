@@ -135,40 +135,10 @@ void FirmwareDownloader::performUpgrade()
 
 void FirmwareDownloader::checkForNewFirmware()
 {
-    QString platformString;
-    switch (m_pebble->hardwareRevision()) {
-    case HardwareRevisionUNKNOWN:
-    case HardwareRevisionTINTIN_EV1:
-    case HardwareRevisionTINTIN_EV2:
-    case HardwareRevisionTINTIN_EV2_3:
-    case HardwareRevisionSNOWY_EVT2:
-    case HardwareRevisionSPALDING_EVT:
-    case HardwareRevisionTINTIN_BB:
-    case HardwareRevisionTINTIN_BB2:
-    case HardwareRevisionSNOWY_BB:
-    case HardwareRevisionSNOWY_BB2:
-    case HardwareRevisionSPALDING_BB2:
+    QString platformString = m_pebble->platformString();
+    if(platformString.isEmpty()) {
         qWarning() << "Hardware revision not supported for firmware upgrades" << m_pebble->hardwareRevision();
         return;
-    case HardwareRevisionTINTIN_EV2_4:
-        platformString = "ev2_4";
-        break;
-    case HardwareRevisionTINTIN_V1_5:
-        platformString = "v1_5";
-        break;
-    case HardwareRevisionBIANCA:
-        platformString = "v2_0";
-        break;
-    case HardwareRevisionSNOWY_DVT:
-        platformString = "snowy_dvt";
-        break;
-    case HardwareRevisionBOBBY_SMILES:
-        platformString = "snowy_s3";
-        break;
-    case HardwareRevisionSPALDING:
-        platformString = "spalding";
-        break;
-
     }
 
     QString url("https://pebblefw.s3.amazonaws.com/pebble/%1/%2/latest.json");

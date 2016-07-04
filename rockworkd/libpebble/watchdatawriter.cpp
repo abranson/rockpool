@@ -160,3 +160,20 @@ void WatchDataWriter::writeDict(const QMap<int, QVariant> &d)
         }
     }
 }
+
+quint32 WatchDataWriter::stm32crc(const QByteArray &buf, quint32 crc) {
+    for(int i=0;i<buf.length();i+=4) {
+        QByteArray dw = buf.mid(i,4);
+        if(dw.length()<4) {
+            for(int j=dw.length();j<4;j++)
+                dw.prepend('\0');
+        }
+        quint32 dwuint = *(quint32*)dw.constData();
+        crc ^= dwuint;
+        for(int j=0;j<32;j++) {
+            crc = (crc & 0x80000000) ? ((crc << 1) ^ STM_CRC_POLY) : (crc << 1);
+        }
+        crc &= STM_CRC_OXOR;
+    }
+    return crc;
+}

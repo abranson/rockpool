@@ -309,6 +309,11 @@ void DBusPebble::PerformFirmwareUpgrade()
     m_pebble->upgradeFirmware();
 }
 
+void DBusPebble::LoadLanguagePack(const QString &pblFile) const
+{
+    m_pebble->loadLanguagePack(pblFile);
+}
+
 bool DBusPebble::UpgradingFirmware() const
 {
     return m_pebble->upgradingFirmware();

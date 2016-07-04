@@ -198,6 +198,9 @@ bool UploadManager::uploadNextChunk(PendingUpload &upload)
 
     qDebug() << "remaining" << upload.remaining << "/" << upload.size << "bytes";
 
+    if(upload.index>=0 && upload.appInstallId==upload.type)
+        upload.crc = WatchDataWriter::stm32crc(chunk,upload.crc);
+
     return true;
 }
 

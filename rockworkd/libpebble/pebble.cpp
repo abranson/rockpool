@@ -20,6 +20,7 @@
 #include "timelinemanager.h"
 #include "timelinesync.h"
 #include "voiceendpoint.h"
+#include "uploadmanager.h"
 
 #include "QDir"
 #include <QDateTime>
@@ -305,6 +306,37 @@ void Pebble::setHardwareRevision(HardwareRevision hardwareRevision)
         m_hardwarePlatform = HardwarePlatformChalk;
         break;
     }
+}
+
+QString Pebble::platformString() const
+{
+    switch (m_hardwareRevision) {
+    case HardwareRevisionUNKNOWN:
+    case HardwareRevisionTINTIN_EV1:
+    case HardwareRevisionTINTIN_EV2:
+    case HardwareRevisionTINTIN_EV2_3:
+    case HardwareRevisionSNOWY_EVT2:
+    case HardwareRevisionSPALDING_EVT:
+    case HardwareRevisionTINTIN_BB:
+    case HardwareRevisionTINTIN_BB2:
+    case HardwareRevisionSNOWY_BB:
+    case HardwareRevisionSNOWY_BB2:
+    case HardwareRevisionSPALDING_BB2:
+        break;
+    case HardwareRevisionTINTIN_EV2_4:
+        return "ev2_4";
+    case HardwareRevisionTINTIN_V1_5:
+        return "v1_5";
+    case HardwareRevisionBIANCA:
+        return "v2_0";
+    case HardwareRevisionSNOWY_DVT:
+        return "snowy_dvt";
+    case HardwareRevisionBOBBY_SMILES:
+        return "snowy_s3";
+    case HardwareRevisionSPALDING:
+        return "spalding";
+    }
+    return QString();
 }
 
 HardwarePlatform Pebble::hardwarePlatform() const
@@ -911,6 +943,19 @@ QString Pebble::firmwareReleaseNotes() const
 void Pebble::upgradeFirmware() const
 {
     m_firmwareDownloader->performUpgrade();
+}
+
+void Pebble::loadLanguagePack(const QString &pblFile) const
+{
+    QString targetFile = pblFile;
+    targetFile.remove("file://");
+    m_connection->uploadManager()->upload(WatchConnection::UploadTypeFile,0,WatchConnection::UploadTypeFile,targetFile,-1,STM_CRC_INIT,
+    [pblFile](){
+        qDebug() << "Successfully uploaded" << pblFile;
+    },
+    [pblFile](int code){
+        qWarning() << "Error" << code << "uploading" << pblFile;
+    });
 }
 
 void Pebble::onPebbleConnected()
