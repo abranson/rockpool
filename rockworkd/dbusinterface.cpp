@@ -15,6 +15,7 @@ DBusPebble::DBusPebble(Pebble *pebble, QObject *parent):
     connect(pebble, &Pebble::screenshotRemoved, this, &DBusPebble::ScreenshotRemoved);
     connect(pebble, &Pebble::updateAvailableChanged, this, &DBusPebble::FirmwareUpgradeAvailableChanged);
     connect(pebble, &Pebble::upgradingFirmwareChanged, this, &DBusPebble::UpgradingFirmwareChanged);
+    connect(pebble, &Pebble::languagePackChanged, this, &DBusPebble::LanguageVersionChanged);
     connect(pebble, &Pebble::logsDumped, this, &DBusPebble::LogsDumped);
     connect(pebble, &Pebble::healtParamsChanged, this, &DBusPebble::HealthParamsChanged);
     connect(pebble, &Pebble::imperialUnitsChanged, this, &DBusPebble::ImperialUnitsChanged);
@@ -324,6 +325,11 @@ QString DBusPebble::SerialNumber() const
     return m_pebble->serialNumber();
 }
 
+QString DBusPebble::PlatformString() const
+{
+    return m_pebble->platformString();
+}
+
 QString DBusPebble::HardwarePlatform() const
 {
     switch (m_pebble->hardwarePlatform()) {
@@ -342,6 +348,11 @@ QString DBusPebble::HardwarePlatform() const
 QString DBusPebble::SoftwareVersion() const
 {
     return m_pebble->softwareVersion();
+}
+
+QString DBusPebble::LanguageVersion() const
+{
+    return QString("%1:%2").arg(m_pebble->language()).arg(QString::number(m_pebble->langVer()));
 }
 
 int DBusPebble::Model() const

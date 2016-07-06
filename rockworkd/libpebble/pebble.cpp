@@ -32,6 +32,8 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QNetworkReply>
 #include <QTemporaryFile>
 
 Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
@@ -352,6 +354,10 @@ QString Pebble::serialNumber() const
 QString Pebble::language() const
 {
     return m_language;
+}
+quint16 Pebble::langVer() const
+{
+    return m_langVer;
 }
 
 Capabilities Pebble::capabilities() const
@@ -947,11 +953,39 @@ void Pebble::upgradeFirmware() const
 
 void Pebble::loadLanguagePack(const QString &pblFile) const
 {
-    QString targetFile = pblFile;
-    targetFile.remove("file://");
+    QString targetFile = m_storagePath + "lang";
+    if(pblFile != targetFile) {
+        if(QFile::exists(targetFile))
+            QFile::remove(targetFile);
+        if(pblFile.startsWith("https://") || pblFile.startsWith("http://")) {
+            QNetworkReply *rpl = m_nam->get(QNetworkRequest(QUrl(pblFile)));
+            QObject::connect(rpl, &QNetworkReply::finished,[this,rpl](){
+                rpl->deleteLater();
+                if(rpl->error() == QNetworkReply::NoError && rpl->header(QNetworkRequest::ContentTypeHeader).toString() == "binary/octet-stream") {
+                    QString pblName = m_storagePath + "lang";
+                    QFile pblFile(pblName);
+                    if(pblFile.open(QIODevice::ReadWrite)) {
+                        pblFile.write(rpl->readAll());
+                        pblFile.close();
+                        loadLanguagePack(pblName);
+                    }
+                }
+            });
+            qDebug() << "Fetching pbl from" << pblFile;
+            return;
+        } else if(pblFile.startsWith("file://")) {
+            if(pblFile.mid(7) != targetFile)
+                QFile::copy(pblFile.mid(7),targetFile);
+        } else if(!targetFile.startsWith("/")) {
+            qWarning() << "Unknown schema or relative path in file" << pblFile;
+            return;
+        } else
+            QFile::copy(pblFile,targetFile);
+    }
     m_connection->uploadManager()->upload(WatchConnection::UploadTypeFile,0,WatchConnection::UploadTypeFile,targetFile,-1,STM_CRC_INIT,
-    [pblFile](){
+    [this,pblFile](){
         qDebug() << "Successfully uploaded" << pblFile;
+        emit languagePackChanged();
     },
     [pblFile](int code){
         qWarning() << "Error" << code << "uploading" << pblFile;
@@ -1021,7 +1055,8 @@ void Pebble::pebbleVersionReceived(const QByteArray &data)
     qDebug() << "Resource timestamp:" << QDateTime::fromTime_t(wd.read<quint32>());
     m_language = wd.readFixedString(6);
     qDebug() << "Language" << m_language;
-    qDebug() << "Language version" << wd.read<quint16>();
+    m_langVer = wd.read<quint16>();
+    qDebug() << "Language version" << m_langVer;
     // Capabilities is 64 bits but QFlags can only do 32 bits. lets split it into 2 * 32.
     // only 8 bits are used atm anyways.
     m_capabilities = QFlag(wd.readLE<quint32>());

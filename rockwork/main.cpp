@@ -28,8 +28,10 @@ int main(int argc, char *argv[])
     app->setApplicationName("rockpool");
     app->setOrganizationName("");
 
+    QSettings ini(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)+"/"+app->applicationName()+"/app.ini",QSettings::IniFormat);
+    QString locale = ini.contains("LANG") ? ini.value("LANG").toString() : QLocale::system().name();
     QTranslator i18n;
-    i18n.load("rockpool_"+QLocale::system().name(),QString(ROCKPOOL_DATA_PATH)+QString("translations"));
+    i18n.load("rockpool_"+locale,QString(ROCKPOOL_DATA_PATH)+QString("translations"));
     app->installTranslator(&i18n);
 
     qmlRegisterUncreatableType<Pebble>("RockPool", 1, 0, "Pebble", "Get them from the model");
@@ -67,6 +69,7 @@ int main(int argc, char *argv[])
 #endif
     QScopedPointer<QQuickView> view(SailfishApp::createView());
     view->rootContext()->setContextProperty("version", QStringLiteral(VERSION));
+    view->rootContext()->setContextProperty("locale", locale);
 #ifdef WITH_QTMOZEMBED
     view->rootContext()->setContextProperty("MozContext", QMozContext::GetInstance());
     QTimer::singleShot(0, QMozContext::GetInstance(), SLOT(runEmbedding()));

@@ -150,7 +150,7 @@ void UploadManager::startNextUpload()
         writer.write<quint8>(upload.type);
         writer.write<quint8>(upload.index);
         if (!upload.filename.isEmpty()) {
-            writer.writeCString(upload.filename);
+            writer.writeCString(upload.filename.split('/').last());
         }
     } else {
         writer.write<quint8>(upload.type|0x80);

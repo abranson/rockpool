@@ -6,6 +6,8 @@
 #include <QDBusArgument>
 #include <QDebug>
 
+// TODO: Bootstrapping config from
+// https://boot.getpebble.com/api/config/android/v3/1055?locale=de_DE&app_version=3.13.0-1055-06644a6
 Pebble::Pebble(const QDBusObjectPath &path, QObject *parent):
     QObject(parent),
     m_path(path)
@@ -26,6 +28,7 @@ Pebble::Pebble(const QDBusObjectPath &path, QObject *parent):
     QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "ScreenshotAdded", this, SLOT(screenshotAdded(const QString &)));
     QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "ScreenshotRemoved", this, SLOT(screenshotRemoved(const QString &)));
     QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "FirmwareUpgradeAvailableChanged", this, SLOT(refreshFirmwareUpdateInfo()));
+    QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "LanguageVersionChanged", this, SIGNAL(languageVersionChanged()));
     QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "UpgradingFirmwareChanged", this, SIGNAL(refreshFirmwareUpdateInfo()));
     QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "LogsDumped", this, SIGNAL(logsDumped(bool)));
     QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "HealthParamsChanged", this, SIGNAL(healthParamsChanged()));
@@ -64,6 +67,11 @@ QString Pebble::name() const
     return m_name;
 }
 
+QString Pebble::platformString() const
+{
+    return fetchProperty("PlatformString").toString();
+}
+
 QString Pebble::hardwarePlatform() const
 {
     return m_hardwarePlatform;
@@ -77,6 +85,17 @@ QString Pebble::serialNumber() const
 QString Pebble::softwareVersion() const
 {
     return m_softwareVersion;
+}
+
+QString Pebble::languageVersion() const
+{
+    return fetchProperty("LanguageVersion").toString();
+}
+
+void Pebble::loadLanguagePack(const QString &pblFile)
+{
+    qDebug() << "Requesting to load language from" << pblFile;
+    m_iface->call("LoadLanguagePack", pblFile);
 }
 
 int Pebble::model() const

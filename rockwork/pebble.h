@@ -13,7 +13,9 @@ class Pebble : public QObject
     Q_OBJECT
     Q_PROPERTY(QString name READ name CONSTANT)
     Q_PROPERTY(bool connected READ connected NOTIFY connectedChanged)
+    Q_PROPERTY(QString platformString READ platformString CONSTANT)
     Q_PROPERTY(QString hardwarePlatform READ hardwarePlatform NOTIFY hardwarePlatformChanged)
+    Q_PROPERTY(QString languageVersion READ languageVersion NOTIFY languageVersionChanged)
     Q_PROPERTY(int model READ model NOTIFY modelChanged)
     Q_PROPERTY(NotificationSourceModel* notifications READ notifications CONSTANT)
     Q_PROPERTY(QVariantMap notificationsFilter READ notificationsFilter NOTIFY notificationsFilterChanged)
@@ -53,9 +55,11 @@ public:
     bool connected() const;
     QString address() const;
     QString name() const;
+    QString platformString() const;
     QString hardwarePlatform() const;
     QString serialNumber() const;
     QString softwareVersion() const;
+    QString languageVersion() const;
     int model() const;
     bool recovery() const;
     bool upgradingFirmware() const;
@@ -110,6 +114,7 @@ public slots:
     void requestScreenshot();
     void removeScreenshot(const QString &filename);
     void performFirmwareUpgrade();
+    void loadLanguagePack(const QString &pblFile);
     void dumpLogs(const QString &filename);
 
     void setDevConnEnabled(bool enabled);
@@ -124,6 +129,7 @@ signals:
     void connectedChanged();
     void hardwarePlatformChanged();
     void modelChanged();
+    void languageVersionChanged();
     void firmwareUpgradeAvailableChanged();
     void upgradingFirmwareChanged();
     void logsDumped(bool success);

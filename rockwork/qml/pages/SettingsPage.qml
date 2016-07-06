@@ -45,6 +45,11 @@ Page {
                 }
                 currentIndex: (root.pebble.imperialUnits) ? 1 : 0
             }
+            Button {
+                width: parent.width
+                text: qsTr("Language")
+                onClicked: pageStack.push(Qt.resolvedUrl("LanguagePage.qml"), {pebble: pebble})
+            }
 
             SectionHeader {
                 text: qsTr("Timeline")

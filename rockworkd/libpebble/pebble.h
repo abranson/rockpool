@@ -71,6 +71,7 @@ public:
     QString platformString() const;
     QString serialNumber() const;
     QString language() const;
+    quint16 langVer() const;
     Capabilities capabilities() const;
     bool isUnfaithful() const;
     bool recovery() const;
@@ -191,6 +192,7 @@ signals:
     void screenshotRemoved(const QString &filename);
     void updateAvailableChanged();
     void upgradingFirmwareChanged();
+    void languagePackChanged();
     void logsDumped(bool success);
     void voiceSessionSetup(const QString &fileName, const QString &format, const QString &appUuid);
     void voiceSessionStream(const QString &fileName);
@@ -217,6 +219,7 @@ private:
     Model m_model = ModelUnknown;
     QString m_serialNumber;
     QString m_language;
+    quint16 m_langVer;
     Capabilities m_capabilities = CapabilityNone;
     bool m_isUnfaithful = false;
     bool m_recovery = false;

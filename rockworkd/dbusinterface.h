@@ -24,6 +24,7 @@ signals:
     void ScreenshotRemoved(const QString &filename);
     void FirmwareUpgradeAvailableChanged();
     void UpgradingFirmwareChanged();
+    void LanguageVersionChanged();
     void LogsDumped(bool success);
 
     void HealthParamsChanged();
@@ -46,8 +47,10 @@ public slots:
     QString Address() const;
     QString Name() const;
     QString SerialNumber() const;
+    QString PlatformString() const;
     QString HardwarePlatform() const;
     QString SoftwareVersion() const;
+    QString LanguageVersion() const;
     int Model() const;
     bool IsConnected() const;
     bool Recovery() const;
