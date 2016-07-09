@@ -67,6 +67,16 @@ void AppManager::rescan()
     AppInfo music(QUuid("1f03293d-47af-4f28-b960-f2b02a6dd757"), false, gettext("Music"), gettext("System app"));
     m_appList.append(music.uuid());
     m_apps.insert(music.uuid(), music);
+    if(m_pebble->capabilities().testFlag(CapabilityWeather)) {
+        AppInfo weather(QUuid("61b22bc8-1e29-460d-a236-3fe409a439ff"), false, gettext("Weather"), gettext("System app"), true);
+        m_appList.append(weather.uuid());
+        m_apps.insert(weather.uuid(), weather);
+    }
+    if(m_pebble->capabilities().testFlag(CapabilitySendSMS)) {
+        AppInfo sendsms(QUuid("0863fc6a-66c5-4f62-ab8a-82ed00a98b5d"), false, gettext("Send SMS"), gettext("System app"), true);
+        m_appList.append(sendsms.uuid());
+        m_apps.insert(sendsms.uuid(), sendsms);
+    }
     AppInfo notifications(QUuid("b2cae818-10f8-46df-ad2b-98ad2254a3c1"), false, gettext("Notifications"), gettext("System app"));
     m_appList.append(notifications.uuid());
     m_apps.insert(notifications.uuid(), notifications);

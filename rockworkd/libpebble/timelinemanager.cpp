@@ -237,11 +237,13 @@ const TimelinePin TimelinePin::makeNotification(const TimelinePin *old) const
 const QList<TimelinePin> TimelinePin::makeReminders() const
 {
     QList<TimelinePin> reminders;
-    for(int i = 0; i < qMax(m_pin.value("reminders").toArray().size(),3);i++) {
+    for(int i = 0; i < qMin(m_pin.value("reminders").toArray().size(),3);i++) {
         QJsonObject obj=m_pin.value("reminders").toArray().at(i).toObject();
         QDateTime at = obj.value("time").toVariant().toDateTime().toUTC();
-        if(at > QDateTime::currentDateTimeUtc().addSecs(-15*60)) // ain't no expired reminders!
+        if(at > QDateTime::currentDateTimeUtc().addSecs(-15*60))
             reminders.append(TimelinePin(obj,m_manager,QUuid::createUuid()));
+        else
+            qDebug() << "Reminder" << obj.value("time").toString() << "has expired";
     }
     return reminders;
 }
@@ -914,8 +916,9 @@ void TimelineManager::blobdbAckHandler(BlobDB::BlobDBId db, BlobDB::Operation cm
         case BlobDB::StatusSuccess:
             pin->setSent(true);
             break;
+        case BlobDB::StatusFailure:
         case BlobDB::StatusIgnore:
-            pin->setSent(false);
+            pin->setRejected(false);
             break;
         default:
             pin->setRejected(true);

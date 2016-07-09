@@ -284,7 +284,7 @@ void VoiceEndpoint::timerEvent(QTimerEvent *event)
             //transcriptionResponse(ResTimeout,QList<Sentence>(),QUuid()); // We should actualy reply like this but lets do...
             transcriptionResponse(ResSuccess,
                             QList<Sentence>({
-                                Sentence({7,QList<Word>({{1,5,"Noone"},{1,5,"dared"},{1,2,"to"},{1,5,"reply"},{1,1,"."},{1,7,"Service"},{1,7,"Timeout"}})})
+                                Sentence({8,QList<Word>({{1,2,"No"},{1,3,"one"},{1,5,"dared"},{1,2,"to"},{1,5,"reply"},{1,1,"."},{1,7,"Service"},{1,7,"Timeout"}})})
                             }),
                             m_appUuid); // Example transcription - for the reference
             break;

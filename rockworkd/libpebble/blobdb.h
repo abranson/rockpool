@@ -19,7 +19,11 @@ public:
         BlobDBIdApp = 2,
         BlobDBIdReminder = 3,
         BlobDBIdNotification = 4,
+        //WeatherForecast = 5,
+        //AutoReplySettings = 6,
         BlobDBIdAppSettings = 7
+        // ...
+        // WeatherApp = 9
 
     };
     enum Operation {

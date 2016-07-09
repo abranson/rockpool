@@ -8,6 +8,8 @@
 #include <extendedcalendar.h>
 #include <extendedstorage.h>
 
+#include <libintl.h>
+
 #define MANAGER           "eds"
 #define MANAGER_FALLBACK  "memory"
 
@@ -23,6 +25,7 @@ OrganizerAdapter::OrganizerAdapter(QObject *parent) : QObject(parent),
     _calendarStorage->registerObserver(this);
     if (_calendarStorage->open()) {
         refresh();
+        startTimer(24 * 60 * 60 * 1000); // I didn't find any other periodic (daily) refresh
     } else {
         qWarning() << "Cannot open calendar database";
     }
@@ -62,11 +65,18 @@ void OrganizerAdapter::reSync(qint32 end)
     m_disabled = false;
     m_windowEnd = end;
     setSchedule(10);
+    qDebug() << "Resyncing organizer for next" << m_windowEnd << "days";
 }
 void OrganizerAdapter::disable()
 {
     m_disabled = true;
     _refreshTimer->stop();
+}
+
+void OrganizerAdapter::timerEvent(QTimerEvent *event)
+{
+    if(event)
+        refresh();
 }
 
 void OrganizerAdapter::refresh()
@@ -78,6 +88,7 @@ void OrganizerAdapter::refresh()
     QDate endDate = QDate::currentDate().addDays(m_windowEnd);
     _calendarStorage->loadRecurringIncidences();
     _calendarStorage->load(startDate, endDate);
+    qDebug() << "Refreshing organizer from" << startDate.toString() << "to" << endDate.toString();
 
     //TODO: Didn't know about nemo-qml-plugin-calendar, we should probably use this instead of mKCal
     //We have to use it to detect which calendars have been turned off, and
@@ -156,16 +167,32 @@ void OrganizerAdapter::refresh()
 
         foreach (const QSharedPointer<KCalCore::Alarm> alarm, incidence->alarms()) {
             if (alarm->enabled()) {
-                QDateTime reminderTime = alarm->nextTime(KDateTime::currentDateTime(KDateTime::Spec::LocalZone()), false).dateTime();
+                QString reminderTime;
+                if(alarm->hasStartOffset()) {
+                    reminderTime = start.toUTC().addSecs(alarm->startOffset().asSeconds()).toString(Qt::ISODate);
+                } else if(alarm->hasTime()) {
+                    reminderTime = incidence->recurs() ?
+                        alarm->nextTime(KDateTime::currentDateTime(KDateTime::Spec::LocalZone()), false).toUtc().toString()
+                        : alarm->time().toUtc().toString();
+                } else {
+                    qDebug() << "Skipping reminder, has no time";
+                    continue;
+                }
                 qDebug() << "Alarm enabled for " << incidence->summary() << " at " << reminderTime;
                 QJsonObject rem,rLy;
-                rem.insert("time",reminderTime.toString());
+                rem.insert("time",reminderTime);
                 rLy.insert("type",QString("genericReminder"));
-                rLy.insert("title",pinLayout.value("title"));
+                rLy.insert("title",(alarm->type() == KCalCore::Alarm::Display) ? alarm->text() : pinLayout.value("title"));
                 if(pinLayout.contains("locationName"))
                     rLy.insert("locationName",pinLayout.value("locationName"));
                 rLy.insert("tinyIcon",QString("system://images/NOTIFICATION_REMINDER"));
                 rem.insert("layout",rLy);
+                //QJsonArray rAs;
+                //QJsonObject rAc;
+                //rAc.insert("type",QString("snooze"));
+                //rAc.insert("title",QString(gettext("Snooze")));
+                //rAs.append(rAc);
+                //rem.insert("actions",rAs);
                 reminders.append(rem);
                 if(reminders.count()==3)
                     break;

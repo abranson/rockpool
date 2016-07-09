@@ -340,6 +340,7 @@ void TimelineSync::resyncLocker(bool force)
     QSet<QUuid> missing = m_pebble->installedAppIds().toSet().subtract(m_locker.keys().toSet());
     qDebug() << "Locker resync: next push to the locker those" << missing.size() << "missing there";
     foreach(const QUuid &id,missing) {
+        if(m_pebble->appInfo(id).isSystemApp()) continue;
         QNetworkReply *rpl = m_nam->put(authedRequest(s_lockerUrl+id.toString().mid(1,36)),QByteArray());
         connect(rpl,&QNetworkReply::finished,[this,rpl](){
             QString err;

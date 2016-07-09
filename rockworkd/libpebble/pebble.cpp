@@ -566,8 +566,13 @@ void Pebble::voiceSessionResult(const QString &fileName, const QVariantList &sen
             st.count=vs.count();
             foreach (const QVariant &v, vs) {
                 VoiceEndpoint::Word word;
-                word.confidence = v.toMap().value("confidence").toInt();
-                word.data = v.toMap().value("word").toString().toUtf8();
+                if(v.canConvert(QMetaType::QVariantMap)) {
+                    word.confidence = v.toMap().value("confidence").toInt();
+                    word.data = v.toMap().value("word").toString().toUtf8();
+                } else if(v.canConvert(QMetaType::QVariantList)) {
+                    word.confidence = v.toList().first().toUInt();
+                    word.data = v.toList().last().toString().toUtf8();
+                }
                 word.length = word.data.length();
                 st.words.append(word);
             }
@@ -781,6 +786,7 @@ void Pebble::setCalendarSyncEnabled(bool enabled)
     }
     m_calendarSyncEnabled = enabled;
     emit calendarSyncEnabledChanged();
+    qDebug() << "Changing calendar sync enabled to" << enabled;
 
     if (!m_calendarSyncEnabled) {
         Core::instance()->platform()->stopOrganizer();
@@ -1118,20 +1124,25 @@ void Pebble::phoneVersionAsked(const QByteArray &data)
     Q_UNUSED(data);
     QByteArray res;
 
-    Capabilities sessionCap(CapabilityHealth
-                            | CapabilityAppRunState
-                            | CapabilityUpdatedMusicProtocol | CapabilityInfiniteLogDumping | Capability8kAppMessages);
+    // android sends 09af
+    Capabilities sessionCap(CapabilityAppRunState | CapabilityInfiniteLogDumping
+                            | CapabilityUpdatedMusicProtocol | CapabilityExtendedNotifications
+                            | /*CapabilityLanguagePacks |*/ Capability8kAppMessages
+                            | /*CapabilityHealth |*/ CapabilityVoice
+                            | CapabilityWeather /*| CapabilityXXX*/
+                            | /*CapabilityYYY |*/ CapabilitySendSMS
+                            );
 
     quint32 platformFlags = 16 | 32 | OSAndroid;
 
     WatchDataWriter writer(&res);
     writer.writeLE<quint8>(0x01); // ok
-    writer.writeLE<quint32>(0xFFFFFFFF);
-    writer.writeLE<quint32>(sessionCap);
+    writer.writeLE<quint32>(0xFFFFFFFF); // deprecated since 3.0
+    writer.writeLE<quint32>(0); // deprecated since 3.0
     writer.write<quint32>(platformFlags);
     writer.write<quint8>(2); // response version
     writer.write<quint8>(3); // major version
-    writer.write<quint8>(0); // minor version
+    writer.write<quint8>(13); // minor version
     writer.write<quint8>(0); // bugfix version
     writer.writeLE<quint64>(sessionCap);
 
