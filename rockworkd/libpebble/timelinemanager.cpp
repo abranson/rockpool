@@ -31,7 +31,8 @@ QHash<QString,TimelineAction::Type> name2act{
     {"openWatchApp",TimelineAction::TypeOpenWatchApp},
     {"empty",TimelineAction::TypeEmpty},
     {"remove",TimelineAction::TypeRemove},
-    {"open",TimelineAction::TypeOpenPin},
+    {"openPin",TimelineAction::TypeOpenPin},
+    {"open",   TimelineAction::TypeOpenPin}
 };
 const BlobDB::BlobDBId TimelinePin::item2blob[4] = {BlobDB::BlobDBIdTest,BlobDB::BlobDBIdNotification,BlobDB::BlobDBIdPin,BlobDB::BlobDBIdReminder};
 TimelinePin::TimelinePin(const TimelinePin &src):
@@ -54,7 +55,7 @@ TimelinePin::TimelinePin(const TimelinePin &src):
     qDebug() << "Pin deep copy - be sure to know what you're doing" << m_uuid;
     m_pending = src.m_pending;
 }
-TimelinePin::TimelinePin(const QJsonObject &obj, TimelineManager *manager, const QUuid &uuid):
+TimelinePin::TimelinePin(const QJsonObject &obj, TimelineManager *manager, const QUuid &uuid, const TimelinePin *parent):
     m_manager(manager),
     m_pin(obj)
 {
@@ -63,6 +64,9 @@ TimelinePin::TimelinePin(const QJsonObject &obj, TimelineManager *manager, const
         m_uuid = uuid;
     if(m_created.isNull())
         m_created = QDateTime::currentDateTimeUtc();
+    if(parent) {
+        m_parent = parent->guid();
+    }
 }
 void TimelinePin::initJson()
 {
@@ -227,7 +231,7 @@ const TimelinePin TimelinePin::makeNotification(const TimelinePin *old) const
             if(updated().isValid())
                 n_pin.insert("updateTime",updated().toString(Qt::ISODate));
             n_pin.insert("time",time);
-            return TimelinePin(n_pin,m_manager,QUuid::createUuid());
+            return TimelinePin(n_pin,m_manager,QUuid::createUuid(),this);
         }
     }
     qDebug() << "Cannot build valid notification for the pin" << m_uuid;
@@ -241,7 +245,7 @@ const QList<TimelinePin> TimelinePin::makeReminders() const
         QJsonObject obj=m_pin.value("reminders").toArray().at(i).toObject();
         QDateTime at = obj.value("time").toVariant().toDateTime().toUTC();
         if(at > QDateTime::currentDateTimeUtc().addSecs(-15*60))
-            reminders.append(TimelinePin(obj,m_manager,QUuid::createUuid()));
+            reminders.append(TimelinePin(obj,m_manager,QUuid::createUuid(),this));
         else
             qDebug() << "Reminder" << obj.value("time").toString() << "has expired";
     }
@@ -336,6 +340,7 @@ TimelineManager::TimelineManager(Pebble *pebble, WatchConnection *connection):
     m_pebble(pebble),
     m_connection(connection)
 {
+    m_connection->registerEndpointHandler(WatchConnection::EndpointNotify, this, "notifyHandler");
     m_connection->registerEndpointHandler(WatchConnection::EndpointActionHandler, this, "actionHandler");
     connect(m_pebble->blobdb(), &BlobDB::blobCommandResult, this, &TimelineManager::blobdbAckHandler);
     m_timelineStoragePath = pebble->storagePath() + "timeline";
@@ -680,12 +685,32 @@ void TimelineManager::actionHandler(const QByteArray &actionReply)
     }
     m_connection->writeToPebble(WatchConnection::EndpointActionHandler, reply);
 }
+void TimelineManager::notifyHandler(const QByteArray &actionReply)
+{
+    WatchDataReader reader(actionReply);
+    // This one is the same for consequent Snoozes (8)
+    quint8 notifyType = reader.read<quint8>();
+    // This one sequentially increases (1, 2, 3, 4, 5)
+    quint16 notifySeq = reader.readLE<quint16>();
+    // This one is always 3 - most probably affected BlobDbId - 3 is BlobDbId.Reminder
+    quint8 blobDbId = reader.read<quint8>();
+    time_t actionTimestamp = (time_t)reader.readLE<quint32>();
+    // And this one is always 10
+    quint8 someStuff = reader.read<quint8>();
+    QUuid actSrcUuid = reader.readUuid();
+    quint16 payloadLength = reader.readLE<quint16>();
+    QByteArray payload = reader.readBytes(payloadLength);
+    // So when we have type 8, blobDbId 3 and someStuff 10 - the payload is TimelineItem of the new Reminder (which is re-installed by Pebble on Snooze action)
+    qDebug() << "Notify" << notifyType << "seq" << notifySeq << "from BlobDB" << blobDbId
+             << "on" << QDateTime::fromTime_t(actionTimestamp,Qt::LocalTime).toString(Qt::ISODate) << "having" << someStuff << "from" << actSrcUuid
+             << "with" << payloadLength << "bytes of" << payload.toHex();
+}
 
 // Storage Ops
 void TimelineManager::addPin(const TimelinePin &pin)
 {
     m_mtx_pinStorage.lock();
-    // We may be re-inserting the pin - eg update. Parent is ok by time & topics may change.
+    // We may be re-inserting the pin - eg update. Parent is ok but time & topics may change.
     if(m_pin_idx_guid.contains(pin.guid())) {
         m_pin_idx_time[m_pin_idx_guid.value(pin.guid()).gmtime_t()].removeAll(pin.guid());
         foreach(const QString &topic,m_pin_idx_guid.value(pin.guid()).topics())

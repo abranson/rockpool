@@ -70,7 +70,8 @@ public:
         EndpointAudioStream = 10000, // New in 3.x
         EndpointVoiceControl = 11000,
         EndpointActionHandler = 11440,
-        EndpointBlobDB = 45531, // New in 3.x
+        EndpointBlobDB = 0xB1DB, // New in 3.x
+        EndpointNotify = 0xB2DB, // uhm, dunno what it is
         EndpointSorting = 0xabcd,
         EndpointPutBytes = 0xbeef
     };

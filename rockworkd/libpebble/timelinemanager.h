@@ -28,7 +28,7 @@ public:
     TimelinePin() {}
     TimelinePin(const TimelinePin &src);
     TimelinePin(const QJsonDocument &json, TimelineManager *manager) : TimelinePin(json.object(),manager){}
-    TimelinePin(const QJsonObject &obj, TimelineManager *manager, const QUuid &uuid = QUuid());
+    TimelinePin(const QJsonObject &obj, TimelineManager *manager, const QUuid &uuid = QUuid(), const TimelinePin *parent = 0);
     TimelinePin(const QString &fileName, TimelineManager *manager);
 
     const QUuid & guid() const {return m_uuid;}
@@ -132,6 +132,7 @@ signals:
     void actionTriggered(const QUuid &uuid, const QString &type, const QJsonObject &param);
 
 private slots:
+    void notifyHandler(const QByteArray &data);
     void actionHandler(const QByteArray &data);
     void blobdbAckHandler(BlobDB::BlobDBId db, BlobDB::Operation cmd, const QUuid &uuid, BlobDB::Status ack);
     void doMaintenance();
