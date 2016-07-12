@@ -551,7 +551,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppsPage.qml" line="86"/>
+        <location filename="../qml/pages/InstalledAppsPage.qml" line="104"/>
         <source>Save Apps Order</source>
         <translation type="unfinished"></translation>
     </message>
@@ -853,6 +853,34 @@
     </message>
 </context>
 <context>
+    <name>SendTextSettingsDialog</name>
+    <message>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="15"/>
+        <source>Messaging Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="16"/>
+        <source>OK</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="17"/>
+        <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="21"/>
+        <source>Contacts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="29"/>
+        <source>Messages</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>SettingsPage</name>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="26"/>
@@ -965,6 +993,44 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="183"/>
         <source>Canned Messages</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>WeatherSettingsDialog</name>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="15"/>
+        <source>Weather Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="16"/>
+        <source>OK</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="17"/>
+        <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="21"/>
+        <source>Units</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="23"/>
+        <source>Celsius</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="24"/>
+        <source>Fahrenheit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="29"/>
+        <source>Locations</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

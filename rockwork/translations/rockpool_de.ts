@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1" language="de" sourcelanguage="en">
+<TS version="2.0" language="de" sourcelanguage="en">
 <context>
     <name>AppSettingsPage</name>
     <message>
@@ -551,7 +551,7 @@
         <translation>Zifferblätter</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppsPage.qml" line="86"/>
+        <location filename="../qml/pages/InstalledAppsPage.qml" line="104"/>
         <source>Save Apps Order</source>
         <translation>App-Reihenfolge speichern</translation>
     </message>
@@ -853,6 +853,34 @@
     </message>
 </context>
 <context>
+    <name>SendTextSettingsDialog</name>
+    <message>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="15"/>
+        <source>Messaging Settings</source>
+        <translation>Nachrichteneinstellungen</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="16"/>
+        <source>OK</source>
+        <translation>Ok</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="17"/>
+        <source>Cancel</source>
+        <translation>Abbrechen</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="21"/>
+        <source>Contacts</source>
+        <translation>Kontakte</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="29"/>
+        <source>Messages</source>
+        <translation>Vorgefertigte Rückmeldungen</translation>
+    </message>
+</context>
+<context>
     <name>SettingsPage</name>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="26"/>
@@ -966,6 +994,44 @@
         <location filename="../qml/pages/SettingsPage.qml" line="183"/>
         <source>Canned Messages</source>
         <translation>Vorgefertigte Rückmeldungen</translation>
+    </message>
+</context>
+<context>
+    <name>WeatherSettingsDialog</name>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="15"/>
+        <source>Weather Settings</source>
+        <translation>Wettereinstellungen</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="16"/>
+        <source>OK</source>
+        <translation>Ok</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="17"/>
+        <source>Cancel</source>
+        <translation>Abbrechen</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="21"/>
+        <source>Units</source>
+        <translation>Einheiten</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="23"/>
+        <source>Celsius</source>
+        <translation>Celsius</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="24"/>
+        <source>Fahrenheit</source>
+        <translation>Fahrenheit</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="29"/>
+        <source>Locations</source>
+        <translation>Standorte</translation>
     </message>
 </context>
 </TS>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1" language="uk" sourcelanguage="en">
+<TS version="2.0" language="uk" sourcelanguage="en">
 <context>
     <name>AppSettingsPage</name>
     <message>
@@ -552,7 +552,7 @@
         <translation>Циферблати</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppsPage.qml" line="86"/>
+        <location filename="../qml/pages/InstalledAppsPage.qml" line="104"/>
         <source>Save Apps Order</source>
         <translation>Зберегти Порядок Додатків</translation>
     </message>
@@ -562,27 +562,27 @@
     <message>
         <location filename="../qml/pages/LanguagePage.qml" line="19"/>
         <source>Language Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Параметри Мови</translation>
     </message>
     <message>
         <location filename="../qml/pages/LanguagePage.qml" line="20"/>
         <source>Set langugage for application and your Pebble</source>
-        <translation type="unfinished"></translation>
+        <translation>Встановити мову додатку та годиннику Pebble</translation>
     </message>
     <message>
         <location filename="../qml/pages/LanguagePage.qml" line="23"/>
         <source>Pebble Language</source>
-        <translation type="unfinished"></translation>
+        <translation>Мовний Пакет Pebble</translation>
     </message>
     <message>
         <location filename="../qml/pages/LanguagePage.qml" line="29"/>
         <source>Select Language</source>
-        <translation type="unfinished"></translation>
+        <translation>Виберте мову</translation>
     </message>
     <message>
         <location filename="../qml/pages/LanguagePage.qml" line="41"/>
         <source>Submit</source>
-        <translation type="unfinished"></translation>
+        <translation>Підтвердити</translation>
     </message>
 </context>
 <context>
@@ -854,6 +854,34 @@
     </message>
 </context>
 <context>
+    <name>SendTextSettingsDialog</name>
+    <message>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="15"/>
+        <source>Messaging Settings</source>
+        <translation>Повідомлення</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="16"/>
+        <source>OK</source>
+        <translation>Добре</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="17"/>
+        <source>Cancel</source>
+        <translation>Скасувати</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="21"/>
+        <source>Contacts</source>
+        <translation>Контакти</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="29"/>
+        <source>Messages</source>
+        <translation>Повідомлення</translation>
+    </message>
+</context>
+<context>
     <name>SettingsPage</name>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="26"/>
@@ -883,7 +911,7 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="50"/>
         <source>Language</source>
-        <translation type="unfinished"></translation>
+        <translation>Мова</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="55"/>
@@ -967,6 +995,44 @@
         <location filename="../qml/pages/SettingsPage.qml" line="183"/>
         <source>Canned Messages</source>
         <translation>Заготовленні відповіді</translation>
+    </message>
+</context>
+<context>
+    <name>WeatherSettingsDialog</name>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="15"/>
+        <source>Weather Settings</source>
+        <translation>Налаштування Погоди</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="16"/>
+        <source>OK</source>
+        <translation>Добре</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="17"/>
+        <source>Cancel</source>
+        <translation>Скасувати</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="21"/>
+        <source>Units</source>
+        <translation>Одиниці</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="23"/>
+        <source>Celsius</source>
+        <translation>Целсія</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="24"/>
+        <source>Fahrenheit</source>
+        <translation>Фаренгейта</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="29"/>
+        <source>Locations</source>
+        <translation>Локації</translation>
     </message>
 </context>
 </TS>

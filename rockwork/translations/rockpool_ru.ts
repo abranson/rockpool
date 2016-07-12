@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1" language="ru" sourcelanguage="en">
+<TS version="2.0" language="ru" sourcelanguage="en">
 <context>
     <name>AppSettingsPage</name>
     <message>
@@ -553,7 +553,7 @@
         <translation>Циферблаты</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppsPage.qml" line="86"/>
+        <location filename="../qml/pages/InstalledAppsPage.qml" line="104"/>
         <source>Save Apps Order</source>
         <translation>Сохранить Порядок Пакетов</translation>
     </message>
@@ -563,27 +563,27 @@
     <message>
         <location filename="../qml/pages/LanguagePage.qml" line="19"/>
         <source>Language Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Языковые Настройки</translation>
     </message>
     <message>
         <location filename="../qml/pages/LanguagePage.qml" line="20"/>
         <source>Set langugage for application and your Pebble</source>
-        <translation type="unfinished"></translation>
+        <translation>Установка языка для приложения и Pebble</translation>
     </message>
     <message>
         <location filename="../qml/pages/LanguagePage.qml" line="23"/>
         <source>Pebble Language</source>
-        <translation type="unfinished"></translation>
+        <translation>Языковой Пакет Pebble</translation>
     </message>
     <message>
         <location filename="../qml/pages/LanguagePage.qml" line="29"/>
         <source>Select Language</source>
-        <translation type="unfinished"></translation>
+        <translation>Выберите язык</translation>
     </message>
     <message>
         <location filename="../qml/pages/LanguagePage.qml" line="41"/>
         <source>Submit</source>
-        <translation type="unfinished"></translation>
+        <translation>Отправить</translation>
     </message>
 </context>
 <context>
@@ -855,6 +855,34 @@
     </message>
 </context>
 <context>
+    <name>SendTextSettingsDialog</name>
+    <message>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="15"/>
+        <source>Messaging Settings</source>
+        <translation>Настройки Сообщений</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="16"/>
+        <source>OK</source>
+        <translation>Принять</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="17"/>
+        <source>Cancel</source>
+        <translation>Отмена</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="21"/>
+        <source>Contacts</source>
+        <translation>Контакты</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="29"/>
+        <source>Messages</source>
+        <translation>Сообщения</translation>
+    </message>
+</context>
+<context>
     <name>SettingsPage</name>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="26"/>
@@ -884,7 +912,7 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="50"/>
         <source>Language</source>
-        <translation type="unfinished"></translation>
+        <translation>Языки</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="55"/>
@@ -968,6 +996,44 @@
         <location filename="../qml/pages/SettingsPage.qml" line="183"/>
         <source>Canned Messages</source>
         <translation>Предзаписанные Сообщения</translation>
+    </message>
+</context>
+<context>
+    <name>WeatherSettingsDialog</name>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="15"/>
+        <source>Weather Settings</source>
+        <translation>Настройки Погоды</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="16"/>
+        <source>OK</source>
+        <translation>Принять</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="17"/>
+        <source>Cancel</source>
+        <translation>Отмена</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="21"/>
+        <source>Units</source>
+        <translation>Единицы</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="23"/>
+        <source>Celsius</source>
+        <translation>Цельсия</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="24"/>
+        <source>Fahrenheit</source>
+        <translation>Фаренгейта</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="29"/>
+        <source>Locations</source>
+        <translation>Локации</translation>
     </message>
 </context>
 </TS>

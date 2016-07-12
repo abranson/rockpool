@@ -31,7 +31,13 @@ Item {
                 icon = "timer";
                 break;
             case "{8f3c8686-31a1-4f5f-91f5-01600c9bdc59}":
-                icon = "clock"
+                icon = "clock";
+                break;
+            case "{61b22bc8-1e29-460d-a236-3fe409a439ff}":
+                icon = "day";
+                break;
+            case "{0863fc6a-66c5-4f62-ab8a-82ed00a98b5d}":
+                icon = "chat";
             }
             if (icon)
                 return "image://theme/icon-m-" + icon
