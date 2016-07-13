@@ -3,6 +3,7 @@
 #include "pebble.h"
 #include "watchconnection.h"
 #include "watchdatareader.h"
+#include "watchdatawriter.h"
 
 PhoneCallEndpoint::PhoneCallEndpoint(Pebble *pebble, WatchConnection *connection):
     QObject(pebble),
@@ -44,15 +45,24 @@ void PhoneCallEndpoint::callEnded(uint cookie, bool missed)
 void PhoneCallEndpoint::phoneControl(char act, uint cookie, QStringList datas)
 {
     QByteArray head;
-    head.append((char)act);
-    head.append((cookie >> 24)& 0xFF);
-    head.append((cookie >> 16)& 0xFF);
-    head.append((cookie >> 8)& 0xFF);
-    head.append(cookie & 0xFF);
-    if (datas.length()>0) {
-        head.append(m_connection->buildData(datas));
+    WatchDataWriter w(&head);
+    head.append(act);
+    w.write<quint32>(cookie);
+    switch (act) {
+    case CallActionMissed:
+    case CallActionIncoming:
+        if (datas.length()>1) {
+            w.writePascalString(datas.at(0)); // name
+            w.writePascalString(datas.at(1)); // number
+        } else {
+            qWarning() << "Empty payload not expected, filling with dummy values";
+            w.writePascalString("empty number"); // name
+            w.writePascalString("+000 000 000 000"); // number
+        }
+        break;
+    default:
+        break;
     }
-
     m_connection->writeToPebble(WatchConnection::EndpointPhoneControl, head);
 }
 
@@ -60,12 +70,33 @@ void PhoneCallEndpoint::handlePhoneEvent(const QByteArray &data)
 {
 
     WatchDataReader reader(data);
-    reader.skip(1);
-    uint cookie = reader.read<uint>();
+    quint8 command = reader.read<quint8>();
+    quint32 cookie = reader.read<quint32>();
+    QList<CallState> res;
+    quint8 len;
 
-    if (data.at(0) == CallActionHangup) {
+    switch(command) {
+    case CallActionAnswer:
+        emit answerCall(cookie);
+        break;
+    case CallActionHangup:
         emit hangupCall(cookie);
-    } else {
+        break;
+    case CallActionResState:
+        while(!reader.checkBad()) {
+            CallState cs;
+            len = reader.read<quint8>();
+            if(len != sizeof(CallState)) {
+                qWarning() << "Data corruption:" << len << "does not match expected payload size" << sizeof(CallState);
+                break;
+            }
+            cs.action = reader.read<quint8>();
+            cs.cookie = reader.read<quint32>();
+            res.append(cs);
+        }
+        emit callState(cookie, res);
+        break;
+    default:
         qWarning() << "received an unhandled phone event" << data.toHex();
     }
 }
