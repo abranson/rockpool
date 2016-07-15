@@ -31,6 +31,7 @@ public:
     TimelinePin(const QJsonObject &obj, TimelineManager *manager, const QUuid &uuid = QUuid(), const TimelinePin *parent = 0);
     TimelinePin(const QString &fileName, TimelineManager *manager);
 
+    const QString id() const {return m_pin.contains("id")?m_pin.value("id").toString():m_uuid.toString();}
     const QUuid & guid() const {return m_uuid;}
     const QUuid & parent() const {return m_parent;}
     QString kind() const {return m_kind;}
@@ -67,6 +68,8 @@ public:
     const QJsonArray & getActions() const;
     QList<TimelineAttribute> handleAction(TimelineAction::Type atype, quint8 id, const QJsonObject &param) const;
     void updateTopics(const TimelinePin &pin);
+
+    void update(const TimelineItem &item, const QDateTime ts = QDateTime::currentDateTimeUtc());
 
     // watch operations
     TimelineItem toItem() const;
@@ -130,10 +133,11 @@ signals:
     void muteSource(const QString &sourceId);
     void removeNotification(const QUuid &uuid);
     void actionTriggered(const QUuid &uuid, const QString &type, const QJsonObject &param);
+    void snoozeReminder(const QUuid &event, const QString &id, const QDateTime &oldTime, const QDateTime &newTime);
 
 private slots:
-    void notifyHandler(const QByteArray &data);
     void actionHandler(const QByteArray &data);
+    void notifyHandler(const QDateTime &ts, const QUuid &key, const TimelineItem &val);
     void blobdbAckHandler(BlobDB::BlobDBId db, BlobDB::Operation cmd, const QUuid &uuid, BlobDB::Status ack);
     void doMaintenance();
 

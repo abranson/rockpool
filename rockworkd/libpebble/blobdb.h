@@ -29,7 +29,9 @@ public:
     enum Operation {
         OperationInsert = 0x01,
         OperationDelete = 0x04,
-        OperationClear = 0x05
+        OperationClear = 0x05,
+        OperationNotify = 0x8,
+        OperationInvalid = 0xff
     };
 
     enum Response {
@@ -64,11 +66,13 @@ public:
 
 private slots:
     void blobCommandReply(const QByteArray &data);
+    void blobUpdateNotify(const QByteArray &data);
     void sendNext();
 
 signals:
     void appInserted(const QUuid &uuid);
     void blobCommandResult(BlobDBId db, Operation cmd, const QUuid &uuid, Status ack);
+    void notifyTimeline(const QDateTime &ts, const QUuid &key, const TimelineItem &val);
 
 private:
     static inline quint16 generateToken();
@@ -82,11 +86,13 @@ private:
         BlobDB::Operation m_command; // quint8
         quint16 m_token;
         BlobDB::BlobDBId m_database;
+        quint32 m_timestamp;
 
         QByteArray m_key;
         QByteArray m_value;
 
         QByteArray serialize() const override;
+        bool deserialize(const QByteArray &data) override;
     };
 
     Pebble *m_pebble;

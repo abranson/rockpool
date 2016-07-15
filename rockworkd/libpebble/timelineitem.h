@@ -5,47 +5,71 @@
 #include <QDateTime>
 
 #include "watchconnection.h"
-
+#include "watchdatareader.h"
+#include "watchdatawriter.h"
 
 class TimelineAttribute
 {
 public:
-    typedef quint32 le32;
-    typedef quint16 le16;
-
     TimelineAttribute(quint8 type, const QByteArray &content):
         m_type(type),
         m_content(content)
     {}
 
-    TimelineAttribute(quint8 type, quint32 data):
-        m_type(type)
-    {
-        setContent(data);
-    }
     TimelineAttribute(quint8 type, const QStringList &values):
         m_type(type)
     {
-        setContent(values);
+        setStringList(values);
     }
+    TimelineAttribute(quint8 type, quint32 data):
+        m_type(type)
+    {
+        setInt<quint32>(data);
+    }/*
     TimelineAttribute(quint8 type, quint8 data):
         m_type(type)
     {
-        setContent(data);
+        setByte(data);
+    }*/
+    TimelineAttribute(quint8 type, const QString &string):
+        m_type(type)
+    {
+        setString(string);
+    }
+    TimelineAttribute(quint8 type):
+        m_type(type)
+    {}
+    TimelineAttribute():
+        m_type(0)
+    {}
+    quint8 type() const { return m_type;}
+
+    template <typename T>
+    void setInt(T data) {
+        WatchDataWriter w(&m_content);
+        w.writeLE<T>(data);
+    }
+    template <typename T>
+    T getInt() const {
+        WatchDataReader r(m_content);
+        return r.readLE<T>();
     }
 
+    void setByte(quint8 byte);
+    quint8 getByte() const;
+
+    void setStringList(const QStringList &values, int max = 0);
+    QStringList getStringList() const;
+
+    void setString(const QString &string, int max = 0);
+    QString getString() const;
+
     void setContent(const QByteArray &content);
-    void setContent(qint32 data);
-    void setContent(qint16 data);
-    void setContent(quint32 data);
-    void setContent(quint16 data);
-    void setContent(const QStringList &values);
-    void setContent(quint8 data);
-    void setContent(le32 *data);
-    void setContent(le16 *data);
+    QByteArray getContent() const;
 
     QByteArray serialize() const;
-    quint8 type() { return m_type;}
+    bool deserialize(WatchDataReader &r);
+
 private:
     quint8 m_type;
     QByteArray m_content;
@@ -55,6 +79,7 @@ class TimelineAction: public PebblePacket
 {
 public:
     enum Type {
+        TypeInvalid = 0,
         TypeAncsDismiss = 1,
         TypeGeneric = 2,
         TypeResponse = 3,
@@ -66,19 +91,16 @@ public:
         TypeRemove = 9,
         TypeOpenPin = 10
     };
+    TimelineAction():
+        m_actionId(0),
+        m_type(TypeInvalid)
+    {}
     TimelineAction(quint8 actionId, Type type, const QList<TimelineAttribute> &attributes = QList<TimelineAttribute>());
     void appendAttribute(const TimelineAttribute &attribute);
 
-    QByteArray serialize() const override {
-        QByteArray ret;
-        ret.append(m_actionId);
-        ret.append((quint8)m_type);
-        ret.append(m_attributes.count());
-        foreach (const TimelineAttribute &attr, m_attributes) {
-            ret.append(attr.serialize());
-        }
-        return ret;
-    }
+    QByteArray serialize() const override;
+    bool deserialize(const QByteArray &data) override;
+    bool deserialize(WatchDataReader &r);
 
 private:
     quint8 m_actionId;
@@ -105,16 +127,12 @@ public:
     };
     Q_DECLARE_FLAGS(Flags, Flag)
 
-    // TODO: This is not complete
-    enum Layout {
-        LayoutGenericPin = 0x01,
-        LayoutCalendar = 0x02
-    };
-
+    TimelineItem();
     TimelineItem(Type type, TimelineItem::Flags flags = FlagNone, const QDateTime &timestamp = QDateTime::currentDateTime(), quint16 duration = 0);
     TimelineItem(const QUuid &uuid, Type type, Flags flags = FlagNone, const QDateTime &timestamp = QDateTime::currentDateTime(), quint16 duration = 0);
 
     QUuid itemId() const;
+    QDateTime ts() const;
 
     void setParentId(QUuid parentId);
     void setLayout(quint8 layout);
@@ -127,6 +145,7 @@ public:
     QList<TimelineAction> actions() const;
 
     QByteArray serialize() const override;
+    bool deserialize(const QByteArray &data) override;
 
 private:
     QUuid m_itemId;

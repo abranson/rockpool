@@ -146,12 +146,15 @@ void TimelinePin::remove() const
 {
     QList<const TimelinePin*> kids = m_manager->pinKids(m_uuid);
     if(!kids.isEmpty()) {
+        qDebug() << "Remove" << kids.length() << "nested pins for" << m_uuid.toString();
         foreach(const TimelinePin *kid, kids) {
             kid->remove();
         }
     }
-    m_pending = true;
-    m_manager->remove(*this);
+    if(m_sent) {
+        m_pending = true;
+        m_manager->remove(*this);
+    }
 }
 void TimelinePin::erase() const
 {
@@ -173,6 +176,19 @@ void TimelinePin::updateTopics(const TimelinePin &pin)
         m_pin.insert("topicKeys",pin.m_pin.value("topicKeys"));
         m_topics = pin.topics();
         m_updated = pin.updated();
+    }
+}
+
+void TimelinePin::update(const TimelineItem &item, const QDateTime ts)
+{
+    if(ts > m_updated) {
+        m_updated = ts.toUTC();
+        m_time = item.ts().toUTC();
+        m_pin.insert("time",m_time.toString(Qt::ISODate));
+        if(m_sent)
+            flush();
+    } else {
+        qDebug() << "Stale update, our mtime" << m_updated.toString(Qt::ISODate) << "their" << ts.toString(Qt::ISODate);
     }
 }
 
@@ -308,17 +324,17 @@ QList<TimelineAttribute> TimelinePin::handleAction(TimelineAction::Type atype, q
     } else if(a_type.startsWith("dismiss")) {
         remove();
         attributes.append(m_manager->parseAttribute("largeIcon",QString("system://images/RESULT_DISMISSED")));
-        attributes.append({m_manager->getAttr("subtitle").id,"Dismissed!"});
+        attributes.append({m_manager->getAttr("subtitle").id,QString("Dismissed!")});
     } else if(a_type == "remove" && type() == TimelineItem::TypePin) {
         remove();
         attributes.append(m_manager->parseAttribute("largeIcon",QString("system://images/RESULT_DELETED")));
-        attributes.append({m_manager->getAttr("subtitle").id,"Removed!"});
+        attributes.append({m_manager->getAttr("subtitle").id,QString("Removed!")});
     } else {
         emit m_manager->actionTriggered(m_uuid,a_type, param);
         attributes.append(m_manager->parseAttribute("largeIcon",QString("system://images/RESULT_SENT")));
     }
     if(attributes.count()==1)
-        attributes.append({m_manager->getAttr("subtitle").id,"Done!"});
+        attributes.append({m_manager->getAttr("subtitle").id,QString("Done!")});
     return attributes;
 }
 /**
@@ -340,9 +356,9 @@ TimelineManager::TimelineManager(Pebble *pebble, WatchConnection *connection):
     m_pebble(pebble),
     m_connection(connection)
 {
-    m_connection->registerEndpointHandler(WatchConnection::EndpointNotify, this, "notifyHandler");
     m_connection->registerEndpointHandler(WatchConnection::EndpointActionHandler, this, "actionHandler");
     connect(m_pebble->blobdb(), &BlobDB::blobCommandResult, this, &TimelineManager::blobdbAckHandler);
+    connect(m_pebble->blobdb(), &BlobDB::notifyTimeline, this, &TimelineManager::notifyHandler);
     m_timelineStoragePath = pebble->storagePath() + "timeline";
     // Load firmware layout map
     if(!QFile::exists(m_timelineStoragePath+"/../layouts.json.auto"))
@@ -504,7 +520,7 @@ QHash<QString,quint8> pebbleCol{
     {"pastelyellow", 0b11111110},
     {"white", 0b11111111}
 };
-static const TimelineAttribute att_inval(quint8(0),QByteArray());
+static const TimelineAttribute att_inval;
 TimelineAttribute TimelineManager::parseAttribute(const QString &key, const QJsonValue &val)
 {
     Attr attr = getAttr(key);
@@ -512,19 +528,19 @@ TimelineAttribute TimelineManager::parseAttribute(const QString &key, const QJso
         qWarning() << "Non-existent attribute" << key << val.toString();
         return att_inval;
     }
-    TimelineAttribute attribute(attr.id,QByteArray());
+    TimelineAttribute attribute(attr.id);
     if(attr.type == "string-string") {
-        attribute.setContent(val.toString().remove(QRegExp("<[^>]*>")).toUtf8().left((attr.max ? attr.max : 64)-1));
+        attribute.setString(val.toString(),(attr.max ? attr.max : 64)-1);
     } else if(attr.type == "uri-resource_id") {
         if(getRes(val.toString())==0) {
             qWarning() << "Non-existing Resource URI, ignoring" << key << val.toString();
             return att_inval;
         }
-        attribute.setContent(getRes(val.toString()));
+        attribute.setInt<quint32>(getRes(val.toString()));
     } else if(attr.type == "string_array-string_array") {
-        attribute.setContent(val.toVariant().toStringList());
+        attribute.setStringList(val.toVariant().toStringList());
     } else if(attr.type == "isodate-unixtime") {
-        attribute.setContent(val.toVariant().toDateTime().toUTC().toTime_t());
+        attribute.setInt<quint32>(val.toVariant().toDateTime().toUTC().toTime_t());
     } else if(attr.type == "color-uint8") {
         QString col = val.toString();
         quint8 rgba8 = pebbleCol.value(col);
@@ -542,51 +558,51 @@ TimelineAttribute TimelineManager::parseAttribute(const QString &key, const QJso
             rgba8 = 192 | (((quint8)col.mid(1,2).toInt(0,16)) >> 6) << 4 | (((quint8)col.mid(3,2).toInt(0,16)) >> 6) << 2 | (((quint8)col.mid(5,2).toInt(0,16)) >> 6);
         }
         qDebug() << "Evaluated color to" << rgba8;
-        attribute.setContent(rgba8);
+        attribute.setByte(rgba8);
     } else if(attr.type == "enum-uint8") {
         if(!attr.enums.contains(val.toString())) {
             qWarning() << "Cannot find enum value, ignoring:" << key << val.toString();
             return att_inval;
         }
-        attribute.setContent(attr.enums.value(val.toString()));
+        attribute.setByte(attr.enums.value(val.toString()));
     } else if(attr.type == "number-uint32") {
-        attribute.setContent((quint32)val.toVariant().toUInt());
+        attribute.setInt<quint32>(val.toVariant().toUInt());
     } else if(attr.type == "number-int32") {
-        attribute.setContent((qint32)val.toInt());
+        attribute.setInt<qint32>(val.toInt());
     } else if(attr.type == "number-uint16") {
-        attribute.setContent((quint16)val.toInt());
+        attribute.setInt<quint16>(val.toInt());
     } else if(attr.type == "number-int16") {
-        attribute.setContent((qint16)val.toInt());
+        attribute.setInt<qint16>(val.toInt());
     } else if(attr.type == "number-uint8") {
-        attribute.setContent((quint8)val.toInt());
+        attribute.setByte((quint8)val.toInt());
     } else if(attr.type == "number-int8") {
-        attribute.setContent((qint8)val.toInt());
+        attribute.setByte((qint8)val.toInt());
     }
     return attribute;
 }
-//QJsonObject &TimelineManager::deserializeAttribute(const TimelineAttribute &attr, QJsonObject &obj)
-QJsonObject &TimelineManager::deserializeAttribute(quint8 type, const QByteArray &buf, QJsonObject &obj)
+QJsonObject &TimelineManager::deserializeAttribute(const TimelineAttribute &attr, QJsonObject &obj)
 {
     foreach(const QString &key,m_attributes.keys()) {
         Attr a = getAttr(key);
-        if(a.id==type) {
+        if(a.id==attr.type()) {
             if(a.type == "string_array-string_array") {
-                QJsonArray lst;
-                foreach(const QByteArray ar,buf.split('\0')) {
-                    lst.append(QString(ar));
-                }
+                QJsonArray lst = QJsonArray::fromStringList(attr.getStringList());
                 obj.insert(key,lst);
             } else if(a.type == "string-string") {
-                obj.insert(key,QString(buf));
+                obj.insert(key,attr.getString());
+            } else if(a.type == "number-uint32") {
+                obj.insert(key,QString::number(attr.getInt<quint32>()));
+            } else if(a.type == "number-uint16") {
+                obj.insert(key,QString::number(attr.getInt<quint16>()));
             } else if(a.type == "number-uint8") {
-                obj.insert(key,(quint8)buf.at(0));
+                obj.insert(key,QString::number(attr.getByte()));
             } else {
                 qDebug() << "What else?" << a.type;
             }
             return obj;
         }
     }
-    qDebug() << "Cannot find attribute of type" << type << "something needs upgrade";
+    qDebug() << "Cannot find attribute of type" << attr.type() << "something needs upgrade";
     return obj;
 }
 TimelineItem & TimelineManager::parseLayout(TimelineItem &timelineItem, const QJsonObject &layout)
@@ -634,11 +650,10 @@ void TimelineManager::actionHandler(const QByteArray &actionReply)
     QJsonObject param;
     qDebug() << "Action invoked" << actionId << actionType << notificationId << att_num;
     for(int i=0;i<att_num;i++) {
-        quint8 type = reader.read<quint8>();
-        quint16 len = reader.readLE<quint16>();
-        QByteArray buf = reader.readBytes(len);
-        qDebug() << "Attribute type" << type << "length" << len << buf;
-        param=deserializeAttribute(type,buf,param);
+        TimelineAttribute a;
+        a.deserialize(reader);
+        qDebug() << "Attribute type" << a.type();
+        param=deserializeAttribute(a,param);
     }
     if(!param.isEmpty())
          qDebug() << QJsonDocument(param).toJson();
@@ -664,7 +679,7 @@ void TimelineManager::actionHandler(const QByteArray &actionReply)
         }
     }
     if(attributes.isEmpty()) {
-        TimelineAttribute textAttribute(getAttr("subtitle").id, "Action failed!");
+        TimelineAttribute textAttribute(getAttr("subtitle").id, QString("Action failed!"));
         attributes.append(textAttribute);
         TimelineAttribute iconAttribute(getAttr("largeIcon").id, getRes("system://images/RESULT_FAILED"));
         attributes.append(iconAttribute);
@@ -685,25 +700,26 @@ void TimelineManager::actionHandler(const QByteArray &actionReply)
     }
     m_connection->writeToPebble(WatchConnection::EndpointActionHandler, reply);
 }
-void TimelineManager::notifyHandler(const QByteArray &actionReply)
+void TimelineManager::notifyHandler(const QDateTime &ts, const QUuid &key, const TimelineItem &val)
 {
-    WatchDataReader reader(actionReply);
-    // This one is the same for consequent Snoozes (8)
-    quint8 notifyType = reader.read<quint8>();
-    // This one sequentially increases (1, 2, 3, 4, 5)
-    quint16 notifySeq = reader.readLE<quint16>();
-    // This one is always 3 - most probably affected BlobDbId - 3 is BlobDbId.Reminder
-    quint8 blobDbId = reader.read<quint8>();
-    time_t actionTimestamp = (time_t)reader.readLE<quint32>();
-    // And this one is always 10
-    quint8 someStuff = reader.read<quint8>();
-    QUuid actSrcUuid = reader.readUuid();
-    quint16 payloadLength = reader.readLE<quint16>();
-    QByteArray payload = reader.readBytes(payloadLength);
-    // So when we have type 8, blobDbId 3 and someStuff 10 - the payload is TimelineItem of the new Reminder (which is re-installed by Pebble on Snooze action)
-    qDebug() << "Notify" << notifyType << "seq" << notifySeq << "from BlobDB" << blobDbId
-             << "on" << QDateTime::fromTime_t(actionTimestamp,Qt::LocalTime).toString(Qt::ISODate) << "having" << someStuff << "from" << actSrcUuid
-             << "with" << payloadLength << "bytes of" << payload.toHex();
+    qDebug() << "Notify at" << ts.toString(Qt::ISODate) << "for" << key.toString() << "at" << val.ts().toString(Qt::ISODate);
+    TimelinePin *pin = getPin(val.itemId());
+    if(pin) {
+        if(pin->type() == TimelineItem::TypeReminder) {
+            TimelinePin *event = getPin(pin->parent());
+            if(event) {
+                if(pin->time() < val.ts()) {
+                    //
+                    qDebug() << "Snooze reminder" << key << "for event" << event->guid().toString() << "till" << val.ts().toString(Qt::ISODate);
+                    emit snoozeReminder(event->guid(),event->id(),pin->time(),val.ts());
+                }
+            } else {
+                qWarning() << "Orphaned reminder" << key.toString() << pin->parent().toString() << "found, reset timeline to cleanup the mess";
+            }
+        }
+        pin->update(val,ts);
+    } else
+        qWarning() << "Notify for non-existing pin" << val.itemId().toString();
 }
 
 // Storage Ops
@@ -755,10 +771,10 @@ TimelinePin * TimelineManager::getPin(const QUuid &guid)
     qCritical() << "Requested non-existing pin" << guid;
     return nullptr;
 }
-const QList<const TimelinePin*> TimelineManager::pinKids(const QUuid &parent)
+const TimelinePin::PtrList TimelineManager::pinKids(const QUuid &parent)
 {
-    QList<const TimelinePin*> ret;
-    foreach(const QUuid & uuid,m_pin_idx_parent.value(parent)) {
+    TimelinePin::PtrList ret;
+    foreach(const QUuid &uuid, m_pin_idx_parent.value(parent)) {
         if(m_pin_idx_guid.contains(uuid))
             ret.append(&(m_pin_idx_guid[uuid]));
         else
@@ -829,10 +845,10 @@ void TimelineManager::doMaintenance()
                             qDebug() << "Resending unsent pin" << guid;
                             pin->send();
                         }
-                    } if(pin->deleted() && pin->type()==TimelineItem::TypeNotification) {
+                    } if(pin->deleted() && pin->type() != TimelineItem::TypePin) {
                         qDebug() << "Removing dismissed event" << guid;
+                        // Derived events like notifications and reminders could be discarded
                         cleanup.append(pin);
-                        // Dismiss should emit removeNotification
                     } if(pin->sent() && !pin->sendable()) {
                         qDebug() << "Pending deleteion for pin, removing" << guid;
                         pin->remove();
@@ -907,6 +923,7 @@ void TimelineManager::wipeTimeline(const QString &source)
         m_pebble->blobdb()->clear(BlobDB::BlobDBIdPin);
         m_pebble->blobdb()->clear(BlobDB::BlobDBIdReminder);
         m_pebble->blobdb()->clear(BlobDB::BlobDBIdNotification);
+        qDebug() << "Full timeline wipe initiated";
     }
 }
 
@@ -999,7 +1016,7 @@ void TimelineManager::insertTimelinePin(const QJsonObject &json)
         }
         qDebug() << "Update for existing pin" << old->updated() << pin.updated();
         if(!old->reminders().isEmpty()) {
-            qDebug() << "Removing old reminders - we'll add 'm later";
+            qDebug() << "Removing old reminders for" << old->guid().toString() << "- we'll add 'm later";
             foreach(const TimelinePin* kid, pinKids(old->guid())) {
                 if(kid->type()==TimelineItem::TypeReminder)
                     kid->remove();
@@ -1026,6 +1043,7 @@ void TimelineManager::insertTimelinePin(const QJsonObject &json)
 void TimelineManager::removeTimelinePin(const QString &guid)
 {
     TimelinePin * pin = getPin(QUuid(guid));
+    qDebug() << "Request to remove pin" << guid;
     if(pin!=nullptr)
         pin->remove();
 }

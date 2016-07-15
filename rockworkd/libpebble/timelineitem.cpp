@@ -16,10 +16,20 @@ TimelineItem::TimelineItem(const QUuid &uuid, TimelineItem::Type type, Flags fla
 {
 
 }
+TimelineItem::TimelineItem():
+    TimelineItem(QUuid(),TimelineItem::TypeInvalid,0)
+{
+
+}
 
 QUuid TimelineItem::itemId() const
 {
     return m_itemId;
+}
+
+QDateTime TimelineItem::ts() const
+{
+    return m_timestamp;
 }
 
 void TimelineItem::setParentId(QUuid parentId) {
@@ -85,6 +95,38 @@ QByteArray TimelineItem::serialize() const
     ret.append(serializedActions);
     return ret;
 }
+bool TimelineItem::deserialize(const QByteArray &data)
+{
+    WatchDataReader r(data);
+    if(r.checkBad(43)) return false;
+    m_itemId = r.readUuid();
+    m_parentId = r.readUuid();
+    quint32 ts = r.readLE<quint32>();
+    m_timestamp = QDateTime::fromTime_t(ts,Qt::UTC);
+    m_duration = r.readLE<quint16>();
+    m_flags = (TimelineItem::Flag)r.readLE<quint16>();
+    m_layout = r.read<quint8>();
+    quint16 dataLength = r.readLE<quint16>();
+    quint8 attc = r.read<quint8>();
+    quint8 actc = r.read<quint8>();
+    if(r.checkBad(dataLength)) return false;
+    for(int i=0;i<attc;i++) {
+        TimelineAttribute a;
+        if(a.deserialize(r))
+            m_attributes.append(a);
+        else
+            return false;
+    }
+    for(int i=0;i<actc;i++) {
+        TimelineAction a;
+        if(a.deserialize(r))
+            m_actions.append(a);
+        else {
+            return false;
+        }
+    }
+    return true;
+}
 
 TimelineAction::TimelineAction(quint8 actionId, TimelineAction::Type type, const QList<TimelineAttribute> &attributes):
     PebblePacket(),
@@ -100,47 +142,69 @@ void TimelineAction::appendAttribute(const TimelineAttribute &attribute)
     m_attributes.append(attribute);
 }
 
+QByteArray TimelineAction::serialize() const
+{
+    QByteArray ret;
+    ret.append(m_actionId);
+    ret.append((quint8)m_type);
+    ret.append(m_attributes.count());
+    foreach (const TimelineAttribute &attr, m_attributes) {
+        ret.append(attr.serialize());
+    }
+    return ret;
+}
+bool TimelineAction::deserialize(const QByteArray &data)
+{
+    WatchDataReader r(data);
+    return deserialize(r);
+}
+bool TimelineAction::deserialize(WatchDataReader &r)
+{
+    if(r.checkBad(3)) return false;
+    m_actionId = r.read<quint8>();
+    m_type = (Type)r.read<quint8>();
+    quint8 ac = r.read<quint8>();
+    for(int i=0;i<ac;i++) {
+        TimelineAttribute a;
+        if(a.deserialize(r)) {
+            m_attributes.append(a);
+        } else
+            return false;
+    }
+    return true;
+}
+
+
 void TimelineAttribute::setContent(const QByteArray &content)
 {
     m_content = content;
 }
-
-void TimelineAttribute::setContent(quint32 data)
+QByteArray TimelineAttribute::getContent() const
 {
-    quint32 le = qToLittleEndian(data);
-    setContent((le32 *)&le);
-}
-void TimelineAttribute::setContent(qint32 data)
-{
-    qint32 le = qToLittleEndian(data);
-    setContent((le32 *)&le);
-}
-void TimelineAttribute::setContent(quint16 data)
-{
-    quint16 le = qToLittleEndian(data);
-    setContent((le16 *)&le);
-}
-void TimelineAttribute::setContent(qint16 data)
-{
-    qint16 le = qToLittleEndian(data);
-    setContent((le16 *)&le);
-}
-void TimelineAttribute::setContent(le32 *le)
-{
-    m_content.clear();
-    m_content.append(((quint8 *)(le))[0]);
-    m_content.append(((quint8 *)(le))[1]);
-    m_content.append(((quint8 *)(le))[2]);
-    m_content.append(((quint8 *)(le))[3]);
-}
-void TimelineAttribute::setContent(le16 *le)
-{
-    m_content.clear();
-    m_content.append(((quint8 *)(le))[0]);
-    m_content.append(((quint8 *)(le))[1]);
+    return m_content;
 }
 
-void TimelineAttribute::setContent(const QStringList &values)
+void TimelineAttribute::setByte(quint8 byte)
+{
+    m_content.append(byte);
+}
+quint8 TimelineAttribute::getByte() const
+{
+    return m_content.at(0);
+}
+
+void TimelineAttribute::setString(const QString &string, int max)
+{
+    m_content.append(string.toUtf8());
+    if(max > 0 && m_content.length() > max)
+        m_content.truncate(max);
+}
+QString TimelineAttribute::getString() const
+{
+    return QString::fromUtf8(m_content);
+}
+
+void TimelineAttribute::setStringList(const QStringList &values, int max)
 {
     m_content.clear();
     foreach (const QString &value, values) {
@@ -148,13 +212,19 @@ void TimelineAttribute::setContent(const QStringList &values)
             m_content.append('\0');
         }
         m_content.append(value.toUtf8());
+        if(max>0 && m_content.length()>max) {
+            m_content.resize(max);
+            return;
+        }
     }
 }
-
-void TimelineAttribute::setContent(quint8 data)
+QStringList TimelineAttribute::getStringList() const
 {
-    m_content.clear();
-    m_content.append(data);
+    QStringList lst;
+    foreach(const QByteArray ar,m_content.split('\0')) {
+        lst.append(QString::fromUtf8(ar));
+    }
+    return lst;
 }
 
 QByteArray TimelineAttribute::serialize() const
@@ -165,4 +235,12 @@ QByteArray TimelineAttribute::serialize() const
     ret.append(m_content);
     return ret;
 }
-
+bool TimelineAttribute::deserialize(WatchDataReader &r)
+{
+    if(r.checkBad(3)) return false;
+    m_type = r.read<quint8>();
+    quint16 cl = r.readLE<quint16>();
+    if(r.checkBad(cl)) return false;
+    m_content = r.readBytes(cl);
+    return true;
+}

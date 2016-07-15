@@ -13,6 +13,7 @@ BlobDB::BlobDB(Pebble *pebble, WatchConnection *connection):
     m_connection(connection)
 {
     m_connection->registerEndpointHandler(WatchConnection::EndpointBlobDB, this, "blobCommandReply");
+    m_connection->registerEndpointHandler(WatchConnection::EndpointNotify, this, "blobUpdateNotify");
 
     connect(m_connection, &WatchConnection::watchConnected, [this]() {
         if (m_currentCommand) {
@@ -192,6 +193,30 @@ void BlobDB::sendNext()
     m_connection->writeToPebble(WatchConnection::EndpointBlobDB, m_currentCommand->serialize());
 }
 
+void BlobDB::blobUpdateNotify(const QByteArray &data)
+{
+    BlobCommand cmd;
+    if(cmd.deserialize(data)) {
+        if(cmd.m_command == OperationNotify) {
+            if(cmd.m_database == BlobDBIdNotification || cmd.m_database == BlobDBIdReminder || cmd.m_database == BlobDBIdPin) {
+                QUuid key = QUuid::fromRfc4122(cmd.m_key);
+                QDateTime ts = QDateTime::fromTime_t(cmd.m_timestamp,Qt::UTC);
+                TimelineItem val;
+                if(val.deserialize(cmd.m_value)) {
+                    qDebug() << "Notify" << key.toString() << "updated at" << ts.toString(Qt::ISODate);
+                    emit notifyTimeline(ts,key,val);
+                } else {
+                    qWarning() << "Could not deserialize TimelineItem from" << cmd.m_value.toHex();
+                }
+                return;
+            }
+        }
+        qDebug() << "BlobNotify not supported: Cmd" << cmd.m_command << "DB" << cmd.m_database << "Token" << cmd.m_token << "TS" << cmd.m_timestamp << "Key" << cmd.m_key.toHex() << "Value" << cmd.m_value.toHex();
+    } else {
+        qWarning() << "Could not understand" << data.toHex();
+    }
+}
+
 quint16 BlobDB::generateToken()
 {
     return (qrand() % ((int)pow(2, 16) - 2)) + 1;
@@ -264,4 +289,19 @@ QByteArray BlobDB::BlobCommand::serialize() const
     }
 
     return ret;
+}
+
+bool BlobDB::BlobCommand::deserialize(const QByteArray &data)
+{
+    WatchDataReader r(data);
+    m_command = (BlobDB::Operation)r.read<quint8>();
+    m_token = r.readLE<quint16>();
+    m_database = (BlobDB::BlobDBId)r.read<quint8>();
+    m_timestamp = r.readLE<quint32>();
+    quint8 kl = r.read<quint8>();
+    m_key = r.readBytes(kl);
+    quint16 vl = r.readLE<quint16>();
+    if(r.checkBad(vl)) return false;
+    m_value = r.readBytes(vl);
+    return true;
 }
