@@ -76,7 +76,7 @@ public:
     void flush() const;
     void remove() const;
     void send() const;
-    void erase() const;
+    void erase(bool force=false) const;
 
 private:
     void initJson();

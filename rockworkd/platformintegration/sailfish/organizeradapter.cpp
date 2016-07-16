@@ -187,12 +187,6 @@ void OrganizerAdapter::refresh()
                     rLy.insert("locationName",pinLayout.value("locationName"));
                 rLy.insert("tinyIcon",QString("system://images/NOTIFICATION_REMINDER"));
                 rem.insert("layout",rLy);
-                //QJsonArray rAs;
-                //QJsonObject rAc;
-                //rAc.insert("type",QString("snooze"));
-                //rAc.insert("title",QString(gettext("Snooze")));
-                //rAs.append(rAc);
-                //rem.insert("actions",rAs);
                 reminders.append(rem);
                 if(reminders.count()==3)
                     break;

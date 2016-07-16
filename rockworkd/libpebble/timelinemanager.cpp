@@ -156,9 +156,9 @@ void TimelinePin::remove() const
         m_manager->remove(*this);
     }
 }
-void TimelinePin::erase() const
+void TimelinePin::erase(bool force) const
 {
-    if(m_sent) return;
+    if(m_sent && !force) return;
     QFile::remove(m_manager->m_timelineStoragePath + "/" + m_uuid.toString().mid(1,36));
     m_manager->removePin(m_uuid);
 }
@@ -911,9 +911,10 @@ void TimelineManager::clearTimeline(const QUuid &parent)
 void TimelineManager::wipeTimeline(const QString &source)
 {
     // Let's do simple traversal till we find better way to handle that
+    qDebug() << "Wiping timeliny by" << (source.isEmpty()?"all means":source);
     foreach(const TimelinePin &pin,m_pin_idx_guid.values()) {
         if(source.isEmpty()) {
-            pin.erase();
+            pin.erase(true);
         } else if(source == pin.source()) {
             pin.remove();
             pin.erase();
@@ -924,6 +925,8 @@ void TimelineManager::wipeTimeline(const QString &source)
         m_pebble->blobdb()->clear(BlobDB::BlobDBIdReminder);
         m_pebble->blobdb()->clear(BlobDB::BlobDBIdNotification);
         qDebug() << "Full timeline wipe initiated";
+    } else {
+        qDebug() << "Wiped all" << source << "pins. Remaning" << pinCount();
     }
 }
 
@@ -948,11 +951,11 @@ void TimelineManager::blobdbAckHandler(BlobDB::BlobDBId db, BlobDB::Operation cm
         return;
     }
     TimelinePin *pin = getPin(uuid);
-    if(pin==nullptr) {
+    if(pin==nullptr && cmd != BlobDB::OperationClear) {
         qDebug() << "Result for non-existing pin" << uuid << db << cmd << ack;
         return;
     }
-    qDebug() << ((ack==BlobDB::StatusSuccess)?"ACK":"NACK") << "for" << ((cmd==BlobDB::OperationInsert)?"insert":"delete") << "of" << pin->guid();
+    qDebug() << ((ack==BlobDB::StatusSuccess)?"ACK":"NACK") << "for" << ((cmd==BlobDB::OperationInsert)?"insert":"delete") << "of" << (cmd==BlobDB::OperationClear ? QString::number(db) : pin->guid().toString());
     if(cmd == BlobDB::OperationInsert) {
         switch(ack) {
         case BlobDB::StatusSuccess:
@@ -982,8 +985,8 @@ void TimelineManager::blobdbAckHandler(BlobDB::BlobDBId db, BlobDB::Operation cm
             // TODO:
             // drop all pins and indexes
             // request full re-sync
-            qDebug() << "Someone cleared the timeline";
-            m_pebble->syncCalendar();
+            qDebug() << "Someone cleared the timeline blobdb" << db;
+            //m_pebble->syncCalendar();
         }
     }
 }
@@ -995,7 +998,7 @@ void TimelineManager::insertTimelinePin(const QJsonObject &json)
     TimelinePin pin(obj,this);
     if(pin.type() == TimelineItem::TypeNotification) {
         // Simple persistence checks for volatile (system) notification. Also do some sanity checks
-        if(!pin.guid().isNull() && !pin.layout().isEmpty() && !pin.kind().isEmpty() && !pin.parent().isNull() && !pinExists(pin.guid()))
+        if(!pin.guid().isNull() && !pin.layout().isEmpty() && !pin.kind().isEmpty() && !pin.parent().isNull() && !pinExists(pin.guid()) && pin.created() >= QDateTime::currentDateTimeUtc().addSecs(m_event_fadeout))
             pin.send();
         else
             qWarning() << (pin.guid().isNull()?"GUID":"") << (pin.layout().isEmpty()?"Layout":"") << (pin.kind().isEmpty()?"Kind":"") << (pin.parent().isNull()?"Parent":"") << (pinExists(pin.guid())?"Notification pin exists,":"missing from notification,") << "ignoring.";

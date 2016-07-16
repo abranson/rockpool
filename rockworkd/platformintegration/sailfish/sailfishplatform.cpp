@@ -193,6 +193,7 @@ void SailfishPlatform::newNotificationPin(watchfish::Notification *notification)
 
     pin.insert("id",QString("%1.%2.%3").arg(a.sender).arg(notification->timestamp().toTime_t()).arg(notification->id()));
     QUuid guid = PlatformInterface::idToGuid(pin.value("id").toString());
+    pin.insert("createTime", notification->timestamp().toUTC().toString(Qt::ISODate));
     pin.insert("guid",guid.toString().mid(1,36));
     pin.insert("type",QString("notification"));
     pin.insert("dataSource",QString("%1:%2").arg(a.srcId).arg(PlatformInterface::SysID));
