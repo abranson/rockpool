@@ -337,6 +337,8 @@ QList<TimelineAttribute> TimelinePin::handleAction(TimelineAction::Type atype, q
         attributes.append({m_manager->getAttr("subtitle").id,QString("Done!")});
     return attributes;
 }
+
+QUuid TimelineManager::appSendText = QUuid("0f71aaba-5814-4b5c-96e2-c9828c9734cb");
 /**
  * @brief TimelineManager::TimelineManager
  * @param pebble
@@ -664,8 +666,14 @@ void TimelineManager::actionHandler(const QByteArray &actionReply)
     const TimelinePin *source = getPin(notificationId);
     if (source==nullptr) {
         status = BlobDB::ResponseError;
-        qWarning() << "Action for non-existing pin" << notificationId;
-        emit removeNotification(notificationId);
+        if(notificationId == appSendText && param.contains("title") && param.contains("sender")) {
+            emit actionSendText(param.value("sender").toString(),param.value("title").toString());
+            attributes.append(parseAttribute("largeIcon",QString("system://images/RESULT_SENT")));
+            attributes.append({getAttr("subtitle").id,QString("Sent!")});
+        } else {
+            qWarning() << "Action for non-existing pin" << notificationId;
+            emit removeNotification(notificationId);
+        }
     } else {
         switch (actionType) {
         case TimelineAction::TypeDismiss:

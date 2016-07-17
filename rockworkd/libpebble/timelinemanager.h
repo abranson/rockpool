@@ -108,6 +108,8 @@ class TimelineManager : public QObject
     Q_OBJECT
     friend class TimelinePin;
 public:
+    static QUuid appSendText;
+
     TimelineManager(Pebble *pebble, WatchConnection *connection);
 
     // Timeline Layout
@@ -134,6 +136,7 @@ signals:
     void removeNotification(const QUuid &uuid);
     void actionTriggered(const QUuid &uuid, const QString &type, const QJsonObject &param);
     void snoozeReminder(const QUuid &event, const QString &id, const QDateTime &oldTime, const QDateTime &newTime);
+    void actionSendText(const QString &contact, const QString &text);
 
 private slots:
     void actionHandler(const QByteArray &data);
