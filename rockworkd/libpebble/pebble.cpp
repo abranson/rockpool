@@ -76,6 +76,7 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
     QObject::connect(m_timelineManager, &TimelineManager::muteSource, this, &Pebble::muteNotificationSource);
     QObject::connect(m_timelineManager, &TimelineManager::actionTriggered, Core::instance()->platform(), &PlatformInterface::actionTriggered);
     QObject::connect(m_timelineManager, &TimelineManager::removeNotification, Core::instance()->platform(), &PlatformInterface::removeNotification);
+    QObject::connect(m_timelineManager, &TimelineManager::actionSendText, Core::instance()->platform(), &PlatformInterface::sendTextMessage);
 
     QObject::connect(Core::instance()->platform(), &PlatformInterface::newTimelinePin, this, &Pebble::insertPin);
     QObject::connect(Core::instance()->platform(), &PlatformInterface::delTimelinePin, this, &Pebble::removePin);

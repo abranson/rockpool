@@ -268,21 +268,27 @@ void SailfishPlatform::stopOrganizer() const
     m_organizerAdapter->disable();
 }
 
-void SailfishPlatform::telepathyResponse(const watchfish::Notification *n, const QJsonObject &param) const
+void SailfishPlatform::sendTextMessage(const QString &contact, const QString &text) const
 {
-    QDBusObjectPath acct(n->actionArgs(param.value("sender").toString()).at(0).toString());
+    qDebug() << "Sending text message for" << contact << text;
+    telepathyResponse("/org/freedesktop/Telepathy/Account/ring/tel/account0",contact,text);
+}
+
+void SailfishPlatform::telepathyResponse(const QString &account, const QString &contact, const QString &text) const
+{
+    QDBusObjectPath acct(account);
     QVariantMap arg1,arg2;
     arg1.insert("message-type",0);
     arg2.insert("content-type",QString("text/plain"));
-    arg2.insert("content",param.value("title").toString());
+    arg2.insert("content",text);
     QDBusReply<QString> res = QDBusConnection::sessionBus().call(
                 QDBusMessage::createMethodCall("org.freedesktop.Telepathy.ChannelDispatcher",
                                                "/org/freedesktop/Telepathy/ChannelDispatcher",
                                                "org.freedesktop.Telepathy.ChannelDispatcher.Interface.Messages.DRAFT", "SendMessage")
-                << qVariantFromValue(acct) << n->actionArgs(param.value("sender").toString()).at(1) << qVariantFromValue(QList<QVariantMap>({arg1,arg2})) << (quint32)0);
+                << qVariantFromValue(acct) << contact << qVariantFromValue(QList<QVariantMap>({arg1,arg2})) << (quint32)0);
     if (res.isValid()) {
         if (res.value().isEmpty()) {
-            qWarning() << "Unable to send response" << param;
+            qWarning() << "Unable to send response from" << account << "to" << contact << "with" << text;
         } else
             qDebug() << "Sent message under uuid" << res.value();
     } else {
@@ -300,7 +306,11 @@ void SailfishPlatform::actionTriggered(const QUuid &uuid, const QString &actToke
         } else if(actToken == "response") {
             if(param.contains("sender") && !notif->actionArgs(param.value("sender").toString()).isEmpty()
                     && notif->actionArgs(param.value("sender").toString()).at(0).toString().startsWith("/org/freedesktop/Telepathy/Account"))
-                telepathyResponse(notif,param);
+                telepathyResponse(
+                            notif->actionArgs(param.value("sender").toString()).at(0).toString(), // account dbus path
+                            notif->actionArgs(param.value("sender").toString()).at(1).toString(), // destination contact
+                            param.value("title").toString() // message text
+                            );
             else
                 qDebug() << "Don't know how to respond to" << notif->category() << notif->actionArgs(actToken);
         }

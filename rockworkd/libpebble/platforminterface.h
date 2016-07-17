@@ -38,6 +38,7 @@ public:
     virtual void removeNotification(const QUuid &uuid) const = 0;
     virtual const QHash<QString,QStringList>& cannedResponses() const = 0;
     virtual void setCannedResponses(const QHash<QString,QStringList> &cans) = 0;
+    virtual void sendTextMessage(const QString &contact, const QString &text) const = 0;
 signals:
     void newTimelinePin(const QJsonObject &pin);
 

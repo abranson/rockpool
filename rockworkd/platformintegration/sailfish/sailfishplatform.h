@@ -43,15 +43,16 @@ public:
 
     const QHash<QString,QStringList>& cannedResponses() const override;
     void setCannedResponses(const QHash<QString, QStringList> &cans) override;
+    void sendTextMessage(const QString &contact, const QString &text) const override;
 
 public slots:
-    void telepathyResponse(const watchfish::Notification *n, const QJsonObject &param) const;
     void newNotificationPin(watchfish::Notification *notification);
     void handleClosedNotification(watchfish::Notification::CloseReason reason);
     void onTimeChanged();
     void updateMusicStatus();
 
 private slots:
+    void telepathyResponse(const QString &account, const QString &contact, const QString &text) const;
     void fetchMusicMetadata();
     void mediaPropertiesChanged(const QString &interface, const QVariantMap &changedProps, const QStringList &invalidatedProps);
 
