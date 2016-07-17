@@ -87,18 +87,28 @@ void SailfishPlatform::onActiveVoiceCallStatusChanged()
     case VoiceCallHandler::STATUS_INCOMING:
     case VoiceCallHandler::STATUS_WAITING:
         qDebug() << "Tell incoming:" << handler->lineId();
-        emit incomingCall(qHash(handler->handlerId()), handler->lineId(), m_voiceCallManager->findPersonByNumber(handler->lineId()));
+        if(handler->getState() < VoiceCallHandler::StateRinging) {
+            handler->setState(VoiceCallHandler::StateRinging);
+            emit incomingCall(qHash(handler->handlerId()), handler->lineId(), m_voiceCallManager->findPersonByNumber(handler->lineId()));
+        }
         break;
     case VoiceCallHandler::STATUS_NULL:
     case VoiceCallHandler::STATUS_DISCONNECTED:
         qDebug() << "Endphone " << handler->handlerId();
-        emit callEnded(qHash(handler->handlerId()), false);
+        if(handler->getState() < VoiceCallHandler::StateCleanedUp) {
+            handler->setState(VoiceCallHandler::StateCleanedUp);
+            emit callEnded(qHash(handler->handlerId()), false);
+        }
         break;
     case VoiceCallHandler::STATUS_ACTIVE:
-        qDebug() << "Startphone";
-        emit callStarted(qHash(handler->handlerId()));
+        qDebug() << "Startphone" << handler->handlerId();
+        if(handler->getState() < VoiceCallHandler::StateAnswered) {
+            handler->setState(VoiceCallHandler::StateAnswered);
+            emit callStarted(qHash(handler->handlerId()));
+        }
         break;
     case VoiceCallHandler::STATUS_HELD:
+        qDebug() << "OnHold" << handler->handlerId();
         break;
     }
 }
@@ -146,6 +156,10 @@ AppID getAppID(watchfish::Notification *notification)
         }
         ret.sender=notification->sender();
         ret.srcId=notification->category();
+    } else if (notification->category() == "x-nemo.call.missed") {
+        ret.type = "calls";
+        ret.sender = notification->sender();
+        ret.srcId = notification->category();
     } else if (notification->originPackage() == "org.telegram.messenger" || notification->category().startsWith("harbour.sailorgram")) {
         ret.type="telegram";
         ret.srcId=owner;

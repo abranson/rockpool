@@ -63,6 +63,7 @@ void PhoneCallEndpoint::phoneControl(char act, uint cookie, QStringList datas)
     default:
         break;
     }
+    qDebug() << "PhoneEndpoint>" << head.toHex();
     m_connection->writeToPebble(WatchConnection::EndpointPhoneControl, head);
 }
 
@@ -75,6 +76,7 @@ void PhoneCallEndpoint::handlePhoneEvent(const QByteArray &data)
     QList<CallState> res;
     quint8 len;
 
+    qDebug() << "PhoneEndpoint<" << data.toHex();
     switch(command) {
     case CallActionAnswer:
         emit answerCall(cookie);

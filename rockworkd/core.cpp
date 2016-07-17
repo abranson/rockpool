@@ -65,7 +65,7 @@ const QHash<QString,QStringList> PlatformInterface::AppResMap = {
     {"whatsapp",{"system://images/NOTIFICATION_WHATSAPP","green","WhatsApp"}},
     {"weather",{"system://images/TIMELINE_WEATHER","indigo","Weather"}},
     {"reminder",{"system://images/NOTIFICATION_REMINDER","red","Reminders"}},
-    {"calls",{"system://images/TIMELINE_MISSED_CALL","red","Calls"}},
+    {"calls",{"system://images/TIMELINE_MISSED_CALL","lightblue","Missed Calls"}},
     {"music",{"system://images/MUSIC_EVENT","red"}},
     {"alarm",{"system://images/ALARM_CLOCK","red"}},
     {"unknown",{"system://images/NOTIFICATION_FLAG","red"}}
