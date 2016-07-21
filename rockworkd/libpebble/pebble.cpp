@@ -1,6 +1,5 @@
 #include "pebble.h"
 #include "watchconnection.h"
-#include "notificationendpoint.h"
 #include "watchdatareader.h"
 #include "watchdatawriter.h"
 #include "musicendpoint.h"
@@ -19,6 +18,9 @@
 #include "dataloggingendpoint.h"
 #include "devconnection.h"
 #include "timelinemanager.h"
+#include "timelinesync.h"
+#include "voiceendpoint.h"
+#include "uploadmanager.h"
 
 #include "QDir"
 #include <QDateTime>
@@ -29,10 +31,15 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QNetworkReply>
+#include <QTemporaryFile>
 
 Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
     QObject(parent),
-    m_address(address)
+    m_address(address),
+    m_nam(new QNetworkAccessManager(this))
 {
     QString watchPath = m_address.toString().replace(':', '_');
     m_storagePath = QStandardPaths::writableLocation(QStandardPaths::DataLocation) + "/" + watchPath + "/";
@@ -49,7 +56,28 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
 
     m_dataLogEndpoint = new DataLoggingEndpoint(this, m_connection);
 
-    m_notificationEndpoint = new NotificationEndpoint(this, m_connection);
+    m_blobDB = new BlobDB(this, m_connection);
+    QObject::connect(m_blobDB, &BlobDB::appInserted, this, &Pebble::appInstalled);
+
+    QHash<QString,QStringList> cans;
+    QSettings cMsgs(m_storagePath + "/canned_messages.conf", QSettings::IniFormat);
+    foreach(const QString &grp,cMsgs.childGroups()) {
+        int msgn = cMsgs.beginReadArray(grp);
+        QStringList msgs;
+        for(int i=0;i<msgn;i++) {
+            cMsgs.setArrayIndex(i);
+            msgs.append(cMsgs.value("msg").toString());
+        }
+        cMsgs.endArray();
+        cans.insert(grp,msgs);
+    }
+    Core::instance()->platform()->setCannedResponses(cans);
+    m_timelineManager = new TimelineManager(this, m_connection);
+    QObject::connect(m_timelineManager, &TimelineManager::muteSource, this, &Pebble::muteNotificationSource);
+    QObject::connect(m_timelineManager, &TimelineManager::actionTriggered, Core::instance()->platform(), &PlatformInterface::actionTriggered);
+    QObject::connect(m_timelineManager, &TimelineManager::removeNotification, Core::instance()->platform(), &PlatformInterface::removeNotification);
+    QObject::connect(m_timelineManager, &TimelineManager::actionSendText, Core::instance()->platform(), &PlatformInterface::sendTextMessage);
+
     QObject::connect(Core::instance()->platform(), &PlatformInterface::newTimelinePin, this, &Pebble::insertPin);
     QObject::connect(Core::instance()->platform(), &PlatformInterface::delTimelinePin, this, &Pebble::removePin);
 
@@ -69,19 +97,14 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
     QObject::connect(m_appManager, &AppManager::appsChanged, this, &Pebble::installedAppsChanged);
     QObject::connect(m_appManager, &AppManager::idMismatchDetected, this, &Pebble::resetPebble);
 
+    m_timelineSync = new TimelineSync(this,m_timelineManager);
+    QObject::connect(m_timelineSync, &TimelineSync::oauthTokenChanged, this, &Pebble::oauthTokenChanged);
+
     m_appMsgManager = new AppMsgManager(this, m_appManager, m_connection);
     m_jskitManager = new JSKitManager(this, m_connection, m_appManager, m_appMsgManager, this);
     QObject::connect(m_jskitManager, &JSKitManager::openURL, this, &Pebble::openURL);
     QObject::connect(m_jskitManager, &JSKitManager::appNotification, this, &Pebble::insertPin);
     QObject::connect(m_appMsgManager, &AppMsgManager::appStarted, this, &Pebble::appStarted);
-
-    m_blobDB = new BlobDB(this, m_connection);
-    QObject::connect(m_blobDB, &BlobDB::appInserted, this, &Pebble::appInstalled);
-
-    m_timelineManager = new TimelineManager(this, m_connection);
-    QObject::connect(m_timelineManager, &TimelineManager::muteSource, this, &Pebble::muteNotificationSource);
-    QObject::connect(m_timelineManager, &TimelineManager::actionTriggered, Core::instance()->platform(), &PlatformInterface::actionTriggered);
-    QObject::connect(m_timelineManager, &TimelineManager::removeNotification, Core::instance()->platform(), &PlatformInterface::removeNotification);
 
     m_appDownloader = new AppDownloader(m_storagePath, this);
     QObject::connect(m_appDownloader, &AppDownloader::downloadFinished, this, &Pebble::appDownloadFinished);
@@ -97,6 +120,11 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
 
     m_logEndpoint = new WatchLogEndpoint(this, m_connection);
     QObject::connect(m_logEndpoint, &WatchLogEndpoint::logsFetched, this, &Pebble::logsDumped);
+
+    m_voiceEndpoint = new VoiceEndpoint(this, m_connection);
+    QObject::connect(m_voiceEndpoint, &VoiceEndpoint::sessionSetupRequest, this, &Pebble::voiceSessionRequest);
+    QObject::connect(m_voiceEndpoint, &VoiceEndpoint::audioFrame, this, &Pebble::voiceAudioStream);
+    QObject::connect(m_voiceEndpoint, &VoiceEndpoint::sessionCloseNotice, this, &Pebble::voiceSessionClose);
 
     QSettings watchInfo(m_storagePath + "/watchinfo.conf", QSettings::IniFormat);
     m_model = (Model)watchInfo.value("watchModel", (int)ModelUnknown).toInt();
@@ -140,6 +168,16 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
     m_devConnection->setCloudEnabled(settings.value("useCloud", true).toBool()); // not implemented yet
     settings.endGroup();
 
+    settings.beginGroup("timeline");
+    m_timelineManager->setTimelineWindow(
+        // Past boundary of the timeline window - used for pin validation & retention
+        settings.value("pastDays",m_timelineManager->daysPast()).toInt(),
+        // Time after which undelivered notifications are considered obsolete
+        settings.value("eventFadeout",m_timelineManager->secsEventFadeout()).toInt(),
+        // Future boundary of the timeline window - used for pin validation & retention
+        settings.value("futureDays",m_timelineManager->daysFuture()).toInt()
+    );
+    settings.endGroup();
 }
 
 QBluetoothAddress Pebble::address() const
@@ -174,9 +212,46 @@ void Pebble::connect()
     m_connection->connectPebble(m_address);
 }
 
+QNetworkAccessManager * Pebble::nam() const
+{
+    return m_nam;
+}
+
 BlobDB * Pebble::blobdb() const
 {
     return m_blobDB;
+}
+
+TimelineSync * Pebble::tlSync() const
+{
+    return m_timelineSync;
+}
+
+bool Pebble::syncAppsFromCloud() const
+{
+    return m_timelineSync->syncFromCloud();
+}
+void Pebble::setSyncAppsFromCloud(bool enable)
+{
+    m_timelineSync->setSyncFromCloud(enable);
+}
+
+void Pebble::setOAuthToken(const QString &token)
+{
+    m_timelineSync->setOAuthToken(token);
+}
+
+const QString Pebble::oauthToken() const
+{
+    return m_timelineSync->oauthToken();
+}
+const QString Pebble::accountName() const
+{
+    return m_timelineSync->accountName();
+}
+const QString Pebble::accountEmail() const
+{
+    return m_timelineSync->accountEmail();
 }
 
 QDateTime Pebble::softwareBuildTime() const
@@ -236,6 +311,37 @@ void Pebble::setHardwareRevision(HardwareRevision hardwareRevision)
     }
 }
 
+QString Pebble::platformString() const
+{
+    switch (m_hardwareRevision) {
+    case HardwareRevisionUNKNOWN:
+    case HardwareRevisionTINTIN_EV1:
+    case HardwareRevisionTINTIN_EV2:
+    case HardwareRevisionTINTIN_EV2_3:
+    case HardwareRevisionSNOWY_EVT2:
+    case HardwareRevisionSPALDING_EVT:
+    case HardwareRevisionTINTIN_BB:
+    case HardwareRevisionTINTIN_BB2:
+    case HardwareRevisionSNOWY_BB:
+    case HardwareRevisionSNOWY_BB2:
+    case HardwareRevisionSPALDING_BB2:
+        break;
+    case HardwareRevisionTINTIN_EV2_4:
+        return "ev2_4";
+    case HardwareRevisionTINTIN_V1_5:
+        return "v1_5";
+    case HardwareRevisionBIANCA:
+        return "v2_0";
+    case HardwareRevisionSNOWY_DVT:
+        return "snowy_dvt";
+    case HardwareRevisionBOBBY_SMILES:
+        return "snowy_s3";
+    case HardwareRevisionSPALDING:
+        return "spalding";
+    }
+    return QString();
+}
+
 HardwarePlatform Pebble::hardwarePlatform() const
 {
     return m_hardwarePlatform;
@@ -249,6 +355,10 @@ QString Pebble::serialNumber() const
 QString Pebble::language() const
 {
     return m_language;
+}
+quint16 Pebble::langVer() const
+{
+    return m_langVer;
 }
 
 Capabilities Pebble::capabilities() const
@@ -304,6 +414,37 @@ bool Pebble::devConCloudState() const
     return m_devConnection->cloudState();
 }
 
+qint32 Pebble::timelineWindowStart() const
+{
+    return m_timelineManager->daysPast();
+}
+qint32 Pebble::timelineWindowFade() const
+{
+    return m_timelineManager->secsEventFadeout();
+}
+qint32 Pebble::timelineWindowEnd() const
+{
+    return m_timelineManager->daysFuture();
+}
+void Pebble::setTimelineWindow(qint32 start, qint32 fade, qint32 end)
+{
+    if(start>=0 || start > end) {
+        qWarning() << "Ignoring invalid timeline window: start" << start << "end" << end;
+        return;
+    }
+    if(fade > 0)
+        fade = -fade;
+    m_timelineManager->setTimelineWindow(start,fade,end);
+    QSettings setts(m_storagePath + "/appsettings.conf", QSettings::IniFormat);
+    setts.beginGroup("timeline");
+    setts.setValue("daysPast",start);
+    setts.setValue("eventFadeout",fade);
+    setts.setValue("futureDays",end);
+    // Since window has changed try to re-sync timeline
+    emit m_timelineSync->syncUrlChanged("");
+    syncCalendar(); // and calendar
+}
+
 void Pebble::setHealthParams(const HealthParams &healthParams)
 {
     m_healthParams = healthParams;
@@ -356,6 +497,116 @@ QString Pebble::storagePath() const
 QString Pebble::imagePath() const
 {
     return m_imagePath;
+}
+
+void Pebble::voiceSessionRequest(const QUuid &appUuid, const SpeexInfo &codec)
+{
+    if(m_voiceSessDump) {
+        m_voiceEndpoint->sessionSetupResponse(VoiceEndpoint::ResInvalidMessage,appUuid);
+        return;
+    }
+    m_voiceSessDump = new QTemporaryFile(this);
+    if(m_voiceSessDump->open()) {
+        QString mime = QString("audio/speex; rate=%1; bitrate=%2; bitstreamver=%3; frame=%4").arg(
+                QString::number(codec.sampleRate),
+                QString::number(codec.bitRate),
+                QString::number(codec.bitstreamVer),
+                QString::number(codec.frameSize));
+        emit voiceSessionSetup(m_voiceSessDump->fileName(),mime,appUuid.toString());
+        m_voiceEndpoint->sessionSetupResponse(VoiceEndpoint::ResSuccess,appUuid);
+        qDebug() << "Opened session for" << mime << "to" << m_voiceSessDump->fileName() << "from" << appUuid.toString();
+    } else {
+        m_voiceSessDump->deleteLater();
+        m_voiceEndpoint->sessionSetupResponse(VoiceEndpoint::ResServiceUnavail,appUuid);
+        m_voiceSessDump = nullptr;
+    }
+}
+void Pebble::voiceSessionClose(quint16 sesId)
+{
+    qDebug() << "Cleaning up and forwarding further closure of session" << sesId << m_voiceSessDump->fileName();
+    emit voiceSessionClosed(m_voiceSessDump->fileName());
+    m_voiceSessDump->deleteLater();
+    m_voiceSessDump = 0;
+}
+void Pebble::voiceAudioStream(quint16 sid, const AudioStream &frames)
+{
+    Q_UNUSED(sid);
+    if(frames.count>0) {
+        if(m_voiceSessDump->pos()==0) {
+            emit voiceSessionStream(m_voiceSessDump->fileName());
+            qDebug() << "Audio Stream has started dumping to" << m_voiceSessDump->fileName();
+        }
+        for(int i=0;i<frames.count;i++) {
+            m_voiceSessDump->write(frames.frames.at(i).data);
+        }
+    } else {
+        qDebug() << "Audio Stream has finished dumping to" << m_voiceSessDump->fileName();
+        m_voiceSessDump->close();
+        emit voiceSessionDumped(m_voiceSessDump->fileName());
+    }
+}
+void Pebble::voiceAudioStop()
+{
+    if(m_voiceSessDump->pos()==0) {
+        qDebug() << "Audio transfer didn't happen at current session, cleaning up" << m_voiceSessDump->fileName();
+        m_voiceEndpoint->sessionSetupResponse(VoiceEndpoint::ResRecognizerError,m_voiceSessDump->property("uuid").toUuid());
+        m_voiceSessDump->deleteLater();
+        emit voiceSessionClosed(m_voiceSessDump->fileName());
+        m_voiceSessDump = nullptr;
+    } else {
+        m_voiceEndpoint->stopAudioStream();
+    }
+}
+void Pebble::voiceSessionResult(const QString &fileName, const QVariantList &sentences)
+{
+    if(m_voiceSessDump && m_voiceSessDump->fileName() == fileName) {
+        QList<VoiceEndpoint::Sentence> data;
+        foreach (const QVariant &vl, sentences) {
+            VoiceEndpoint::Sentence st;
+            QVariantList vs = vl.toList();
+            st.count=vs.count();
+            foreach (const QVariant &v, vs) {
+                VoiceEndpoint::Word word;
+                if(v.canConvert(QMetaType::QVariantMap)) {
+                    word.confidence = v.toMap().value("confidence").toInt();
+                    word.data = v.toMap().value("word").toString().toUtf8();
+                } else if(v.canConvert(QMetaType::QVariantList)) {
+                    word.confidence = v.toList().first().toUInt();
+                    word.data = v.toList().last().toString().toUtf8();
+                }
+                word.length = word.data.length();
+                st.words.append(word);
+            }
+            data.append(st);
+        }
+        m_voiceEndpoint->transcriptionResponse(VoiceEndpoint::ResSuccess, data, QUuid());
+    }
+}
+
+QVariantMap Pebble::cannedMessages() const
+{
+    QVariantMap ret;
+    QHash<QString,QStringList> cans = Core::instance()->platform()->cannedResponses();
+    foreach(const QString &grp,cans.keys())
+        ret.insert(grp,QVariant(cans.value(grp)));
+    return ret;
+}
+
+void Pebble::setCannedMessages(const QVariantMap &cans) const
+{
+    QSettings cMsgs(m_storagePath + "/canned_messages.conf", QSettings::IniFormat);
+    QHash<QString,QStringList> pass;
+    foreach(const QString &grp,cans.keys()) {
+        QStringList msgs = cans.value(grp).toStringList();
+        cMsgs.beginWriteArray(grp,msgs.count());
+        for(int i=0;i<msgs.count();i++) {
+            cMsgs.setArrayIndex(i);
+            cMsgs.setValue("msg",msgs.at(i));
+        }
+        cMsgs.endArray();
+        pass.insert(grp,msgs);
+    }
+    Core::instance()->platform()->setCannedResponses(pass);
 }
 
  QVariantMap Pebble::notificationsFilter() const
@@ -487,7 +738,7 @@ void Pebble::insertPin(const QJsonObject &json)
             QJsonArray actions = pinObj.value("actions").toArray();
             QJsonObject mute;
             mute.insert("type",QString("mute"));
-            QString sender = pinObj.value("createNotification").toObject().value("layout").toObject().value("sender").toString();
+            QString sender = pinObj.contains("sourceName") ? pinObj.value("sourceName").toString() : pinObj.value("source").toString();
             mute.insert("title",QString(sender.isEmpty()?"Mute":"Mute "+sender));
             actions.append(mute);
             pinObj.insert("actions",actions);
@@ -521,12 +772,12 @@ void Pebble::clearAppDB()
 
 void Pebble::clearTimeline()
 {
-    m_timelineManager->clearTimeline(PlatformInterface::UUID);
+    m_timelineManager->wipeTimeline();
 }
 
 void Pebble::syncCalendar()
 {
-    Core::instance()->platform()->syncOrganizer();
+    Core::instance()->platform()->syncOrganizer(m_timelineManager->daysFuture());
 }
 
 void Pebble::setCalendarSyncEnabled(bool enabled)
@@ -536,12 +787,13 @@ void Pebble::setCalendarSyncEnabled(bool enabled)
     }
     m_calendarSyncEnabled = enabled;
     emit calendarSyncEnabledChanged();
+    qDebug() << "Changing calendar sync enabled to" << enabled;
 
     if (!m_calendarSyncEnabled) {
         Core::instance()->platform()->stopOrganizer();
         m_timelineManager->clearTimeline(PlatformInterface::UUID);
     } else {
-        Core::instance()->platform()->syncOrganizer();
+        syncCalendar();
     }
 
     QSettings settings(m_storagePath + "/appsettings.conf", QSettings::IniFormat);
@@ -646,6 +898,7 @@ void Pebble::removeApp(const QUuid &uuid)
     qDebug() << "Should remove app:" << uuid;
     m_blobDB->removeApp(m_appManager->info(uuid));
     m_appManager->removeApp(uuid);
+    m_timelineSync->syncLocker(true);
 }
 
 void Pebble::launchApp(const QUuid &uuid)
@@ -703,6 +956,47 @@ QString Pebble::firmwareReleaseNotes() const
 void Pebble::upgradeFirmware() const
 {
     m_firmwareDownloader->performUpgrade();
+}
+
+void Pebble::loadLanguagePack(const QString &pblFile) const
+{
+    QString targetFile = m_storagePath + "lang";
+    if(pblFile != targetFile) {
+        if(QFile::exists(targetFile))
+            QFile::remove(targetFile);
+        if(pblFile.startsWith("https://") || pblFile.startsWith("http://")) {
+            QNetworkReply *rpl = m_nam->get(QNetworkRequest(QUrl(pblFile)));
+            QObject::connect(rpl, &QNetworkReply::finished,[this,rpl](){
+                rpl->deleteLater();
+                if(rpl->error() == QNetworkReply::NoError && rpl->header(QNetworkRequest::ContentTypeHeader).toString() == "binary/octet-stream") {
+                    QString pblName = m_storagePath + "lang";
+                    QFile pblFile(pblName);
+                    if(pblFile.open(QIODevice::ReadWrite)) {
+                        pblFile.write(rpl->readAll());
+                        pblFile.close();
+                        loadLanguagePack(pblName);
+                    }
+                }
+            });
+            qDebug() << "Fetching pbl from" << pblFile;
+            return;
+        } else if(pblFile.startsWith("file://")) {
+            if(pblFile.mid(7) != targetFile)
+                QFile::copy(pblFile.mid(7),targetFile);
+        } else if(!targetFile.startsWith("/")) {
+            qWarning() << "Unknown schema or relative path in file" << pblFile;
+            return;
+        } else
+            QFile::copy(pblFile,targetFile);
+    }
+    m_connection->uploadManager()->upload(WatchConnection::UploadTypeFile,0,WatchConnection::UploadTypeFile,targetFile,-1,STM_CRC_INIT,
+    [this,pblFile](){
+        qDebug() << "Successfully uploaded" << pblFile;
+        emit languagePackChanged();
+    },
+    [pblFile](int code){
+        qWarning() << "Error" << code << "uploading" << pblFile;
+    });
 }
 
 void Pebble::onPebbleConnected()
@@ -768,7 +1062,8 @@ void Pebble::pebbleVersionReceived(const QByteArray &data)
     qDebug() << "Resource timestamp:" << QDateTime::fromTime_t(wd.read<quint32>());
     m_language = wd.readFixedString(6);
     qDebug() << "Language" << m_language;
-    qDebug() << "Language version" << wd.read<quint16>();
+    m_langVer = wd.read<quint16>();
+    qDebug() << "Language version" << m_langVer;
     // Capabilities is 64 bits but QFlags can only do 32 bits. lets split it into 2 * 32.
     // only 8 bits are used atm anyways.
     m_capabilities = QFlag(wd.readLE<quint32>());
@@ -792,10 +1087,11 @@ void Pebble::pebbleVersionReceived(const QByteArray &data)
             qDebug() << "Pebble sync state unclear. Resetting Pebble watch.";
             resetPebble();
         } else {
-            Core::instance()->platform()->syncOrganizer();
+            syncCalendar();
             syncApps();
             m_blobDB->setHealthParams(m_healthParams);
             m_blobDB->setUnits(m_imperialUnits);
+            m_timelineSync->syncLocker();
         }
         version.setValue("syncedWithVersion", QStringLiteral(VERSION));
 
@@ -829,20 +1125,25 @@ void Pebble::phoneVersionAsked(const QByteArray &data)
     Q_UNUSED(data);
     QByteArray res;
 
-    Capabilities sessionCap(CapabilityHealth
-                            | CapabilityAppRunState
-                            | CapabilityUpdatedMusicProtocol | CapabilityInfiniteLogDumping | Capability8kAppMessages);
+    // android sends 09af
+    Capabilities sessionCap(CapabilityAppRunState | CapabilityInfiniteLogDumping
+                            | CapabilityUpdatedMusicProtocol | CapabilityExtendedNotifications
+                            | /*CapabilityLanguagePacks |*/ Capability8kAppMessages
+                            | /*CapabilityHealth |*/ CapabilityVoice
+                            | CapabilityWeather /*| CapabilityXXX*/
+                            | /*CapabilityYYY |*/ CapabilitySendSMS
+                            );
 
     quint32 platformFlags = 16 | 32 | OSAndroid;
 
     WatchDataWriter writer(&res);
     writer.writeLE<quint8>(0x01); // ok
-    writer.writeLE<quint32>(0xFFFFFFFF);
-    writer.writeLE<quint32>(sessionCap);
+    writer.writeLE<quint32>(0xFFFFFFFF); // deprecated since 3.0
+    writer.writeLE<quint32>(0); // deprecated since 3.0
     writer.write<quint32>(platformFlags);
     writer.write<quint8>(2); // response version
     writer.write<quint8>(3); // major version
-    writer.write<quint8>(0); // minor version
+    writer.write<quint8>(13); // minor version
     writer.write<quint8>(0); // bugfix version
     writer.writeLE<quint64>(sessionCap);
 
@@ -882,6 +1183,7 @@ void Pebble::appInstalled(const QUuid &uuid) {
             m_appMsgManager->launchApp(settings.value("watchface").toUuid());
         }
     }
+    m_timelineSync->syncLocker();
 }
 
 void Pebble::appStarted(const QUuid &uuid)
@@ -899,10 +1201,16 @@ void Pebble::muteNotificationSource(const QString &source)
     setNotificationFilter(source, NotificationDisabled);
 }
 
-void Pebble::resetPebble()
+void Pebble::resetTimeline()
 {
     clearTimeline();
-    Core::instance()->platform()->syncOrganizer();
+    syncCalendar();
+    emit m_timelineSync->syncUrlChanged("");
+}
+
+void Pebble::resetPebble()
+{
+    resetTimeline();
 
     clearAppDB();
     syncApps();

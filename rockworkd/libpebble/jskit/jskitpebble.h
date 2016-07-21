@@ -38,9 +38,13 @@ public:
 private:
     QJSValue buildAckEventObject(uint transaction, const QString &message = QString()) const;
 
+    template<typename Func>
+    void getTokenInternal(Func ack, QJSValue &failureCallback);
+
 private:
     AppInfo m_appInfo;
     JSKitManager *m_mgr;
+    QString m_timelineToken;
     QHash<QString, QList<QJSValue>> m_listeners;
 };
 

@@ -6,6 +6,8 @@
 #include <QDBusArgument>
 #include <QDebug>
 
+// TODO: Bootstrapping config from
+// https://boot.getpebble.com/api/config/android/v3/1055?locale=de_DE&app_version=3.13.0-1055-06644a6
 Pebble::Pebble(const QDBusObjectPath &path, QObject *parent):
     QObject(parent),
     m_path(path)
@@ -26,6 +28,7 @@ Pebble::Pebble(const QDBusObjectPath &path, QObject *parent):
     QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "ScreenshotAdded", this, SLOT(screenshotAdded(const QString &)));
     QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "ScreenshotRemoved", this, SLOT(screenshotRemoved(const QString &)));
     QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "FirmwareUpgradeAvailableChanged", this, SLOT(refreshFirmwareUpdateInfo()));
+    QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "LanguageVersionChanged", this, SIGNAL(languageVersionChanged()));
     QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "UpgradingFirmwareChanged", this, SIGNAL(refreshFirmwareUpdateInfo()));
     QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "LogsDumped", this, SIGNAL(logsDumped(bool)));
     QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "HealthParamsChanged", this, SIGNAL(healthParamsChanged()));
@@ -35,6 +38,7 @@ Pebble::Pebble(const QDBusObjectPath &path, QObject *parent):
     QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "CalendarSyncEnabledChanged", this, SIGNAL(calendarSyncEnabledChanged()));
     QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "DevConnectionChanged", this, SLOT(devConStateChanged(bool)));
     QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "DevConnCloudChanged", this, SLOT(devConCloudChanged(bool)));
+    QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "oauthTokenChanged", this, SLOT(setOAuthToken(QString)));
 
     dataChanged();
     refreshApps();
@@ -63,6 +67,11 @@ QString Pebble::name() const
     return m_name;
 }
 
+QString Pebble::platformString() const
+{
+    return fetchProperty("PlatformString").toString();
+}
+
 QString Pebble::hardwarePlatform() const
 {
     return m_hardwarePlatform;
@@ -76,6 +85,17 @@ QString Pebble::serialNumber() const
 QString Pebble::softwareVersion() const
 {
     return m_softwareVersion;
+}
+
+QString Pebble::languageVersion() const
+{
+    return fetchProperty("LanguageVersion").toString();
+}
+
+void Pebble::loadLanguagePack(const QString &pblFile)
+{
+    qDebug() << "Requesting to load language from" << pblFile;
+    m_iface->call("LoadLanguagePack", pblFile);
 }
 
 int Pebble::model() const
@@ -129,11 +149,11 @@ QString Pebble::candidateVersion() const
     return m_candidateVersion;
 }
 
-QVariantMap Pebble::healthParams() const
+QVariantMap Pebble::fetchVarMap(const QString &propertyName) const
 {
-    QDBusMessage m = m_iface->call("HealthParams");
+    QDBusMessage m = m_iface->call(propertyName);
     if (m.type() == QDBusMessage::ErrorMessage || m.arguments().count() == 0) {
-        qWarning() << "Could not fetch health params" << m.errorMessage();
+        qWarning() << "Could not fetch" << propertyName << m.errorMessage();
         return QVariantMap();
     }
 
@@ -142,8 +162,35 @@ QVariantMap Pebble::healthParams() const
     QVariantMap mapEntryVariant;
     arg >> mapEntryVariant;
 
-    qDebug() << "have health params" << mapEntryVariant;
+    qDebug() << "have" << propertyName << mapEntryVariant;
     return mapEntryVariant;
+}
+
+QVariantMap Pebble::cannedResponses() const
+{
+    return fetchVarMap("cannedResponses");
+}
+void Pebble::setCannedResponses(const QVariantMap &cans)
+{
+    QVariantMap _cans;
+    if(cans.values().first().type()!=QVariant::StringList) {
+        foreach(const QString &key, cans.keys()) {
+            QStringList msgs;
+            foreach(const QVariant &msg,cans.value(key).toMap().values()) {
+                msgs.append(msg.toString());
+            }
+            _cans.insert(key,msgs);
+        }
+    } else
+        _cans = cans;
+    qDebug() << "Setting canned responses" << _cans;
+    m_iface->call("setCannedResponses", _cans);
+    emit cannedResponsesChanged();
+}
+
+QVariantMap Pebble::healthParams() const
+{
+    return fetchVarMap("HealthParams");
 }
 
 void Pebble::setHealthParams(const QVariantMap &healthParams)
@@ -243,6 +290,49 @@ void Pebble::devConCloudChanged(bool state)
     emit devConCloudConnectedChanged();
 }
 
+QString Pebble::oauthToken() const
+{
+    return fetchProperty("oauthToken").toString();
+}
+
+void Pebble::setOAuthToken(const QString &token)
+{
+    m_iface->call("setOAuthToken",token);
+    emit oauthTokenChanged();
+    emit accountNameChanged();
+    emit accountEmailChanged();
+}
+
+QString Pebble::accountName() const
+{
+    return fetchProperty("accountName").toString();
+}
+
+QString Pebble::accountEmail() const
+{
+    return fetchProperty("accountEmail").toString();
+}
+
+bool Pebble::syncAppsFromCloud() const
+{
+    return fetchProperty("syncAppsFromCloud").toBool();
+}
+void Pebble::setSyncAppsFromCloud(bool enable)
+{
+    m_iface->call("setSyncAppsFromCloud",enable);
+    emit syncAppsFromCloudChanged();
+}
+
+void Pebble::resetTimeline()
+{
+    m_iface->call("resetTimeline");
+}
+
+void Pebble::setTimelineWindow()
+{
+    m_iface->call("setTimelineWindow",-m_timelienWindowStart,-m_timelienWindowFade,m_timelienWindowEnd);
+}
+
 void Pebble::configurationClosed(const QString &uuid, const QString &url)
 {
     m_iface->call("ConfigurationClosed", uuid, url.mid(17));
@@ -310,6 +400,9 @@ void Pebble::dataChanged()
         m_connected = connected;
         emit connectedChanged();
     }
+    m_timelienWindowStart = -fetchProperty("timelineWindowStart").toInt();
+    m_timelienWindowFade = -fetchProperty("timelineWindowFade").toInt();
+    m_timelienWindowEnd = fetchProperty("timelineWindowEnd").toInt();
 }
 
 void Pebble::pebbleConnected()
@@ -333,20 +426,26 @@ void Pebble::pebbleDisconnected()
 void Pebble::notificationFilterChanged(const QString &sourceId, const QString &name, const QString &icon, const int enabled)
 {
     m_notifications->insert(sourceId, name, icon, enabled);
+    emit notificationsFilterChanged();
+}
+
+QVariantMap Pebble::notificationsFilter() const
+{
+    QVariantMap mapEntryVariant = fetchVarMap("NotificationsFilter");
+    QVariantMap ret;
+
+    foreach (const QString &sourceId, mapEntryVariant.keys()) {
+        const QDBusArgument &arg2 = qvariant_cast<QDBusArgument>(mapEntryVariant.value(sourceId));
+        QVariantMap notifEntry;
+        arg2 >> notifEntry;
+        ret.insert(sourceId, notifEntry);
+    }
+    return ret;
 }
 
 void Pebble::refreshNotifications()
 {
-    QDBusMessage m = m_iface->call("NotificationsFilter");
-    if (m.type() == QDBusMessage::ErrorMessage || m.arguments().count() == 0) {
-        qWarning() << "Could not fetch notifications filter" << m.errorMessage();
-        return;
-    }
-
-    const QDBusArgument &arg = m.arguments().first().value<QDBusArgument>();
-
-    QVariantMap mapEntryVariant;
-    arg >> mapEntryVariant;
+    QVariantMap mapEntryVariant = fetchVarMap("NotificationsFilter");
 
     foreach (const QString &sourceId, mapEntryVariant.keys()) {
         const QDBusArgument &arg2 = qvariant_cast<QDBusArgument>(mapEntryVariant.value(sourceId));
@@ -359,11 +458,13 @@ void Pebble::refreshNotifications()
 void Pebble::setNotificationFilter(const QString &sourceId, int enabled)
 {
     m_iface->call("SetNotificationFilter", sourceId, enabled);
+    emit notificationsFilterChanged();
 }
 
 void Pebble::forgetNotificationFilter(const QString &sourceId)
 {
     m_iface->call("ForgetNotificationFilter", sourceId);
+    emit notificationsFilterChanged();
 }
 
 void Pebble::moveApp(const QString &uuid, int toIndex)

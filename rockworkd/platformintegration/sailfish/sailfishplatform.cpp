@@ -17,6 +17,10 @@
 SailfishPlatform::SailfishPlatform(QObject *parent):
     PlatformInterface(parent)
 {
+    // canned response prereqs: telepathy message type and msg sources we can handle
+    qDBusRegisterMetaType<QList<QVariantMap>>();
+    m_cans.insert("x-nemo.messaging.im",QStringList());
+    m_cans.insert("x-nemo.messaging.sms",QStringList());
     // Time sync
     m_wallTimeMonitor = new watchfish::WallTimeMonitor(this);
     connect(m_wallTimeMonitor, &watchfish::WallTimeMonitor::timeChanged, this, &SailfishPlatform::onTimeChanged);
@@ -70,7 +74,7 @@ void SailfishPlatform::onActiveVoiceCallStatusChanged()
 {
     VoiceCallHandler* handler = m_voiceCallManager->activeVoiceCall();
 
-    if (!handler || handler->handlerId() == nullptr) {
+    if (!handler || handler->handlerId().isNull()) {
         return;
     }
 
@@ -83,18 +87,28 @@ void SailfishPlatform::onActiveVoiceCallStatusChanged()
     case VoiceCallHandler::STATUS_INCOMING:
     case VoiceCallHandler::STATUS_WAITING:
         qDebug() << "Tell incoming:" << handler->lineId();
-        emit incomingCall(qHash(handler->handlerId()), handler->lineId(), m_voiceCallManager->findPersonByNumber(handler->lineId()));
+        if(handler->getState() < VoiceCallHandler::StateRinging) {
+            handler->setState(VoiceCallHandler::StateRinging);
+            emit incomingCall(qHash(handler->handlerId()), handler->lineId(), m_voiceCallManager->findPersonByNumber(handler->lineId()));
+        }
         break;
     case VoiceCallHandler::STATUS_NULL:
     case VoiceCallHandler::STATUS_DISCONNECTED:
         qDebug() << "Endphone " << handler->handlerId();
-        emit callEnded(qHash(handler->handlerId()), false);
+        if(handler->getState() < VoiceCallHandler::StateCleanedUp) {
+            handler->setState(VoiceCallHandler::StateCleanedUp);
+            emit callEnded(qHash(handler->handlerId()), false);
+        }
         break;
     case VoiceCallHandler::STATUS_ACTIVE:
-        qDebug() << "Startphone";
-        emit callStarted(qHash(handler->handlerId()));
+        qDebug() << "Startphone" << handler->handlerId();
+        if(handler->getState() < VoiceCallHandler::StateAnswered) {
+            handler->setState(VoiceCallHandler::StateAnswered);
+            emit callStarted(qHash(handler->handlerId()));
+        }
         break;
     case VoiceCallHandler::STATUS_HELD:
+        qDebug() << "OnHold" << handler->handlerId();
         break;
     }
 }
@@ -133,11 +147,19 @@ AppID getAppID(watchfish::Notification *notification)
     } else if (notification->category() == "x-nemo.messaging.sms") {
         ret.type="sms";
         ret.sender="SMS";
-        ret.srcId=ret.sender;
+        ret.srcId=notification->category();
     } else if (notification->category() == "x-nemo.messaging.im") {
-        ret.type="sms";
+        if(notification->actions().contains("default") && notification->actionArgs("default").at(0).toString().contains("gabble/jabber/google")) {
+            ret.type="hangouts";
+        } else {
+            ret.type="sms";
+        }
         ret.sender=notification->sender();
         ret.srcId=notification->category();
+    } else if (notification->category() == "x-nemo.call.missed") {
+        ret.type = "calls";
+        ret.sender = notification->sender();
+        ret.srcId = notification->category();
     } else if (notification->originPackage() == "org.telegram.messenger" || notification->category().startsWith("harbour.sailorgram")) {
         ret.type="telegram";
         ret.srcId=owner;
@@ -155,6 +177,19 @@ AppID getAppID(watchfish::Notification *notification)
     return ret;
 }
 
+const QHash<QString,QStringList>& SailfishPlatform::cannedResponses() const
+{
+    return m_cans;
+}
+void SailfishPlatform::setCannedResponses(const QHash<QString, QStringList> &cans)
+{
+    // Accept only what we can handle, don't inject more than we have
+    foreach(const QString &key, m_cans.keys()) {
+        if(cans.contains(key))
+            m_cans.insert(key,cans.value(key));
+    }
+}
+
 void SailfishPlatform::newNotificationPin(watchfish::Notification *notification)
 {
     qDebug() << "Got new notification from platform:" << notification->owner() << notification->summary();
@@ -164,25 +199,34 @@ void SailfishPlatform::newNotificationPin(watchfish::Notification *notification)
         return;
     }
     QJsonObject pin;
+    QJsonObject layout;
+    QJsonArray actions;
+
     AppID a = getAppID(notification);
+    QStringList res = PlatformInterface::AppResMap.contains(a.type) ? PlatformInterface::AppResMap.value(a.type) : PlatformInterface::AppResMap.value("unknown");
+
     pin.insert("id",QString("%1.%2.%3").arg(a.sender).arg(notification->timestamp().toTime_t()).arg(notification->id()));
     QUuid guid = PlatformInterface::idToGuid(pin.value("id").toString());
+    pin.insert("createTime", notification->timestamp().toUTC().toString(Qt::ISODate));
     pin.insert("guid",guid.toString().mid(1,36));
     pin.insert("type",QString("notification"));
     pin.insert("dataSource",QString("%1:%2").arg(a.srcId).arg(PlatformInterface::SysID));
     pin.insert("source",a.sender);
     if (!notification->icon().startsWith("/opt/alien/data/notificationIcon/")) //these are temporary, don't store them
         pin.insert("sourceIcon",notification->icon());
+    if(res.count()>2 && !res.at(2).isEmpty()) {
+        pin.insert("sourceName",res.at(2));
+    }
 
-    QJsonArray actions;
     // Dismiss action is added implicitly by TimelinePin class
-    // Response is a PoC for canned messages
-    QJsonObject response;
-    response.insert("type",QString("response"));
-    response.insert("title",QString("Response"));
-    QStringList worms={"Aye","Nay"};
-    response.insert("cannedResponse",QJsonArray::fromStringList(worms));
-    actions.append(response);
+    if(m_cans.contains(a.srcId) && !m_cans.value(a.srcId).isEmpty()) {
+        // We should have responses only for something we could do
+        QJsonObject response;
+        response.insert("type",QString("response"));
+        response.insert("title",QString("Response"));
+        response.insert("cannedResponse",QJsonArray::fromStringList(m_cans.value(a.srcId)));
+        actions.append(response);
+    }
     // Explicit open* will override implicit one
     foreach (const QString &actToken, notification->actions()) {
         if (actToken == "default") {
@@ -191,24 +235,20 @@ void SailfishPlatform::newNotificationPin(watchfish::Notification *notification)
             action.insert("type",QString("open:%1").arg(actToken));
             action.insert("title",QString("Open on Phone"));
             actions.append(action);
+            // Sender is sent back as part of canned message response
+            layout.insert("sender",actToken);
             break;
         }
     }
     pin.insert("actions",actions);
 
-    QJsonObject layout;
     layout.insert("type",QString("commNotification"));
     layout.insert("title",a.sender);
     layout.insert("subtitle",notification->summary());
     layout.insert("body",notification->body());
 
-    QStringList res = PlatformInterface::AppResMap.contains(a.type) ? PlatformInterface::AppResMap.value(a.type) : PlatformInterface::AppResMap.value("unknown");
     layout.insert("tinyIcon",res.at(0));
     layout.insert("backgroundColor",res.at(1));
-    if(res.count()>2 && !res.at(2).isEmpty()) {
-        // Sender is sent back as part of canned message response, need to put there smth more useful
-        layout.insert("sender",res.at(2));
-    }
 
     pin.insert("layout",layout);
 
@@ -219,13 +259,41 @@ void SailfishPlatform::newNotificationPin(watchfish::Notification *notification)
     emit newTimelinePin(pin);
 }
 
-void SailfishPlatform::syncOrganizer() const
+void SailfishPlatform::syncOrganizer(qint32 end) const
 {
-    m_organizerAdapter->reSync();
+    m_organizerAdapter->reSync(end);
 }
 void SailfishPlatform::stopOrganizer() const
 {
     m_organizerAdapter->disable();
+}
+
+void SailfishPlatform::sendTextMessage(const QString &contact, const QString &text) const
+{
+    qDebug() << "Sending text message for" << contact << text;
+    telepathyResponse("/org/freedesktop/Telepathy/Account/ring/tel/account0",contact,text);
+}
+
+void SailfishPlatform::telepathyResponse(const QString &account, const QString &contact, const QString &text) const
+{
+    QDBusObjectPath acct(account);
+    QVariantMap arg1,arg2;
+    arg1.insert("message-type",0);
+    arg2.insert("content-type",QString("text/plain"));
+    arg2.insert("content",text);
+    QDBusReply<QString> res = QDBusConnection::sessionBus().call(
+                QDBusMessage::createMethodCall("org.freedesktop.Telepathy.ChannelDispatcher",
+                                               "/org/freedesktop/Telepathy/ChannelDispatcher",
+                                               "org.freedesktop.Telepathy.ChannelDispatcher.Interface.Messages.DRAFT", "SendMessage")
+                << qVariantFromValue(acct) << contact << qVariantFromValue(QList<QVariantMap>({arg1,arg2})) << (quint32)0);
+    if (res.isValid()) {
+        if (res.value().isEmpty()) {
+            qWarning() << "Unable to send response from" << account << "to" << contact << "with" << text;
+        } else
+            qDebug() << "Sent message under uuid" << res.value();
+    } else {
+        qWarning() << res.error().message();
+    }
 }
 
 void SailfishPlatform::actionTriggered(const QUuid &uuid, const QString &actToken, const QJsonObject &param) const
@@ -233,8 +301,19 @@ void SailfishPlatform::actionTriggered(const QUuid &uuid, const QString &actToke
     qDebug() << "Triggering notification" << uuid << "action" << actToken << QJsonDocument(param).toJson();
     watchfish::Notification *notif = m_notifs.value(uuid);
     if (notif) {
-        if(actToken.split(":").first()=="open")
+        if(actToken.split(":").first()=="open") {
             notif->invokeAction(actToken.split(":").last());
+        } else if(actToken == "response") {
+            if(param.contains("sender") && !notif->actionArgs(param.value("sender").toString()).isEmpty()
+                    && notif->actionArgs(param.value("sender").toString()).at(0).toString().startsWith("/org/freedesktop/Telepathy/Account"))
+                telepathyResponse(
+                            notif->actionArgs(param.value("sender").toString()).at(0).toString(), // account dbus path
+                            notif->actionArgs(param.value("sender").toString()).at(1).toString(), // destination contact
+                            param.value("title").toString() // message text
+                            );
+            else
+                qDebug() << "Don't know how to respond to" << notif->category() << notif->actionArgs(actToken);
+        }
     } else
         qDebug() << "Not found";
 }

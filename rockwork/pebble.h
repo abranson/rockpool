@@ -13,9 +13,12 @@ class Pebble : public QObject
     Q_OBJECT
     Q_PROPERTY(QString name READ name CONSTANT)
     Q_PROPERTY(bool connected READ connected NOTIFY connectedChanged)
+    Q_PROPERTY(QString platformString READ platformString CONSTANT)
     Q_PROPERTY(QString hardwarePlatform READ hardwarePlatform NOTIFY hardwarePlatformChanged)
+    Q_PROPERTY(QString languageVersion READ languageVersion NOTIFY languageVersionChanged)
     Q_PROPERTY(int model READ model NOTIFY modelChanged)
     Q_PROPERTY(NotificationSourceModel* notifications READ notifications CONSTANT)
+    Q_PROPERTY(QVariantMap notificationsFilter READ notificationsFilter NOTIFY notificationsFilterChanged)
     Q_PROPERTY(ApplicationsModel* installedApps READ installedApps CONSTANT)
     Q_PROPERTY(ApplicationsModel* installedWatchfaces READ installedWatchfaces CONSTANT)
     Q_PROPERTY(ScreenshotModel* screenshots READ screenshots CONSTANT)
@@ -35,6 +38,14 @@ class Pebble : public QObject
     Q_PROPERTY(quint16 devConListenPort READ devConListenPort WRITE setDevConListenPort NOTIFY devConListenPortChanged)
     Q_PROPERTY(bool devConnServerRunning READ devConnServerRunning NOTIFY devConnServerRunningChanged)
     Q_PROPERTY(bool devConCloudConnected READ devConCloudConnected NOTIFY devConCloudConnectedChanged)
+    Q_PROPERTY(bool syncAppsFromCloud READ syncAppsFromCloud WRITE setSyncAppsFromCloud NOTIFY syncAppsFromCloudChanged)
+    Q_PROPERTY(QString oauthToken READ oauthToken WRITE setOAuthToken NOTIFY oauthTokenChanged)
+    Q_PROPERTY(QString accountName READ accountName NOTIFY accountNameChanged)
+    Q_PROPERTY(QString accountEmail READ accountEmail NOTIFY accountEmailChanged)
+    Q_PROPERTY(int timelineWindowStart MEMBER m_timelienWindowStart)
+    Q_PROPERTY(int timelineWindowFade MEMBER m_timelienWindowFade)
+    Q_PROPERTY(int timelineWindowEnd MEMBER m_timelienWindowEnd)
+    Q_PROPERTY(QVariantMap cannedResponses READ cannedResponses WRITE setCannedResponses NOTIFY cannedResponsesChanged)
 
 public:
     explicit Pebble(const QDBusObjectPath &path, QObject *parent = 0);
@@ -44,9 +55,11 @@ public:
     bool connected() const;
     QString address() const;
     QString name() const;
+    QString platformString() const;
     QString hardwarePlatform() const;
     QString serialNumber() const;
     QString softwareVersion() const;
+    QString languageVersion() const;
     int model() const;
     bool recovery() const;
     bool upgradingFirmware() const;
@@ -79,8 +92,16 @@ public:
     bool devConnEnabled() const;
     bool devConnCloudEnabled() const;
     quint16 devConListenPort() const;
+    QString oauthToken() const;
+    QString accountName() const;
+    QString accountEmail() const;
+    bool syncAppsFromCloud() const;
+
+    QVariantMap cannedResponses() const;
+    QVariantMap notificationsFilter() const;
 
 public slots:
+    void setCannedResponses(const QVariantMap &cans);
     void setNotificationFilter(const QString &sourceId, int enabled);
     void forgetNotificationFilter(const QString &sourceId);
     void removeApp(const QString &uuid);
@@ -93,16 +114,22 @@ public slots:
     void requestScreenshot();
     void removeScreenshot(const QString &filename);
     void performFirmwareUpgrade();
+    void loadLanguagePack(const QString &pblFile);
     void dumpLogs(const QString &filename);
 
     void setDevConnEnabled(bool enabled);
     void setDevConnCloudEnabled(bool enabled);
     void setDevConListenPort(quint16 port);
+    void setOAuthToken(const QString &token);
+    void setSyncAppsFromCloud(bool enable);
+    void setTimelineWindow();
+    void resetTimeline();
 
 signals:
     void connectedChanged();
     void hardwarePlatformChanged();
     void modelChanged();
+    void languageVersionChanged();
     void firmwareUpgradeAvailableChanged();
     void upgradingFirmwareChanged();
     void logsDumped(bool success);
@@ -116,11 +143,19 @@ signals:
     void devConListenPortChanged();
     void devConnServerRunningChanged();
     void devConCloudConnectedChanged();
+    void cannedResponsesChanged();
+    void notificationsFilterChanged();
+
+    void oauthTokenChanged();
+    void accountNameChanged();
+    void accountEmailChanged();
+    void syncAppsFromCloudChanged();
 
     void openURL(const QString &uuid, const QString &url);
 
 private:
     QVariant fetchProperty(const QString &propertyName) const;
+    QVariantMap fetchVarMap(const QString &propertyName) const;
 
 private slots:
     void dataChanged();
@@ -158,6 +193,10 @@ private:
     QString m_firmwareReleaseNotes;
     QString m_candidateVersion;
     bool m_upgradingFirmware = false;
+
+    qint32 m_timelienWindowStart;
+    qint32 m_timelienWindowFade;
+    qint32 m_timelienWindowEnd;
 };
 
 #endif // PEBBLE_H

@@ -21,10 +21,23 @@ SOURCES += main.cpp \
     libpebble/watchdatareader.cpp \
     libpebble/watchdatawriter.cpp \
     libpebble/devconnection.cpp \
-    libpebble/notificationendpoint.cpp \
     libpebble/musicendpoint.cpp \
     libpebble/phonecallendpoint.cpp \
     libpebble/musicmetadata.cpp \
+    libpebble/blobdb.cpp \
+    libpebble/timelineitem.cpp \
+    libpebble/timelinemanager.cpp \
+    libpebble/timelinesync.cpp \
+    libpebble/appmetadata.cpp \
+    libpebble/appdownloader.cpp \
+    libpebble/screenshotendpoint.cpp \
+    libpebble/firmwaredownloader.cpp \
+    libpebble/bundle.cpp \
+    libpebble/watchlogendpoint.cpp \
+    libpebble/ziphelper.cpp \
+    libpebble/healthparams.cpp \
+    libpebble/dataloggingendpoint.cpp \
+    libpebble/voiceendpoint.cpp \
     libpebble/jskit/jskitmanager.cpp \
     libpebble/jskit/jskitconsole.cpp \
     libpebble/jskit/jskitgeolocation.cpp \
@@ -51,21 +64,7 @@ SOURCES += main.cpp \
     platformintegration/sailfish/sailfishplatform.cpp \
     platformintegration/sailfish/voicecallmanager.cpp \
     platformintegration/sailfish/voicecallhandler.cpp \
-    libpebble/blobdb.cpp \
-    libpebble/timelineitem.cpp \
-    libpebble/notification.cpp \
-    libpebble/timelinemanager.cpp \
     platformintegration/sailfish/organizeradapter.cpp \
-    libpebble/calendarevent.cpp \
-    libpebble/appmetadata.cpp \
-    libpebble/appdownloader.cpp \
-    libpebble/screenshotendpoint.cpp \
-    libpebble/firmwaredownloader.cpp \
-    libpebble/bundle.cpp \
-    libpebble/watchlogendpoint.cpp \
-    libpebble/ziphelper.cpp \
-    libpebble/healthparams.cpp \
-    libpebble/dataloggingendpoint.cpp \
     platformintegration/sailfish/musiccontroller.cpp \
     platformintegration/sailfish/notificationmonitor.cpp \
     platformintegration/sailfish/notifications.cpp \
@@ -78,11 +77,25 @@ HEADERS += \
     libpebble/watchdatareader.h \
     libpebble/watchdatawriter.h \
     libpebble/devconnection.h \
-    libpebble/notificationendpoint.h \
     libpebble/musicendpoint.h \
     libpebble/musicmetadata.h \
     libpebble/phonecallendpoint.h \
     libpebble/platforminterface.h \
+    libpebble/blobdb.h \
+    libpebble/timelineitem.h \
+    libpebble/timelinesync.h \
+    libpebble/timelinemanager.h \
+    libpebble/appmetadata.h \
+    libpebble/appdownloader.h \
+    libpebble/enums.h \
+    libpebble/screenshotendpoint.h \
+    libpebble/firmwaredownloader.h \
+    libpebble/bundle.h \
+    libpebble/watchlogendpoint.h \
+    libpebble/ziphelper.h \
+    libpebble/healthparams.h \
+    libpebble/dataloggingendpoint.h \
+    libpebble/voiceendpoint.h \
     libpebble/jskit/jskitmanager.h \
     libpebble/jskit/jskitconsole.h \
     libpebble/jskit/jskitgeolocation.h \
@@ -112,21 +125,6 @@ HEADERS += \
     platformintegration/sailfish/organizeradapter.h \
     platformintegration/sailfish/musiccontroller.h \
     platformintegration/sailfish/notificationmonitor.h \
-    libpebble/blobdb.h \
-    libpebble/timelineitem.h \
-    libpebble/notification.h \
-    libpebble/calendarevent.h \
-    libpebble/timelinemanager.h \
-    libpebble/appmetadata.h \
-    libpebble/appdownloader.h \
-    libpebble/enums.h \
-    libpebble/screenshotendpoint.h \
-    libpebble/firmwaredownloader.h \
-    libpebble/bundle.h \
-    libpebble/watchlogendpoint.h \
-    libpebble/ziphelper.h \
-    libpebble/healthparams.h \
-    libpebble/dataloggingendpoint.h \
     platformintegration/sailfish/notifications.h \
     platformintegration/sailfish/modecontrolentity.h \
     platformintegration/sailfish/nokia-mce-dbus-names.h \

@@ -217,47 +217,13 @@ Page {
         size: BusyIndicatorSize.Large
         visible: running
     }
-    DockedPanel {
+    DockedTextField {
         id: searchField
-        dock: Dock.Bottom
-        width: parent.width
-        height: Theme.iconSizeMedium
-        open: false
-
-        onMovingChanged: {
-            if (open && visibleSize === height) {
-                searchTextField.focus = true;
-            }
-        }
-        Rectangle {
-            anchors.fill: parent
-            color: Theme.highlightDimmerColor
-            opacity: 0.75
-        }
-        IconButton {
-            icon.source: "image://theme/icon-m-reset"
-            anchors {top: parent.top; left:parent.left}
-            height:parent.height
-            width: height
-            onClicked: searchField.open=false;
-        }
-        TextField {
-            id: searchTextField
-            anchors.top: parent.top
-            anchors.horizontalCenter: parent.horizontalCenter
-            width: parent.width - parent.height*1.8
-            placeholderText: qsTr("Search app or watchface")
-        }
-        IconButton {
-            anchors { top: parent.top; right: parent.right }
-            height: parent.height
-            width: height
-            icon.source: "image://theme/icon-m-search"
-            onClicked: {
-                client.search(searchTextField.text, root.showWatchApps ? AppStoreClient.TypeWatchapp : AppStoreClient.TypeWatchface);
-                searchField.open=false;
-                grpName = qsTr("Search Results")
-            }
+        icon: "image://theme/icon-m-search"
+        hint: qsTr("Search app or watchface")
+        onSubmit: {
+            client.search(text, root.showWatchApps ? AppStoreClient.TypeWatchapp : AppStoreClient.TypeWatchface);
+            root.grpName = qsTr("Search Results")
         }
     }
 }

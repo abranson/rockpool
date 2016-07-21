@@ -24,6 +24,7 @@ signals:
     void ScreenshotRemoved(const QString &filename);
     void FirmwareUpgradeAvailableChanged();
     void UpgradingFirmwareChanged();
+    void LanguageVersionChanged();
     void LogsDumped(bool success);
 
     void HealthParamsChanged();
@@ -35,12 +36,21 @@ signals:
     void DevConnectionChanged(const bool state);
     void DevConnCloudChanged(const bool state);
 
+    void oauthTokenChanged(const QString &token);
+
+    void voiceSessionSetup(const QString &dumpFile, const QString &contentType, const QString &appUuid);
+    void voiceSessionStream(const QString &dumpFile);
+    void voiceSessionDumped(const QString &dumpFile);
+    void voiceSessionClosed(const QString &dumpFIle);
+
 public slots:
     QString Address() const;
     QString Name() const;
     QString SerialNumber() const;
+    QString PlatformString() const;
     QString HardwarePlatform() const;
     QString SoftwareVersion() const;
+    QString LanguageVersion() const;
     int Model() const;
     bool IsConnected() const;
     bool Recovery() const;
@@ -48,12 +58,31 @@ public slots:
     QString CandidateFirmwareVersion() const;
     QString FirmwareReleaseNotes() const;
     void PerformFirmwareUpgrade();
+    void LoadLanguagePack(const QString &pblFile) const;
     bool UpgradingFirmware() const;
+
+    QString accountName() const;
+    QString accountEmail() const;
+    QString oauthToken() const;
+    void setOAuthToken(const QString &token);
+    bool syncAppsFromCloud() const;
+    void setSyncAppsFromCloud(bool enable);
+    void resetTimeline();
+
+    void setTimelineWindow(qint32 start, qint32 fade, qint32 end);
+    qint32 timelineWindowStart() const;
+    qint32 timelineWindowFade() const;
+    qint32 timelineWindowEnd() const;
 
     void insertTimelinePin(const QString &jsonPin);
     QVariantMap NotificationsFilter() const;
     void SetNotificationFilter(const QString &sourceId, int enabled);
     void ForgetNotificationFilter(const QString &sourceId);
+
+    QVariantMap cannedResponses() const;
+    void setCannedResponses(const QVariantMap &cans);
+
+    void voiceSessionResult(const QString &dumpFile, const QVariantList &sentences);
 
     bool DevConnectionEnabled() const;
     quint16 DevConnListenPort() const;

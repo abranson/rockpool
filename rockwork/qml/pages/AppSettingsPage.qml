@@ -35,6 +35,7 @@ Page {
             webview.loadFrameScript("chrome://embedlite/content/SelectAsyncHelper.js");
             webview.addMessageListeners(
                         [
+                            "embed:permissions",
                             "embed:selectasync",
                             "embed:select",
                             "embed:alert",
@@ -48,6 +49,11 @@ Page {
         onRecvAsyncMessage: {
             console.log("Message",message);
             switch(message) {
+            case "embed:permissions": {
+                dialogLoader.permissions(data);
+                break;
+            }
+
             case "embed:selectasync": {
                 selectorLoader.show(data);
                 break;
@@ -61,9 +67,25 @@ Page {
                 break;
             }
 
+            case "embed:prompt": {
+                dialogLoader.prompt("prompt",data);
+                break;
+            }
+
             case "embed:pebble": {
                 if(data.action === "close") {
                     pebble.configurationClosed(appSettings.uuid, data.uri);
+                    pageStack.pop();
+                } else if(data.action === "login") {
+                    var params = data.query.split("&");
+                    for(var i = 0;i<params.length; i++) {
+                        if(params[i].substr(0,13) === "access_token=") {
+                            var kv = params[i].split("=");
+                            console.log("Found token",kv[1]);
+                            pebble.setOAuthToken(kv[1]);
+                            break;
+                        }
+                    }
                     pageStack.pop();
                 }
                 break;
@@ -87,6 +109,7 @@ Page {
         focus: true
         anchors.fill: parent
         property bool singleChoice: true
+        property bool promptValue: false
         property string dlgTitle: qsTr("Alert")
         property string dlgText: qsTr("Something going wrong")
         property string acceptStr: qsTr("Accept")
@@ -95,28 +118,61 @@ Page {
         property string dlgMsg: ""
 
         function alert(data) {
-            sourceComponent = cmpDialog;
             singleChoice=true;
+            promptValue = false;
             dlgTitle=data.title;
             dlgText=data.text;
             dlgData=data;
+            sourceComponent = cmpDialog;
             dlgMsg="alert";
         }
         function confirm(msg,data) {
-            sourceComponent = cmpDialog;
             singleChoice = false;
+            promptValue = false;
             dlgTitle = data.title;
             dlgText = data.text;
-            dlgMsg = msg;
             dlgData = data;
+            sourceComponent = cmpDialog;
+            dlgMsg = msg;
         }
 
-        function accept() {
+        function prompt(msg,data) {
+            singleChoice = false;
+            promptValue = true;
+            dlgTitle = data.title;
+            dlgText = data.text;
+            dlgData = data;
+            sourceComponent = cmpDialog;
+            dlgMsg = msg;
+        }
+
+        function permissions(data) {
+            console.log("Data",JSON.stringify(data));
+            promptValue = false;
+            singleChoice = false;
+            dlgTitle = data.title;
+            dlgText = qsTr("Host")+" "+data.host+" "+qsTr("requests permission for")+" "+data.title;
+            dlgData = data;
+            dlgData["checkmsg"] = qsTr("Store permission permanently and don't ask again");
+            dlgData["checkval"] = false;
+            sourceComponent = cmpDialog;
+        }
+
+        function accept(promptval,checkval) {
             sourceComponent = null;
             if(dlgMsg) {
                 console.log("Sending accept for",dlgMsg+"response")
-                webview.sendAsyncMessage(dlgMsg+"response", {"accepted": true,"winid":dlgData.winid})
+                var ret = {"accepted": true,"winid":dlgData.winid};
+                if(dlgData.checkmsg)
+                    ret["checkval"] = checkval
+                if(promptval)
+                    ret["promptvalue"] = promptval;
+                webview.sendAsyncMessage(dlgMsg+"response", ret)
                 dlgMsg = "";
+            } else if("host" in dlgData) {
+                console.log("Allowing permisssion",dlgData.title,"for",dlgData.host);
+                webview.sendAsyncMessage("embedui:premissions", { "allow": true, "checkedDontAsk": checkval, "id": dlgData.id });
+                dlgData = {};
             }
         }
         function reject() {
@@ -141,7 +197,7 @@ Page {
                 }
                 Button {
                     text: dialogLoader.acceptStr
-                    onClicked: dialogLoader.accept()
+                    onClicked: dialogLoader.accept(cmpDlgPrompt.enabled ? cmpDlgPrompt.text : "", acptBox.checked)
                     enabled: !dialogLoader.singleChoice
                     visible: enabled
                 }
@@ -166,6 +222,26 @@ Page {
                         width: parent.width
                         wrapMode: Text.WordWrap
                         text: dialogLoader.dlgText
+                    }
+                    TextField {
+                        id: cmpDlgPrompt
+                        width: parent.width
+                        text: dialogLoader.promptValue ? dialogLoader.dlgData.defaultValue : ""
+                        enabled: dialogLoader.promptValue
+                        visible: enabled
+                    }
+                    Label {
+                        width: parent.width
+                        wrapMode: Text.WordWrap
+                        visible: "checkmsg" in dialogLoader.dlgData
+                        text: visible ? dialogLoader.dlgData.checkmsg : ""
+                    }
+                    TextSwitch {
+                        id: acptBox
+                        width: parent.width
+                        text: qsTr("Accept")
+                        visible: "checkmsg" in dialogLoader.dlgData
+                        checked: visible ? dialogLoader.dlgData.checkval : false
                     }
                 }
             }

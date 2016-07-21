@@ -22,8 +22,8 @@ function PebbleProtoHandler() {
 
 PebbleProtoHandler.prototype = {
   QueryInterface: XPCOMUtils.generateQI([Ci.nsIProtocolHandler]),
-  classID: Components.ID("{64D704B0-F5FF-11E5-8DDD-D05ABB8E7F8B}"),
-  scheme: "pebblejs",
+  classID: Components.ID("{0bb628c0-8f22-4273-b966-bae528f3a1d6}"),
+  scheme: "pebble",
   defaultPort: -1,
   protocolFlags: Ci.nsIProtocolHandler.URI_NORELATIVE |
                  Ci.nsIProtocolHandler.URI_NOAUTH |
@@ -38,8 +38,10 @@ PebbleProtoHandler.prototype = {
   },
 
   newChannel: function Proto_newChannel(aURI) {
-    let action = aURI.spec.substring(11,16);
-    let query = aURI.spec.split("#")[1];
+    let hIdx = aURI.spec.indexOf("://")+3;
+    let qIdx = aURI.spec.indexOf("#");
+    let action = aURI.spec.substring(hIdx,qIdx);
+    let query = aURI.spec.substring(qIdx+1);
 
     let win = Services.embedlite.getAnyEmbedWindow(true);
     if(win) {
@@ -57,4 +59,14 @@ PebbleProtoHandler.prototype = {
   }
 };
 
-this.NSGetFactory = XPCOMUtils.generateNSGetFactory([PebbleProtoHandler]);
+// Nasty JS OOP
+function PebbleJsProtoHandler() {
+  dump("Adding protocol handler for pebblejs:// URI scheme\n");
+  PebbleProtoHandler.call(this)
+}
+PebbleJsProtoHandler.prototype = Object.create(PebbleProtoHandler.prototype);
+PebbleJsProtoHandler.prototype.constructor = PebbleJsProtoHandler;
+PebbleJsProtoHandler.prototype.classID = Components.ID("{64D704B0-F5FF-11E5-8DDD-D05ABB8E7F8B}");
+PebbleJsProtoHandler.prototype.scheme = "pebblejs";
+
+this.NSGetFactory = XPCOMUtils.generateNSGetFactory([PebbleProtoHandler,PebbleJsProtoHandler]);

@@ -2,7 +2,6 @@
 #define PEBBLE_H
 
 #include "musicmetadata.h"
-#include "notification.h"
 #include "appinfo.h"
 #include "healthparams.h"
 
@@ -13,7 +12,6 @@
 #include <QTimer>
 
 class WatchConnection;
-class NotificationEndpoint;
 class MusicEndpoint;
 class PhoneCallEndpoint;
 class AppManager;
@@ -28,6 +26,13 @@ class WatchLogEndpoint;
 class DataLoggingEndpoint;
 class DevConnection;
 class TimelineManager;
+class TimelineSync;
+class VoiceEndpoint;
+struct SpeexInfo;
+struct AudioStream;
+
+class QNetworkAccessManager;
+
 
 class Pebble : public QObject
 {
@@ -55,6 +60,7 @@ public:
     bool connected() const;
     void connect();
     BlobDB *blobdb() const;
+    TimelineSync *tlSync() const;
 
     QDateTime softwareBuildTime() const;
     QString softwareVersion() const;
@@ -62,8 +68,10 @@ public:
     HardwareRevision hardwareRevision() const;
     Model model() const;
     HardwarePlatform hardwarePlatform() const;
+    QString platformString() const;
     QString serialNumber() const;
     QString language() const;
+    quint16 langVer() const;
     Capabilities capabilities() const;
     bool isUnfaithful() const;
     bool recovery() const;
@@ -81,7 +89,21 @@ public:
     bool devConServerState() const;
     bool devConCloudEnabled() const;
     bool devConCloudState() const;
+    bool syncAppsFromCloud() const;
+    const QString oauthToken() const;
+    const QString accountName() const;
+    const QString accountEmail() const;
+    QNetworkAccessManager *nam() const;
+    QVariantMap cannedMessages() const;
+    void setCannedMessages(const QVariantMap &cans) const;
+    qint32 timelineWindowStart() const;
+    qint32 timelineWindowFade() const;
+    qint32 timelineWindowEnd() const;
+
 public slots:
+    void setTimelineWindow(qint32 start, qint32 fade, qint32 end);
+    void setOAuthToken(const QString &token);
+    void setSyncAppsFromCloud(bool enable);
     QVariantMap notificationsFilter() const;
     void setNotificationFilter(const QString &sourceId, const QString &name, const QString &icon, const NotificationFilter enabled);
     void setNotificationFilter(const QString &sourceId, const NotificationFilter enabled);
@@ -96,6 +118,7 @@ public slots:
 
     void clearTimeline();
     void syncCalendar();
+    void resetTimeline();
     void setCalendarSyncEnabled(bool enabled);
     bool calendarSyncEnabled() const;
 
@@ -121,6 +144,7 @@ public slots:
     QString firmwareReleaseNotes() const;
     void upgradeFirmware() const;
     bool upgradingFirmware() const;
+    void loadLanguagePack(const QString &pblFile) const;
 
     void setHealthParams(const HealthParams &healthParams);
     HealthParams healthParams() const;
@@ -132,6 +156,9 @@ public slots:
     QString profileWhen(bool connected) const;
 
     void dumpLogs(const QString &fileName) const;
+    //void voiceSessionResponse(quint8 result, const QUuid &appUuid);
+    void voiceAudioStop();
+    void voiceSessionResult(const QString &fileName, const QVariantList &sentences);
 
 private slots:
     void onPebbleConnected();
@@ -144,6 +171,9 @@ private slots:
     void appInstalled(const QUuid &uuid);
     void appStarted(const QUuid &uuid);
     void muteNotificationSource(const QString &source);
+    void voiceSessionRequest(const QUuid &appUuid, const SpeexInfo &codec);
+    void voiceAudioStream(quint16 sid, const AudioStream &frames);
+    void voiceSessionClose(quint16 sesId);
 
     void resetPebble();
     void syncApps();
@@ -162,7 +192,12 @@ signals:
     void screenshotRemoved(const QString &filename);
     void updateAvailableChanged();
     void upgradingFirmwareChanged();
+    void languagePackChanged();
     void logsDumped(bool success);
+    void voiceSessionSetup(const QString &fileName, const QString &format, const QString &appUuid);
+    void voiceSessionStream(const QString &fileName);
+    void voiceSessionDumped(const QString &fileName);
+    void voiceSessionClosed(const QString &fileName);
 
     void calendarSyncEnabledChanged();
     void imperialUnitsChanged();
@@ -170,6 +205,7 @@ signals:
     void healtParamsChanged();
     void devConServerStateChanged(bool state);
     void devConCloudStateChanged(bool state);
+    void oauthTokenChanged(const QString &token);
 private:
     void setHardwareRevision(HardwareRevision hardwareRevision);
 
@@ -183,12 +219,12 @@ private:
     Model m_model = ModelUnknown;
     QString m_serialNumber;
     QString m_language;
+    quint16 m_langVer;
     Capabilities m_capabilities = CapabilityNone;
     bool m_isUnfaithful = false;
     bool m_recovery = false;
 
     WatchConnection *m_connection;
-    NotificationEndpoint *m_notificationEndpoint;
     MusicEndpoint *m_musicEndpoint;
     PhoneCallEndpoint *m_phoneCallEndpoint;
     AppManager *m_appManager;
@@ -201,6 +237,8 @@ private:
     FirmwareDownloader *m_firmwareDownloader;
     WatchLogEndpoint *m_logEndpoint;
     DataLoggingEndpoint *m_dataLogEndpoint;
+    VoiceEndpoint * m_voiceEndpoint;
+    QTemporaryFile* m_voiceSessDump = nullptr;
 
     QString m_storagePath;
     QString m_imagePath;
@@ -214,6 +252,8 @@ private:
     bool m_imperialUnits = false;
     DevConnection *m_devConnection;
     TimelineManager *m_timelineManager;
+    TimelineSync *m_timelineSync;
+    QNetworkAccessManager *m_nam;
 };
 
 /*

@@ -31,6 +31,22 @@ public:
 
     void writeDict(const QMap<int, QVariant> &d);
 
+/**
+    Name   : "CRC-32"
+    Width  : 32
+    Poly   : 04C11DB7
+    Init   : FFFFFFFF
+    RefIn  : True
+    RefOut : True
+    XorOut : FFFFFFFF
+    Check  : CBF43926
+http://www.st.com/content/ccc/resource/technical/document/application_note/39/89/da/89/9e/d7/49/b1/DM00068118.pdf/files/DM00068118.pdf/jcr:content/translations/en.DM00068118.pdf
+*/
+    #define STM_CRC_POLY 0x04C11DB7
+    #define STM_CRC_INIT 0xFFFFFFFF
+    #define STM_CRC_OXOR 0xFFFFFFFF
+    static quint32 stm32crc(const QByteArray &data, quint32 crc = STM_CRC_INIT);
+
 private:
     char *p(int n);
     uchar *up(int n);

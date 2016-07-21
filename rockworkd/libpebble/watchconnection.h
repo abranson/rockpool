@@ -18,14 +18,7 @@ public:
     PebblePacket() {}
     virtual ~PebblePacket() = default;
     virtual QByteArray serialize() const = 0;
-    QByteArray packString(const QString &string) const {
-        QByteArray tmp = string.left(0xEF).toUtf8();
-        QByteArray ret;
-        ret.append((tmp.length() + 1) & 0xFF);
-        ret.append(tmp);
-        ret.append('\0');
-        return ret;
-    }
+    virtual bool deserialize(const QByteArray &data) {qCritical() << "Attempt to deserialize using unimplemented method from" << data.toHex();return false;}
 };
 
 class Callback
@@ -67,9 +60,11 @@ public:
         EndpointScreenshot = 8000,
 //        watchFILE_MANAGER = 8181,
 //        watchCORE_DUMP = 9000,
-//        watchAUDIO = 10000, // New in 3.x
+        EndpointAudioStream = 10000, // New in 3.x
+        EndpointVoiceControl = 11000,
         EndpointActionHandler = 11440,
-        EndpointBlobDB = 45531, // New in 3.x
+        EndpointBlobDB = 0xB1DB, // New in 3.x
+        EndpointNotify = 0xB2DB, // BlobDB Update Notify
         EndpointSorting = 0xabcd,
         EndpointPutBytes = 0xbeef
     };

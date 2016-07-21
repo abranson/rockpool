@@ -24,13 +24,14 @@ public:
 
 public slots:
     void scheduleRefresh();
-    void reSync();
+    void reSync(qint32 end);
     void disable();
 
 protected:
     void storageModified(mKCal::ExtendedStorage *storage, const QString &info) Q_DECL_OVERRIDE;
     void storageProgress(mKCal::ExtendedStorage *storage, const QString &info) Q_DECL_OVERRIDE;
     void storageFinished(mKCal::ExtendedStorage *storage, bool error, const QString &info) Q_DECL_OVERRIDE;
+    void timerEvent(QTimerEvent *event) override;
 
 private slots:
     void refresh();
@@ -47,6 +48,8 @@ private:
     mKCal::ExtendedCalendar::Ptr _calendar;
     mKCal::ExtendedStorage::Ptr _calendarStorage;
     QTimer *_refreshTimer;
+    qint32 m_windowStart = -2;
+    qint32 m_windowEnd = 7;
 };
 
 #endif // ORGANIZERADAPTER_H

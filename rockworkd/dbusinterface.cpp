@@ -15,6 +15,7 @@ DBusPebble::DBusPebble(Pebble *pebble, QObject *parent):
     connect(pebble, &Pebble::screenshotRemoved, this, &DBusPebble::ScreenshotRemoved);
     connect(pebble, &Pebble::updateAvailableChanged, this, &DBusPebble::FirmwareUpgradeAvailableChanged);
     connect(pebble, &Pebble::upgradingFirmwareChanged, this, &DBusPebble::UpgradingFirmwareChanged);
+    connect(pebble, &Pebble::languagePackChanged, this, &DBusPebble::LanguageVersionChanged);
     connect(pebble, &Pebble::logsDumped, this, &DBusPebble::LogsDumped);
     connect(pebble, &Pebble::healtParamsChanged, this, &DBusPebble::HealthParamsChanged);
     connect(pebble, &Pebble::imperialUnitsChanged, this, &DBusPebble::ImperialUnitsChanged);
@@ -22,6 +23,11 @@ DBusPebble::DBusPebble(Pebble *pebble, QObject *parent):
     connect(pebble, &Pebble::calendarSyncEnabledChanged, this, &DBusPebble::CalendarSyncEnabledChanged);
     connect(pebble, &Pebble::devConServerStateChanged, this, &DBusPebble::DevConnectionChanged);
     connect(pebble, &Pebble::devConCloudStateChanged, this, &DBusPebble::DevConnCloudChanged);
+    connect(pebble, &Pebble::oauthTokenChanged, this, &DBusPebble::oauthTokenChanged);
+    connect(pebble, &Pebble::voiceSessionSetup, this, &DBusPebble::voiceSessionSetup);
+    connect(pebble, &Pebble::voiceSessionStream, this, &DBusPebble::voiceSessionStream);
+    connect(pebble, &Pebble::voiceSessionDumped, this, &DBusPebble::voiceSessionDumped);
+    connect(pebble, &Pebble::voiceSessionClosed, this, &DBusPebble::voiceSessionClosed);
 }
 
 QString DBusPebble::Address() const
@@ -74,6 +80,64 @@ void DBusPebble::ForgetNotificationFilter(const QString &sourceId)
     m_pebble->forgetNotificationFilter(sourceId);
 }
 
+QVariantMap DBusPebble::cannedResponses() const
+{
+    return m_pebble->cannedMessages();
+}
+/**
+ * @brief DBusPebble::setCannedResponses
+ * @param cans aass
+ * Example call:
+ * gdbus call -e -d org.rockwork -o /org/rockwork/XX_XX_XX_XX_XX_XX
+ *  -m org.rockwork.Pebble.setCannedResponses
+ *  "{'x-nemo.messaging.im': <@as ['Aye','Nay','On my way']>;, 'x-nemo.messaging.sms': <@as ['Ok']>}"</pre>
+ */
+void DBusPebble::setCannedResponses(const QVariantMap &cans)
+{
+    m_pebble->setCannedMessages(cans);
+}
+
+/**
+ * @brief DBusPebble::voiceSessionResult
+ * @param s dumpFile
+ * @param aaasu sentences
+ */
+void DBusPebble::voiceSessionResult(const QString &dumpFile, const QVariantList &sentences)
+{
+    m_pebble->voiceSessionResult(dumpFile, sentences);
+}
+
+void DBusPebble::resetTimeline()
+{
+    m_pebble->resetTimeline();
+}
+
+qint32 DBusPebble::timelineWindowStart() const
+{
+    return m_pebble->timelineWindowStart();
+}
+qint32 DBusPebble::timelineWindowFade() const
+{
+    return m_pebble->timelineWindowFade();
+}
+qint32 DBusPebble::timelineWindowEnd() const
+{
+    return m_pebble->timelineWindowEnd();
+}
+void DBusPebble::setTimelineWindow(qint32 start, qint32 fade, qint32 end)
+{
+    m_pebble->setTimelineWindow(start,fade,end);
+}
+
+/**
+ * @brief DBusPebble::insertTimelinePin
+ * @param jsonPin
+ * Example usage:
+ * dbus-send --session --dest=org.rockwork --type=method_call --print-reply
+ *  /org/rockwork/XX_XX_XX_XX_XX_XX org.rockwork.Pebble.insertTimelinePin
+ *  string:"$(cat pin.json)"
+ * where pin.json is file with raw pin json object
+ */
 void DBusPebble::insertTimelinePin(const QString &jsonPin)
 {
     QJsonParseError jpe;
@@ -87,6 +151,32 @@ void DBusPebble::insertTimelinePin(const QString &jsonPin)
         return;
     }
     m_pebble->insertPin(json.object());
+}
+
+bool DBusPebble::syncAppsFromCloud() const
+{
+    return m_pebble->syncAppsFromCloud();
+}
+void DBusPebble::setSyncAppsFromCloud(bool enable)
+{
+    m_pebble->setSyncAppsFromCloud(enable);
+}
+
+void DBusPebble::setOAuthToken(const QString &token)
+{
+    m_pebble->setOAuthToken(token);
+}
+QString DBusPebble::oauthToken() const
+{
+    return m_pebble->oauthToken();
+}
+QString DBusPebble::accountName() const
+{
+    return m_pebble->accountName();
+}
+QString DBusPebble::accountEmail() const
+{
+    return m_pebble->accountEmail();
 }
 
 bool DBusPebble::DevConnectionEnabled() const
@@ -220,6 +310,11 @@ void DBusPebble::PerformFirmwareUpgrade()
     m_pebble->upgradeFirmware();
 }
 
+void DBusPebble::LoadLanguagePack(const QString &pblFile) const
+{
+    m_pebble->loadLanguagePack(pblFile);
+}
+
 bool DBusPebble::UpgradingFirmware() const
 {
     return m_pebble->upgradingFirmware();
@@ -228,6 +323,11 @@ bool DBusPebble::UpgradingFirmware() const
 QString DBusPebble::SerialNumber() const
 {
     return m_pebble->serialNumber();
+}
+
+QString DBusPebble::PlatformString() const
+{
+    return m_pebble->platformString();
 }
 
 QString DBusPebble::HardwarePlatform() const
@@ -248,6 +348,11 @@ QString DBusPebble::HardwarePlatform() const
 QString DBusPebble::SoftwareVersion() const
 {
     return m_pebble->softwareVersion();
+}
+
+QString DBusPebble::LanguageVersion() const
+{
+    return QString("%1:%2").arg(m_pebble->language()).arg(QString::number(m_pebble->langVer()));
 }
 
 int DBusPebble::Model() const

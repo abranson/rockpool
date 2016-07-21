@@ -37,6 +37,13 @@ public:
         STATUS_WAITING,
         STATUS_DISCONNECTED
     };
+    enum HandlerProgressState {
+        StateInit,
+        StateRinging,
+        StateAnswered,
+        StateHangedUp,
+        StateCleanedUp
+    };
 
     explicit VoiceCallHandler(const QString &handlerId, QObject *parent = 0);
             ~VoiceCallHandler();
@@ -53,6 +60,9 @@ public:
     bool isEmergency() const;
     bool isForwarded() const;
     bool isRemoteHeld() const;
+
+    HandlerProgressState getState() const { return m_state;}
+    void setState(HandlerProgressState state) { m_state = state;}
 
 Q_SIGNALS:
     void error(const QString &error);
@@ -88,6 +98,7 @@ protected Q_SLOTS:
 
 private:
     class VoiceCallHandlerPrivate *d_ptr;
+    HandlerProgressState m_state = StateInit;
 
     Q_DISABLE_COPY(VoiceCallHandler)
     Q_DECLARE_PRIVATE(VoiceCallHandler)

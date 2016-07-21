@@ -92,7 +92,11 @@ enum Capability {
     CapabilityLanguagePacks =         0x0000000000000010,
     Capability8kAppMessages =         0x0000000000000020,
     CapabilityHealth =                0x0000000000000040,
-    CapabilityVoice =                 0x0000000000000080
+    CapabilityVoice =                 0x0000000000000080,
+    CapabilityWeather =               0x0000000000000100,
+    //CapabilityXXX =                 0x0000000000000200,
+    //CapabilityYYY =                 0x0000000000000400,
+    CapabilitySendSMS =               0x0000000000000800
 };
 Q_DECLARE_FLAGS(Capabilities, Capability)
 

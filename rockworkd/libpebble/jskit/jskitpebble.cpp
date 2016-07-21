@@ -6,6 +6,7 @@
 #include "jskitpebble.h"
 #include "jskitxmlhttprequest.h"
 #include "jskitwebsocket.h"
+#include "../timelinesync.h"
 static const char *token_salt = "0feeb7416d3c4546a19b04bccd8419b1";
 
 JSKitPebble::JSKitPebble(const AppInfo &info, JSKitManager *mgr, QObject *parent) :
@@ -100,48 +101,89 @@ uint JSKitPebble::sendAppMessage(QJSValue message, QJSValue callbackForAck, QJSV
 
 void JSKitPebble::getTimelineToken(QJSValue successCallback, QJSValue failureCallback)
 {
-    //TODO actually implement this
-    qCDebug(l) << "call to unsupported method Pebble.getTimelineToken";
-    Q_UNUSED(successCallback);
-
-    if (failureCallback.isCallable()) {
-        failureCallback.call();
-    }
+    getTokenInternal([this,successCallback]()mutable{
+        if(successCallback.isCallable()) {
+            successCallback.call(QJSValueList({m_timelineToken}));
+        }
+    },failureCallback);
 }
 
 void JSKitPebble::timelineSubscribe(const QString &topic, QJSValue successCallback, QJSValue failureCallback)
 {
-    //TODO actually implement this
-    qCDebug(l) << "call to unsupported method Pebble.timelineSubscribe";
-    Q_UNUSED(topic);
-    Q_UNUSED(successCallback);
-
-    if (failureCallback.isCallable()) {
-        failureCallback.call();
-    }
+    getTokenInternal([this,topic,&successCallback,&failureCallback](){
+        m_mgr->pebble()->tlSync()->topicSubscribe(m_timelineToken,topic,[this,successCallback,topic](const QString &ok)mutable{
+            qCDebug(l) << "Successfully subscribed to" << topic << ok;
+            if(successCallback.isCallable()) {
+                successCallback.call(QJSValueList({ok}));
+            }
+        },[this,topic,failureCallback](const QString &err)mutable{
+            qCDebug(l) << "Cannot subscribe to" << topic << err;
+            if (failureCallback.isCallable()) {
+                failureCallback.call(QJSValueList({err}));
+            }
+        });
+    },failureCallback);
 }
 
 void JSKitPebble::timelineUnsubscribe(const QString &topic, QJSValue successCallback, QJSValue failureCallback)
 {
-    //TODO actually implement this
-    qCDebug(l) << "call to unsupported method Pebble.timelineUnsubscribe";
-    Q_UNUSED(topic);
-    Q_UNUSED(successCallback);
-
-    if (failureCallback.isCallable()) {
-        failureCallback.call();
-    }
+    getTokenInternal([this,topic,&successCallback,failureCallback]()mutable{
+        m_mgr->pebble()->tlSync()->topicUnsubscribe(m_timelineToken,topic,[this,successCallback,topic](const QString &ok)mutable{
+            qCDebug(l) << "Successfully unsubscribed from" << topic << ok;
+            if(successCallback.isCallable()) {
+                successCallback.call(QJSValueList({ok}));
+            }
+        },[this,topic,failureCallback](const QString &err)mutable{
+            qCDebug(l) << "Cannot unsubscribe from" << topic << err;
+            if (failureCallback.isCallable()) {
+                failureCallback.call(QJSValueList({err}));
+            }
+        });
+    },failureCallback);
 }
 
 void JSKitPebble::timelineSubscriptions(QJSValue successCallback, QJSValue failureCallback)
 {
-    //TODO actually implement this
-    qCDebug(l) << "call to unsupported method Pebble.timelineSubscriptions";
-    Q_UNUSED(successCallback);
+    getTokenInternal([this,&successCallback,&failureCallback](){
+        m_mgr->pebble()->tlSync()->getSubscriptions(m_timelineToken,[this,successCallback](const QStringList &topics)mutable{
+            qCDebug(l) << "Successfully fetched subscriptions:" << topics.join(", ");
+            if(successCallback.isCallable()) {
+                QJSValue argArray = m_mgr->engine()->newArray(topics.size());
+                for (int i = 0; i < topics.size(); i++) {
+                    argArray.setProperty(i, topics.at(i));
+                }
+                successCallback.call(QJSValueList({argArray}));
+            }
+        },[failureCallback](const QString &err)mutable{
+            if (failureCallback.isCallable()) {
+                failureCallback.call(QJSValueList({err}));
+            }
+        });
+    },failureCallback);
+}
 
-    if (failureCallback.isCallable()) {
-        failureCallback.call();
+template<typename Func>
+void JSKitPebble::getTokenInternal(Func ack, QJSValue &failureCallback)
+{
+    if(!m_timelineToken.isEmpty()) {
+        ack();
+        return;
     }
+    m_mgr->pebble()->tlSync()->getTimelineToken(m_appInfo.uuid(),
+       [this,failureCallback,ack](const QString &ret)mutable{
+        m_timelineToken = ret;
+        if(m_timelineToken.isEmpty()) {
+            if (failureCallback.isCallable()) {
+                failureCallback.call(QJSValueList({"Unknown Error: token is empty"}));
+            }
+        } else {
+            ack();
+        }
+    }, [failureCallback](const QString &err)mutable{
+        if (failureCallback.isCallable()) {
+            failureCallback.call(QJSValueList({err}));
+        }
+    });
 }
 
 

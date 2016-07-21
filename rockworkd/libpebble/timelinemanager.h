@@ -28,12 +28,14 @@ public:
     TimelinePin() {}
     TimelinePin(const TimelinePin &src);
     TimelinePin(const QJsonDocument &json, TimelineManager *manager) : TimelinePin(json.object(),manager){}
-    TimelinePin(const QJsonObject &obj, TimelineManager *manager, const QUuid &uuid = QUuid());
+    TimelinePin(const QJsonObject &obj, TimelineManager *manager, const QUuid &uuid = QUuid(), const TimelinePin *parent = 0);
     TimelinePin(const QString &fileName, TimelineManager *manager);
 
+    const QString id() const {return m_pin.contains("id")?m_pin.value("id").toString():m_uuid.toString();}
     const QUuid & guid() const {return m_uuid;}
     const QUuid & parent() const {return m_parent;}
     QString kind() const {return m_kind;}
+    QString source() const {return m_pin.value("source").toString();}
     TimelineItem::Type type() const {return m_type;}
     BlobDB::BlobDBId blobId() const {return item2blob[m_type];}
     QDateTime time() const  {return (m_time.isValid()?m_time:(m_updated.isValid()?m_updated:m_created));}
@@ -67,12 +69,14 @@ public:
     QList<TimelineAttribute> handleAction(TimelineAction::Type atype, quint8 id, const QJsonObject &param) const;
     void updateTopics(const TimelinePin &pin);
 
+    void update(const TimelineItem &item, const QDateTime ts = QDateTime::currentDateTimeUtc());
+
     // watch operations
     TimelineItem toItem() const;
     void flush() const;
     void remove() const;
     void send() const;
-    void erase() const;
+    void erase(bool force=false) const;
 
 private:
     void initJson();
@@ -98,11 +102,14 @@ private:
     static const BlobDB::BlobDBId item2blob[4];
 };
 
+
 class TimelineManager : public QObject
 {
     Q_OBJECT
     friend class TimelinePin;
 public:
+    static QUuid appSendText;
+
     TimelineManager(Pebble *pebble, WatchConnection *connection);
 
     // Timeline Layout
@@ -114,24 +121,38 @@ public:
     void removeTimelinePin(const QString &guid);
     void clearTimeline(const QUuid &parent);
 
+    void setTimelineWindow(int daysPast, int eventFadeout, int daysFuture);
+    int daysPast() const {return m_past_days;}
+    int daysFuture() const {return m_future_days;}
+    int secsEventFadeout() const {return m_event_fadeout;}
+
 public slots:
     void reloadLayouts();
+    void wipeTimeline(const QString &kind = QString());
+    void wipeSubscription(const QString &topic);
 
 signals:
     void muteSource(const QString &sourceId);
     void removeNotification(const QUuid &uuid);
     void actionTriggered(const QUuid &uuid, const QString &type, const QJsonObject &param);
+    void snoozeReminder(const QUuid &event, const QString &id, const QDateTime &oldTime, const QDateTime &newTime);
+    void actionSendText(const QString &contact, const QString &text);
 
 private slots:
     void actionHandler(const QByteArray &data);
+    void notifyHandler(const QDateTime &ts, const QUuid &key, const TimelineItem &val);
     void blobdbAckHandler(BlobDB::BlobDBId db, BlobDB::Operation cmd, const QUuid &uuid, BlobDB::Status ack);
     void doMaintenance();
+
+protected:
+    void timerEvent(QTimerEvent *event) override;
 
 private:
     void insert(const class TimelinePin &pin);
     void remove(const class TimelinePin &pin);
     void addPin(const class TimelinePin &pin);
     quint32 pinCount(const QUuid *parent = 0);
+    bool pinExists(const QUuid &guid) const;
     TimelinePin * getPin(const QUuid &guid);
     void removePin(const QUuid &guid);
     const TimelinePin::PtrList pinKids(const QUuid &parent);
@@ -147,8 +168,6 @@ private:
     QHash<QString,QList<QUuid>> m_idx_subscription;
     // All should be updated in atomic syncronized transaction to prevent retention/sync timer race condition
     QMutex m_mtx_pinStorage;
-    QTimer *m_tmr_maintenance;
-    //QTimer m_tmr_websync;
 
     // Timeline window knobs. Pebble doesn't show future further than 48hrs ahead.
     // However it keeps pins on watches and shows them once the time has come

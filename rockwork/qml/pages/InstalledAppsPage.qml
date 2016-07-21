@@ -60,14 +60,32 @@ Page {
         VerticalScrollDecorator {}
     }
     function configureApp(uuid) {
-        // The health app is special :/
+        var popup = null;
+        var cbacc = null;
         if (uuid === "{36d8c6ed-4c83-4fa1-a9e2-8f12dc941f8c}") {
-            var popup = pageStack.push(Qt.resolvedUrl("HealthSettingsDialog.qml"), {
+            popup = pageStack.push(Qt.resolvedUrl("HealthSettingsDialog.qml"), {
                                             healthParams: pebble.healthParams
                                         },PageStackAction.Immediate);
-            popup.accepted.connect(function () {
+            cbacc = function () {
                 pebble.healthParams = popup.healthParams
-            })
+            };
+        } else if(uuid === "{61b22bc8-1e29-460d-a236-3fe409a439ff}") {
+            popup = pageStack.push(Qt.resolvedUrl("WeatherSettingsDialog.qml"), {
+                                            params: pebble.weatherParams
+                                        },PageStackAction.Immediate);
+            cbacc = function () {
+                pebble.weatherParams = popup.params
+            };
+        } else if(uuid === "{0863fc6a-66c5-4f62-ab8a-82ed00a98b5d}") {
+            popup = pageStack.push(Qt.resolvedUrl("SendTextSettingsDialog.qml"), {
+                                            params: pebble.sendTextParams
+                                        },PageStackAction.Immediate);
+            cbacc = function () {
+                pebble.sendTextParams = popup.params
+            };
+        }
+        if(popup && cbacc) {
+            popup.accepted.connect(cbacc);
         } else {
             pebble.requestConfigurationURL(uuid)
         }

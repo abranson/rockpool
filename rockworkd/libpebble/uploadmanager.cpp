@@ -150,7 +150,7 @@ void UploadManager::startNextUpload()
         writer.write<quint8>(upload.type);
         writer.write<quint8>(upload.index);
         if (!upload.filename.isEmpty()) {
-            writer.writeCString(upload.filename);
+            writer.writeCString(upload.filename.split('/').last());
         }
     } else {
         writer.write<quint8>(upload.type|0x80);
@@ -197,6 +197,9 @@ bool UploadManager::uploadNextChunk(PendingUpload &upload)
     upload.remaining -= chunk.size();
 
     qDebug() << "remaining" << upload.remaining << "/" << upload.size << "bytes";
+
+    if(upload.index>=0 && upload.appInstallId==upload.type)
+        upload.crc = WatchDataWriter::stm32crc(chunk,upload.crc);
 
     return true;
 }

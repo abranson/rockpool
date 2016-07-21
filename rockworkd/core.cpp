@@ -52,7 +52,7 @@ void Core::init()
 const QString PlatformInterface::SysID("ed429c16-f674-4220-95da-454f303f15e2");
 const QUuid PlatformInterface::UUID(PlatformInterface::SysID);
 
-// App Specific Resources for Pins. appType: {icon, color, [sender, [...]]}
+// App Specific Resources for Pins. appType: {icon, color, [name, [...]]}
 const QHash<QString,QStringList> PlatformInterface::AppResMap = {
     {"generic",{"system://images/NOTIFICATION_GENERIC","red"}},
     {"email",{"system://images/GENERIC_EMAIL","gray","E-Mails"}},
@@ -65,7 +65,7 @@ const QHash<QString,QStringList> PlatformInterface::AppResMap = {
     {"whatsapp",{"system://images/NOTIFICATION_WHATSAPP","green","WhatsApp"}},
     {"weather",{"system://images/TIMELINE_WEATHER","indigo","Weather"}},
     {"reminder",{"system://images/NOTIFICATION_REMINDER","red","Reminders"}},
-    {"calls",{"system://images/TIMELINE_MISSED_CALL","red","Calls"}},
+    {"calls",{"system://images/TIMELINE_MISSED_CALL","lightblue","Missed Calls"}},
     {"music",{"system://images/MUSIC_EVENT","red"}},
     {"alarm",{"system://images/ALARM_CLOCK","red"}},
     {"unknown",{"system://images/NOTIFICATION_FLAG","red"}}

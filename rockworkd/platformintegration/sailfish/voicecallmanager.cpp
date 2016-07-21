@@ -242,11 +242,13 @@ void VoiceCallManager::onVoiceCallsChanged()
 
     QStringList added;
     QStringList removed;
+    QHash<QString,VoiceCallHandler*> index;
 
     // Map current call handlers to handler ids for easy indexing.
     foreach(VoiceCallHandler *handler, d->voicecalls)
     {
         oIds.append(handler->handlerId());
+        index.insert(handler->handlerId(),handler);
     }
 
     // Index new handlers to be added.
@@ -264,18 +266,12 @@ void VoiceCallManager::onVoiceCallsChanged()
     // Remove handlers that need to be removed.
     foreach(QString removeId, removed)
     {
-        for (int i = 0; i < d->voicecalls.count(); ++i) {
-            VoiceCallHandler *handler = d->voicecalls.at(i);
-            if (!handler) continue;
-            if(handler->handlerId() == removeId)
-            {
-                qDebug() << "removing " << handler->handlerId();
-                handler->disconnect(this);
-                d->voicecalls.removeAt(i);
-                handler->deleteLater();
-                break;
-            }
-        }
+        VoiceCallHandler *handler = index.value(removeId);
+        qDebug() << "removing" << removeId << "which is" << handler->handlerId();
+        //handler->disconnect(this);
+        handler->disconnect(); // disconnect all, this is proper controlled cleanup
+        d->voicecalls.removeAll(handler);
+        handler->deleteLater();
     }
 
     // Add handlers that need to be added.
