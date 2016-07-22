@@ -11,39 +11,39 @@
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="114"></location>
         <source>Something going wrong</source>
-        <translation type="unfinished"></translation>
+        <translation>Er gaat iets mis</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="115"></location>
         <location filename="../qml/pages/AppSettingsPage.qml" line="242"></location>
         <source>Accept</source>
-        <translation type="unfinished"></translation>
+        <translation>Accepteer</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="116"></location>
         <location filename="../qml/pages/AppSettingsPage.qml" line="293"></location>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>Annuleren</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="154"></location>
         <source>Host</source>
-        <translation type="unfinished"></translation>
+        <translation>Host</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="154"></location>
         <source>requests permission for</source>
-        <translation type="unfinished"></translation>
+        <translation>Vraagt toestemming voor</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="156"></location>
         <source>Store permission permanently and don't ask again</source>
-        <translation type="unfinished"></translation>
+        <translation>Sla toestemming voorgoed op</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="297"></location>
         <source>Select</source>
-        <translation type="unfinished"></translation>
+        <translation>Selecteer</translation>
     </message>
 </context>
 <context>
@@ -51,32 +51,32 @@
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="170"></location>
         <source>Description</source>
-        <translation type="unfinished"></translation>
+        <translation>Omschrijving</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="191"></location>
         <source>Developer</source>
-        <translation type="unfinished"></translation>
+        <translation>Ontwikkelaar</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="196"></location>
         <source>Version</source>
-        <translation type="unfinished"></translation>
+        <translation>Versie</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="246"></location>
         <source>Install</source>
-        <translation type="unfinished"></translation>
+        <translation>Installeer</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="246"></location>
         <source>Installing...</source>
-        <translation type="unfinished"></translation>
+        <translation>Installeren...</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="246"></location>
         <source>Installed</source>
-        <translation type="unfinished"></translation>
+        <translation>Geinstalleerd</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="246"></location>
@@ -89,29 +89,29 @@
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="43"></location>
         <source>Use</source>
-        <translation type="unfinished"></translation>
+        <translation>Gebruik</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="43"></location>
         <location filename="../qml/pages/AppStorePage.qml" line="55"></location>
         <source>Collections</source>
-        <translation type="unfinished"></translation>
+        <translation>Collecties</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="43"></location>
         <location filename="../qml/pages/AppStorePage.qml" line="55"></location>
         <source>Categories</source>
-        <translation type="unfinished"></translation>
+        <translation>Categorieën</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="49"></location>
         <source>Search</source>
-        <translation type="unfinished"></translation>
+        <translation>Zoeken</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="55"></location>
         <source>Watchapps</source>
-        <translation type="unfinished"></translation>
+        <translation>Watchapps</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="55"></location>
@@ -121,12 +121,12 @@
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="101"></location>
         <source>See all</source>
-        <translation type="unfinished"></translation>
+        <translation>Toon alles</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="163"></location>
         <source>All Apps</source>
-        <translation type="unfinished"></translation>
+        <translation>Alle Apps</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="196"></location>
@@ -141,7 +141,7 @@
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="226"></location>
         <source>Search Results</source>
-        <translation type="unfinished"></translation>
+        <translation>Zoek Resultaten</translation>
     </message>
 </context>
 <context>
@@ -150,22 +150,22 @@
         <location filename="../qml/pages/AppUpgradePage.qml" line="24"></location>
         <location filename="../qml/pages/AppUpgradePage.qml" line="25"></location>
         <source>Upgrading</source>
-        <translation type="unfinished"></translation>
+        <translation>Upgraden</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="49"></location>
         <source>Version</source>
-        <translation type="unfinished"></translation>
+        <translation>Versie</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="77"></location>
         <source>Upgrade</source>
-        <translation type="unfinished"></translation>
+        <translation>Upgrade</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="77"></location>
         <source>Upgrading...</source>
-        <translation type="unfinished"></translation>
+        <translation>Upgraden...</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="77"></location>
@@ -175,7 +175,7 @@
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="93"></location>
         <source>Compatibility</source>
-        <translation type="unfinished"></translation>
+        <translation>Compatibiliteit</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="175"></location>
@@ -188,7 +188,7 @@
     <message>
         <location filename="../qml/pages/ContentPeerPickerPage.qml" line="16"></location>
         <source>Share Via</source>
-        <translation type="unfinished"></translation>
+        <translation>Delen Via</translation>
     </message>
     <message>
         <location filename="../qml/pages/ContentPeerPickerPage.qml" line="26"></location>
@@ -201,12 +201,12 @@
     <message>
         <location filename="../qml/cover/CoverPage.qml" line="27"></location>
         <source>connected</source>
-        <translation type="unfinished"></translation>
+        <translation>verbonden</translation>
     </message>
     <message>
         <location filename="../qml/cover/CoverPage.qml" line="27"></location>
         <source>disconnected</source>
-        <translation type="unfinished"></translation>
+        <translation>verbroken</translation>
     </message>
 </context>
 <context>
@@ -214,17 +214,17 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="11"></location>
         <source>Developer Tools</source>
-        <translation type="unfinished"></translation>
+        <translation>Ontwikkelaars Tools</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="60"></location>
         <source>Disable Service</source>
-        <translation type="unfinished"></translation>
+        <translation>Service Uitzetten</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="66"></location>
         <source>Restart Service</source>
-        <translation type="unfinished"></translation>
+        <translation>Service Herstarten</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="72"></location>
