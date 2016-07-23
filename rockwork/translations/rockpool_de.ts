@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.0" language="de" sourcelanguage="en">
+<TS version="2.1" language="de" sourcelanguage="en">
 <context>
     <name>AppSettingsPage</name>
     <message>
@@ -11,7 +11,7 @@
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="114"/>
         <source>Something going wrong</source>
-        <translation>Stimmt etwas nicht</translation>
+        <translation>Etwas stimmt nicht</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="115"/>
@@ -28,7 +28,7 @@
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="154"/>
         <source>Host</source>
-        <translation>Anbieter</translation>
+        <translation>Host</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="154"/>
@@ -38,7 +38,7 @@
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="156"/>
         <source>Store permission permanently and don&apos;t ask again</source>
-        <translation>Speichern die Erlaubnis und nicht mehr fragen</translation>
+        <translation>Die Erlaubnis speichern und nicht mehr fragen</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="297"/>
@@ -71,7 +71,7 @@
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="246"/>
         <source>Installing...</source>
-        <translation>Installieren...</translation>
+        <translation>Installiere...</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="246"/>
@@ -89,7 +89,7 @@
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="43"/>
         <source>Use</source>
-        <translation>Wähle</translation>
+        <translation>Nutze</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="43"/>
@@ -165,7 +165,7 @@
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="77"/>
         <source>Upgrading...</source>
-        <translation>Aktualisieren...</translation>
+        <translation>Aktualisiere...</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="77"/>
@@ -188,12 +188,12 @@
     <message>
         <location filename="../qml/pages/ContentPeerPickerPage.qml" line="16"/>
         <source>Share Via</source>
-        <translation>Freigeben Via</translation>
+        <translation>Freigeben über</translation>
     </message>
     <message>
         <location filename="../qml/pages/ContentPeerPickerPage.qml" line="26"/>
         <source>No Share Providers configured. Please add provider&apos;s account in System Settings</source>
-        <translation>Es ist keine Anbieter der Ubertragung konfiguriert. Bitte hinzufügen Sie eine Konto des Anbieters in Systemeinstellungen</translation>
+        <translation>Es ist kein Dienst konfiguriert. Bitte fügen Sie ein Dienst Konto in den Systemeinstellungen hinzu</translation>
     </message>
 </context>
 <context>
@@ -234,7 +234,7 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="78"/>
         <source>Developer Connection</source>
-        <translation>Entwickleranschluss</translation>
+        <translation>Entwicklerverbindung</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="84"/>
@@ -245,22 +245,22 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="90"/>
         <source>Install app or watchface from file</source>
-        <translation>Installieren App oder Zifferblatt aus Datei</translation>
+        <translation>Installiere App oder Zifferblatt aus Datei</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="113"/>
         <source>Developer Connection Settings</source>
-        <translation>Entwickleranschluss Einstellungen</translation>
+        <translation>Entwicklerverbindungs Einstellungen</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="118"/>
         <source>Enable Connection</source>
-        <translation>Anschluss aktivieren</translation>
+        <translation>Verbindung aktivieren</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="120"/>
         <source>Enable Developer Connection Service</source>
-        <translation>Entwickleranschluss Dienst Aktivieren</translation>
+        <translation>Entwicklerverbindungsdienst aktivieren</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="130"/>
@@ -275,12 +275,12 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="153"/>
         <source>Enable</source>
-        <translation>Anlassen</translation>
+        <translation>Anschalten</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="154"/>
         <source>Enable DeveloperConnection over CloudPebble</source>
-        <translation>Entwickleranschluss um die CloudPebble anlassen</translation>
+        <translation>Entwicklerverbindung über CloudPebble einschalten</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="160"/>
@@ -290,22 +290,22 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="165"/>
         <source>DeveloperConnection Status</source>
-        <translation>Stand des Entwickleranschlusses</translation>
+        <translation>Status der Entwicklerverbindung</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="166"/>
         <source>DeveloperConnection port listening state</source>
-        <translation>Zeigt ob Entwikleranschluss lokaler Port mithört</translation>
+        <translation>Status des Entwickleranschluss Ports</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="172"/>
         <source>CloudPebble Status</source>
-        <translation>Zustand der CloudPebble</translation>
+        <translation>CloudPebble Status</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="173"/>
         <source>Indicates CloudPebble connection state</source>
-        <translation>Zeigt ob Entwikleranschluss mit der CloudPebble verbunden ist</translation>
+        <translation>Zeigt den CloudPebble Status</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="178"/>
@@ -315,12 +315,12 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="207"/>
         <source>Preparing logs package...</source>
-        <translation>Logbuch vorbereiten...</translation>
+        <translation>Logpacket vorbereiten...</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="248"/>
         <source>Send watch logs</source>
-        <translation>Senden Uhr Protokolle</translation>
+        <translation>Sende Uhr Protokolle</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="257"/>
@@ -343,7 +343,7 @@
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="24"/>
         <source>A new firmware upgrade is available for your Pebble smartwatch.</source>
-        <translation>Eine neue Firmware-Upgrade ist für Ihre Pebble Smartwatch zur Verfügung.</translation>
+        <translation>Ein neues Firmware-Upgrade für deine Pebble Smartwatch steht zur Verfügung.</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="32"/>
@@ -381,12 +381,12 @@
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="13"/>
         <source>Health settings</source>
-        <translation>Ertüchtigung-Einstellungen</translation>
+        <translation>Gesundheits-Einstellungen</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="14"/>
         <source>OK</source>
-        <translation>Ok</translation>
+        <translation>OK</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="16"/>
@@ -396,7 +396,7 @@
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="20"/>
         <source>Health app enabled</source>
-        <translation>Ertüchtigung-App ist aktiviert</translation>
+        <translation>Gesundheits-App ist aktiviert</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="26"/>
@@ -454,7 +454,7 @@
     <message>
         <location filename="../qml/pages/ImportPackagePage.qml" line="8"/>
         <source>Import watchapp or watchface</source>
-        <translation>Import Watchapp oder Zifferblatt</translation>
+        <translation>Importiere Watchapp oder Zifferblatt</translation>
     </message>
     <message>
         <location filename="../qml/pages/ImportPackagePage.qml" line="30"/>
@@ -477,12 +477,12 @@
     <message>
         <location filename="../qml/pages/InfoPage.qml" line="69"/>
         <source>This application is neither affiliated with nor endorsed by Pebble Technology Corp.</source>
-        <translation></translation>
+        <translation>Diese Anwendung ist weder zugehörig, noch wird wird sie gebilligt von der Pebble Technology Corp.</translation>
     </message>
     <message>
         <location filename="../qml/pages/InfoPage.qml" line="79"/>
         <source>Pebble is a trademark of Pebble Technology Corp.</source>
-        <translation>Pebble ist eine Marke von Pebble Technology Corp.</translation>
+        <translation>Pebble ist eine Marke der Pebble Technology Corp.</translation>
     </message>
 </context>
 <context>
@@ -576,7 +576,7 @@
     <message>
         <location filename="../qml/pages/LanguagePage.qml" line="29"/>
         <source>Select Language</source>
-        <translation>Wähle die Sprache aus</translation>
+        <translation>Sprache wählen</translation>
     </message>
     <message>
         <location filename="../qml/pages/LanguagePage.qml" line="41"/>
@@ -589,7 +589,7 @@
     <message>
         <location filename="../qml/pages/LoadingPage.qml" line="20"/>
         <source>Loading and Connecting...</source>
-        <translation>Laden und Verbinden ...</translation>
+        <translation>Lade und Verbinde ...</translation>
     </message>
     <message>
         <location filename="../qml/pages/LoadingPage.qml" line="23"/>
@@ -627,12 +627,12 @@
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="150"/>
         <source>Upgrading...</source>
-        <translation>Aktualisieren...</translation>
+        <translation>Aktualisiere...</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="162"/>
         <source>Running</source>
-        <translation>Laufend</translation>
+        <translation>Läuft</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="172"/>
@@ -690,7 +690,7 @@
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="18"/>
         <source>Entries here will be added as notifications appear on the phone. Selected notifications will be shown on your Pebble smartwatch.</source>
-        <translation>Einträge hier hinzugefügt werden, sowie Benachrichtigungen im Telefon erscheinen. Ausgewählte Meldungen werden auf Ihrem Pebble Smartwatch angezeigt.</translation>
+        <translation>Einträge hier werden hinzugefügt sobald Benachrichtigungen im Telefon erscheinen. Ausgewählte Meldungen werden auf der Pebble Smartwatch angezeigt.</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="63"/>
@@ -710,7 +710,7 @@
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="81"/>
         <source>Forget</source>
-        <translation>Verlernen</translation>
+        <translation>Vergessen</translation>
     </message>
 </context>
 <context>
@@ -723,7 +723,7 @@
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="10"/>
         <source>Manage Pebble Watches</source>
-        <translation>Pebble Smartwatches verwalten</translation>
+        <translation>Pebble Uhren verwalten</translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="14"/>
@@ -748,7 +748,7 @@
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="55"/>
         <source>No Pebble smartwatches configured yet. Please connect your Pebble smartwatch using System Settings.</source>
-        <translation>Keine Pebble smartwatches noch konfiguriert ist. Bitte verbinden Sie Ihren Pebble Smartwatch mit Systemeinstellungen.</translation>
+        <translation>Keine Pebble Uhr konfiguriert. Bitte verbinde Sie mit Hilfe der Systemeinstellungen.</translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="64"/>
@@ -761,12 +761,12 @@
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="17"/>
         <source>Edit and order quick-response messages</source>
-        <translation>Bearbeiten and gliedern kurze Antworten</translation>
+        <translation>Bearbeite and ordne quick-response Nachrichten</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="17"/>
         <source>New item will be inserted before current selection</source>
-        <translation>Neues Teil wird vor actuelle Auswahl eingefügt</translation>
+        <translation>Neue Einträge werden vor der aktuellen Auswahl eingefügt</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="21"/>
@@ -776,7 +776,7 @@
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="29"/>
         <source>Save changes</source>
-        <translation>Änderung speichern</translation>
+        <translation>Änderungen speichern</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="54"/>
@@ -862,7 +862,7 @@
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="16"/>
         <source>OK</source>
-        <translation>Ok</translation>
+        <translation>OK</translation>
     </message>
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="17"/>
@@ -877,7 +877,7 @@
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="29"/>
         <source>Messages</source>
-        <translation>Vorgefertigte Rückmeldungen</translation>
+        <translation>Mitteilungen</translation>
     </message>
 </context>
 <context>
@@ -905,7 +905,7 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="40"/>
         <source>Imperial</source>
-        <translation>Angloamerikanische</translation>
+        <translation>Angloamerikanisch</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="50"/>
@@ -925,12 +925,12 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="68"/>
         <source>Sync Apps from Cloud</source>
-        <translation>Anwendungen von Cloud synchronisieren</translation>
+        <translation>Synchronisiere Apps aus der Cloud</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="76"/>
         <source>Reset Timeline</source>
-        <translation>Chronik rücksetzen</translation>
+        <translation>Chronik zurücksetzen</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="81"/>
@@ -945,17 +945,17 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="97"/>
         <source>Notification re-delivery expiration (seconds)</source>
-        <translation>Notiz liefern während (secs)</translation>
+        <translation>Benachrichtigung nachliefern für (secs)</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="105"/>
         <source>Set Timeline Window</source>
-        <translation>Zeitraum der Chronik Stellen</translation>
+        <translation>Zeitraum der Chronik</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="111"/>
         <source>Active Timeline WebSync account</source>
-        <translation>Aktueles Chronik Sync Konto</translation>
+        <translation>Aktuelles Chronik Sync Konto</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="125"/>
@@ -993,7 +993,7 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="183"/>
         <source>Canned Messages</source>
-        <translation>Vorgefertigte Rückmeldungen</translation>
+        <translation>Vorgefertigte Meldungen</translation>
     </message>
 </context>
 <context>
@@ -1006,7 +1006,7 @@
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="16"/>
         <source>OK</source>
-        <translation>Ok</translation>
+        <translation>OK</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="17"/>

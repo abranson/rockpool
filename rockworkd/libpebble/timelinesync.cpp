@@ -312,6 +312,7 @@ void TimelineSync::fetchLocker(bool force, void (*next)(void*), void *ctx) const
 }
 void TimelineSync::resyncLocker(bool force)
 {
+    QList<QUuid> toRemove;
     if(m_oauthToken.isEmpty()) return;
     // Attempt to bring up internal state since qt is not tracking it properly
     if(m_nam->networkAccessible()!=QNetworkAccessManager::Accessible)
@@ -321,15 +322,7 @@ void TimelineSync::resyncLocker(bool force)
         for(QHash<QUuid,QJsonObject>::const_iterator it=m_locker.begin();it!=m_locker.end();it++) {
             if(!m_pebble->appInfo(it.key()).isValid()) {
                 if(force) {
-                    qDebug() << "Removing" << it.key() << it.value().value("title").toString() << "from locker";
-                    QNetworkReply *rpl = m_nam->deleteResource(authedRequest(s_lockerUrl + it.key().toString().mid(1,36)));
-                    connect(rpl,&QNetworkReply::finished,[this,&it,rpl](){
-                        rpl->deleteLater();
-                        if(rpl->error()==QNetworkReply::NoError)
-                            m_locker.remove(it.key());
-                        else
-                            qWarning() << "Error deleting" << it.key() << rpl->errorString();
-                    });
+                    toRemove.append(it.key());
                 } else { // No force means we're left to sync apps from cloud
                     qDebug() << "Syncing" << it.key().toString() << it.value().value("title").toString() << "from locker";
                     m_pebble->installApp(it.value().value("id").toString());
@@ -337,6 +330,7 @@ void TimelineSync::resyncLocker(bool force)
             }
         }
     }
+
     QSet<QUuid> missing = m_pebble->installedAppIds().toSet().subtract(m_locker.keys().toSet());
     qDebug() << "Locker resync: next push to the locker those" << missing.size() << "missing there";
     foreach(const QUuid &id,missing) {
@@ -357,6 +351,18 @@ void TimelineSync::resyncLocker(bool force)
                     qWarning() << "Error adding application to locker - empty reply:" << QJsonDocument(obj).toJson();
                 }
             }
+        });
+    }
+
+    foreach(const QUuid &id, toRemove) {
+        qDebug() << "Removing" << id << m_locker.value(id).value("title").toString() << "from locker";
+        QNetworkReply *rpl = m_nam->deleteResource(authedRequest(s_lockerUrl + id.toString().mid(1,36)));
+        connect(rpl,&QNetworkReply::finished,[this,&id,rpl](){
+            rpl->deleteLater();
+            if(rpl->error()==QNetworkReply::NoError)
+                m_locker.remove(id);
+            else
+                qWarning() << "Error deleting" << id << rpl->errorString();
         });
     }
 }
