@@ -148,6 +148,9 @@ AppID getAppID(watchfish::Notification *notification)
         ret.type="sms";
         ret.sender="SMS";
         ret.srcId=notification->category();
+    } else if (notification->originPackage() == "com.google.android.apps.babel" || notification->owner() == "harbour-hangish") {
+        ret.type="hangouts";
+        ret.srcId=owner;
     } else if (notification->category() == "x-nemo.messaging.im") {
         if(notification->actions().contains("default") && notification->actionArgs("default").at(0).toString().contains("gabble/jabber/google")) {
             ret.type="hangouts";
@@ -162,9 +165,6 @@ AppID getAppID(watchfish::Notification *notification)
         ret.srcId = notification->category();
     } else if (notification->originPackage() == "org.telegram.messenger" || notification->category().startsWith("harbour.sailorgram")) {
         ret.type="telegram";
-        ret.srcId=owner;
-    } else if (notification->originPackage() == "com.google.android.apps.babel" || notification->owner() == "harbour-hangish") {
-        ret.type="hangouts";
         ret.srcId=owner;
     } else if (notification->originPackage() == "com.whatsapp" || notification->owner().toLower().contains("whatsup")) {
         ret.type="whatsapp";
