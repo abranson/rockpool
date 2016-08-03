@@ -1,3 +1,9 @@
+* Wed Aug 03 2016 Andrew Branson <github@andrewbranson.net> 1.0-2
+- Pebble login - receive custom timeline pin subscriptions and synchronize apps and watchfaces
+- Canned messages - reply to SMSes and IMs from your watch. Define your responses in Settings.
+- Language file support, to upload alternative character sets to your watch
+- Voicecall handling fix. Hopefully Rockpool should no longer crash when calls end, or reboot the phone.
+
 * Sat May 28 2016 Andrew Branson <github@andrewbranson.net> 1.0-alpha1
 - Rewrite entire timeline engine using proper JSON pins, to be compatible with websync
 - Add watch notification when new pebble firmware available
