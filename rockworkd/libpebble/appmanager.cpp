@@ -9,6 +9,7 @@
 #include "watchdatawriter.h"
 #include "uploadmanager.h"
 #include "sendtextapp.h"
+#include "weatherapp.h"
 
 #include <libintl.h>
 
@@ -69,7 +70,7 @@ void AppManager::rescan()
     m_appList.append(music.uuid());
     m_apps.insert(music.uuid(), music);
     if(m_pebble->capabilities().testFlag(CapabilityWeather)) {
-        AppInfo weather(QUuid("61b22bc8-1e29-460d-a236-3fe409a439ff"), false, gettext("Weather"), gettext("System app"), true);
+        AppInfo weather(WeatherApp::appUUID, false, gettext("Weather"), gettext("System app"), true);
         m_appList.append(weather.uuid());
         m_apps.insert(weather.uuid(), weather);
     }
