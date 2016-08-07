@@ -1,4 +1,6 @@
 #include "blobdb.h"
+#include "appmetadata.h"
+#include "timelineitem.h"
 #include "watchconnection.h"
 #include "watchdatareader.h"
 #include "watchdatawriter.h"
@@ -57,7 +59,7 @@ void BlobDB::insertAppMetaData(const AppInfo &info,const bool force)
     cmd->m_token = generateToken();
     cmd->m_database = BlobDBIdApp;
 
-    cmd->m_key = metaData.uuid().toRfc4122();
+    cmd->m_key = metaData.itemKey();
     cmd->m_value = metaData.serialize();
 
     m_commandQueue.append(cmd);
@@ -66,15 +68,15 @@ void BlobDB::insertAppMetaData(const AppInfo &info,const bool force)
 
 void BlobDB::removeApp(const AppInfo &info)
 {
-    remove(BlobDBId::BlobDBIdApp, info.uuid());
+    remove(BlobDBId::BlobDBIdApp, info.uuid().toRfc4122());
     QSettings s(m_blobDBStoragePath + "/appsyncstate.conf", QSettings::IniFormat);
     s.remove(info.uuid().toString());
 }
 
-void BlobDB::insert(BlobDBId database, const TimelineItem &item)
+void BlobDB::insert(BlobDBId database, const BlobDbItem &item)
 {
     if (!m_connection->isConnected()) {
-        emit blobCommandResult(database,OperationInsert,item.itemId(),StatusIgnore);
+        emit blobCommandResult(database,OperationInsert,item.itemKey(),StatusIgnore);
         return;
     }
     BlobCommand *cmd = new BlobCommand();
@@ -82,14 +84,14 @@ void BlobDB::insert(BlobDBId database, const TimelineItem &item)
     cmd->m_token = generateToken();
     cmd->m_database = database;
 
-    cmd->m_key = item.itemId().toRfc4122();
+    cmd->m_key = item.itemKey();
     cmd->m_value = item.serialize();
 
     m_commandQueue.append(cmd);
     sendNext();
 }
 
-void BlobDB::remove(BlobDB::BlobDBId database, const QUuid &uuid)
+void BlobDB::remove(BlobDB::BlobDBId database, const QByteArray &key)
 {
     if (!m_connection->isConnected()) {
         return;
@@ -99,7 +101,7 @@ void BlobDB::remove(BlobDB::BlobDBId database, const QUuid &uuid)
     cmd->m_token = generateToken();
     cmd->m_database = database;
 
-    cmd->m_key = uuid.toRfc4122();
+    cmd->m_key = key;
 
     m_commandQueue.append(cmd);
     sendNext();
@@ -165,7 +167,7 @@ void BlobDB::blobCommandReply(const QByteArray &data)
         qWarning() << "Received reply for unexpected token";
     } else if (status != StatusSuccess) {
         qWarning() << "Blob Command failed:" << status << BlobDBErrMsg[status];
-        emit blobCommandResult(m_currentCommand->m_database, m_currentCommand->m_command, QUuid::fromRfc4122(m_currentCommand->m_key), status);
+        emit blobCommandResult(m_currentCommand->m_database, m_currentCommand->m_command, m_currentCommand->m_key, status);
     } else { // All is well
         if (m_currentCommand->m_database == BlobDBIdApp && m_currentCommand->m_command == OperationInsert) {
             QSettings s(m_blobDBStoragePath + "/appsyncstate.conf", QSettings::IniFormat);
@@ -173,7 +175,7 @@ void BlobDB::blobCommandReply(const QByteArray &data)
             s.setValue(appUuid.toString(), true);
             emit appInserted(appUuid);
         } else {
-            emit blobCommandResult(m_currentCommand->m_database, m_currentCommand->m_command, QUuid::fromRfc4122(m_currentCommand->m_key), status);
+            emit blobCommandResult(m_currentCommand->m_database, m_currentCommand->m_command, m_currentCommand->m_key, status);
         }
     }
 

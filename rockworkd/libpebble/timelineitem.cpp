@@ -7,7 +7,7 @@ TimelineItem::TimelineItem(TimelineItem::Type type, Flags flags, const QDateTime
 }
 
 TimelineItem::TimelineItem(const QUuid &uuid, TimelineItem::Type type, Flags flags, const QDateTime &timestamp, quint16 duration):
-    PebblePacket(),
+    BlobDbItem(),
     m_itemId(uuid),
     m_timestamp(timestamp),
     m_duration(duration),
@@ -64,6 +64,11 @@ QList<TimelineAttribute> TimelineItem::attributes() const
 QList<TimelineAction> TimelineItem::actions() const
 {
     return m_actions;
+}
+
+QByteArray TimelineItem::itemKey() const
+{
+    return itemId().toRfc4122();
 }
 
 QByteArray TimelineItem::serialize() const

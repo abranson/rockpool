@@ -3,11 +3,11 @@
 
 #include "watchconnection.h"
 #include "pebble.h"
-#include "timelineitem.h"
-#include "healthparams.h"
-#include "appmetadata.h"
 
 #include <QObject>
+
+class AppMetadata;
+class TimelineItem;
 
 class BlobDB : public QObject
 {
@@ -19,12 +19,11 @@ public:
         BlobDBIdApp = 2,
         BlobDBIdReminder = 3,
         BlobDBIdNotification = 4,
-        //WeatherForecast = 5,
-        //AutoReplySettings = 6,
-        BlobDBIdAppSettings = 7
-        // ...
-        // WeatherApp = 9
-
+        BlobDBIdWeatherData = 5,
+        blobDBIdSendTextData = 6,
+        BlobDBIdAppSettings = 7, // this is rather HealthAppSettings
+        BlobDBIdContacts = 8,
+        BlobDBIdAppConfigs = 9 // Config Data References
     };
     enum Operation {
         OperationInsert = 0x01,
@@ -57,8 +56,8 @@ public:
     void insertAppMetaData(const AppInfo &info, const bool force=false);
     void removeApp(const AppInfo &info);
 
-    void insert(BlobDBId database, const TimelineItem &item);
-    void remove(BlobDBId database, const QUuid &uuid);
+    void insert(BlobDBId database, const BlobDbItem &item);
+    void remove(BlobDBId database, const QByteArray &key);
     void clear(BlobDBId database);
 
     void setHealthParams(const HealthParams &healthParams);
@@ -71,7 +70,7 @@ private slots:
 
 signals:
     void appInserted(const QUuid &uuid);
-    void blobCommandResult(BlobDBId db, Operation cmd, const QUuid &uuid, Status ack);
+    void blobCommandResult(BlobDBId db, Operation cmd, const QByteArray &key, Status ack);
     void notifyTimeline(const QDateTime &ts, const QUuid &key, const TimelineItem &val);
 
 private:

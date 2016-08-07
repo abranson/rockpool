@@ -21,6 +21,12 @@ public:
     virtual bool deserialize(const QByteArray &data) {qCritical() << "Attempt to deserialize using unimplemented method from" << data.toHex();return false;}
 };
 
+class BlobDbItem : public PebblePacket {
+public:
+    BlobDbItem() : PebblePacket() {}
+    virtual QByteArray itemKey() const = 0;
+};
+
 class Callback
 {
 public:

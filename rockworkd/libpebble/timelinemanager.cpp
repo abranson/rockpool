@@ -896,7 +896,7 @@ void TimelineManager::insert(const TimelinePin &pin)
 void TimelineManager::remove(const TimelinePin &pin)
 {
     qDebug() << "removing TimelinePin from blobdb:" << pin.blobId() << pin.guid().toString();
-    m_pebble->blobdb()->remove(pin.blobId(), pin.guid());
+    m_pebble->blobdb()->remove(pin.blobId(), pin.guid().toRfc4122());
 }
 
 void TimelineManager::clearTimeline(const QUuid &parent)
@@ -948,7 +948,7 @@ void TimelineManager::wipeSubscription(const QString &topic)
     }
 }
 
-void TimelineManager::blobdbAckHandler(BlobDB::BlobDBId db, BlobDB::Operation cmd, const QUuid &uuid, BlobDB::Status ack)
+void TimelineManager::blobdbAckHandler(BlobDB::BlobDBId db, BlobDB::Operation cmd, const QByteArray &key, BlobDB::Status ack)
 {
     switch(db) {
     case BlobDB::BlobDBIdPin:
@@ -958,9 +958,9 @@ void TimelineManager::blobdbAckHandler(BlobDB::BlobDBId db, BlobDB::Operation cm
     default:
         return;
     }
-    TimelinePin *pin = getPin(uuid);
+    TimelinePin *pin = getPin(QUuid::fromRfc4122(key));
     if(pin==nullptr && cmd != BlobDB::OperationClear) {
-        qDebug() << "Result for non-existing pin" << uuid << db << cmd << ack;
+        qDebug() << "Result for non-existing pin" << key.toHex() << db << cmd << ack;
         return;
     }
     qDebug() << ((ack==BlobDB::StatusSuccess)?"ACK":"NACK") << "for" << ((cmd==BlobDB::OperationInsert)?"insert":"delete") << "of" << (cmd==BlobDB::OperationClear ? QString::number(db) : pin->guid().toString());
