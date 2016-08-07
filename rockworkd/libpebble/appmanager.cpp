@@ -8,6 +8,7 @@
 #include "watchdatareader.h"
 #include "watchdatawriter.h"
 #include "uploadmanager.h"
+#include "sendtextapp.h"
 
 #include <libintl.h>
 
@@ -73,7 +74,7 @@ void AppManager::rescan()
         m_apps.insert(weather.uuid(), weather);
     }
     if(m_pebble->capabilities().testFlag(CapabilitySendSMS)) {
-        AppInfo sendsms(QUuid("0863fc6a-66c5-4f62-ab8a-82ed00a98b5d"), false, gettext("Send SMS"), gettext("System app"), true);
+        AppInfo sendsms(SendTextApp::appUUID, false, SendTextApp::appName, gettext("System app"), true);
         m_appList.append(sendsms.uuid());
         m_apps.insert(sendsms.uuid(), sendsms);
     }

@@ -51,6 +51,7 @@ SOURCES += main.cpp \
     libpebble/appmanager.cpp \
     libpebble/appmsgmanager.cpp \
     libpebble/uploadmanager.cpp \
+    libpebble/sendtextapp.cpp \
     libpebble/bluez/bluezclient.cpp \
     libpebble/bluez/bluez_agentmanager1.cpp \
     libpebble/bluez/bluez_adapter1.cpp \
@@ -109,6 +110,7 @@ HEADERS += \
     libpebble/appmanager.h \
     libpebble/appmsgmanager.h \
     libpebble/uploadmanager.h \
+    libpebble/sendtextapp.h \
     libpebble/bluez/bluezclient.h \
     libpebble/bluez/bluez_agentmanager1.h \
     libpebble/bluez/bluez_adapter1.h \

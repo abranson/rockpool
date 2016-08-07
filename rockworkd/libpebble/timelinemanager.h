@@ -108,8 +108,6 @@ class TimelineManager : public QObject
     Q_OBJECT
     friend class TimelinePin;
 public:
-    static QUuid appSendText;
-
     TimelineManager(Pebble *pebble, WatchConnection *connection);
 
     // Timeline Layout

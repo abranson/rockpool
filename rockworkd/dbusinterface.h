@@ -81,6 +81,9 @@ public slots:
 
     QVariantMap cannedResponses() const;
     void setCannedResponses(const QVariantMap &cans);
+    QVariantMap getCannedResponses(const QStringList &groups) const;
+    void setFavoriteContacts(const QVariantMap &cans);
+    QVariantMap getFavoriteContacts(const QStringList &names) const;
 
     void voiceSessionResult(const QString &dumpFile, const QVariantList &sentences);
 

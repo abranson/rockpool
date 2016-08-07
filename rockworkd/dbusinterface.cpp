@@ -87,14 +87,45 @@ QVariantMap DBusPebble::cannedResponses() const
 /**
  * @brief DBusPebble::setCannedResponses
  * @param cans aass
- * Example call:
- * gdbus call -e -d org.rockwork -o /org/rockwork/XX_XX_XX_XX_XX_XX
- *  -m org.rockwork.Pebble.setCannedResponses
- *  "{'x-nemo.messaging.im': <@as ['Aye','Nay','On my way']>;, 'x-nemo.messaging.sms': <@as ['Ok']>}"</pre>
+ * @example gdbus call -e -d org.rockwork -o /org/rockwork/XX_XX_XX_XX_XX_XX -m org.rockwork.Pebble.setCannedResponses \
+ *  "{'x-nemo.messaging.im': <['Aye','Nay','On my way']>, 'x-nemo.messaging.sms': <['Ok']>, 'com.pebble.sendText':<["Where are you?"]>}"
  */
 void DBusPebble::setCannedResponses(const QVariantMap &cans)
 {
     m_pebble->setCannedMessages(cans);
+}
+QVariantMap DBusPebble::getCannedResponses(const QStringList &groups) const
+{
+    QHash<QString,QStringList> cans = m_pebble->getCannedMessages(groups);
+    QVariantMap ret;
+    foreach(const QString &key,cans.keys()) {
+        ret.insert(key,QVariant::fromValue(cans.value(key)));
+    }
+    return ret;
+}
+
+/**
+ * @brief DBusPebble::setFavoriteContacts
+ * @param cans
+ * @example gdbus call -e -d org.rockwork -o /org/rockwork/B0_B4_48_00_00_00 -m org.rockwork.Pebble.setFavoriteContacts \
+ * '{"Wife":<["+420987654321","+420123456789"]>,"Myself":<["+420555322223"]>}'
+ */
+void DBusPebble::setFavoriteContacts(const QVariantMap &cans)
+{
+    QHash<QString,QStringList> ctxs;
+    foreach(const QString &key, cans.keys()) {
+        ctxs.insert(key,cans.value(key).toStringList());
+    }
+    m_pebble->setCannedContacts(ctxs);
+}
+QVariantMap DBusPebble::getFavoriteContacts(const QStringList &names) const
+{
+    QHash<QString,QStringList> cans = m_pebble->getCannedContacts(names);
+    QVariantMap ret;
+    foreach(const QString &key,cans.keys()) {
+        ret.insert(key,QVariant::fromValue(cans.value(key)));
+    }
+    return ret;
 }
 
 /**

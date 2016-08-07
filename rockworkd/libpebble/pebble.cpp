@@ -20,6 +20,7 @@
 #include "timelinemanager.h"
 #include "timelinesync.h"
 #include "voiceendpoint.h"
+#include "sendtextapp.h"
 #include "uploadmanager.h"
 
 #include "QDir"
@@ -59,18 +60,7 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
     m_blobDB = new BlobDB(this, m_connection);
     QObject::connect(m_blobDB, &BlobDB::appInserted, this, &Pebble::appInstalled);
 
-    QHash<QString,QStringList> cans;
-    QSettings cMsgs(m_storagePath + "/canned_messages.conf", QSettings::IniFormat);
-    foreach(const QString &grp,cMsgs.childGroups()) {
-        int msgn = cMsgs.beginReadArray(grp);
-        QStringList msgs;
-        for(int i=0;i<msgn;i++) {
-            cMsgs.setArrayIndex(i);
-            msgs.append(cMsgs.value("msg").toString());
-        }
-        cMsgs.endArray();
-        cans.insert(grp,msgs);
-    }
+    QHash<QString,QStringList> cans = getCannedMessages();
     Core::instance()->platform()->setCannedResponses(cans);
     m_timelineManager = new TimelineManager(this, m_connection);
     QObject::connect(m_timelineManager, &TimelineManager::muteSource, this, &Pebble::muteNotificationSource);
@@ -120,6 +110,10 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
 
     m_logEndpoint = new WatchLogEndpoint(this, m_connection);
     QObject::connect(m_logEndpoint, &WatchLogEndpoint::logsFetched, this, &Pebble::logsDumped);
+
+    m_sendTextApp = new SendTextApp(this, m_connection);
+    QObject::connect(m_sendTextApp, &SendTextApp::contactBlobSet, this, &Pebble::saveTextContacts);
+    QObject::connect(m_sendTextApp, &SendTextApp::messageBlobSet, this, &Pebble::saveTextMessages);
 
     m_voiceEndpoint = new VoiceEndpoint(this, m_connection);
     QObject::connect(m_voiceEndpoint, &VoiceEndpoint::sessionSetupRequest, this, &Pebble::voiceSessionRequest);
@@ -592,24 +586,102 @@ QVariantMap Pebble::cannedMessages() const
     return ret;
 }
 
+void inline saveMsgs(QSettings &cMsgs, const QStringList &msgs, const QString &grp)
+{
+    cMsgs.beginWriteArray(grp,msgs.count());
+    for(int i=0;i<msgs.count();i++) {
+        cMsgs.setArrayIndex(i);
+        cMsgs.setValue("msg",msgs.at(i));
+    }
+    cMsgs.endArray();
+}
+
 void Pebble::setCannedMessages(const QVariantMap &cans) const
 {
     QSettings cMsgs(m_storagePath + "/canned_messages.conf", QSettings::IniFormat);
     QHash<QString,QStringList> pass;
     foreach(const QString &grp,cans.keys()) {
         QStringList msgs = cans.value(grp).toStringList();
-        cMsgs.beginWriteArray(grp,msgs.count());
-        for(int i=0;i<msgs.count();i++) {
-            cMsgs.setArrayIndex(i);
-            cMsgs.setValue("msg",msgs.at(i));
-        }
-        cMsgs.endArray();
         pass.insert(grp,msgs);
+        // Skip cans stored on pebble - need ACK to save
+        if(SendTextApp::appKeys.contains(grp.toUtf8())) continue;
+        saveMsgs(cMsgs,msgs,grp);
     }
     Core::instance()->platform()->setCannedResponses(pass);
+    m_sendTextApp->setCannedMessages(pass);
 }
 
- QVariantMap Pebble::notificationsFilter() const
+void Pebble::saveTextMessages(const QByteArray &key) const
+{
+    QSettings cMsgs(m_storagePath + "/canned_messages.conf", QSettings::IniFormat);
+    QStringList msgs = m_sendTextApp->getCannedMessages(key);
+    saveMsgs(cMsgs,msgs,QString::fromUtf8(key));
+    emit messagesChanged();
+}
+
+QHash<QString,QStringList> Pebble::getCannedMessages(const QStringList &groups) const
+{
+    QHash<QString,QStringList> cans;
+    QSettings cMsgs(m_storagePath + "/canned_messages.conf", QSettings::IniFormat);
+    foreach(const QString &grp,cMsgs.childGroups()) {
+        if(groups.isEmpty() || groups.contains(grp)) {
+            int msgn = cMsgs.beginReadArray(grp);
+            QStringList msgs;
+            for(int i=0;i<msgn;i++) {
+                cMsgs.setArrayIndex(i);
+                if(cMsgs.contains("msg"))
+                    msgs.append(cMsgs.value("msg").toString());
+            }
+            cMsgs.endArray();
+            if(!msgs.isEmpty())
+                cans.insert(grp,msgs);
+        }
+    }
+    return cans;
+}
+
+void Pebble::setCannedContacts(const QHash<QString, QStringList> &cans)
+{
+    QList<SendTextApp::Contact> ret;
+    for(QHash<QString,QStringList>::const_iterator it=cans.begin();it!=cans.end();it++) {
+        ret.append(SendTextApp::Contact({it.key(),it.value()}));
+    }
+    m_sendTextApp->setCannedContacts(ret);
+}
+void Pebble::saveTextContacts() const
+{
+    QList<SendTextApp::Contact> ctxs = m_sendTextApp->getCannedContacts();
+    QSettings cCtx(m_storagePath + "/canned_messages.conf", QSettings::IniFormat);
+    foreach(const SendTextApp::Contact c, ctxs) {
+        cCtx.beginWriteArray(c.name,c.numbers.length());
+        for(int i=0;i<c.numbers.length();i++) {
+            cCtx.setArrayIndex(i);
+            cCtx.setValue("ctx",c.numbers.at(i));
+        }
+        cCtx.endArray();
+    }
+    emit contactsChanged();
+}
+
+QHash<QString,QStringList> Pebble::getCannedContacts(const QStringList &people) const
+{
+    QHash<QString,QStringList> ret;
+    QSettings cCtx(m_storagePath + "/canned_messages.conf", QSettings::IniFormat);
+    foreach (const QString &name, cCtx.childGroups()) {
+        if(people.isEmpty() || people.contains(name)) {
+            int ctxn = cCtx.beginReadArray(name);
+            for(int i=0;i<ctxn;i++) {
+                cCtx.setArrayIndex(i);
+                if(cCtx.contains("ctx"))
+                    ret[name].append(cCtx.value("ctx").toString());
+            }
+            cCtx.endArray();
+        }
+    }
+    return ret;
+}
+
+QVariantMap Pebble::notificationsFilter() const
 {
     QVariantMap ret;
     QString settingsFile = m_storagePath + "/notifications.conf";

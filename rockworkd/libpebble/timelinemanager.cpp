@@ -1,5 +1,6 @@
 #include "timelinemanager.h"
 #include "platforminterface.h"
+#include "sendtextapp.h"
 #include "blobdb.h"
 
 #include "watchdatareader.h"
@@ -338,7 +339,6 @@ QList<TimelineAttribute> TimelinePin::handleAction(TimelineAction::Type atype, q
     return attributes;
 }
 
-QUuid TimelineManager::appSendText = QUuid("0f71aaba-5814-4b5c-96e2-c9828c9734cb");
 /**
  * @brief TimelineManager::TimelineManager
  * @param pebble
@@ -666,7 +666,7 @@ void TimelineManager::actionHandler(const QByteArray &actionReply)
     const TimelinePin *source = getPin(notificationId);
     if (source==nullptr) {
         status = BlobDB::ResponseError;
-        if(notificationId == appSendText && param.contains("title") && param.contains("sender")) {
+        if(notificationId == SendTextApp::actionUUID && param.contains("title") && param.contains("sender")) {
             emit actionSendText(param.value("sender").toString(),param.value("title").toString());
             attributes.append(parseAttribute("largeIcon",QString("system://images/RESULT_SENT")));
             attributes.append({getAttr("subtitle").id,QString("Sent!")});
