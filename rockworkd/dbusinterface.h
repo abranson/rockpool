@@ -32,6 +32,7 @@ signals:
     void ProfileWhenConnectedChanged();
     void ProfileWhenDisconnectedChanged();
     void CalendarSyncEnabledChanged();
+    void WeatherLocationsChanged(const QVariantList &locations);
 
     void DevConnectionChanged(const bool state);
     void DevConnCloudChanged(const bool state);
@@ -109,6 +110,13 @@ public slots:
     QStringList Screenshots() const;
     void RemoveScreenshot(const QString &filename);
     void DumpLogs(const QString &fileName) const;
+
+    QString WeatherUnits() const;
+    void setWeatherUnits(const QString &u);
+    void setWeatherApiKey(const QString &key);
+    QVariantList WeatherLocations() const;
+    void SetWeatherLocations(const QVariantList &locs);
+    void InjectWeatherData(const QString &loc_name, const QVariantMap &conditions);
 
     QVariantMap HealthParams() const;
     void SetHealthParams(const QVariantMap &healthParams);

@@ -28,6 +28,8 @@ class DevConnection;
 class TimelineManager;
 class TimelineSync;
 class SendTextApp;
+class WeatherApp;
+class WeatherProvider;
 class VoiceEndpoint;
 struct SpeexInfo;
 struct AudioStream;
@@ -108,6 +110,12 @@ public slots:
     void setTimelineWindow(qint32 start, qint32 fade, qint32 end);
     void setOAuthToken(const QString &token);
     void setSyncAppsFromCloud(bool enable);
+    void setWeatherApiKey(const QString &key);
+    void setWeatherUnits(const QString &u);
+    QString getWeatherUnits() const;
+    QVariantList getWeatherLocations() const;
+    void setWeatherLocations(const QVariantList &locations);
+    void injectWeatherConditions(const QString &location, const QVariantMap &conditions);
     QVariantMap notificationsFilter() const;
     void setNotificationFilter(const QString &sourceId, const QString &name, const QString &icon, const NotificationFilter enabled);
     void setNotificationFilter(const QString &sourceId, const NotificationFilter enabled);
@@ -180,6 +188,7 @@ private slots:
     void voiceSessionRequest(const QUuid &appUuid, const SpeexInfo &codec);
     void voiceAudioStream(quint16 sid, const AudioStream &frames);
     void voiceSessionClose(quint16 sesId);
+    void saveWeatherLocations() const;
 
     void resetPebble();
     void syncApps();
@@ -247,6 +256,8 @@ private:
     WatchLogEndpoint *m_logEndpoint;
     DataLoggingEndpoint *m_dataLogEndpoint;
     SendTextApp * m_sendTextApp;
+    WeatherApp * m_weatherApp;
+    WeatherProvider * m_weatherProv;
     VoiceEndpoint * m_voiceEndpoint;
     QTemporaryFile* m_voiceSessDump = nullptr;
 

@@ -21,6 +21,7 @@ DBusPebble::DBusPebble(Pebble *pebble, QObject *parent):
     connect(pebble, &Pebble::imperialUnitsChanged, this, &DBusPebble::ImperialUnitsChanged);
     connect(pebble, &Pebble::profileConnectionSwitchChanged, this, &DBusPebble::onProfileConnectionSwitchChanged);
     connect(pebble, &Pebble::calendarSyncEnabledChanged, this, &DBusPebble::CalendarSyncEnabledChanged);
+    connect(pebble, &Pebble::weatherLocationsChanged, this, &DBusPebble::WeatherLocationsChanged);
     connect(pebble, &Pebble::devConServerStateChanged, this, &DBusPebble::DevConnectionChanged);
     connect(pebble, &Pebble::devConCloudStateChanged, this, &DBusPebble::DevConnCloudChanged);
     connect(pebble, &Pebble::oauthTokenChanged, this, &DBusPebble::oauthTokenChanged);
@@ -208,6 +209,50 @@ QString DBusPebble::accountName() const
 QString DBusPebble::accountEmail() const
 {
     return m_pebble->accountEmail();
+}
+
+void DBusPebble::setWeatherApiKey(const QString &key)
+{
+    m_pebble->setWeatherApiKey(key);
+}
+
+void DBusPebble::setWeatherUnits(const QString &u)
+{
+    m_pebble->setWeatherUnits(u);
+}
+QString DBusPebble::WeatherUnits() const
+{
+    return m_pebble->getWeatherUnits();
+}
+
+/**
+ * @brief DBusPebble::SetWeatherLocations - Sets the locations for WeatherProvider as well as storing locations in BlobDB.
+ * First location MUST be Current Location, although the name could be localized string (Eg. "Aktueller Standort")
+ * @param locs a{as} - Array of String Arrays - each nested array represents ["Location Name", "Lattitude", "Longitude"]
+ * @example gdbus call -e -d org.rockwork -o /org/rockwork/B0_B4_48_00_00_00 -m org.rockwork.Pebble.SetWeatherLocations "[<['Current Location','0','0']>]"
+ * gdbus call -e -d org.rockwork -o /org/rockwork/B0_B4_48_00_00_00 -m org.rockwork.Pebble.SetWeatherLocations "[<['Current Location','0','0']>,<['London','51.508530','-0.125740']>]"
+ */
+void DBusPebble::SetWeatherLocations(const QVariantList &locs)
+{
+    m_pebble->setWeatherLocations(locs);
+}
+QVariantList DBusPebble::WeatherLocations() const
+{
+    return m_pebble->getWeatherLocations();
+}
+
+/**
+ * @brief DBusPebble::InjectWeatherData - Injects the data into BlobDB to show in Pebble's Weather WatchApp
+ * @param loc_name string - Exact name of the pre-set location
+ * @param conditions a{sv} - Current weather conditions for given location
+ * @example gdbus call -e -d org.rockwork -o /org/rockwork/B0_B4_48_00_00_00 -m org.rockwork.Pebble.InjectWeatherData "Current Location" \
+ *          "{'text':<'Sonnenschein'>,'today_hi':<29>,'today_low':<16>,'temperature':<27>,'today_icon':<7>,'tomorrow_icon':<6>,'tomorrow_hi':<25>,'tomorrow_low':<12>}"
+ */
+void DBusPebble::InjectWeatherData(const QString &loc_name, const QVariantMap &obj)
+{
+    if(!obj.contains("text") || !obj.contains("temperature"))
+        return;
+    m_pebble->injectWeatherConditions(loc_name,obj);
 }
 
 bool DBusPebble::DevConnectionEnabled() const

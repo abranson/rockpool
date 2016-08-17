@@ -21,6 +21,8 @@
 #include "timelinesync.h"
 #include "voiceendpoint.h"
 #include "sendtextapp.h"
+#include "weatherapp.h"
+#include "weatherprovidertwc.h"
 #include "uploadmanager.h"
 
 #include "QDir"
@@ -96,6 +98,9 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
     QObject::connect(m_jskitManager, &JSKitManager::appNotification, this, &Pebble::insertPin);
     QObject::connect(m_appMsgManager, &AppMsgManager::appStarted, this, &Pebble::appStarted);
 
+    m_weatherApp = new WeatherApp(this, getWeatherLocations());
+    QObject::connect(m_weatherApp, &WeatherApp::locationsChanged, this, &Pebble::saveWeatherLocations);
+
     m_appDownloader = new AppDownloader(m_storagePath, this);
     QObject::connect(m_appDownloader, &AppDownloader::downloadFinished, this, &Pebble::appDownloadFinished);
 
@@ -136,6 +141,15 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
 
     settings.beginGroup("unitsDistance");
     m_imperialUnits = settings.value("imperialUnits", false).toBool();
+    settings.endGroup();
+
+    settings.beginGroup(WeatherApp::appConfigKey);
+    if(!settings.value("apiKey").toString().isEmpty()) {
+        m_weatherProv = new WeatherProviderTWC(this,m_weatherApp);
+        m_weatherProv->setUnits(settings.value("units",'m').toChar());
+        m_weatherProv->setLanguage(settings.value("language","en-GB").toString());
+        ((WeatherProviderTWC*)m_weatherProv)->setApiKey(settings.value("apiKey").toString());
+    }
     settings.endGroup();
 
     settings.beginGroup("calendar");
@@ -476,6 +490,81 @@ void Pebble::setImperialUnits(bool imperial)
 bool Pebble::imperialUnits() const
 {
     return m_imperialUnits;
+}
+
+void Pebble::setWeatherUnits(const QString &u)
+{
+    m_weatherProv->setUnits(u.at(0));
+    QSettings appCfg(m_storagePath + "/appsettings.conf", QSettings::IniFormat);
+    appCfg.beginGroup(WeatherApp::appConfigKey);
+    appCfg.setValue("units",u);
+    appCfg.endGroup();
+}
+QString Pebble::getWeatherUnits() const
+{
+    return m_weatherProv->getUnits();
+}
+
+void Pebble::setWeatherApiKey(const QString &key)
+{
+    ((WeatherProviderTWC*)m_weatherProv)->setApiKey(key);
+    QSettings appCfg(m_storagePath + "/appsettings.conf", QSettings::IniFormat);
+    appCfg.beginGroup(WeatherApp::appConfigKey);
+    appCfg.setValue("apiKey",key);
+    appCfg.endGroup();
+}
+
+QVariantList Pebble::getWeatherLocations() const
+{
+    QVariantList locs;
+    QSettings appCfg(m_storagePath + "/appsettings.conf", QSettings::IniFormat);
+    int n = appCfg.beginReadArray(WeatherApp::appConfigKey);
+    for(int i=0;i<n;i++) {
+        QStringList city;
+        appCfg.setArrayIndex(i);
+        city.append(appCfg.value("name").toString());
+        city.append(appCfg.value("lat").toString());
+        city.append(appCfg.value("lng").toString());
+        locs.append(city);
+    }
+    appCfg.endArray();
+    return locs;
+}
+
+void Pebble::setWeatherLocations(const QVariantList &locs)
+{
+    m_weatherApp->setLocations(locs);
+}
+
+void Pebble::saveWeatherLocations() const
+{
+    QVariantList locs = m_weatherApp->getLocations();
+    QSettings appCfg(m_storagePath + "/appsettings.conf", QSettings::IniFormat);
+    appCfg.beginWriteArray(WeatherApp::appConfigKey,locs.count());
+    for(int i=0;i<locs.count();i++) {
+        QStringList city = locs.at(i).toStringList();
+        appCfg.setArrayIndex(i);
+        appCfg.setValue("name",city.first());
+        appCfg.setValue("lat",city.at(1));
+        appCfg.setValue("lng",city.at(2));
+    }
+    appCfg.endArray();
+    emit weatherLocationsChanged(locs);
+}
+
+void Pebble::injectWeatherConditions(const QString &location, const QVariantMap &twc)
+{
+    WeatherApp::Observation obs;
+    obs.text = twc.value("text").toString();
+    obs.temp_now = twc.value("temperature",SHRT_MAX).toInt();
+    obs.timestamp = twc.value("ts",QDateTime::currentDateTime()).toDateTime();
+    obs.today.temp_hi = twc.value("today_hi",SHRT_MAX).toInt();
+    obs.today.temp_low = twc.value("today_low",SHRT_MAX).toInt();
+    obs.today.condition = twc.value("today_icon").toInt();
+    obs.tomorrow.temp_hi = twc.value("tomorrow_hi",SHRT_MAX).toInt();
+    obs.tomorrow.temp_low = twc.value("tomorrow_low",SHRT_MAX).toInt();
+    obs.tomorrow.condition = twc.value("tomorrow_icon").toInt();
+    m_weatherApp->injectObservation(location, obs, true);
 }
 
 void Pebble::dumpLogs(const QString &fileName) const
