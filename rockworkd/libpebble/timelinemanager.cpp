@@ -53,7 +53,7 @@ TimelinePin::TimelinePin(const TimelinePin &src):
     m_sent(src.m_sent)
 {
     //buildActions();
-    qDebug() << "Pin deep copy - be sure to know what you're doing" << m_uuid;
+    //qDebug() << "Pin deep copy - be sure to know what you're doing" << m_uuid;
     m_pending = src.m_pending;
 }
 TimelinePin::TimelinePin(const QJsonObject &obj, TimelineManager *manager, const QUuid &uuid, const TimelinePin *parent):
@@ -634,7 +634,7 @@ TimelineItem & TimelineManager::parseActions(TimelineItem &timelineItem, const Q
             if(it.key() == "type")
                 continue;
             TimelineAttribute attr=parseAttribute(it.key(),it.value());
-            qDebug() << "With attribute" << it.key() << it.value() << attr.type();
+            //qDebug() << "With attribute" << it.key() << it.value() << attr.type();
             if(attr.type()>0)
                 tlAct.appendAttribute(attr);
         }
@@ -830,7 +830,7 @@ void TimelineManager::doMaintenance()
         //qDebug() << "Iterating timestamp" << it.key() << "with" << it.value().count() << "items";
         if(it.value().isEmpty()) {
             m_mtx_pinStorage.lock();
-            m_pin_idx_time.erase(it);
+            it = m_pin_idx_time.erase(it);
             m_mtx_pinStorage.unlock();
             continue;
         }
@@ -1002,7 +1002,7 @@ void TimelineManager::blobdbAckHandler(BlobDB::BlobDBId db, BlobDB::Operation cm
 void TimelineManager::insertTimelinePin(const QJsonObject &json)
 {
     QJsonObject obj(json);
-    qDebug() << "Incoming pin:" << QJsonDocument(obj).toJson();
+    //qDebug() << "Incoming pin:" << QJsonDocument(obj).toJson();
     TimelinePin pin(obj,this);
     if(pin.type() == TimelineItem::TypeNotification) {
         // Simple persistence checks for volatile (system) notification. Also do some sanity checks
@@ -1036,15 +1036,15 @@ void TimelineManager::insertTimelinePin(const QJsonObject &json)
     }
     // At this stage we are positive to insert the pin.
     // Insert it first so that user could open it from notification or reminder
-    qDebug() << "Sending pin" << pin.guid() << pin.time().toString(Qt::ISODate);
+    //qDebug() << "Sending pin" << pin.guid() << pin.time().toString(Qt::ISODate);
     pin.send();
     TimelinePin notice = pin.makeNotification(old);
     if(notice.isValid()) {
-        qDebug() << "Sending notification" << notice.guid() << "for pin" << pin.guid();
+        //qDebug() << "Sending notification" << notice.guid() << "for pin" << pin.guid();
         notice.send(); // Store, add to index and send to watches
     }
     if(!pin.reminders().isEmpty()) {
-        qDebug() << "Sending" << pin.reminders().count() << "reminders for pin" << pin.guid();
+        //qDebug() << "Sending" << pin.reminders().count() << "reminders for pin" << pin.guid();
         foreach(const TimelinePin &rmd,pin.makeReminders()) {
             qDebug() << rmd.guid() << rmd.time().toString(Qt::ISODate);
             rmd.send();
