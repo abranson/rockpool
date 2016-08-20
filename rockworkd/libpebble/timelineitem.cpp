@@ -212,11 +212,11 @@ QString TimelineAttribute::getString() const
 void TimelineAttribute::setStringList(const QStringList &values, int max)
 {
     m_content.clear();
-    foreach (const QString &value, values) {
-        if (!m_content.isEmpty()) {
+    for(int i=0;i<values.size();i++) {
+        if (i>0) {
             m_content.append('\0');
         }
-        m_content.append(value.toUtf8());
+        m_content.append(values.at(i).toUtf8());
         if(max>0 && m_content.length()>max) {
             m_content.resize(max);
             return;
