@@ -145,7 +145,7 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
 
     settings.beginGroup(WeatherApp::appConfigKey);
     if(!settings.value("apiKey").toString().isEmpty()) {
-        m_weatherProv = new WeatherProviderTWC(this,m_weatherApp);
+        m_weatherProv = new WeatherProviderTWC(this,m_connection,m_weatherApp);
         m_weatherProv->setUnits(settings.value("units",'m').toChar());
         m_weatherProv->setLanguage(settings.value("language","en-GB").toString());
         ((WeatherProviderTWC*)m_weatherProv)->setApiKey(settings.value("apiKey").toString());

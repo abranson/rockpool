@@ -3,6 +3,8 @@
 
 #include "weatherapp.h"
 
+class WatchConnection;
+
 class QNetworkAccessManager;
 class QGeoPositionInfoSource;
 class QGeoPositionInfo;
@@ -17,7 +19,7 @@ public:
     static const QHash<QChar,QString> code2units;
     static const QHash<int,QString> code2icon;
 
-    WeatherProviderTWC(Pebble *pebble, WeatherApp *weatherApp);
+    WeatherProviderTWC(Pebble *pebble, WatchConnection *conneciton, WeatherApp *weatherApp);
 
     QChar getUnits() const;
     WeatherApp::Observation parseObs(const QJsonObject &obj, const QJsonArray &days);
@@ -42,7 +44,10 @@ private slots:
     void gpsTimeout();
     void gotPosition(const QGeoPositionInfo &gpi);
 
+    void watchConnected();
+
 private:
+    bool m_updateMissed = false;
     bool m_locUpdated = false;
     int m_fcstDays = 5;
     QList<WeatherApp::Forecast> m_fcstsBuff;
@@ -53,6 +58,7 @@ private:
     QNetworkAccessManager *m_nam;
     QGeoPositionInfoSource *m_gps;
     Pebble *m_pebble;
+    WatchConnection *m_connection;
     WeatherApp *m_weatherApp;
 };
 

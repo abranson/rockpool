@@ -79,14 +79,16 @@ const QHash<int,int> code2code = {
     {47,4}
 };
 
-WeatherProviderTWC::WeatherProviderTWC(Pebble *pebble, WeatherApp *weatherApp) :
+WeatherProviderTWC::WeatherProviderTWC(Pebble *pebble, WatchConnection *connection, WeatherApp *weatherApp) :
     QObject(pebble),
     m_nam(pebble->nam()),
     m_gps(nullptr),
     m_pebble(pebble),
+    m_connection(connection),
     m_weatherApp(weatherApp)
 {
     weatherApp->setProvider(this);
+    connect(connection,&WatchConnection::watchConnected, this, &WeatherProviderTWC::watchConnected);
 }
 
 void WeatherProviderTWC::setApiKey(const QString &key)
@@ -129,12 +131,24 @@ void WeatherProviderTWC::initGPS()
     }
 }
 
+void WeatherProviderTWC::watchConnected()
+{
+    if(m_updateMissed) {
+        m_updateMissed = false;
+        timerEvent(0);
+    }
+}
+
 void WeatherProviderTWC::timerEvent(QTimerEvent *e)
 {
     if(m_apiKey.isEmpty() || m_weatherApp->locOrder().isEmpty()) {
         if(m_apiKey.isEmpty() && e)
             killTimer(e->timerId());
         qDebug() << "API Key" << m_apiKey << "or Locations" << m_weatherApp->locOrder() << "are empty, ignoring update";
+        return;
+    }
+    if(!m_connection->isConnected()) {
+        m_updateMissed = true;
         return;
     }
     initGPS();

@@ -108,7 +108,6 @@ public:
     Location & location(const QString &loc) { return m_locations[loc]; }
 
 signals:
-    void locationChanged();
     void locationsChanged();
     void requestUpdate();
 
