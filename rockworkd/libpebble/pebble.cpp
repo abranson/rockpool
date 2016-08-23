@@ -20,6 +20,9 @@
 #include "timelinemanager.h"
 #include "timelinesync.h"
 #include "voiceendpoint.h"
+#include "sendtextapp.h"
+#include "weatherapp.h"
+#include "weatherprovidertwc.h"
 #include "uploadmanager.h"
 
 #include "QDir"
@@ -59,18 +62,7 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
     m_blobDB = new BlobDB(this, m_connection);
     QObject::connect(m_blobDB, &BlobDB::appInserted, this, &Pebble::appInstalled);
 
-    QHash<QString,QStringList> cans;
-    QSettings cMsgs(m_storagePath + "/canned_messages.conf", QSettings::IniFormat);
-    foreach(const QString &grp,cMsgs.childGroups()) {
-        int msgn = cMsgs.beginReadArray(grp);
-        QStringList msgs;
-        for(int i=0;i<msgn;i++) {
-            cMsgs.setArrayIndex(i);
-            msgs.append(cMsgs.value("msg").toString());
-        }
-        cMsgs.endArray();
-        cans.insert(grp,msgs);
-    }
+    QHash<QString,QStringList> cans = getCannedMessages();
     Core::instance()->platform()->setCannedResponses(cans);
     m_timelineManager = new TimelineManager(this, m_connection);
     QObject::connect(m_timelineManager, &TimelineManager::muteSource, this, &Pebble::muteNotificationSource);
@@ -106,6 +98,9 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
     QObject::connect(m_jskitManager, &JSKitManager::appNotification, this, &Pebble::insertPin);
     QObject::connect(m_appMsgManager, &AppMsgManager::appStarted, this, &Pebble::appStarted);
 
+    m_weatherApp = new WeatherApp(this, getWeatherLocations());
+    QObject::connect(m_weatherApp, &WeatherApp::locationsChanged, this, &Pebble::saveWeatherLocations);
+
     m_appDownloader = new AppDownloader(m_storagePath, this);
     QObject::connect(m_appDownloader, &AppDownloader::downloadFinished, this, &Pebble::appDownloadFinished);
 
@@ -120,6 +115,10 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
 
     m_logEndpoint = new WatchLogEndpoint(this, m_connection);
     QObject::connect(m_logEndpoint, &WatchLogEndpoint::logsFetched, this, &Pebble::logsDumped);
+
+    m_sendTextApp = new SendTextApp(this, m_connection);
+    QObject::connect(m_sendTextApp, &SendTextApp::contactBlobSet, this, &Pebble::saveTextContacts);
+    QObject::connect(m_sendTextApp, &SendTextApp::messageBlobSet, this, &Pebble::saveTextMessages);
 
     m_voiceEndpoint = new VoiceEndpoint(this, m_connection);
     QObject::connect(m_voiceEndpoint, &VoiceEndpoint::sessionSetupRequest, this, &Pebble::voiceSessionRequest);
@@ -142,6 +141,15 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
 
     settings.beginGroup("unitsDistance");
     m_imperialUnits = settings.value("imperialUnits", false).toBool();
+    settings.endGroup();
+
+    settings.beginGroup(WeatherApp::appConfigKey);
+    if(!settings.value("apiKey").toString().isEmpty()) {
+        m_weatherProv = new WeatherProviderTWC(this,m_connection,m_weatherApp);
+        m_weatherProv->setUnits(settings.value("units",'m').toChar());
+        m_weatherProv->setLanguage(settings.value("language","en-GB").toString());
+        ((WeatherProviderTWC*)m_weatherProv)->setApiKey(settings.value("apiKey").toString());
+    }
     settings.endGroup();
 
     settings.beginGroup("calendar");
@@ -484,6 +492,81 @@ bool Pebble::imperialUnits() const
     return m_imperialUnits;
 }
 
+void Pebble::setWeatherUnits(const QString &u)
+{
+    m_weatherProv->setUnits(u.at(0));
+    QSettings appCfg(m_storagePath + "/appsettings.conf", QSettings::IniFormat);
+    appCfg.beginGroup(WeatherApp::appConfigKey);
+    appCfg.setValue("units",u);
+    appCfg.endGroup();
+}
+QString Pebble::getWeatherUnits() const
+{
+    return m_weatherProv->getUnits();
+}
+
+void Pebble::setWeatherApiKey(const QString &key)
+{
+    ((WeatherProviderTWC*)m_weatherProv)->setApiKey(key);
+    QSettings appCfg(m_storagePath + "/appsettings.conf", QSettings::IniFormat);
+    appCfg.beginGroup(WeatherApp::appConfigKey);
+    appCfg.setValue("apiKey",key);
+    appCfg.endGroup();
+}
+
+QVariantList Pebble::getWeatherLocations() const
+{
+    QVariantList locs;
+    QSettings appCfg(m_storagePath + "/appsettings.conf", QSettings::IniFormat);
+    int n = appCfg.beginReadArray(WeatherApp::appConfigKey);
+    for(int i=0;i<n;i++) {
+        QStringList city;
+        appCfg.setArrayIndex(i);
+        city.append(appCfg.value("name").toString());
+        city.append(appCfg.value("lat").toString());
+        city.append(appCfg.value("lng").toString());
+        locs.append(city);
+    }
+    appCfg.endArray();
+    return locs;
+}
+
+void Pebble::setWeatherLocations(const QVariantList &locs)
+{
+    m_weatherApp->setLocations(locs);
+}
+
+void Pebble::saveWeatherLocations() const
+{
+    QVariantList locs = m_weatherApp->getLocations();
+    QSettings appCfg(m_storagePath + "/appsettings.conf", QSettings::IniFormat);
+    appCfg.beginWriteArray(WeatherApp::appConfigKey,locs.count());
+    for(int i=0;i<locs.count();i++) {
+        QStringList city = locs.at(i).toStringList();
+        appCfg.setArrayIndex(i);
+        appCfg.setValue("name",city.first());
+        appCfg.setValue("lat",city.at(1));
+        appCfg.setValue("lng",city.at(2));
+    }
+    appCfg.endArray();
+    emit weatherLocationsChanged(locs);
+}
+
+void Pebble::injectWeatherConditions(const QString &location, const QVariantMap &twc)
+{
+    WeatherApp::Observation obs;
+    obs.text = twc.value("text").toString();
+    obs.temp_now = twc.value("temperature",SHRT_MAX).toInt();
+    obs.timestamp = twc.value("ts",QDateTime::currentDateTime()).toDateTime();
+    obs.today.temp_hi = twc.value("today_hi",SHRT_MAX).toInt();
+    obs.today.temp_low = twc.value("today_low",SHRT_MAX).toInt();
+    obs.today.condition = twc.value("today_icon").toInt();
+    obs.tomorrow.temp_hi = twc.value("tomorrow_hi",SHRT_MAX).toInt();
+    obs.tomorrow.temp_low = twc.value("tomorrow_low",SHRT_MAX).toInt();
+    obs.tomorrow.condition = twc.value("tomorrow_icon").toInt();
+    m_weatherApp->injectObservation(location, obs, true);
+}
+
 void Pebble::dumpLogs(const QString &fileName) const
 {
     m_logEndpoint->fetchLogs(fileName);
@@ -592,24 +675,102 @@ QVariantMap Pebble::cannedMessages() const
     return ret;
 }
 
+void inline saveMsgs(QSettings &cMsgs, const QStringList &msgs, const QString &grp)
+{
+    cMsgs.beginWriteArray(grp,msgs.count());
+    for(int i=0;i<msgs.count();i++) {
+        cMsgs.setArrayIndex(i);
+        cMsgs.setValue("msg",msgs.at(i));
+    }
+    cMsgs.endArray();
+}
+
 void Pebble::setCannedMessages(const QVariantMap &cans) const
 {
     QSettings cMsgs(m_storagePath + "/canned_messages.conf", QSettings::IniFormat);
     QHash<QString,QStringList> pass;
     foreach(const QString &grp,cans.keys()) {
         QStringList msgs = cans.value(grp).toStringList();
-        cMsgs.beginWriteArray(grp,msgs.count());
-        for(int i=0;i<msgs.count();i++) {
-            cMsgs.setArrayIndex(i);
-            cMsgs.setValue("msg",msgs.at(i));
-        }
-        cMsgs.endArray();
         pass.insert(grp,msgs);
+        // Skip cans stored on pebble - need ACK to save
+        if(SendTextApp::appKeys.contains(grp.toUtf8())) continue;
+        saveMsgs(cMsgs,msgs,grp);
     }
     Core::instance()->platform()->setCannedResponses(pass);
+    m_sendTextApp->setCannedMessages(pass);
 }
 
- QVariantMap Pebble::notificationsFilter() const
+void Pebble::saveTextMessages(const QByteArray &key) const
+{
+    QSettings cMsgs(m_storagePath + "/canned_messages.conf", QSettings::IniFormat);
+    QStringList msgs = m_sendTextApp->getCannedMessages(key);
+    saveMsgs(cMsgs,msgs,QString::fromUtf8(key));
+    emit messagesChanged();
+}
+
+QHash<QString,QStringList> Pebble::getCannedMessages(const QStringList &groups) const
+{
+    QHash<QString,QStringList> cans;
+    QSettings cMsgs(m_storagePath + "/canned_messages.conf", QSettings::IniFormat);
+    foreach(const QString &grp,cMsgs.childGroups()) {
+        if(groups.isEmpty() || groups.contains(grp)) {
+            int msgn = cMsgs.beginReadArray(grp);
+            QStringList msgs;
+            for(int i=0;i<msgn;i++) {
+                cMsgs.setArrayIndex(i);
+                if(cMsgs.contains("msg"))
+                    msgs.append(cMsgs.value("msg").toString());
+            }
+            cMsgs.endArray();
+            if(!msgs.isEmpty())
+                cans.insert(grp,msgs);
+        }
+    }
+    return cans;
+}
+
+void Pebble::setCannedContacts(const QHash<QString, QStringList> &cans)
+{
+    QList<SendTextApp::Contact> ret;
+    for(QHash<QString,QStringList>::const_iterator it=cans.begin();it!=cans.end();it++) {
+        ret.append(SendTextApp::Contact({it.key(),it.value()}));
+    }
+    m_sendTextApp->setCannedContacts(ret);
+}
+void Pebble::saveTextContacts() const
+{
+    QList<SendTextApp::Contact> ctxs = m_sendTextApp->getCannedContacts();
+    QSettings cCtx(m_storagePath + "/canned_messages.conf", QSettings::IniFormat);
+    foreach(const SendTextApp::Contact c, ctxs) {
+        cCtx.beginWriteArray(c.name,c.numbers.length());
+        for(int i=0;i<c.numbers.length();i++) {
+            cCtx.setArrayIndex(i);
+            cCtx.setValue("ctx",c.numbers.at(i));
+        }
+        cCtx.endArray();
+    }
+    emit contactsChanged();
+}
+
+QHash<QString,QStringList> Pebble::getCannedContacts(const QStringList &people) const
+{
+    QHash<QString,QStringList> ret;
+    QSettings cCtx(m_storagePath + "/canned_messages.conf", QSettings::IniFormat);
+    foreach (const QString &name, cCtx.childGroups()) {
+        if(people.isEmpty() || people.contains(name)) {
+            int ctxn = cCtx.beginReadArray(name);
+            for(int i=0;i<ctxn;i++) {
+                cCtx.setArrayIndex(i);
+                if(cCtx.contains("ctx"))
+                    ret[name].append(cCtx.value("ctx").toString());
+            }
+            cCtx.endArray();
+        }
+    }
+    return ret;
+}
+
+QVariantMap Pebble::notificationsFilter() const
 {
     QVariantMap ret;
     QString settingsFile = m_storagePath + "/notifications.conf";

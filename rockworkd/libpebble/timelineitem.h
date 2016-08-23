@@ -108,7 +108,7 @@ private:
     QList<TimelineAttribute> m_attributes;
 };
 
-class TimelineItem: public PebblePacket
+class TimelineItem: public BlobDbItem
 {
 public:
     enum Type {
@@ -144,6 +144,7 @@ public:
     QList<TimelineAttribute> attributes() const;
     QList<TimelineAction> actions() const;
 
+    QByteArray itemKey() const override;
     QByteArray serialize() const override;
     bool deserialize(const QByteArray &data) override;
 

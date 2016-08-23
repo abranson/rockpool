@@ -27,6 +27,9 @@ class DataLoggingEndpoint;
 class DevConnection;
 class TimelineManager;
 class TimelineSync;
+class SendTextApp;
+class WeatherApp;
+class WeatherProvider;
 class VoiceEndpoint;
 struct SpeexInfo;
 struct AudioStream;
@@ -96,6 +99,9 @@ public:
     QNetworkAccessManager *nam() const;
     QVariantMap cannedMessages() const;
     void setCannedMessages(const QVariantMap &cans) const;
+    QHash<QString,QStringList> getCannedMessages(const QStringList &groups = QStringList()) const;
+    void setCannedContacts(const QHash<QString,QStringList> &cans);
+    QHash<QString,QStringList> getCannedContacts(const QStringList &names = QStringList()) const;
     qint32 timelineWindowStart() const;
     qint32 timelineWindowFade() const;
     qint32 timelineWindowEnd() const;
@@ -104,6 +110,12 @@ public slots:
     void setTimelineWindow(qint32 start, qint32 fade, qint32 end);
     void setOAuthToken(const QString &token);
     void setSyncAppsFromCloud(bool enable);
+    void setWeatherApiKey(const QString &key);
+    void setWeatherUnits(const QString &u);
+    QString getWeatherUnits() const;
+    QVariantList getWeatherLocations() const;
+    void setWeatherLocations(const QVariantList &locations);
+    void injectWeatherConditions(const QString &location, const QVariantMap &conditions);
     QVariantMap notificationsFilter() const;
     void setNotificationFilter(const QString &sourceId, const QString &name, const QString &icon, const NotificationFilter enabled);
     void setNotificationFilter(const QString &sourceId, const NotificationFilter enabled);
@@ -170,10 +182,13 @@ private slots:
     void appDownloadFinished(const QString &id);
     void appInstalled(const QUuid &uuid);
     void appStarted(const QUuid &uuid);
+    void saveTextContacts() const;
+    void saveTextMessages(const QByteArray &key) const;
     void muteNotificationSource(const QString &source);
     void voiceSessionRequest(const QUuid &appUuid, const SpeexInfo &codec);
     void voiceAudioStream(quint16 sid, const AudioStream &frames);
     void voiceSessionClose(quint16 sesId);
+    void saveWeatherLocations() const;
 
     void resetPebble();
     void syncApps();
@@ -194,6 +209,9 @@ signals:
     void upgradingFirmwareChanged();
     void languagePackChanged();
     void logsDumped(bool success);
+    void contactsChanged() const;
+    void messagesChanged() const;
+    void weatherLocationsChanged(const QVariantList &locations) const;
     void voiceSessionSetup(const QString &fileName, const QString &format, const QString &appUuid);
     void voiceSessionStream(const QString &fileName);
     void voiceSessionDumped(const QString &fileName);
@@ -237,6 +255,9 @@ private:
     FirmwareDownloader *m_firmwareDownloader;
     WatchLogEndpoint *m_logEndpoint;
     DataLoggingEndpoint *m_dataLogEndpoint;
+    SendTextApp * m_sendTextApp;
+    WeatherApp * m_weatherApp;
+    WeatherProvider * m_weatherProv;
     VoiceEndpoint * m_voiceEndpoint;
     QTemporaryFile* m_voiceSessDump = nullptr;
 

@@ -1,5 +1,6 @@
 #include "timelinemanager.h"
 #include "platforminterface.h"
+#include "sendtextapp.h"
 #include "blobdb.h"
 
 #include "watchdatareader.h"
@@ -52,7 +53,7 @@ TimelinePin::TimelinePin(const TimelinePin &src):
     m_sent(src.m_sent)
 {
     //buildActions();
-    qDebug() << "Pin deep copy - be sure to know what you're doing" << m_uuid;
+    //qDebug() << "Pin deep copy - be sure to know what you're doing" << m_uuid;
     m_pending = src.m_pending;
 }
 TimelinePin::TimelinePin(const QJsonObject &obj, TimelineManager *manager, const QUuid &uuid, const TimelinePin *parent):
@@ -338,7 +339,6 @@ QList<TimelineAttribute> TimelinePin::handleAction(TimelineAction::Type atype, q
     return attributes;
 }
 
-QUuid TimelineManager::appSendText = QUuid("0f71aaba-5814-4b5c-96e2-c9828c9734cb");
 /**
  * @brief TimelineManager::TimelineManager
  * @param pebble
@@ -634,7 +634,7 @@ TimelineItem & TimelineManager::parseActions(TimelineItem &timelineItem, const Q
             if(it.key() == "type")
                 continue;
             TimelineAttribute attr=parseAttribute(it.key(),it.value());
-            qDebug() << "With attribute" << it.key() << it.value() << attr.type();
+            //qDebug() << "With attribute" << it.key() << it.value() << attr.type();
             if(attr.type()>0)
                 tlAct.appendAttribute(attr);
         }
@@ -666,7 +666,7 @@ void TimelineManager::actionHandler(const QByteArray &actionReply)
     const TimelinePin *source = getPin(notificationId);
     if (source==nullptr) {
         status = BlobDB::ResponseError;
-        if(notificationId == appSendText && param.contains("title") && param.contains("sender")) {
+        if(notificationId == SendTextApp::actionUUID && param.contains("title") && param.contains("sender")) {
             emit actionSendText(param.value("sender").toString(),param.value("title").toString());
             attributes.append(parseAttribute("largeIcon",QString("system://images/RESULT_SENT")));
             attributes.append({getAttr("subtitle").id,QString("Sent!")});
@@ -830,7 +830,7 @@ void TimelineManager::doMaintenance()
         //qDebug() << "Iterating timestamp" << it.key() << "with" << it.value().count() << "items";
         if(it.value().isEmpty()) {
             m_mtx_pinStorage.lock();
-            m_pin_idx_time.erase(it);
+            it = m_pin_idx_time.erase(it);
             m_mtx_pinStorage.unlock();
             continue;
         }
@@ -896,7 +896,7 @@ void TimelineManager::insert(const TimelinePin &pin)
 void TimelineManager::remove(const TimelinePin &pin)
 {
     qDebug() << "removing TimelinePin from blobdb:" << pin.blobId() << pin.guid().toString();
-    m_pebble->blobdb()->remove(pin.blobId(), pin.guid());
+    m_pebble->blobdb()->remove(pin.blobId(), pin.guid().toRfc4122());
 }
 
 void TimelineManager::clearTimeline(const QUuid &parent)
@@ -948,7 +948,7 @@ void TimelineManager::wipeSubscription(const QString &topic)
     }
 }
 
-void TimelineManager::blobdbAckHandler(BlobDB::BlobDBId db, BlobDB::Operation cmd, const QUuid &uuid, BlobDB::Status ack)
+void TimelineManager::blobdbAckHandler(BlobDB::BlobDBId db, BlobDB::Operation cmd, const QByteArray &key, BlobDB::Status ack)
 {
     switch(db) {
     case BlobDB::BlobDBIdPin:
@@ -958,9 +958,9 @@ void TimelineManager::blobdbAckHandler(BlobDB::BlobDBId db, BlobDB::Operation cm
     default:
         return;
     }
-    TimelinePin *pin = getPin(uuid);
+    TimelinePin *pin = getPin(QUuid::fromRfc4122(key));
     if(pin==nullptr && cmd != BlobDB::OperationClear) {
-        qDebug() << "Result for non-existing pin" << uuid << db << cmd << ack;
+        qDebug() << "Result for non-existing pin" << key.toHex() << db << cmd << ack;
         return;
     }
     qDebug() << ((ack==BlobDB::StatusSuccess)?"ACK":"NACK") << "for" << ((cmd==BlobDB::OperationInsert)?"insert":"delete") << "of" << (cmd==BlobDB::OperationClear ? QString::number(db) : pin->guid().toString());
@@ -1002,7 +1002,7 @@ void TimelineManager::blobdbAckHandler(BlobDB::BlobDBId db, BlobDB::Operation cm
 void TimelineManager::insertTimelinePin(const QJsonObject &json)
 {
     QJsonObject obj(json);
-    qDebug() << "Incoming pin:" << QJsonDocument(obj).toJson();
+    //qDebug() << "Incoming pin:" << QJsonDocument(obj).toJson();
     TimelinePin pin(obj,this);
     if(pin.type() == TimelineItem::TypeNotification) {
         // Simple persistence checks for volatile (system) notification. Also do some sanity checks
@@ -1036,15 +1036,15 @@ void TimelineManager::insertTimelinePin(const QJsonObject &json)
     }
     // At this stage we are positive to insert the pin.
     // Insert it first so that user could open it from notification or reminder
-    qDebug() << "Sending pin" << pin.guid() << pin.time().toString(Qt::ISODate);
+    //qDebug() << "Sending pin" << pin.guid() << pin.time().toString(Qt::ISODate);
     pin.send();
     TimelinePin notice = pin.makeNotification(old);
     if(notice.isValid()) {
-        qDebug() << "Sending notification" << notice.guid() << "for pin" << pin.guid();
+        //qDebug() << "Sending notification" << notice.guid() << "for pin" << pin.guid();
         notice.send(); // Store, add to index and send to watches
     }
     if(!pin.reminders().isEmpty()) {
-        qDebug() << "Sending" << pin.reminders().count() << "reminders for pin" << pin.guid();
+        //qDebug() << "Sending" << pin.reminders().count() << "reminders for pin" << pin.guid();
         foreach(const TimelinePin &rmd,pin.makeReminders()) {
             qDebug() << rmd.guid() << rmd.time().toString(Qt::ISODate);
             rmd.send();

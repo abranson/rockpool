@@ -271,7 +271,7 @@ void SailfishPlatform::stopOrganizer() const
 void SailfishPlatform::sendTextMessage(const QString &contact, const QString &text) const
 {
     qDebug() << "Sending text message for" << contact << text;
-    telepathyResponse("/org/freedesktop/Telepathy/Account/ring/tel/account0",contact,text);
+    telepathyResponse("/org/freedesktop/Telepathy/Account/ring/tel/ril_0",contact,text);
 }
 
 void SailfishPlatform::telepathyResponse(const QString &account, const QString &contact, const QString &text) const

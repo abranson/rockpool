@@ -3,7 +3,7 @@
 
 #include "watchconnection.h"
 
-class AppMetadata: public PebblePacket
+class AppMetadata: public BlobDbItem
 {
 public:
     AppMetadata();
@@ -18,6 +18,7 @@ public:
     void setAppFaceTemplateId(quint8 templateId);
     void setAppName(const QString &appName);
 
+    QByteArray itemKey() const;
     QByteArray serialize() const;
 signals:
 

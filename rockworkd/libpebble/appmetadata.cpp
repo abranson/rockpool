@@ -54,6 +54,11 @@ void AppMetadata::setAppName(const QString &appName)
     m_appName = appName;
 }
 
+QByteArray AppMetadata::itemKey() const
+{
+    return m_uuid.toRfc4122();
+}
+
 QByteArray AppMetadata::serialize() const
 {
     QByteArray ret;
@@ -70,4 +75,3 @@ QByteArray AppMetadata::serialize() const
     writer.writeFixedString(96, m_appName);
     return ret;
 }
-

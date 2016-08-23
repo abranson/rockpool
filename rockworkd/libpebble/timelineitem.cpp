@@ -7,7 +7,7 @@ TimelineItem::TimelineItem(TimelineItem::Type type, Flags flags, const QDateTime
 }
 
 TimelineItem::TimelineItem(const QUuid &uuid, TimelineItem::Type type, Flags flags, const QDateTime &timestamp, quint16 duration):
-    PebblePacket(),
+    BlobDbItem(),
     m_itemId(uuid),
     m_timestamp(timestamp),
     m_duration(duration),
@@ -64,6 +64,11 @@ QList<TimelineAttribute> TimelineItem::attributes() const
 QList<TimelineAction> TimelineItem::actions() const
 {
     return m_actions;
+}
+
+QByteArray TimelineItem::itemKey() const
+{
+    return itemId().toRfc4122();
 }
 
 QByteArray TimelineItem::serialize() const
@@ -207,11 +212,11 @@ QString TimelineAttribute::getString() const
 void TimelineAttribute::setStringList(const QStringList &values, int max)
 {
     m_content.clear();
-    foreach (const QString &value, values) {
-        if (!m_content.isEmpty()) {
+    for(int i=0;i<values.size();i++) {
+        if (i>0) {
             m_content.append('\0');
         }
-        m_content.append(value.toUtf8());
+        m_content.append(values.at(i).toUtf8());
         if(max>0 && m_content.length()>max) {
             m_content.resize(max);
             return;

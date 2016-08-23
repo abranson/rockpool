@@ -108,8 +108,6 @@ class TimelineManager : public QObject
     Q_OBJECT
     friend class TimelinePin;
 public:
-    static QUuid appSendText;
-
     TimelineManager(Pebble *pebble, WatchConnection *connection);
 
     // Timeline Layout
@@ -141,7 +139,7 @@ signals:
 private slots:
     void actionHandler(const QByteArray &data);
     void notifyHandler(const QDateTime &ts, const QUuid &key, const TimelineItem &val);
-    void blobdbAckHandler(BlobDB::BlobDBId db, BlobDB::Operation cmd, const QUuid &uuid, BlobDB::Status ack);
+    void blobdbAckHandler(BlobDB::BlobDBId db, BlobDB::Operation cmd, const QByteArray &key, BlobDB::Status ack);
     void doMaintenance();
 
 protected:
