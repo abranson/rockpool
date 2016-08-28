@@ -125,7 +125,7 @@ void Pebbles::refresh()
         qWarning() << "No reply from service.";
         return;
     }
-    QDBusArgument arg = reply.arguments().first().value<QDBusArgument>();
+    const QDBusArgument &arg = reply.arguments().first().value<QDBusArgument>();
     QStringList availableList;
     arg.beginArray();
     while (!arg.atEnd()) {
