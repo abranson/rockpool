@@ -1,3 +1,8 @@
+* Sun Aug 28 2016 Andrew Branson <github@andrewbranson.net> 1.1-1
+- Weather app reference implementation, though no weather yet
+- Send Text app support for Time watches, though no contacts yet
+- Fix for crash on UI in 2.0.3+
+
 * Wed Aug 03 2016 Andrew Branson <github@andrewbranson.net> 1.0-2
 - Pebble login - receive custom timeline pin subscriptions and synchronize apps and watchfaces
 - Canned messages - reply to SMSes and IMs from your watch. Define your responses in Settings.
