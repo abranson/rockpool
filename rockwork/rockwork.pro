@@ -51,10 +51,6 @@ OTHER_FILES += $${QML_FILES} \
 qml.path = /usr/share/rockpool/qml
 qml.files += $${QML_FILES}
 
-#and the app icon
-icon.path = /usr/share/icons/hicolor/86x86/apps/
-icon.files = rockpool.png
-
 # Default rules for deployment.
 target.path = /usr/bin
 
@@ -62,11 +58,15 @@ target.path = /usr/bin
 jsm.path = /usr/share/rockpool/jsm
 jsm.files += $${JSM_FILES}
 
-DISTFILES += JSM_FILES
+SAILFISHAPP_ICONS += 86x86 108x108 128x128 256x256
+
+DISTFILES += JSM_FILES \
+    icons/86x86/rockpool.png \
+    icons/108x108/rockpool.png \
+    icons/128x128/rockpool.png \
+    icons/256x256/rockpool.png
 INSTALLS += jsm
 
-## These are pre-defined rules, don't need explicit mentioning
-#INSTALLS+=target icon qml
 CONFIG(debug, debug|release) {
     DEFINES += 'ROCKPOOL_DATA_PATH=\\"/opt/sdk/rockpool/usr/share/rockpool/\\"'
 }

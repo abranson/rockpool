@@ -23,6 +23,5 @@
         <file>artwork/tintin-pink.png</file>
         <file>artwork/tintin-red.png</file>
         <file>artwork/tintin-white.png</file>
-        <file>rockpool.png</file>
     </qresource>
 </RCC>
