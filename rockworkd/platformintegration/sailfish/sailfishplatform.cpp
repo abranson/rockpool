@@ -268,15 +268,18 @@ void SailfishPlatform::stopOrganizer() const
     m_organizerAdapter->disable();
 }
 
-void SailfishPlatform::sendTextMessage(const QString &contact, const QString &text) const
+void SailfishPlatform::sendTextMessage(const QString &account, const QString &contact, const QString &text) const
 {
     qDebug() << "Sending text message for" << contact << text;
-    telepathyResponse("/org/freedesktop/Telepathy/Account/ring/tel/ril_0",contact,text);
+    if(account.isEmpty() || account.startsWith("/org/freedesktop/Telepathy/Account/"))
+        telepathyResponse(account,contact,text);
+    else
+        qWarning() << "No handler to send message from" << account << "to" << contact << "with" << text;
 }
 
 void SailfishPlatform::telepathyResponse(const QString &account, const QString &contact, const QString &text) const
 {
-    QDBusObjectPath acct(account);
+    QDBusObjectPath acct(account.isEmpty()?"/org/freedesktop/Telepathy/Account/ring/tel/ril_0":account);
     QVariantMap arg1,arg2;
     arg1.insert("message-type",0);
     arg2.insert("content-type",QString("text/plain"));
@@ -292,7 +295,7 @@ void SailfishPlatform::telepathyResponse(const QString &account, const QString &
         } else
             qDebug() << "Sent message under uuid" << res.value();
     } else {
-        qWarning() << res.error().message();
+        qWarning() << acct.path() << res.error().message();
     }
 }
 

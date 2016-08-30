@@ -100,8 +100,8 @@ public:
     QVariantMap cannedMessages() const;
     void setCannedMessages(const QVariantMap &cans) const;
     QHash<QString,QStringList> getCannedMessages(const QStringList &groups = QStringList()) const;
-    void setCannedContacts(const QHash<QString,QStringList> &cans);
-    QHash<QString,QStringList> getCannedContacts(const QStringList &names = QStringList()) const;
+    void setCannedContacts(const QMap<QString,QStringList> &cans, bool push=true);
+    QMap<QString,QStringList> getCannedContacts(const QStringList &names = QStringList()) const;
     qint32 timelineWindowStart() const;
     qint32 timelineWindowFade() const;
     qint32 timelineWindowEnd() const;

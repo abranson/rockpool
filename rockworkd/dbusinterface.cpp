@@ -113,7 +113,7 @@ QVariantMap DBusPebble::getCannedResponses(const QStringList &groups) const
  */
 void DBusPebble::setFavoriteContacts(const QVariantMap &cans)
 {
-    QHash<QString,QStringList> ctxs;
+    QMap<QString,QStringList> ctxs;
     foreach(const QString &key, cans.keys()) {
         ctxs.insert(key,cans.value(key).toStringList());
     }
@@ -121,7 +121,7 @@ void DBusPebble::setFavoriteContacts(const QVariantMap &cans)
 }
 QVariantMap DBusPebble::getFavoriteContacts(const QStringList &names) const
 {
-    QHash<QString,QStringList> cans = m_pebble->getCannedContacts(names);
+    QMap<QString,QStringList> cans = m_pebble->getCannedContacts(names);
     QVariantMap ret;
     foreach(const QString &key,cans.keys()) {
         ret.insert(key,QVariant::fromValue(cans.value(key)));

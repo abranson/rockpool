@@ -109,8 +109,8 @@ QByteArray BlobContacts::serialize() const
 class BlobContact : public BlobDbItem
 {
 public:
-    BlobContact(const QString &name, const QStringList &numbers);
-    BlobContact(const SendTextApp::Contact &contact):BlobContact(contact.name,contact.numbers) {}
+    BlobContact(const QString &name, const QStringList &numbers,QHash<QString,QString> &rl);
+    BlobContact(const SendTextApp::Contact &contact,QHash<QString,QString>&rl):BlobContact(contact.name,contact.numbers,rl) {}
 
     QList<BlobContacts::ContactEntry> getEntries() const;
 
@@ -132,7 +132,7 @@ private:
     QList<ContactMethod> m_methods;
 };
 
-BlobContact::BlobContact(const QString &name, const QStringList &numbers):
+BlobContact::BlobContact(const QString &name, const QStringList &numbers, QHash<QString,QString> &revLookup):
     BlobDbItem(),
     m_key(PlatformInterface::idToGuid(name)),
     m_mthCnt(numbers.length())
@@ -140,7 +140,9 @@ BlobContact::BlobContact(const QString &name, const QStringList &numbers):
     m_title = TimelineAttribute(1,name);
     foreach (const QString &num, numbers) {
         TimelineAttribute att(0x27);
-        att.setString(num);
+        QString attNum = ((num.at(0)=='/')?num.split(":").last():num);
+        revLookup.insert(attNum,num);
+        att.setString(attNum);
         ContactMethod mtd;
         mtd.methodId = PlatformInterface::idToGuid(num);
         mtd.method = att;
@@ -213,20 +215,22 @@ QStringList SendTextApp::getCannedMessages(const QByteArray &key) const
     return m_messages.value(key);
 }
 
-void SendTextApp::setCannedContacts(const QList<Contact> &favs)
+void SendTextApp::setCannedContacts(const QList<Contact> &favs, bool push)
 {
     BlobContacts bcs;
     m_contacts.clear();
     for(QList<Contact>::const_iterator it=favs.begin(); it!=favs.end(); it++) {
-        BlobContact bc(*it);
+        BlobContact bc(*it,m_revLookup);
         if(m_contacts.length()>=10) break;
-        m_pebble->blobdb()->insert(BlobDB::BlobDBIdContacts,bc);
+        if(push)
+            m_pebble->blobdb()->insert(BlobDB::BlobDBIdContacts,bc);
         bcs.append(bc.getEntries());
         m_contacts.append(*it);
         qDebug() << "Adding contacts" << it->name << it->numbers;// << bc.serialize().toHex();
     }
     //qDebug() << "Inserting config blob" << bcs.serialize().toHex();
-    m_pebble->blobdb()->insert(BlobDB::BlobDBIdAppConfigs,bcs);
+    if(push)
+        m_pebble->blobdb()->insert(BlobDB::BlobDBIdAppConfigs,bcs);
 }
 
 void SendTextApp::wipeContacts()
@@ -240,7 +244,14 @@ QList<SendTextApp::Contact> SendTextApp::getCannedContacts() const
 {
     return m_contacts;
 }
-
+void SendTextApp::handleTextAction(const QString &contact, const QString &text) const
+{
+    QString account;
+    if(m_revLookup.contains(contact))
+        account = m_revLookup.value(contact).split(":").first();
+    qDebug() << "Send" << m_revLookup.value(contact) << account << contact << text;
+    emit sendTextMessage(account,contact,text);
+}
 void SendTextApp::blobdbAckHandler(quint8 db, quint8 cmd, const QByteArray &key, quint8 ack)
 {
     switch(db) {
