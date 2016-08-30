@@ -149,9 +149,9 @@ QString Pebble::candidateVersion() const
     return m_candidateVersion;
 }
 
-QVariantMap Pebble::fetchVarMap(const QString &propertyName) const
+QVariantMap Pebble::fetchVarMap(const QString &propertyName, const QStringList *keys) const
 {
-    QDBusMessage m = m_iface->call(propertyName);
+    QDBusMessage m = ((keys) ? m_iface->call(propertyName, *keys) : m_iface->call(propertyName));
     if (m.type() == QDBusMessage::ErrorMessage || m.arguments().count() == 0) {
         qWarning() << "Could not fetch" << propertyName << m.errorMessage();
         return QVariantMap();
@@ -166,26 +166,50 @@ QVariantMap Pebble::fetchVarMap(const QString &propertyName) const
     return mapEntryVariant;
 }
 
+void Pebble::sendVarMap(const QString &property, const QVariantMap &values)
+{
+    QVariantMap vals;
+    foreach(const QString &key, values.keys()) {
+        QStringList msgs;
+        if(values.value(key).type()==QVariant::StringList) {
+            msgs = values.value(key).toStringList();
+        } else if(values.value(key).type()==QVariant::Map) {
+            foreach(const QVariant &msg,values.value(key).toMap().values()) {
+                msgs.append(msg.toString());
+            }
+        } else if(values.value(key).type()==QVariant::List) {
+            msgs = values.value(key).toStringList();
+        }  else {
+            qWarning() << "Cannot convert to StringList" << values.value(key);
+        }
+        qDebug() << "Adding" << key << values.value(key) << msgs;
+        if(!msgs.isEmpty())
+            vals.insert(key,msgs);
+    }
+    qDebug() << "Setting Map of StringLists" << vals;
+    m_iface->call(property, vals);
+}
+
 QVariantMap Pebble::cannedResponses() const
 {
     return fetchVarMap("cannedResponses");
 }
 void Pebble::setCannedResponses(const QVariantMap &cans)
 {
-    QVariantMap _cans;
-    if(cans.values().first().type()!=QVariant::StringList) {
-        foreach(const QString &key, cans.keys()) {
-            QStringList msgs;
-            foreach(const QVariant &msg,cans.value(key).toMap().values()) {
-                msgs.append(msg.toString());
-            }
-            _cans.insert(key,msgs);
-        }
-    } else
-        _cans = cans;
-    qDebug() << "Setting canned responses" << _cans;
-    m_iface->call("setCannedResponses", _cans);
+    sendVarMap("setCannedResponses",cans);
     emit cannedResponsesChanged();
+}
+QVariantMap Pebble::getCannedResponses(const QStringList &keys)
+{
+    return fetchVarMap("getCannedResponses",&keys);
+}
+void Pebble::setCannedContacts(const QVariantMap &cans)
+{
+    sendVarMap("setFavoriteContacts",cans);
+}
+QVariantMap Pebble::getCannedContacts(const QStringList &keys)
+{
+    return fetchVarMap("getFavoriteContacts",&keys);
 }
 
 QVariantMap Pebble::healthParams() const
