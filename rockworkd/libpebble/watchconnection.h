@@ -55,7 +55,7 @@ public:
         EndpointLogDump = 2002,
 //        EndpointWatchReset = 2003,
 //        EndpointWatchApp = 2004,
-//        EndpointAppLogs = 2006,
+        EndpointAppLogs = 2006,
         EndpointNotification = 3000,
 //        watchEXTENSIBLE_NOTIFS = 3010, // Deprecated in 3.x
 //        watchRESOURCE = 4000,

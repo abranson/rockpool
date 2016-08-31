@@ -39,15 +39,16 @@ public slots:
 
     void onWatchConnected();
     void sendToWatch(const QByteArray &msg);
-    void installBundle(QString file);
+    void installBundle(const QString &file);
     void onWatchDisconnected();
     void onRawIncomingMsg(const QByteArray &msg);
     void onRawOutgoingMsg(const QByteArray &msg);
 private slots:
     void socketConnected();
     void socketDisconnected();
-    void textDataReceived(QString msg);
-    void rawDataReceived(QByteArray data);
+    void textDataReceived(const QString &msg);
+    void rawDataReceived(const QByteArray &data);
+    void handleMessage(const QByteArray &data);
     void broadcast(const QByteArray &msg);
 private:
     QList<QWebSocket *> m_clients;
@@ -85,7 +86,7 @@ public:
     virtual bool isRequest() const = 0;
     virtual bool isReply() const = 0;
     virtual void execute() = 0;
-    static DevPacket * CreatePacket(QByteArray &data, QWebSocket *sock, DevConnection *srv);
+    static DevPacket * CreatePacket(const QByteArray &data, QWebSocket *sock, DevConnection *srv);
     virtual ~DevPacket() = default;
 signals:
     void complete();
@@ -94,8 +95,8 @@ private slots:
     void serverDown();
 
 protected:
-    DevPacket(QByteArray &data, QWebSocket *sock, DevConnection *srv);
-    QByteArray &m_data;
+    DevPacket(const QByteArray &data, QWebSocket *sock, DevConnection *srv);
+    QByteArray m_data;
     QWebSocket *m_sock;
     DevConnection *m_srv;
 };

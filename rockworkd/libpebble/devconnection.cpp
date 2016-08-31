@@ -2,6 +2,7 @@
 
 #include "pebble.h"
 #include "watchconnection.h"
+#include "watchdatareader.h"
 
 #include <QException>
 #include <QWebSocketServer>
@@ -37,12 +38,13 @@ DevConnection::DevConnection(Pebble *pebble, WatchConnection *connection):
     m_connection(connection),
     m_qtwsServer(0)
 {
-    QObject::connect(connection, &WatchConnection::watchConnected, this, &DevConnection::onWatchConnected);
-    QObject::connect(connection, &WatchConnection::watchDisconnected, this, &DevConnection::onWatchDisconnected);
-    QObject::connect(connection, &WatchConnection::rawIncomingMsg, this, &DevConnection::onRawIncomingMsg);
-    QObject::connect(connection, &WatchConnection::rawOutgoingMsg, this, &DevConnection::onRawOutgoingMsg);
-    QObject::connect(this, &DevConnection::insertPin, m_pebble, &Pebble::insertPin);
-    QObject::connect(this, &DevConnection::removePin, m_pebble, &Pebble::removePin);
+    //connect(connection, &WatchConnection::watchConnected, this, &DevConnection::onWatchConnected);
+    //connect(connection, &WatchConnection::watchDisconnected, this, &DevConnection::onWatchDisconnected);
+    connection->registerEndpointHandler(WatchConnection::EndpointAppLogs, this, "handleMessage");
+    connect(connection, &WatchConnection::rawIncomingMsg, this, &DevConnection::onRawIncomingMsg);
+    connect(connection, &WatchConnection::rawOutgoingMsg, this, &DevConnection::onRawOutgoingMsg);
+    connect(this, &DevConnection::insertPin, m_pebble, &Pebble::insertPin);
+    connect(this, &DevConnection::removePin, m_pebble, &Pebble::removePin);
     DevConnection::s_instance=this;
     DevConnection::s_omh=0;
 }
@@ -50,6 +52,20 @@ DevConnection::~DevConnection()
 {
     disableConnection();
     s_instance = 0;
+}
+
+void DevConnection::handleMessage(const QByteArray &data)
+{
+    if(!m_clients.isEmpty()) return;
+    WatchDataReader reader(data);
+    QUuid uuid = reader.readUuid();
+    QDateTime ts = QDateTime::fromTime_t(reader.read<quint32>(),Qt::UTC);
+    quint8 lvl = reader.read<quint8>();
+    quint8 len = reader.read<quint8>();
+    quint16 lno = reader.read<quint16>();
+    QString fnm = reader.readFixedString(16);
+    QString msg = reader.readFixedString(len);
+    qDebug() << QString("%1 <%2> %3: %4:%5 %6").arg(ts.toString(Qt::ISODate),QString::number(lvl),uuid.toString().mid(1,36),fnm,QString::number(lno),msg);
 }
 
 bool DevConnection::enabled() const
@@ -171,7 +187,7 @@ void DevConnection::sendToWatch(const QByteArray &msg)
 {
     m_connection->writeRawData(msg);
 }
-void DevConnection::installBundle(QString file)
+void DevConnection::installBundle(const QString &file)
 {
     m_pebble->sideloadApp(file);
 }
@@ -193,7 +209,7 @@ void DevConnection::socketDisconnected()
      sock->deleteLater();
      qDebug() << "Client disconnected:" << sock->peerAddress().toString();
 }
-void DevConnection::textDataReceived(QString msg)
+void DevConnection::textDataReceived(const QString &msg)
 {
     // We aren't supposed to receive sms are we? remove this sun-over-bij
      QWebSocket *sock = qobject_cast<QWebSocket *>(sender());
@@ -201,7 +217,7 @@ void DevConnection::textDataReceived(QString msg)
      // what did he say anyway?
      qWarning() << "Unexpected Text Message received while waiting for ByteArray:" << msg;
 }
-void DevConnection::rawDataReceived(QByteArray data)
+void DevConnection::rawDataReceived(const QByteArray &data)
 {
      QWebSocket *sock = qobject_cast<QWebSocket *>(sender());
      try {
@@ -230,7 +246,7 @@ void DevConnection::broadcast(const QByteArray &msg)
 }
 
 // DevPacket implementation (and definition)
-DevPacket::DevPacket(QByteArray &data, QWebSocket *sock, DevConnection *srv):
+DevPacket::DevPacket(const QByteArray &data, QWebSocket *sock, DevConnection *srv):
     QObject(srv),
     m_data(data),
     m_sock(nullptr),
@@ -247,7 +263,7 @@ void DevPacket::serverDown()
 class DevPacketRelay:public DevPacket
 {
 public:
-    DevPacketRelay(QByteArray &data, QWebSocket *sock, DevConnection *srv):
+    DevPacketRelay(const QByteArray &data, QWebSocket *sock, DevConnection *srv):
         DevPacket(data,sock,srv)
     {
         qDebug() << "Relay this (" << m_data.toHex() << ") to pebble";
@@ -261,7 +277,7 @@ public:
 class DevPacketPInfo:public DevPacket
 {
 public:
-    DevPacketPInfo(QByteArray &data, QWebSocket *sock, DevConnection *srv):
+    DevPacketPInfo(const QByteArray &data, QWebSocket *sock, DevConnection *srv):
         DevPacket(data,sock,srv)
     {
         m_sock=sock;
@@ -275,7 +291,7 @@ public:
 class DevPacketInstall: public DevPacket
 {
 public:
-    DevPacketInstall(QByteArray &data, QWebSocket *sock, DevConnection *srv):
+    DevPacketInstall(const QByteArray &data, QWebSocket *sock, DevConnection *srv):
         DevPacket(data,sock,srv)
     {
         m_sock = sock;
@@ -301,7 +317,7 @@ public:
 class DevPacketTimeline: public DevPacket
 {
 public:
-    DevPacketTimeline(QByteArray &data, QWebSocket *sock, DevConnection *srv):
+    DevPacketTimeline(const QByteArray &data, QWebSocket *sock, DevConnection *srv):
         DevPacket(data,sock,srv)
     {
         m_sock=sock;
@@ -332,7 +348,7 @@ private:
     QJsonDocument m_json;
 };
 
-DevPacket * DevPacket::CreatePacket(QByteArray &data, QWebSocket *sock, DevConnection *srv)
+DevPacket * DevPacket::CreatePacket(const QByteArray &data, QWebSocket *sock, DevConnection *srv)
 {
     char opcode = data.at(0);
     switch (opcode) {
