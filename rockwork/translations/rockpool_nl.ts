@@ -855,28 +855,48 @@
 <context>
     <name>SendTextSettingsDialog</name>
     <message>
-        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="15"/>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="26"/>
         <source>Messaging Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="16"/>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="27"/>
         <source>OK</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="17"/>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="28"/>
         <source>Cancel</source>
         <translation type="unfinished">Annuleren</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="21"/>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="32"/>
         <source>Contacts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="29"/>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="77"/>
+        <source>Really Delete?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="130"/>
+        <source>Pick SIM for new contacts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="144"/>
         <source>Messages</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="147"/>
+        <source>Edit Messages</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="153"/>
+        <source>Send Text Messages</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
