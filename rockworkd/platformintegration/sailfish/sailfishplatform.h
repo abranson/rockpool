@@ -43,7 +43,7 @@ public:
 
     const QHash<QString,QStringList>& cannedResponses() const override;
     void setCannedResponses(const QHash<QString, QStringList> &cans) override;
-    void sendTextMessage(const QString &contact, const QString &text) const override;
+    void sendTextMessage(const QString &account, const QString &contact, const QString &text) const override;
 
 public slots:
     void newNotificationPin(watchfish::Notification *notification);

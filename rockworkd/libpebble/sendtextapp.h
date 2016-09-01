@@ -33,11 +33,13 @@ public:
 signals:
     void messageBlobSet(const QByteArray &key);
     void contactBlobSet();
+    void sendTextMessage(const QString &account, const QString &contact, const QString &text) const;
 
 public slots:
+    void handleTextAction(const QString &contact, const QString &text) const;
     void setCannedMessages(const QHash<QString,QStringList> &cans);
     void wipeCannedMessages();
-    void setCannedContacts(const QList<Contact> &favs);
+    void setCannedContacts(const QList<Contact> &favs, bool push=true);
     void wipeContacts();
 
 private slots:
@@ -45,6 +47,7 @@ private slots:
 
 private:
     QHash<QByteArray,QStringList> m_messages;
+    QHash<QString,QString> m_revLookup;
     QList<Contact> m_contacts;
 
     Pebble *m_pebble;

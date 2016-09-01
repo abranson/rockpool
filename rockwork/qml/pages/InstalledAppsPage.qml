@@ -78,10 +78,10 @@ Page {
             };
         } else if(uuid === "{0863fc6a-66c5-4f62-ab8a-82ed00a98b5d}") {
             popup = pageStack.push(Qt.resolvedUrl("SendTextSettingsDialog.qml"), {
-                                            params: pebble.sendTextParams
+                                            pebble: pebble
                                         },PageStackAction.Immediate);
             cbacc = function () {
-                pebble.sendTextParams = popup.params
+                pebble.setCannedContacts(popup.contacts)
             };
         }
         if(popup && cbacc) {

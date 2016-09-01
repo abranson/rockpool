@@ -101,7 +101,10 @@ public:
     QVariantMap notificationsFilter() const;
 
 public slots:
+    QVariantMap getCannedResponses(const QStringList &keys);
     void setCannedResponses(const QVariantMap &cans);
+    QVariantMap getCannedContacts(const QStringList &keys);
+    void setCannedContacts(const QVariantMap &cans);
     void setNotificationFilter(const QString &sourceId, int enabled);
     void forgetNotificationFilter(const QString &sourceId);
     void removeApp(const QString &uuid);
@@ -155,7 +158,8 @@ signals:
 
 private:
     QVariant fetchProperty(const QString &propertyName) const;
-    QVariantMap fetchVarMap(const QString &propertyName) const;
+    void sendVarMap(const QString &property, const QVariantMap &values);
+    QVariantMap fetchVarMap(const QString &propertyName, const QStringList *keys = 0) const;
 
 private slots:
     void dataChanged();

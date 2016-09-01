@@ -857,29 +857,49 @@
 <context>
     <name>SendTextSettingsDialog</name>
     <message>
-        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="15"/>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="26"/>
         <source>Messaging Settings</source>
         <translation>Настройки Сообщений</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="16"/>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="27"/>
         <source>OK</source>
         <translation>Принять</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="17"/>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="28"/>
         <source>Cancel</source>
         <translation>Отмена</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="21"/>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="32"/>
         <source>Contacts</source>
         <translation>Контакты</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="29"/>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="77"/>
+        <source>Really Delete?</source>
+        <translation>Действительно Удалить?</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="130"/>
+        <source>Pick SIM for new contacts</source>
+        <translation>Выбрать СИМ для новых контактов</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="144"/>
         <source>Messages</source>
         <translation>Сообщения</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="147"/>
+        <source>Edit Messages</source>
+        <translation>Редактировать Сообщения</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="153"/>
+        <source>Send Text Messages</source>
+        <translation>Текстовые Сообщения</translation>
     </message>
 </context>
 <context>
