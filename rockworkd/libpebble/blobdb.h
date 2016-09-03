@@ -2,12 +2,10 @@
 #define BLOBDB_H
 
 #include "watchconnection.h"
-#include "pebble.h"
 
 #include <QObject>
 
-class AppMetadata;
-class TimelineItem;
+class Pebble;
 
 class BlobDB : public QObject
 {
@@ -23,7 +21,8 @@ public:
         blobDBIdSendTextData = 6,
         BlobDBIdAppSettings = 7, // this is rather HealthAppSettings
         BlobDBIdContacts = 8,
-        BlobDBIdAppConfigs = 9 // Config Data References
+        BlobDBIdAppConfigs = 9, // Config Data References
+        BlobDBIdAppGlance = 11
     };
     enum Operation {
         OperationInsert = 0x01,
@@ -52,15 +51,10 @@ public:
 
     explicit BlobDB(Pebble *pebble, WatchConnection *connection);
 
-    void clearApps();
-    void insertAppMetaData(const AppInfo &info, const bool force=false);
-    void removeApp(const AppInfo &info);
-
     void insert(BlobDBId database, const BlobDbItem &item);
     void remove(BlobDBId database, const QByteArray &key);
     void clear(BlobDBId database);
 
-    void setHealthParams(const HealthParams &healthParams);
     void setUnits(bool imperial);
 
 private slots:
@@ -69,13 +63,12 @@ private slots:
     void sendNext();
 
 signals:
-    void appInserted(const QUuid &uuid);
     void blobCommandResult(BlobDBId db, Operation cmd, const QByteArray &key, Status ack);
-    void notifyTimeline(const QDateTime &ts, const QUuid &key, const TimelineItem &val);
+    void blobNotifyUpdate(BlobDBId db, Operation cmd, time_t ts, const QByteArray &key, const QByteArray &val);
 
 private:
     static inline quint16 generateToken();
-    AppMetadata appInfoToMetadata(const AppInfo &info, HardwarePlatform hardwarePlatform);
+    inline void sendCommand(BlobDBId database, Operation operation, const QByteArray &key=QByteArray(), const QByteArray &value=QByteArray());
 
 private:
 
@@ -97,12 +90,8 @@ private:
     Pebble *m_pebble;
     WatchConnection *m_connection;
 
-    HealthParams m_healthParams;
-
     BlobCommand *m_currentCommand = nullptr;
     QList<BlobCommand*> m_commandQueue;
-
-    QString m_blobDBStoragePath;
 };
 
 #endif // BLOBDB_H

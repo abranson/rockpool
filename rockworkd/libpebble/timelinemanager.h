@@ -138,7 +138,7 @@ signals:
 
 private slots:
     void actionHandler(const QByteArray &data);
-    void notifyHandler(const QDateTime &ts, const QUuid &key, const TimelineItem &val);
+    void notifyHandler(BlobDB::BlobDBId db, BlobDB::Operation cmd, time_t ts, const QByteArray &key, const QByteArray &val);
     void blobdbAckHandler(BlobDB::BlobDBId db, BlobDB::Operation cmd, const QByteArray &key, BlobDB::Status ack);
     void doMaintenance();
 

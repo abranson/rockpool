@@ -3,7 +3,7 @@
 
 #include "watchconnection.h"
 
-class HealthParams: public PebblePacket
+class HealthParams: public BlobDbItem
 {
 public:
     enum Gender {
@@ -36,6 +36,7 @@ public:
     Gender gender() const;
     void setGender(Gender gender);
 
+    QByteArray itemKey() const;
     QByteArray serialize() const;
 
 private:

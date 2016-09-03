@@ -60,7 +60,6 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
     m_dataLogEndpoint = new DataLoggingEndpoint(this, m_connection);
 
     m_blobDB = new BlobDB(this, m_connection);
-    QObject::connect(m_blobDB, &BlobDB::appInserted, this, &Pebble::appInstalled);
 
     QHash<QString,QStringList> cans = getCannedMessages();
     Core::instance()->platform()->setCannedResponses(cans);
@@ -87,6 +86,7 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
     m_appManager = new AppManager(this, m_connection);
     QObject::connect(m_appManager, &AppManager::appsChanged, this, &Pebble::installedAppsChanged);
     QObject::connect(m_appManager, &AppManager::idMismatchDetected, this, &Pebble::resetPebble);
+    QObject::connect(m_appManager, &AppManager::appInserted, this, &Pebble::appInstalled);
 
     m_timelineSync = new TimelineSync(this,m_timelineManager);
     QObject::connect(m_timelineSync, &TimelineSync::oauthTokenChanged, this, &Pebble::oauthTokenChanged);
@@ -458,7 +458,7 @@ void Pebble::setTimelineWindow(qint32 start, qint32 fade, qint32 end)
 void Pebble::setHealthParams(const HealthParams &healthParams)
 {
     m_healthParams = healthParams;
-    m_blobDB->setHealthParams(healthParams);
+    m_blobDB->insert(BlobDB::BlobDBIdAppSettings,healthParams);
     emit healtParamsChanged();
 
     QSettings healthSettings(m_storagePath + "/appsettings.conf", QSettings::IniFormat);
@@ -937,7 +937,7 @@ void Pebble::removePin(const QString &guid)
 
 void Pebble::clearAppDB()
 {
-    m_blobDB->clearApps();
+    m_appManager->clearApps();
 }
 
 void Pebble::clearTimeline()
@@ -1066,8 +1066,7 @@ AppInfo Pebble::appInfo(const QUuid &uuid)
 void Pebble::removeApp(const QUuid &uuid)
 {
     qDebug() << "Should remove app:" << uuid;
-    m_blobDB->removeApp(m_appManager->info(uuid));
-    m_appManager->removeApp(uuid);
+    m_appManager->wipeApp(uuid,true);
     m_timelineSync->syncLocker(true);
 }
 
@@ -1259,7 +1258,7 @@ void Pebble::pebbleVersionReceived(const QByteArray &data)
         } else {
             syncCalendar();
             syncApps();
-            m_blobDB->setHealthParams(m_healthParams);
+            m_blobDB->insert(BlobDB::BlobDBIdAppSettings,m_healthParams);
             m_blobDB->setUnits(m_imperialUnits);
             m_timelineSync->syncLocker();
         }
@@ -1334,7 +1333,7 @@ void Pebble::appDownloadFinished(const QString &id)
         m_appMsgManager->closeApp(uuid);
     }
     // Force app replacement to allow update from store/sdk
-    m_blobDB->insertAppMetaData(m_appManager->info(uuid),true);
+    m_appManager->insertAppMetaData(uuid,true);
     // The app will be re-launched here anyway
     m_pendingInstallations.append(uuid);
 }
@@ -1388,11 +1387,10 @@ void Pebble::resetPebble()
 
 void Pebble::syncApps()
 {
-    QUuid lastSyncedAppUuid;
     foreach (const QUuid &appUuid, m_appManager->appUuids()) {
         if (!m_appManager->info(appUuid).isSystemApp()) {
             qDebug() << "Inserting app" << m_appManager->info(appUuid).shortName() << "into BlobDB";
-            m_blobDB->insertAppMetaData(m_appManager->info(appUuid));
+            m_appManager->insertAppMetaData(appUuid);
             m_lastSyncedAppUuid = appUuid;
         }
     }
