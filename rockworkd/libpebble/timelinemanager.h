@@ -124,6 +124,13 @@ public:
     int daysFuture() const {return m_future_days;}
     int secsEventFadeout() const {return m_event_fadeout;}
 
+    // Service functions
+    TimelineAttribute parseAttribute(const QString &key, const QJsonValue &val);
+    QJsonObject &deserializeAttribute(const TimelineAttribute &attr, QJsonObject &obj);
+    QJsonObject &deserializeAttribute(quint8 type, const QByteArray &buf, QJsonObject &obj);
+    TimelineItem & parseLayout(TimelineItem &timelineItem, const QJsonObject &layout);
+    TimelineItem & parseActions(TimelineItem &timelineItem, const QJsonArray &actions);
+
 public slots:
     void reloadLayouts();
     void wipeTimeline(const QString &kind = QString());
@@ -172,12 +179,6 @@ private:
     int m_future_days = 7;
     int m_past_days = -2;
     int m_event_fadeout = -3600;
-
-    TimelineAttribute parseAttribute(const QString &key, const QJsonValue &val);
-    QJsonObject &deserializeAttribute(const TimelineAttribute &attr, QJsonObject &obj);
-    QJsonObject &deserializeAttribute(quint8 type, const QByteArray &buf, QJsonObject &obj);
-    TimelineItem & parseLayout(TimelineItem &timelineItem, const QJsonObject &layout);
-    TimelineItem & parseActions(TimelineItem &timelineItem, const QJsonArray &actions);
 
     QString m_timelineStoragePath;
     QHash<QString,quint8> m_layouts;

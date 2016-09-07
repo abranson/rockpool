@@ -14,6 +14,7 @@
 class WatchConnection;
 class MusicEndpoint;
 class PhoneCallEndpoint;
+class AppGlances;
 class AppManager;
 class AppMsgManager;
 class BankManager;
@@ -64,6 +65,8 @@ public:
     void connect();
     BlobDB *blobdb() const;
     TimelineSync *tlSync() const;
+    TimelineManager *timeline() const;
+    AppGlances *appGlances() const;
 
     QDateTime softwareBuildTime() const;
     QString softwareVersion() const;
@@ -246,6 +249,7 @@ private:
     WatchConnection *m_connection;
     MusicEndpoint *m_musicEndpoint;
     PhoneCallEndpoint *m_phoneCallEndpoint;
+    AppGlances *m_appGlances;
     AppManager *m_appManager;
     AppMsgManager *m_appMsgManager;
     JSKitManager *m_jskitManager;

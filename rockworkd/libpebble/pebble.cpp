@@ -7,6 +7,7 @@
 #include "appmanager.h"
 #include "appmsgmanager.h"
 #include "jskit/jskitmanager.h"
+#include "appglances.h"
 #include "blobdb.h"
 #include "appdownloader.h"
 #include "screenshotendpoint.h"
@@ -83,6 +84,7 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
     QObject::connect(Core::instance()->platform(), &PlatformInterface::callStarted, m_phoneCallEndpoint, &PhoneCallEndpoint::callStarted);
     QObject::connect(Core::instance()->platform(), &PlatformInterface::callEnded, m_phoneCallEndpoint, &PhoneCallEndpoint::callEnded);
 
+    m_appGlances = new AppGlances(this, m_connection);
     m_appManager = new AppManager(this, m_connection);
     QObject::connect(m_appManager, &AppManager::appsChanged, this, &Pebble::installedAppsChanged);
     QObject::connect(m_appManager, &AppManager::idMismatchDetected, this, &Pebble::resetPebble);
@@ -235,6 +237,16 @@ BlobDB * Pebble::blobdb() const
 TimelineSync * Pebble::tlSync() const
 {
     return m_timelineSync;
+}
+
+TimelineManager * Pebble::timeline() const
+{
+    return m_timelineManager;
+}
+
+AppGlances * Pebble::appGlances() const
+{
+    return m_appGlances;
 }
 
 bool Pebble::syncAppsFromCloud() const

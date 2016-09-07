@@ -6,7 +6,9 @@
 #include "jskitpebble.h"
 #include "jskitxmlhttprequest.h"
 #include "jskitwebsocket.h"
+#include "../timelinemanager.h"
 #include "../timelinesync.h"
+#include "../appglances.h"
 static const char *token_salt = "0feeb7416d3c4546a19b04bccd8419b1";
 
 JSKitPebble::JSKitPebble(const AppInfo &info, JSKitManager *mgr, QObject *parent) :
@@ -97,6 +99,41 @@ uint JSKitPebble::sendAppMessage(QJSValue message, QJSValue callbackForAck, QJSV
     );
 
     return transactionId;
+}
+
+void JSKitPebble::appGlanceReload(QJSValue slices, QJSValue callbackForAck, QJSValue callbackForNack)
+{
+    QVariantList vs = slices.toVariant().toList();
+    QList<AppGlances::Slice> sls;
+    foreach(const QVariant sv, vs) {
+        if(sv.canConvert(QMetaType::QJsonObject)) {
+            QJsonObject so=sv.toJsonObject();
+            if(so.contains("layout")) {
+                QList<TimelineAttribute> tas;
+                tas.append(m_mgr->pebble()->timeline()->parseAttribute("timestamp",so.value("expirationTime")));
+                QJsonObject layout = so.value("layout").toObject();
+                for(QJsonObject::const_iterator it=layout.begin(); it != layout.end(); it++) {
+                    tas.append(m_mgr->pebble()->timeline()->parseAttribute(it.key(),it.value()));
+                }
+                sls.append(AppGlances::Slice(AppGlances::TypeIconSubtitle,tas));
+            }
+        }
+
+    }
+    m_mgr->pebble()->appGlances()->reloadAppGlances(m_mgr->currentApp().uuid(),sls,[this,slices,callbackForAck,callbackForNack](int cmd, int ack)mutable{
+        if(cmd==BlobDB::OperationInsert) {
+            QJSValue o = m_mgr->engine()->newObject();
+            if(ack==BlobDB::StatusSuccess) {
+                o.setProperty("success",true);
+                if(callbackForAck.isCallable())
+                    callbackForAck.call(QJSValueList() << slices << o);
+            } else {
+                o.setProperty("success",false);
+                if(callbackForNack.isCallable())
+                    callbackForNack.call(QJSValueList() << slices << o);
+            }
+        }
+    });
 }
 
 void JSKitPebble::getTimelineToken(QJSValue successCallback, QJSValue failureCallback)

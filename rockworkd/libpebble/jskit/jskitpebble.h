@@ -19,6 +19,7 @@ public:
 
     Q_INVOKABLE void showSimpleNotificationOnPebble(const QString &title, const QString &body);
     Q_INVOKABLE uint sendAppMessage(QJSValue message, QJSValue callbackForAck = QJSValue(), QJSValue callbackForNack = QJSValue());
+    Q_INVOKABLE void appGlanceReload(QJSValue slices, QJSValue callbackForAck = QJSValue(), QJSValue callbackForNack = QJSValue());
 
     Q_INVOKABLE void getTimelineToken(QJSValue successCallback = QJSValue(), QJSValue failureCallback = QJSValue());
     Q_INVOKABLE void timelineSubscribe(const QString &topic, QJSValue successCallback = QJSValue(), QJSValue failureCallback = QJSValue());
