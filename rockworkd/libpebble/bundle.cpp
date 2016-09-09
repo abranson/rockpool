@@ -104,6 +104,11 @@ QString Bundle::file(Bundle::FileType type, HardwarePlatform hardwarePlatform) c
             return m_path + subDir + "/" + manifestMap.value("firmware").toMap().value("name").toString();
         }
         break;
+    case FileTypeLayouts:
+        if(manifestMap.contains("app_layouts")) {
+            return m_path + subDir + "/" + manifestMap.value("app_layouts").toString();
+        }
+        break;
     default:
         ;
     }

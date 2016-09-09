@@ -91,7 +91,7 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
     m_timelineSync = new TimelineSync(this,m_timelineManager);
     QObject::connect(m_timelineSync, &TimelineSync::oauthTokenChanged, this, &Pebble::oauthTokenChanged);
 
-    m_appMsgManager = new AppMsgManager(this, m_appManager, m_connection);
+    m_appMsgManager = new AppMsgManager(this, m_connection);
     m_jskitManager = new JSKitManager(this, m_connection, m_appManager, m_appMsgManager, this);
     QObject::connect(m_jskitManager, &JSKitManager::openURL, this, &Pebble::openURL);
     QObject::connect(m_jskitManager, &JSKitManager::appNotification, this, &Pebble::insertPin);
@@ -1061,6 +1061,11 @@ void Pebble::setAppOrder(const QList<QUuid> &newList)
 AppInfo Pebble::appInfo(const QUuid &uuid)
 {
     return m_appManager->info(uuid);
+}
+
+AppInfo Pebble::currentApp()
+{
+    return m_jskitManager->currentApp();
 }
 
 void Pebble::removeApp(const QUuid &uuid)

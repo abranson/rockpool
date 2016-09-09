@@ -452,7 +452,15 @@ quint8 TimelineManager::getLayout(const QString &key) const
 }
 quint32 TimelineManager::getRes(const QString &key) const
 {
-    return (m_resources.value(key) | 0x80000000);
+    if(key.startsWith("system://"))
+        return (m_resources.value(key) | 0x80000000);
+    AppInfo info = m_pebble->currentApp();
+    QVariantMap &lo=info.layouts(m_pebble->hardwarePlatform());
+    quint32 ret=0;
+    if(lo.contains("resources")) {
+        ret = lo.value("resources").toMap().value(key).toUInt();
+    }
+    return ret;
 }
 // This is required to translate colors in pins. Not sure if pebble color names are covered completely
 // by W3C defined names but such translation should be bit-correct rather than compressed approximation

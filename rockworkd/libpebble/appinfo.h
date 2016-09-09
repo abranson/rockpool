@@ -38,6 +38,8 @@ public:
     Capabilities capabilities() const;
     bool hasSettings() const;
 
+    QVariantMap & layouts(HardwarePlatform hw);
+
 private:
     QUuid m_uuid;
     QString m_storeId;
@@ -48,6 +50,7 @@ private:
     QString m_versionLabel;
     QHash<QString, int> m_appKeys;
     Capabilities m_capabilities;
+    QHash<HardwarePlatform,QVariantMap> m_layouts;
 
     bool m_isJsKit = false;
     bool m_isWatchface = false;

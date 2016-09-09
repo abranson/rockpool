@@ -141,6 +141,7 @@ public slots:
     void setAppOrder(const QList<QUuid> &newList);
     AppInfo appInfo(const QUuid &uuid);
     void removeApp(const QUuid &uuid);
+    AppInfo currentApp();
 
     void launchApp(const QUuid &uuid);
 
