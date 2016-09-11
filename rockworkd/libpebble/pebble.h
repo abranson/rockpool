@@ -90,11 +90,8 @@ public:
         NotificationDisabledActive = 1,
         NotificationEnabled = 2
     };
-    bool devConEnabled() const;
-    quint16 devConListenPort() const;
-    bool devConServerState() const;
-    bool devConCloudEnabled() const;
-    bool devConCloudState() const;
+    DevConnection * devConnection();
+
     bool syncAppsFromCloud() const;
     const QString oauthToken() const;
     const QString accountName() const;
@@ -113,12 +110,14 @@ public slots:
     void setTimelineWindow(qint32 start, qint32 fade, qint32 end);
     void setOAuthToken(const QString &token);
     void setSyncAppsFromCloud(bool enable);
+
     void setWeatherApiKey(const QString &key);
     void setWeatherUnits(const QString &u);
     QString getWeatherUnits() const;
     QVariantList getWeatherLocations() const;
     void setWeatherLocations(const QVariantList &locations);
     void injectWeatherConditions(const QString &location, const QVariantMap &conditions);
+
     QVariantMap notificationsFilter() const;
     void setNotificationFilter(const QString &sourceId, const QString &name, const QString &icon, const NotificationFilter enabled);
     void setNotificationFilter(const QString &sourceId, const NotificationFilter enabled);
@@ -127,9 +126,10 @@ public slots:
     void insertPin(const QJsonObject &json);
     void removePin(const QString &guid);
 
-    void setDevConEnabled(bool enabled);
     void setDevConListenPort(quint16 port);
     void setDevConCloudEnabled(bool enabled);
+    void setDevConLogLevel(int level);
+    void setDevConLogDump(bool enable);
 
     void clearTimeline();
     void syncCalendar();

@@ -178,6 +178,10 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
     //m_devConnection->setEnabled(settings.value("enabled", true).toBool());
     m_devConnection->setPort(settings.value("listenPort", 9000).toInt());
     m_devConnection->setCloudEnabled(settings.value("useCloud", true).toBool()); // not implemented yet
+    // Custom Logging params
+    m_devConnection->setLogLevel(settings.value("logVerbosity", 1).toInt()); // by default suppress debug logging
+    if(settings.value("logDump", false).toBool()) // by default dump is not enabled
+        qWarning() << "Dumping logs to" << m_devConnection->startLogDump(); // dump logs to file if enabled
     settings.endGroup();
 
     settings.beginGroup("timeline");
@@ -403,37 +407,36 @@ bool Pebble::upgradingFirmware() const
     return m_firmwareDownloader->upgrading();
 }
 
-bool Pebble::devConEnabled() const
+DevConnection * Pebble::devConnection()
 {
-    return m_devConnection->enabled();
-}
-void Pebble::setDevConEnabled(bool enabled)
-{
-    m_devConnection->setEnabled(enabled);
-}
-quint16 Pebble::devConListenPort() const
-{
-    return m_devConnection->listenPort();
+    return m_devConnection;
 }
 void Pebble::setDevConListenPort(quint16 port)
 {
     m_devConnection->setPort(port);
-}
-bool Pebble::devConServerState() const
-{
-    return m_devConnection->serverState();
-}
-bool Pebble::devConCloudEnabled() const
-{
-    return m_devConnection->cloudEnabled();
+    QSettings settings(m_storagePath + "/appsettings.conf", QSettings::IniFormat);
+    settings.beginGroup("devConnection");
+    settings.setValue("listenPort", port);
 }
 void Pebble::setDevConCloudEnabled(bool enabled)
 {
     m_devConnection->setCloudEnabled(enabled);
+    QSettings settings(m_storagePath + "/appsettings.conf", QSettings::IniFormat);
+    settings.beginGroup("devConnection");
+    settings.setValue("useCloud", enabled);
 }
-bool Pebble::devConCloudState() const
+void Pebble::setDevConLogLevel(int level)
 {
-    return m_devConnection->cloudState();
+    DevConnection::setLogLevel(level);
+    QSettings settings(m_storagePath + "/appsettings.conf", QSettings::IniFormat);
+    settings.beginGroup("devConnection");
+    settings.setValue("logVerbosity", level);
+}
+void Pebble::setDevConLogDump(bool enable)
+{
+    QSettings settings(m_storagePath + "/appsettings.conf", QSettings::IniFormat);
+    settings.beginGroup("devConnection");
+    settings.setValue("logDump", enable);
 }
 
 qint32 Pebble::timelineWindowStart() const
