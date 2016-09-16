@@ -28,6 +28,7 @@ public:
     static const QUuid appUUID;
     static const QByteArray appConfigKey;
     static const QString cityFcast;
+    static const QStringList code2icon;
 
     WeatherApp(Pebble *pebble, const QVariantList &locations);
 

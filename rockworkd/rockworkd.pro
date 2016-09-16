@@ -53,6 +53,7 @@ SOURCES += main.cpp \
     libpebble/appmsgmanager.cpp \
     libpebble/uploadmanager.cpp \
     libpebble/weatherapp.cpp \
+    libpebble/webweatherprovider.cpp \
     libpebble/weatherprovidertwc.cpp \
     libpebble/sendtextapp.cpp \
     libpebble/bluez/bluezclient.cpp \
@@ -115,6 +116,7 @@ HEADERS += \
     libpebble/appmsgmanager.h \
     libpebble/uploadmanager.h \
     libpebble/weatherapp.h \
+    libpebble/webweatherprovider.h \
     libpebble/weatherprovidertwc.h \
     libpebble/sendtextapp.h \
     libpebble/bluez/bluezclient.h \

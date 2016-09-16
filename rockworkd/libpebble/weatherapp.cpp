@@ -8,6 +8,18 @@
 
 #include <libintl.h>
 
+const QStringList WeatherApp::code2icon = {
+    "system://images/PARTLY_CLOUDY",//0
+    "system://images/CLOUDY_DAY",   //1
+    "system://images/LIGHT_SNOW",   //2
+    "system://images/LIGHT_RAIN",   //3
+    "system://images/HEAVY_RAIN",   //4
+    "system://images/HEAVY_SNOW",   //5
+    "system://images/TIMELINE_WEATHER",//6
+    "system://images/TIMELINE_SUN", //7
+    "system://images/RAINING_AND_SNOWING"//8
+};
+
 /**
  * @brief The WeatherConfigurations class is used to store weather condition references
  * to BlobDB. It just lists the BlobDB Keys (up to 6) represented by UUIDs.
