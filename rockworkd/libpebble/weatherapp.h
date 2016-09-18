@@ -14,9 +14,11 @@ class Pebble;
 class WeatherProvider
 {
 public:
+    virtual inline ~WeatherProvider() = default;
     virtual void setUnits(const QChar &u) = 0;
     virtual QChar getUnits() const = 0;
     virtual void setLanguage(const QString &lang) = 0;
+    virtual QString getLanguage() const = 0;
     virtual void refreshWeather() = 0;
 };
 
@@ -79,9 +81,9 @@ public:
             QString night_text;
         };
         Forecast(const QStringList &locOrder);
-        Forecast(const QStringList &locOrder, const Data &day, const QDateTime &sunrise, const QString &day_icon, const QDateTime &sunset, const QString &night_icon);
+        Forecast(const QStringList &locOrder, const Data &day, const QDateTime &sunrise, const QString &day_icon, const QDateTime &sunset, const QString &night_icon, const QString &locName = QString());
 
-        void initLoc(const Data &day, const QDateTime &sunrise, const QString &day_icon, const QDateTime &sunset, const QString &night_icon);
+        void initLoc(const Data &day, const QDateTime &sunrise, const QString &day_icon, const QDateTime &sunset, const QString &night_icon, const QString &locName = QString());
         void addCity(const QString &name, const Data &day);
         void reorder(const QStringList &newOrder);
         QJsonObject getPin(int daynum, bool night=false, const QString &provider=QString()) const;
@@ -99,6 +101,7 @@ public:
         QDateTime sunset;
         QString   day_icon;
         QString night_icon;
+        QString locationName;
     };
 
     void setProvider(WeatherProvider *provider);

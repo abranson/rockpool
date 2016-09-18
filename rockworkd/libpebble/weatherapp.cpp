@@ -184,23 +184,25 @@ WeatherApp::Forecast::Forecast(const QStringList &locOrder):
     m_locOrder(locOrder)
 {
 }
-WeatherApp::Forecast::Forecast(const QStringList &locOrder, const Data &day, const QDateTime &sunrise, const QString &day_icon, const QDateTime &sunset, const QString &night_icon):
+WeatherApp::Forecast::Forecast(const QStringList &locOrder, const Data &day, const QDateTime &sunrise, const QString &day_icon, const QDateTime &sunset, const QString &night_icon, const QString &locName):
     m_here(day),
     m_locOrder(locOrder),
     sunrise(sunrise),
     sunset(sunset),
     day_icon(day_icon),
-    night_icon(night_icon)
+    night_icon(night_icon),
+    locationName(locName)
 {
 }
 
-void WeatherApp::Forecast::initLoc(const Data &day, const QDateTime &_sunrise, const QString &_day_icon, const QDateTime &_sunset, const QString &_night_icon)
+void WeatherApp::Forecast::initLoc(const Data &day, const QDateTime &_sunrise, const QString &_day_icon, const QDateTime &_sunset, const QString &_night_icon, const QString &locName)
 {
     m_here = day;
     sunrise = _sunrise;
     sunset = _sunset;
     day_icon = _day_icon;
     night_icon = _night_icon;
+    locationName = locName;
 }
 
 void WeatherApp::Forecast::addCity(const QString &name, const Data &day)
@@ -279,7 +281,7 @@ QJsonObject WeatherApp::Forecast::getPin(int daynum, bool night, const QString &
     layout.insert("body",night?m_here.night_text:m_here.day_text);
     layout.insert("tinyIcon", night ? night_icon : day_icon);
     layout.insert("largeIcon",layout.value("tinyIcon"));
-    layout.insert("locationName",QString::fromLocal8Bit(gettext("Current Location")));
+    layout.insert("locationName",((locationName.isEmpty())?QString::fromLocal8Bit(gettext("Current Location")):locationName));
     foreach(const QString &city, m_locOrder) {
         if(m_cities.contains(city)) {
             hs.append("");
@@ -427,18 +429,21 @@ void WeatherApp::updateConfig()
 
 void WeatherApp::injectObservation(const QString &l, const Observation &obs, bool force)
 {
+    Location loc;
     if(m_locations.contains(l)) {
-        Location loc = m_locations.value(l);
-        if(force || !m_obss.contains(loc.uuid) || obs != m_obss.value(loc.uuid)) {
-            WeatherObservation wo(loc,obs);
-            qDebug() << "Updating observation data for" << l << wo.serialize().toHex();
-            m_pebble->blobdb()->insert(BlobDB::BlobDBIdWeatherData,wo);
-            m_obss.insert(loc.uuid,obs);
-        } else
-            qDebug() << "Ignoring observation data for" << l;
+        loc = m_locations.value(l);
     } else {
-        qWarning() << "Non-existing location" << l;
+        qDebug() << "Non-existing location" << l << "aliased as current";
+        loc = m_locations.value(m_locOrder.first());
+        loc.name = l;
     }
+    if(force || !m_obss.contains(loc.uuid) || obs != m_obss.value(loc.uuid)) {
+        WeatherObservation wo(loc,obs);
+        qDebug() << "Updating observation data for" << l << wo.serialize().toHex();
+        m_pebble->blobdb()->insert(BlobDB::BlobDBIdWeatherData,wo);
+        m_obss.insert(loc.uuid,obs);
+    } else
+        qDebug() << "Ignoring observation data for" << l;
 }
 
 void WeatherApp::blobdbAckHandler(quint8 db, quint8 cmd, const QByteArray &key, quint8 ack)

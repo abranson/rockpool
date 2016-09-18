@@ -20,6 +20,10 @@ WebWeatherProvider::WebWeatherProvider(Pebble *pebble, WatchConnection *connecti
 {
     connect(connection,&WatchConnection::watchConnected, this, &WebWeatherProvider::watchConnected);
 }
+WebWeatherProvider::~WebWeatherProvider()
+{
+    if(m_gps) delete m_gps;
+}
 
 void WebWeatherProvider::setApiKey(const QString &key)
 {
@@ -32,8 +36,15 @@ void WebWeatherProvider::setApiKey(const QString &key)
 
 void WebWeatherProvider::setLanguage(const QString &lang)
 {
-    m_language = lang;
-    timerEvent(0);
+    if(!lang.isEmpty()) {
+        m_language = lang;
+        timerEvent(0);
+    }
+}
+
+QString WebWeatherProvider::getLanguage() const
+{
+    return m_language;
 }
 
 QChar WebWeatherProvider::getUnits() const
@@ -79,11 +90,15 @@ void WebWeatherProvider::timerEvent(QTimerEvent *e)
     }
     if(!m_connection->isConnected()) {
         m_updateMissed = true;
+        qDebug() << "Delaying update till watch is connected";
         return;
     }
+    // This could be called more frequently, suppress fast updates, meteo stations are slow
+    if(m_lastUpdated.isValid() && m_lastUpdated.addSecs(300) > QDateTime::currentDateTime())
+        return;
     initGPS();
     QGeoPositionInfo gpi = m_gps->lastKnownPosition();
-    if(gpi.isValid() && gpi.timestamp().addSecs(60*61)>QDateTime::currentDateTimeUtc()) {
+    if(gpi.isValid() && gpi.timestamp().addSecs(300)>QDateTime::currentDateTimeUtc()) {
         gotPosition(gpi);
     } else {
         m_gps->requestUpdate();
@@ -128,6 +143,7 @@ void WebWeatherProvider::updateForecast()
             //qDebug() << reply;
             if(rpl->error() == QNetworkReply::NoError) {
                 processLocation(l,reply);
+                m_lastUpdated = QDateTime::currentDateTime();
             } else if(rpl->error() == QNetworkReply::AuthenticationRequiredError) {
                 m_apiKey.clear();
                 qWarning() << "Wrong Authorisation or API key" << rpl->errorString();
