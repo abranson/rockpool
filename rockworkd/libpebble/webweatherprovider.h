@@ -16,8 +16,10 @@ public:
     static const quint32 refreshInterval = 60 * 60 * 1000;
 
     WebWeatherProvider(Pebble *pebble, WatchConnection *conneciton, WeatherApp *weatherApp);
+    virtual ~WebWeatherProvider() override;
 
     QChar getUnits() const;
+    QString getLanguage() const;
 
 signals:
 
@@ -41,6 +43,7 @@ protected slots:
     virtual void processLocation(const QString &locationName, const QByteArray &replyData) = 0;
 
 protected:
+    QDateTime m_lastUpdated;
     bool m_updateMissed = false;
     int m_fcstDays = 5;
     QString m_language = "en-US";
