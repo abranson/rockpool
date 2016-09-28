@@ -216,6 +216,19 @@ void DBusPebble::setWeatherApiKey(const QString &key)
 {
     m_pebble->setWeatherApiKey(key);
 }
+void DBusPebble::setWeatherAltKey(const QString &key)
+{
+    m_pebble->setWeatherAltKey(key);
+}
+
+void DBusPebble::setWeatherLanguage(const QString &lang)
+{
+    m_pebble->setWeatherLanguage(lang);
+}
+QString DBusPebble::WeatherLanguage() const
+{
+    return m_pebble->getWeatherLanguage();
+}
 
 void DBusPebble::setWeatherUnits(const QString &u)
 {

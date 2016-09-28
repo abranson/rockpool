@@ -9,7 +9,6 @@
 #include <QBluetoothAddress>
 #include <QBluetoothLocalDevice>
 #include <QDateTime>
-#include <QTimer>
 
 class WatchConnection;
 class MusicEndpoint;
@@ -36,7 +35,7 @@ struct SpeexInfo;
 struct AudioStream;
 
 class QNetworkAccessManager;
-
+class QSettings;
 
 class Pebble : public QObject
 {
@@ -112,6 +111,9 @@ public slots:
     void setSyncAppsFromCloud(bool enable);
 
     void setWeatherApiKey(const QString &key);
+    void setWeatherAltKey(const QString &key);
+    void setWeatherLanguage(const QString &lang);
+    QString getWeatherLanguage() const;
     void setWeatherUnits(const QString &u);
     QString getWeatherUnits() const;
     QVariantList getWeatherLocations() const;
@@ -193,6 +195,7 @@ private slots:
     void voiceAudioStream(quint16 sid, const AudioStream &frames);
     void voiceSessionClose(quint16 sesId);
     void saveWeatherLocations() const;
+    void initWeatherProvider(const QSettings &settings);
 
     void resetPebble();
     void syncApps();
