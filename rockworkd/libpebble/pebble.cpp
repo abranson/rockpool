@@ -24,6 +24,7 @@
 #include "sendtextapp.h"
 #include "weatherapp.h"
 #include "weatherprovidertwc.h"
+#include "weatherproviderwu.h"
 #include "uploadmanager.h"
 
 #include "QDir"
@@ -147,17 +148,13 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
     m_imperialUnits = settings.value("imperialUnits", false).toBool();
     settings.endGroup();
 
-    settings.beginGroup(WeatherApp::appConfigKey);
-    if(!settings.value("apiKey").toString().isEmpty()) {
-        m_weatherProv = new WeatherProviderTWC(this,m_connection,m_weatherApp);
-        m_weatherProv->setUnits(settings.value("units",'m').toChar());
-        m_weatherProv->setLanguage(settings.value("language","en-GB").toString());
-        ((WeatherProviderTWC*)m_weatherProv)->setApiKey(settings.value("apiKey").toString());
-    }
-    settings.endGroup();
-
     settings.beginGroup("calendar");
     m_calendarSyncEnabled = settings.value("calendarSyncEnabled", true).toBool();
+    settings.endGroup();
+
+    m_weatherProv = nullptr;
+    settings.beginGroup(WeatherApp::appConfigKey);
+    initWeatherProvider(settings);
     settings.endGroup();
 
     settings.beginGroup("profileWhen");
@@ -524,11 +521,75 @@ QString Pebble::getWeatherUnits() const
 
 void Pebble::setWeatherApiKey(const QString &key)
 {
-    ((WeatherProviderTWC*)m_weatherProv)->setApiKey(key);
+    //((WebWeatherProvider*)m_weatherProv)->setApiKey(key);
     QSettings appCfg(m_storagePath + "/appsettings.conf", QSettings::IniFormat);
     appCfg.beginGroup(WeatherApp::appConfigKey);
     appCfg.setValue("apiKey",key);
+    initWeatherProvider(appCfg);
     appCfg.endGroup();
+}
+
+void Pebble::setWeatherAltKey(const QString &key)
+{
+    //((WebWeatherProvider*)m_weatherProv)->setApiKey(key);
+    QSettings appCfg(m_storagePath + "/appsettings.conf", QSettings::IniFormat);
+    appCfg.beginGroup(WeatherApp::appConfigKey);
+#ifdef WEATHERPROVIDERWU_H
+    appCfg.setValue("wuKey",key);
+#endif
+    initWeatherProvider(appCfg);
+    appCfg.endGroup();
+}
+
+void Pebble::initWeatherProvider(const QSettings &settings)
+{
+    QString apiKey;
+#define INIT_WEATHER_PROV(key,type) \
+    if(settings.contains(key) && !settings.value(key).toString().isEmpty()) {\
+        if(m_weatherProv == nullptr || dynamic_cast<type*>(m_weatherProv) == nullptr) {\
+            if(m_weatherProv) delete m_weatherProv;\
+            m_weatherProv = new type(this,m_connection,m_weatherApp);\
+        }\
+        apiKey = settings.value(key).toString();\
+    }
+#ifdef  WEATHERPROVIDERWU_H
+    /*
+    if(settings.contains("wuKey") && !settings.value("wuKey").toString().isEmpty()) {
+        if(m_weatherProv == nullptr || dynamic_cast<WeatherProviderWU*>(m_weatherProv) == nullptr) {
+            if(m_weatherProv) delete m_weatherProv;
+            m_weatherProv = new WeatherProviderWU(this,m_connection,m_weatherApp);
+        }
+        apiKey = settings.value("wuKey").toString();
+    }*/
+    INIT_WEATHER_PROV("wuKey",WeatherProviderWU)
+    else
+#endif//WEATHERPROVIDERWU_H
+    /*
+    if(!settings.value("apiKey").toString().isEmpty()) {
+        if(m_weatherProv) delete m_weatherProv;
+        m_weatherProv = new WeatherProviderTWC(this,m_connection,m_weatherApp);
+        apiKey = settings.value("apiKey").toString();
+    }*/
+    INIT_WEATHER_PROV("apiKey",WeatherProviderTWC)
+    if(m_weatherProv != nullptr) {
+        m_weatherProv->setUnits(settings.value("units",'m').toChar());
+        m_weatherProv->setLanguage(settings.value("language").toString());
+    }
+    if(!apiKey.isEmpty())
+        ((WebWeatherProvider*)m_weatherProv)->setApiKey(apiKey);
+}
+
+void Pebble::setWeatherLanguage(const QString &lang)
+{
+    m_weatherProv->setLanguage(lang);
+    QSettings appCfg(m_storagePath + "/appsettings.conf", QSettings::IniFormat);
+    appCfg.beginGroup(WeatherApp::appConfigKey);
+    appCfg.setValue("language",lang);
+    appCfg.endGroup();
+}
+QString Pebble::getWeatherLanguage() const
+{
+    return m_weatherProv->getLanguage();
 }
 
 QVariantList Pebble::getWeatherLocations() const
@@ -1381,6 +1442,8 @@ void Pebble::appStarted(const QUuid &uuid)
     if (info.isWatchface()) {
         QSettings settings(m_storagePath + "/appsettings.conf", QSettings::IniFormat);
         settings.setValue("watchface", uuid.toString());
+    } else if(uuid == WeatherApp::appUUID && m_weatherProv != nullptr) {
+        m_weatherProv->refreshWeather();
     }
 }
 

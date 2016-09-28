@@ -120,7 +120,10 @@ public slots:
 
     QString WeatherUnits() const;
     void setWeatherUnits(const QString &u);
+    QString WeatherLanguage() const;
+    void setWeatherLanguage(const QString &lang);
     void setWeatherApiKey(const QString &key);
+    void setWeatherAltKey(const QString &key);
     QVariantList WeatherLocations() const;
     void SetWeatherLocations(const QVariantList &locs);
     void InjectWeatherData(const QString &loc_name, const QVariantMap &conditions);
