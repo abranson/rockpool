@@ -8,13 +8,10 @@
 #include <QJsonObject>
 #include <QJsonArray>
 
-//#define CALCULATE_SUNRISE
+#define CALCULATE_SUNRISE
 #ifdef CALCULATE_SUNRISE
-#include <QGeoPositionInfoSource>
-#include <QGeoPositionInfo>
-#include <QGeoCoordinate>
-
 const QString WeatherProviderWU::url = "https://api.wunderground.com/api/%1/conditions/forecast10day/lang:%2/q/__LOC__.json";
+// We don't need sun phases (astronomy) as we're going to calculate them using below implementation
 // https://github.com/dentoyan/sunrise
 /*
  * sunrise.h
@@ -215,6 +212,7 @@ private:
     const double elevation;
 };
 #else //CALCULATE_SUNRISE
+// Astronomy gives sun phases only for today, so all forecast days will have today's sunrise/set timings. Not a big deal for 2-5 days.
 const QString WeatherProviderWU::url = "https://api.wunderground.com/api/%1/astronomy/conditions/forecast10day/lang:%2/q/__LOC__.json";
 #endif//
 //    {'m',"metric"},
@@ -239,7 +237,27 @@ const QHash<QString,int> icon2code = {
     {"sleet",8},
     {"snow",5},
     {"sunny",7},
-    {"tstorms",4}
+    {"tstorms",4},
+    // night
+    {"nt_chanceflurries",2},
+    //{"nt_chancerain",6},
+    {"nt_chancesleet",8},
+    {"nt_chancesnow",2},
+    {"nt_chancetstorms",3},
+    {"nt_clear",7},
+    {"nt_cloudy",1},
+    {"nt_flurries",2},
+    {"nt_fog",1},
+    //hazy
+    {"nt_mostlycloudy",0},
+    {"nt_mostlysunny",7},
+    {"nt_partlycloudy",0},
+    {"nt_partlysunny",0},
+    {"nt_rain",4},
+    {"nt_sleet",8},
+    {"nt_snow",5},
+    {"nt_sunny",7},
+    {"nt_tstorms",4}
 };
 
 WeatherProviderWU::WeatherProviderWU(Pebble *pebble, WatchConnection *connection, WeatherApp *weatherApp) :
@@ -252,7 +270,7 @@ WeatherProviderWU::WeatherProviderWU(Pebble *pebble, WatchConnection *connection
 QString WeatherProviderWU::urlTemplate() const
 {
     if(!m_apiKey.isEmpty())
-        return url.arg(m_language).arg(m_apiKey).replace("__LOC__","%1,%2");
+        return url.arg(m_apiKey).arg(m_language).replace("__LOC__","%1,%2");
     return QString();
 }
 
@@ -270,13 +288,16 @@ void WeatherProviderWU::processLocation(const QString &locationName, const QByte
 #endif//CALCULATE_SUNRISE
                 )
         {
-            QJsonArray fdays = obj.value("forecast10day").toObject().value("simpleforecast").toObject().value("forecastday").toArray(),
-                       tdays = obj.value("forecast10day").toObject().value("txt_forecast").toObject().value("forecastday").toArray();
+            QJsonArray fdays = obj.value("forecast").toObject().value("simpleforecast").toObject().value("forecastday").toArray(),
+                       tdays = obj.value("forecast").toObject().value("txt_forecast").toObject().value("forecastday").toArray();
             qDebug() << "Updating current conditions for" << locationName;
+            QJsonObject location = obj.value("current_observation").toObject().value("display_location").toObject();
             // Update current conditions for all locations
-            m_weatherApp->injectObservation(locationName,parseObs(obj.value("current_observation").toObject(),fdays));
+            m_weatherApp->injectObservation(((locationName == m_weatherApp->locOrder().first())?location.value("city").toString():locationName),parseObs(obj.value("current_observation").toObject(),fdays));
             qDebug() << "Collecting forecast data for" << m_fcstDays << "days";
-#ifndef CALCULATE_SUNRISE
+#ifdef CALCULATE_SUNRISE
+            Sunrise s(location.value("latitude").toString().toDouble(),location.value("longitude").toString().toDouble(),location.value("elevation").toString().toDouble());
+#else//CALCULATE_SUNRISE
             // Collect forecasts for all locations
             QJsonObject sunr=obj.value("sun_phase").toObject().value("sunrise").toObject(),
                         suns=obj.value("sun_phase").toObject().value("sunset").toObject();
@@ -289,32 +310,34 @@ void WeatherProviderWU::processLocation(const QString &locationName, const QByte
                 if(locationName == m_weatherApp->locOrder().first()) {
 #ifdef  CALCULATE_SUNRISE
                     QDate d = QDate::currentDate().addDays(i);
-                    QGeoCoordinate pos = m_gps->lastKnownPosition().coordinate();
-                    Sunrise s(pos.latitude(),pos.longitude(),pos.altitude());
                     QTime rtime = s.sunrise(d),
                           stime = s.sunset(d);
                     QDateTime sunrise(d,rtime), sunset(d,stime);
+                    if(sunrise.isDaylightTime()) {
+                        sunrise.addSecs(3600);
+                        sunset.addSecs(3600);
+                    }
 #else //CALCULATE_SUNRISE
                     QDateTime sunrise(QDate::currentDate().addDays(i),QTime(sunr.value("hour").toInt(),sunr.value("minute").toInt())),
                               sunset(QDate::currentDate().addDays(i),QTime(suns.value("hour").toInt(),suns.value("minute").toInt()));
 #endif//CALCULATE_SUNRISE
                     QString day = WeatherApp::code2icon.value(icon2code.value(tdays[i*2].toObject().value("icon").toString(),6)),
-                            night = WeatherApp::code2icon.value(icon2code.value(tdays[i*2+1].toObject().value("icon").toString(),6));
-                    m_fcstsBuff[i].initLoc(fcst,sunrise,day,sunset,night);
+                          night = WeatherApp::code2icon.value(icon2code.value(tdays[i*2+1].toObject().value("icon").toString(),6));
+                    m_fcstsBuff[i].initLoc(fcst,sunrise,day,sunset,night,location.value("city").toString());
                 } else {
                     m_fcstsBuff[i].addCity(locationName,fcst);
                 }
             }
             // On last iteration - check if anything needs to be updated in the pebble
-            if(m_fcstsBuff.first().isComplete()) {
+            if(!m_fcstsBuff.isEmpty() && m_fcstsBuff.first().isComplete()) {
                 m_weatherApp->updateConfig();
                 // Update and repopulate pins from shadow buffer
                 qDebug() << "Parsing" << m_fcstsBuff.size() << "forecasts";
                 m_weatherApp->updateForecasts(m_fcstsBuff,"The Weather Underground");
                 m_fcstsBuff.clear();
             }
-        } else if(obj.contains("errors") && obj.value("errors").toArray().size()>0) {
-            qWarning() << "Error in WU transaction" << obj.value("errors").toArray().at(0).toObject().value("error").toObject().value("message");
+        } else if(obj.contains("response") && obj.value("response").toObject().contains("error")) {
+            qWarning() << "Error in WU transaction:" << obj.value("response").toObject().value("error").toObject().value("description").toString();
         } else {
             qWarning() << "Unknown WU reply" << json.toJson();
         }
@@ -329,17 +352,17 @@ WeatherApp::Observation WeatherProviderWU::parseObs(const QJsonObject &obj, cons
 {
     // Use celsius unless ecplicitly requested imperial units (e)
     return WeatherApp::Observation(
-        obj.value(TEMP_TUSFX).toInt(SHRT_MAX),
+        qRound(obj.value(TEMP_TUSFX).toDouble(SHRT_MAX)),
         obj.value("weather").toString(),
         {
             icon2code.value(obj.value("icon").toString(),6), // default is weather icon
-            days.at(0).toObject().value("high").toObject().value(TEMP_UNITS).toInt(SHRT_MAX),
-            days.at(0).toObject().value("low").toObject().value(TEMP_UNITS).toInt(SHRT_MAX)
+            days.at(0).toObject().value("high").toObject().value(TEMP_UNITS).toString(QString::number(SHRT_MAX)).toInt(),
+            days.at(0).toObject().value("low").toObject().value(TEMP_UNITS).toString(QString::number(SHRT_MAX)).toInt()
         },
         {
             icon2code.value(days.at(1).toObject().value("icon").toString(),6),
-            days.at(1).toObject().value("high").toObject().value(TEMP_UNITS).toInt(SHRT_MAX),
-            days.at(1).toObject().value("min").toObject().value(TEMP_UNITS).toInt(SHRT_MAX)
+            days.at(1).toObject().value("high").toObject().value(TEMP_UNITS).toString(QString::number(SHRT_MAX)).toInt(),
+            days.at(1).toObject().value("low").toObject().value(TEMP_UNITS).toString(QString::number(SHRT_MAX)).toInt()
         }
     );
 }
@@ -347,8 +370,8 @@ WeatherApp::Observation WeatherProviderWU::parseObs(const QJsonObject &obj, cons
 WeatherApp::Forecast::Data WeatherProviderWU::parseDay(const QJsonObject &fcst, const QJsonObject &day, const QJsonObject &night)
 {
     WeatherApp::Forecast::Data data;
-    data.min_temp = fcst.value("low").toObject().value(TEMP_UNITS).toInt(SHRT_MAX);
-    data.max_temp = fcst.value("high").toObject().value(TEMP_UNITS).toInt(SHRT_MAX);
+    data.min_temp = fcst.value("low").toObject().value(TEMP_UNITS).toString(QString::number(SHRT_MAX)).toInt();
+    data.max_temp = fcst.value("high").toObject().value(TEMP_UNITS).toString(QString::number(SHRT_MAX)).toInt();
     data.day_text = day.value(TEXT_UNITS).toString();
     data.night_text = night.value(TEXT_UNITS).toString();
     return data;
