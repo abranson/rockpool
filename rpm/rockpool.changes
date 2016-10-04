@@ -1,3 +1,11 @@
+* Tue Oct 04 2016 Andrew Branson <github@andrewbranson.net> 1.2-1
+- App specific layout
+- AppGlances implementation
+- Custom Log handler
+
+* Thu Sep 01 2016 Andrew Branson <github@andrewbranson.net> 1.1-2
+- Proper UI for Send text etc, and support for multiple accounts/SIMs.
+
 * Sun Aug 28 2016 Andrew Branson <github@andrewbranson.net> 1.1-1
 - Weather app reference implementation, though no weather yet
 - Send Text app support for Time watches, though no contacts yet
