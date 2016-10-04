@@ -1,6 +1,7 @@
 #include "dbusinterface.h"
 #include "core.h"
 #include "pebblemanager.h"
+#include "libpebble/devconnection.h"
 
 DBusPebble::DBusPebble(Pebble *pebble, QObject *parent):
     QObject(parent),
@@ -257,22 +258,22 @@ void DBusPebble::InjectWeatherData(const QString &loc_name, const QVariantMap &o
 
 bool DBusPebble::DevConnectionEnabled() const
 {
-    return m_pebble->devConEnabled();
+    return m_pebble->devConnection()->enabled();
 }
 
 quint16 DBusPebble::DevConnListenPort() const
 {
-    return m_pebble->devConListenPort();
+    return m_pebble->devConnection()->listenPort();
 }
 
 bool DBusPebble::DevConnCloudEnabled() const
 {
-    return m_pebble->devConCloudEnabled();
+    return m_pebble->devConnection()->cloudEnabled();
 }
 
 void DBusPebble::SetDevConnEnabled(bool enabled)
 {
-    m_pebble->setDevConEnabled(enabled);
+    m_pebble->devConnection()->setEnabled(enabled);
 }
 
 void DBusPebble::SetDevConnListenPort(quint16 port)
@@ -287,12 +288,39 @@ void DBusPebble::SetDevConnCloudEnabled(bool enabled)
 
 bool DBusPebble::DevConnectionState() const
 {
-    return m_pebble->devConServerState();
+    return m_pebble->devConnection()->serverState();
 }
 
 bool DBusPebble::DevConnCloudState() const
 {
-    return m_pebble->devConCloudState();
+    return m_pebble->devConnection()->cloudState();
+}
+
+QString DBusPebble::startLogDump() const
+{
+    m_pebble->setDevConLogDump(true);
+    return DevConnection::startLogDump();
+}
+QString DBusPebble::stopLogDump() const
+{
+    m_pebble->setDevConLogDump(false);
+    return DevConnection::stopLogDump();
+}
+QString DBusPebble::getLogDump() const
+{
+    return DevConnection::getLogDump();
+}
+bool DBusPebble::isLogDumping() const
+{
+    return DevConnection::isLogDumping();
+}
+void DBusPebble::setLogLevel(int level) const
+{
+    m_pebble->setDevConLogLevel(level);
+}
+int DBusPebble::getLogLevel() const
+{
+    return DevConnection::getLogLevel();
 }
 
 void DBusPebble::InstallApp(const QString &id)

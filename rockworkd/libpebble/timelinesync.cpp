@@ -1,5 +1,6 @@
 #include "timelinesync.h"
 #include "timelinemanager.h"
+#include "pebble.h"
 
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>

@@ -7,6 +7,7 @@
 #include "appmanager.h"
 #include "appmsgmanager.h"
 #include "jskit/jskitmanager.h"
+#include "appglances.h"
 #include "blobdb.h"
 #include "appdownloader.h"
 #include "screenshotendpoint.h"
@@ -60,7 +61,6 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
     m_dataLogEndpoint = new DataLoggingEndpoint(this, m_connection);
 
     m_blobDB = new BlobDB(this, m_connection);
-    QObject::connect(m_blobDB, &BlobDB::appInserted, this, &Pebble::appInstalled);
 
     QHash<QString,QStringList> cans = getCannedMessages();
     Core::instance()->platform()->setCannedResponses(cans);
@@ -84,14 +84,16 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
     QObject::connect(Core::instance()->platform(), &PlatformInterface::callStarted, m_phoneCallEndpoint, &PhoneCallEndpoint::callStarted);
     QObject::connect(Core::instance()->platform(), &PlatformInterface::callEnded, m_phoneCallEndpoint, &PhoneCallEndpoint::callEnded);
 
+    m_appGlances = new AppGlances(this, m_connection);
     m_appManager = new AppManager(this, m_connection);
     QObject::connect(m_appManager, &AppManager::appsChanged, this, &Pebble::installedAppsChanged);
     QObject::connect(m_appManager, &AppManager::idMismatchDetected, this, &Pebble::resetPebble);
+    QObject::connect(m_appManager, &AppManager::appInserted, this, &Pebble::appInstalled);
 
     m_timelineSync = new TimelineSync(this,m_timelineManager);
     QObject::connect(m_timelineSync, &TimelineSync::oauthTokenChanged, this, &Pebble::oauthTokenChanged);
 
-    m_appMsgManager = new AppMsgManager(this, m_appManager, m_connection);
+    m_appMsgManager = new AppMsgManager(this, m_connection);
     m_jskitManager = new JSKitManager(this, m_connection, m_appManager, m_appMsgManager, this);
     QObject::connect(m_jskitManager, &JSKitManager::openURL, this, &Pebble::openURL);
     QObject::connect(m_jskitManager, &JSKitManager::appNotification, this, &Pebble::insertPin);
@@ -176,6 +178,10 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
     //m_devConnection->setEnabled(settings.value("enabled", true).toBool());
     m_devConnection->setPort(settings.value("listenPort", 9000).toInt());
     m_devConnection->setCloudEnabled(settings.value("useCloud", true).toBool()); // not implemented yet
+    // Custom Logging params
+    m_devConnection->setLogLevel(settings.value("logVerbosity", 1).toInt()); // by default suppress debug logging
+    if(settings.value("logDump", false).toBool()) // by default dump is not enabled
+        qWarning() << "Dumping logs to" << m_devConnection->startLogDump(); // dump logs to file if enabled
     settings.endGroup();
 
     settings.beginGroup("timeline");
@@ -235,6 +241,16 @@ BlobDB * Pebble::blobdb() const
 TimelineSync * Pebble::tlSync() const
 {
     return m_timelineSync;
+}
+
+TimelineManager * Pebble::timeline() const
+{
+    return m_timelineManager;
+}
+
+AppGlances * Pebble::appGlances() const
+{
+    return m_appGlances;
 }
 
 bool Pebble::syncAppsFromCloud() const
@@ -391,37 +407,36 @@ bool Pebble::upgradingFirmware() const
     return m_firmwareDownloader->upgrading();
 }
 
-bool Pebble::devConEnabled() const
+DevConnection * Pebble::devConnection()
 {
-    return m_devConnection->enabled();
-}
-void Pebble::setDevConEnabled(bool enabled)
-{
-    m_devConnection->setEnabled(enabled);
-}
-quint16 Pebble::devConListenPort() const
-{
-    return m_devConnection->listenPort();
+    return m_devConnection;
 }
 void Pebble::setDevConListenPort(quint16 port)
 {
     m_devConnection->setPort(port);
-}
-bool Pebble::devConServerState() const
-{
-    return m_devConnection->serverState();
-}
-bool Pebble::devConCloudEnabled() const
-{
-    return m_devConnection->cloudEnabled();
+    QSettings settings(m_storagePath + "/appsettings.conf", QSettings::IniFormat);
+    settings.beginGroup("devConnection");
+    settings.setValue("listenPort", port);
 }
 void Pebble::setDevConCloudEnabled(bool enabled)
 {
     m_devConnection->setCloudEnabled(enabled);
+    QSettings settings(m_storagePath + "/appsettings.conf", QSettings::IniFormat);
+    settings.beginGroup("devConnection");
+    settings.setValue("useCloud", enabled);
 }
-bool Pebble::devConCloudState() const
+void Pebble::setDevConLogLevel(int level)
 {
-    return m_devConnection->cloudState();
+    DevConnection::setLogLevel(level);
+    QSettings settings(m_storagePath + "/appsettings.conf", QSettings::IniFormat);
+    settings.beginGroup("devConnection");
+    settings.setValue("logVerbosity", level);
+}
+void Pebble::setDevConLogDump(bool enable)
+{
+    QSettings settings(m_storagePath + "/appsettings.conf", QSettings::IniFormat);
+    settings.beginGroup("devConnection");
+    settings.setValue("logDump", enable);
 }
 
 qint32 Pebble::timelineWindowStart() const
@@ -458,7 +473,7 @@ void Pebble::setTimelineWindow(qint32 start, qint32 fade, qint32 end)
 void Pebble::setHealthParams(const HealthParams &healthParams)
 {
     m_healthParams = healthParams;
-    m_blobDB->setHealthParams(healthParams);
+    m_blobDB->insert(BlobDB::BlobDBIdAppSettings,healthParams);
     emit healtParamsChanged();
 
     QSettings healthSettings(m_storagePath + "/appsettings.conf", QSettings::IniFormat);
@@ -937,7 +952,7 @@ void Pebble::removePin(const QString &guid)
 
 void Pebble::clearAppDB()
 {
-    m_blobDB->clearApps();
+    m_appManager->clearApps();
 }
 
 void Pebble::clearTimeline()
@@ -1063,11 +1078,15 @@ AppInfo Pebble::appInfo(const QUuid &uuid)
     return m_appManager->info(uuid);
 }
 
+AppInfo Pebble::currentApp()
+{
+    return m_jskitManager->currentApp();
+}
+
 void Pebble::removeApp(const QUuid &uuid)
 {
     qDebug() << "Should remove app:" << uuid;
-    m_blobDB->removeApp(m_appManager->info(uuid));
-    m_appManager->removeApp(uuid);
+    m_appManager->wipeApp(uuid,true);
     m_timelineSync->syncLocker(true);
 }
 
@@ -1259,7 +1278,7 @@ void Pebble::pebbleVersionReceived(const QByteArray &data)
         } else {
             syncCalendar();
             syncApps();
-            m_blobDB->setHealthParams(m_healthParams);
+            m_blobDB->insert(BlobDB::BlobDBIdAppSettings,m_healthParams);
             m_blobDB->setUnits(m_imperialUnits);
             m_timelineSync->syncLocker();
         }
@@ -1334,7 +1353,7 @@ void Pebble::appDownloadFinished(const QString &id)
         m_appMsgManager->closeApp(uuid);
     }
     // Force app replacement to allow update from store/sdk
-    m_blobDB->insertAppMetaData(m_appManager->info(uuid),true);
+    m_appManager->insertAppMetaData(uuid,true);
     // The app will be re-launched here anyway
     m_pendingInstallations.append(uuid);
 }
@@ -1388,11 +1407,10 @@ void Pebble::resetPebble()
 
 void Pebble::syncApps()
 {
-    QUuid lastSyncedAppUuid;
     foreach (const QUuid &appUuid, m_appManager->appUuids()) {
         if (!m_appManager->info(appUuid).isSystemApp()) {
             qDebug() << "Inserting app" << m_appManager->info(appUuid).shortName() << "into BlobDB";
-            m_blobDB->insertAppMetaData(m_appManager->info(appUuid));
+            m_appManager->insertAppMetaData(appUuid);
             m_lastSyncedAppUuid = appUuid;
         }
     }

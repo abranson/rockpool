@@ -77,6 +77,10 @@ void HealthParams::setGender(HealthParams::Gender gender)
     m_gender = gender;
 }
 
+QByteArray HealthParams::itemKey() const
+{
+    return QByteArray("activityPreferences",19);
+}
 QByteArray HealthParams::serialize() const
 {
     QByteArray ret;
@@ -90,4 +94,3 @@ QByteArray HealthParams::serialize() const
     writer.write<quint8>(m_gender);
     return ret;
 }
-

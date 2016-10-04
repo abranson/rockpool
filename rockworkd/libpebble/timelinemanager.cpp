@@ -360,7 +360,7 @@ TimelineManager::TimelineManager(Pebble *pebble, WatchConnection *connection):
 {
     m_connection->registerEndpointHandler(WatchConnection::EndpointActionHandler, this, "actionHandler");
     connect(m_pebble->blobdb(), &BlobDB::blobCommandResult, this, &TimelineManager::blobdbAckHandler);
-    connect(m_pebble->blobdb(), &BlobDB::notifyTimeline, this, &TimelineManager::notifyHandler);
+    connect(m_pebble->blobdb(), &BlobDB::blobNotifyUpdate, this, &TimelineManager::notifyHandler);
     m_timelineStoragePath = pebble->storagePath() + "timeline";
     // Load firmware layout map
     if(!QFile::exists(m_timelineStoragePath+"/../layouts.json.auto"))
@@ -452,7 +452,15 @@ quint8 TimelineManager::getLayout(const QString &key) const
 }
 quint32 TimelineManager::getRes(const QString &key) const
 {
-    return (m_resources.value(key) | 0x80000000);
+    if(key.startsWith("system://"))
+        return (m_resources.value(key) | 0x80000000);
+    AppInfo info = m_pebble->currentApp();
+    QVariantMap &lo=info.layouts(m_pebble->hardwarePlatform());
+    quint32 ret=0;
+    if(lo.contains("resources")) {
+        ret = lo.value("resources").toMap().value(key).toUInt();
+    }
+    return ret;
 }
 // This is required to translate colors in pins. Not sure if pebble color names are covered completely
 // by W3C defined names but such translation should be bit-correct rather than compressed approximation
@@ -665,7 +673,7 @@ void TimelineManager::actionHandler(const QByteArray &actionReply)
 
     const TimelinePin *source = getPin(notificationId);
     if (source==nullptr) {
-        status = BlobDB::ResponseError;
+        // TODO: If more consumers appear - need to make callback registration. Ok for now.
         if(notificationId == SendTextApp::actionUUID && param.contains("title") && param.contains("sender")) {
             emit actionSendText(param.value("sender").toString(),param.value("title").toString());
             attributes.append(parseAttribute("largeIcon",QString("system://images/RESULT_SENT")));
@@ -708,8 +716,22 @@ void TimelineManager::actionHandler(const QByteArray &actionReply)
     }
     m_connection->writeToPebble(WatchConnection::EndpointActionHandler, reply);
 }
-void TimelineManager::notifyHandler(const QDateTime &ts, const QUuid &key, const TimelineItem &val)
+
+void TimelineManager::notifyHandler(BlobDB::BlobDBId db, BlobDB::Operation cmd, time_t time, const QByteArray &bkey, const QByteArray &bval)
 {
+    if(db != BlobDB::BlobDBIdNotification && db != BlobDB::BlobDBIdReminder && db != BlobDB::BlobDBIdPin)
+        return;
+    QUuid key = QUuid::fromRfc4122(bkey);
+    QDateTime ts = QDateTime::fromTime_t(time,Qt::UTC);
+    TimelineItem val;
+    if(key.isNull() || !val.deserialize(bval)) {
+        qWarning() << "Could not deserialize TimelineItem from" << db << cmd << bkey.toHex() << bval.toHex();
+        return;
+    }
+    if(cmd != BlobDB::OperationNotify) {
+        qWarning() << "Blob Notify command not supported" << db << cmd << key << bval.toHex();
+        return;
+    }
     qDebug() << "Notify at" << ts.toString(Qt::ISODate) << "for" << key.toString() << "at" << val.ts().toString(Qt::ISODate);
     TimelinePin *pin = getPin(val.itemId());
     if(pin) {

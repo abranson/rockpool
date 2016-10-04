@@ -14,22 +14,88 @@
 #include <QMutex>
 #include <QDebug>
 
-// App logging
+/// App logging
+// Statics init
 DevConnection * DevConnection::s_instance=0;
 QtMessageHandler DevConnection::s_omh=0;
+QFile * DevConnection::s_dump = nullptr;
+int DevConnection::s_logSev = 1;
+//
 QMutex mtx;
+void DevConnection::installLogging(DevConnection *instance, bool override)
+{
+    if(s_instance != nullptr && !override) return;
+    s_instance = instance;
+    if(s_omh == 0) {
+        qDebug() << "Acquiring logging channel, use DevConnection to manage verbosity";
+        s_omh = qInstallMessageHandler(appLogBroadcast);
+    }
+}
+void DevConnection::destroyLogging(DevConnection *instance)
+{
+    if(s_instance==instance) {
+        s_instance = nullptr;
+        if(s_omh) {
+            mtx.lock();
+            qInstallMessageHandler(s_omh);
+            s_omh = 0;
+            mtx.unlock();
+            qDebug() << "Turned off custom log handler";
+        }
+    }
+}
+
 QStringList ml={"D","W","C","F"};
 void DevConnection::appLogBroadcast(QtMsgType t, const QMessageLogContext &ctx, const QString &msg)
 {
-    mtx.lock();
-    if(s_omh)
+    if(s_omh && t >= s_logSev)
         s_omh(t,ctx,msg);
+    mtx.lock();
     if(s_instance) {
         QByteArray m(1,char(DevPacket::OCPhoneAppLog));
         m.append(QString("[%1] %2:%3 %4").arg(ml.at(t)).arg(ctx.function).arg(ctx.line).arg(msg).toUtf8());
         QMetaObject::invokeMethod(s_instance,"broadcast",Qt::QueuedConnection,Q_ARG(QByteArray,m));
     }
     mtx.unlock();
+    if(s_dump && s_dump->isOpen()) {
+        s_dump->write(QString("%1 [%2] %3:%4 %5\n").arg(QDateTime::currentDateTime().toString(Qt::ISODate),ml.at(t),ctx.function,QString::number(ctx.line),msg).toUtf8());
+    }
+}
+void DevConnection::setLogLevel(int level)
+{
+    s_logSev = level;
+}
+int DevConnection::getLogLevel()
+{
+    return s_logSev;
+}
+
+QString DevConnection::startLogDump()
+{
+    if(s_dump)
+        delete s_dump;
+    s_dump = new QTemporaryFile("/tmp/rockpoold.XXXXXX.log");
+    if(s_dump->open(QFile::ReadWrite))
+        return s_dump->fileName();
+    delete s_dump;
+    s_dump = nullptr;
+    return "";
+}
+QString DevConnection::stopLogDump()
+{
+    if(s_dump && s_dump->isOpen()) {
+        s_dump->close();
+        return s_dump->fileName();
+    }
+    return "";
+}
+QString DevConnection::getLogDump()
+{
+    return (s_dump)?s_dump->fileName():"";
+}
+bool DevConnection::isLogDumping()
+{
+    return (s_dump && s_dump->isOpen());
 }
 
 DevConnection::DevConnection(Pebble *pebble, WatchConnection *connection):
@@ -45,13 +111,13 @@ DevConnection::DevConnection(Pebble *pebble, WatchConnection *connection):
     connect(connection, &WatchConnection::rawOutgoingMsg, this, &DevConnection::onRawOutgoingMsg);
     connect(this, &DevConnection::insertPin, m_pebble, &Pebble::insertPin);
     connect(this, &DevConnection::removePin, m_pebble, &Pebble::removePin);
-    DevConnection::s_instance=this;
-    DevConnection::s_omh=0;
+    installLogging(this);
 }
 DevConnection::~DevConnection()
 {
     disableConnection();
-    s_instance = 0;
+    destroyLogging(this);
+
 }
 
 void DevConnection::handleMessage(const QByteArray &data)
@@ -143,13 +209,6 @@ void DevConnection::disableConnection()
         m_qtwsServer = nullptr;
         emit serverStateChanged(false);
     }
-    if(s_omh) {
-        mtx.lock();
-        qInstallMessageHandler(s_omh);
-        s_omh = 0;
-        mtx.unlock();
-        qDebug() << "Turned off custom log handler";
-    }
     if(m_clients.length()>0) {
         QWebSocket *sock;
         foreach (sock, m_clients) {
@@ -174,8 +233,6 @@ void DevConnection::enableConnection(quint16 port)
         if(m_qtwsServer->listen(QHostAddress::Any,m_port)) {
             qDebug() << "DevConnection listening on *:" << m_port;
             emit serverStateChanged(true);
-            if(s_omh == 0)
-                s_omh = qInstallMessageHandler(appLogBroadcast);
         } else {
             qWarning() << "Error listening on" << port << ": " << m_qtwsServer->errorString();
             delete m_qtwsServer;
@@ -281,7 +338,7 @@ public:
         DevPacket(data,sock,srv)
     {
         m_sock=sock;
-        m_data.replace(1,m_data.size(),"rocpoold,1.0.0,pebble");
+        m_data.replace(1,m_data.size(),"rocpoold,1.5.0,pebble");
     }
 
     bool isRequest() const {return true;}

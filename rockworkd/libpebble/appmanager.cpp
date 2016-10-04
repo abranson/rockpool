@@ -2,9 +2,10 @@
 #include <QSettings>
 
 #include "appmanager.h"
+#include "appmetadata.h"
+#include "blobdb.h"
 #include "pebble.h"
 
-#include "watchconnection.h"
 #include "watchdatareader.h"
 #include "watchdatawriter.h"
 #include "uploadmanager.h"
@@ -25,9 +26,16 @@ AppManager::AppManager(Pebble *pebble, WatchConnection *connection)
         qWarning() << "could not create apps dir" << dataDir.absolutePath();
     }
     qDebug() << "install apps in" << dataDir.absolutePath();
+    m_blobDBStoragePath = m_pebble->storagePath() + "/blobdb/";
+    QDir dir(m_blobDBStoragePath);
+    if (!dir.exists() && !dir.mkpath(m_blobDBStoragePath)) {
+        qWarning() << "Error creating blobdb storage dir.";
+        return;
+    }
 
-    m_connection->registerEndpointHandler(WatchConnection::EndpointAppFetch, this, "handleAppFetchMessage");
+    m_connection->registerEndpointHandler(WatchConnection::EndpointAppFetch,this, "handleAppFetchMessage");
     m_connection->registerEndpointHandler(WatchConnection::EndpointSorting, this, "sortingReply");
+    connect(pebble->blobdb(), &BlobDB::blobCommandResult, this, &AppManager::blobdbAckHandler);
 }
 
 QList<QUuid> AppManager::appUuids() const
@@ -194,7 +202,7 @@ QUuid AppManager::scanApp(const QString &path)
     return info.uuid();
 }
 
-void AppManager::removeApp(const QUuid &uuid)
+void AppManager::wipeApp(const QUuid &uuid, bool force)
 {
     m_appList.removeAll(uuid);
     AppInfo info = m_apps.take(uuid);
@@ -203,6 +211,8 @@ void AppManager::removeApp(const QUuid &uuid)
         return;
 
     }
+    if(force)
+        removeApp(info);
     QDir dir(info.path());
     dir.removeRecursively();
     emit appsChanged();
@@ -247,6 +257,54 @@ void AppManager::setAppOrder(const QList<QUuid> &newList)
     m_connection->writeToPebble(WatchConnection::EndpointSorting, data);
 }
 
+void AppManager::insertAppMetaData(const QUuid &uuid, bool force)
+{
+    if (!m_pebble->connected()) {
+        qWarning() << "Pebble is not connected. Cannot install app";
+        return;
+    }
+
+    QSettings s(m_blobDBStoragePath + "/appsyncstate.conf", QSettings::IniFormat);
+    if (s.value(uuid.toString(), false).toBool() && !force) {
+        qWarning() << "App already in DB. Not syncing again";
+        return;
+    }
+
+    m_pebble->blobdb()->insert(BlobDB::BlobDBIdApp,AppMetadata(m_apps.value(uuid), m_pebble->hardwarePlatform()));
+}
+
+void AppManager::removeApp(const AppInfo &info)
+{
+    m_pebble->blobdb()->remove(BlobDB::BlobDBIdApp, info.uuid().toRfc4122());
+    QSettings s(m_blobDBStoragePath + "/appsyncstate.conf", QSettings::IniFormat);
+    s.remove(info.uuid().toString());
+}
+void AppManager::clearApps(bool force)
+{
+    if(force) {
+        // TODO: wipe installed apps if forced
+    }
+    m_pebble->blobdb()->clear(BlobDB::BlobDBIdApp);
+    QSettings s(m_blobDBStoragePath + "/appsyncstate.conf", QSettings::IniFormat);
+    s.remove("");
+}
+
+void AppManager::blobdbAckHandler(quint8 db, quint8 cmd, const QByteArray &key, quint8 ack)
+{
+    if (db == BlobDB::BlobDBIdApp && cmd == BlobDB::OperationInsert) {
+        if(ack == BlobDB::StatusSuccess) {
+            QSettings s(m_blobDBStoragePath + "/appsyncstate.conf", QSettings::IniFormat);
+            QUuid appUuid = QUuid::fromRfc4122(key);
+            s.setValue(appUuid.toString(), true);
+            emit appInserted(appUuid);
+        }
+    }
+}
+
+/**
+ * @brief AppFetchResponse::AppFetchResponse
+ * @param status
+ */
 AppFetchResponse::AppFetchResponse(Status status):
     m_status(status)
 {

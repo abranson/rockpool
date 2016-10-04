@@ -124,6 +124,13 @@ public:
     int daysFuture() const {return m_future_days;}
     int secsEventFadeout() const {return m_event_fadeout;}
 
+    // Service functions
+    TimelineAttribute parseAttribute(const QString &key, const QJsonValue &val);
+    QJsonObject &deserializeAttribute(const TimelineAttribute &attr, QJsonObject &obj);
+    QJsonObject &deserializeAttribute(quint8 type, const QByteArray &buf, QJsonObject &obj);
+    TimelineItem & parseLayout(TimelineItem &timelineItem, const QJsonObject &layout);
+    TimelineItem & parseActions(TimelineItem &timelineItem, const QJsonArray &actions);
+
 public slots:
     void reloadLayouts();
     void wipeTimeline(const QString &kind = QString());
@@ -138,7 +145,7 @@ signals:
 
 private slots:
     void actionHandler(const QByteArray &data);
-    void notifyHandler(const QDateTime &ts, const QUuid &key, const TimelineItem &val);
+    void notifyHandler(BlobDB::BlobDBId db, BlobDB::Operation cmd, time_t ts, const QByteArray &key, const QByteArray &val);
     void blobdbAckHandler(BlobDB::BlobDBId db, BlobDB::Operation cmd, const QByteArray &key, BlobDB::Status ack);
     void doMaintenance();
 
@@ -172,12 +179,6 @@ private:
     int m_future_days = 7;
     int m_past_days = -2;
     int m_event_fadeout = -3600;
-
-    TimelineAttribute parseAttribute(const QString &key, const QJsonValue &val);
-    QJsonObject &deserializeAttribute(const TimelineAttribute &attr, QJsonObject &obj);
-    QJsonObject &deserializeAttribute(quint8 type, const QByteArray &buf, QJsonObject &obj);
-    TimelineItem & parseLayout(TimelineItem &timelineItem, const QJsonObject &layout);
-    TimelineItem & parseActions(TimelineItem &timelineItem, const QJsonArray &actions);
 
     QString m_timelineStoragePath;
     QHash<QString,quint8> m_layouts;

@@ -161,3 +161,20 @@ AppInfo::Capabilities AppInfo::capabilities() const
     return m_capabilities;
 }
 
+QVariantMap & AppInfo::layouts(HardwarePlatform hw)
+{
+    if(!m_layouts.contains(hw)) {
+        QString lf=file(FileTypeLayouts,hw);
+        QFile f(lf);
+        if(f.exists()) {
+            if(f.open(QFile::ReadOnly)) {
+                QJsonParseError jpe;
+                QJsonDocument jd=QJsonDocument::fromJson(f.readAll(),&jpe);
+                if(jpe.error==QJsonParseError::NoError) {
+                    m_layouts.insert(hw,jd.toVariant().toMap());
+                }
+            }
+        }
+    }
+    return m_layouts[hw];
+}

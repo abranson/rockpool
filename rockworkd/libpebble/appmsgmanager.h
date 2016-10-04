@@ -24,7 +24,7 @@ public:
         LauncherActionStop = 2
     };
 
-    explicit AppMsgManager(Pebble *pebble, AppManager *apps, WatchConnection *connection);
+    explicit AppMsgManager(Pebble *pebble, WatchConnection *connection);
 
     void send(const QUuid &uuid, const QVariantMap &data,
               const std::function<void()> &ackCallback,
@@ -76,7 +76,6 @@ private slots:
 
 private:
     Pebble *m_pebble;
-    AppManager *apps;
     WatchConnection *m_connection;
     QHash<QUuid, MessageHandlerFunc> _handlers;
     quint8 _lastTransactionId;

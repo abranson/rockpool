@@ -7,10 +7,9 @@
 
 // TODO D-Bus server for non JS kit apps!!!!
 
-AppMsgManager::AppMsgManager(Pebble *pebble, AppManager *apps, WatchConnection *connection)
+AppMsgManager::AppMsgManager(Pebble *pebble, WatchConnection *connection)
     : QObject(pebble),
       m_pebble(pebble),
-      apps(apps),
       m_connection(connection),
       _lastTransactionId(0),
       m_currentUuid(QUuid()),
@@ -158,7 +157,7 @@ void AppMsgManager::closeApp(const QUuid &uuid)
 
 WatchConnection::Dict AppMsgManager::mapAppKeys(const QUuid &uuid, const QVariantMap &data)
 {
-    AppInfo info = apps->info(uuid);
+    AppInfo info = m_pebble->appInfo(uuid);
     if (info.uuid() != uuid) {
         qWarning() << "Unknown app GUID while sending message:" << uuid;
     }
@@ -189,7 +188,7 @@ WatchConnection::Dict AppMsgManager::mapAppKeys(const QUuid &uuid, const QVarian
 
 QVariantMap AppMsgManager::mapAppKeys(const QUuid &uuid, const WatchConnection::Dict &dict)
 {
-    AppInfo info = apps->info(uuid);
+    AppInfo info = m_pebble->appInfo(uuid);
     if (info.uuid() != uuid) {
         qWarning() << "Unknown app GUID while sending message:" << uuid;
     }

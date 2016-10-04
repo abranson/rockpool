@@ -3,10 +3,13 @@
 
 #include "watchconnection.h"
 
+class AppInfo;
+
 class AppMetadata: public BlobDbItem
 {
 public:
     AppMetadata();
+    AppMetadata(const AppInfo &info, int hardwarePlatform);
 
     QUuid uuid() const;
     void setUuid(const QUuid &uuid);

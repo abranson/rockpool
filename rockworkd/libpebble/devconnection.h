@@ -3,6 +3,7 @@
 
 #include <QObject>
 
+QT_FORWARD_DECLARE_CLASS(QFile)
 QT_FORWARD_DECLARE_CLASS(QWebSocketServer)
 QT_FORWARD_DECLARE_CLASS(QWebSocket)
 QT_FORWARD_DECLARE_CLASS(DevPacket)
@@ -22,6 +23,13 @@ public:
 
     bool serverState() const;
     bool cloudState() const;
+
+    static QString startLogDump();
+    static QString stopLogDump();
+    static QString getLogDump();
+    static bool isLogDumping();
+    static void setLogLevel(int level);
+    static int getLogLevel();
 
 signals:
     void serverStateChanged(bool state);
@@ -58,8 +66,12 @@ private:
     quint16 m_port = 0;
     // kinda singleton
     static DevConnection *s_instance;
+    static void installLogging(DevConnection *instance, bool override = false);
+    static void destroyLogging(DevConnection *instance);
     static void appLogBroadcast(QtMsgType t, const QMessageLogContext &ctx, const QString &msg);
     static QtMessageHandler s_omh;
+    static int s_logSev;
+    static QFile *s_dump;
 };
 
 class DevPacket : public QObject

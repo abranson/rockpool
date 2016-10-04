@@ -97,6 +97,13 @@ public slots:
     void SetDevConnCloudEnabled(bool enabled);
     void SetDevConnListenPort(quint16 port);
 
+    QString startLogDump() const;
+    QString stopLogDump() const;
+    QString getLogDump() const;
+    bool isLogDumping() const;
+    void setLogLevel(int level) const;
+    int getLogLevel() const;
+
     void InstallApp(const QString &id);
     void SideloadApp(const QString &packageFile);
     QStringList InstalledAppIds() const;

@@ -46,35 +46,38 @@ public:
 
     AppInfo info(const QUuid &uuid) const;
 
+    void insertAppMetaData(const QUuid &uuid, bool force=false);
     void insertAppInfo(const AppInfo &info);
 
     QUuid scanApp(const QString &path);
 
-    void removeApp(const QUuid &uuid);
+    void wipeApp(const QUuid &uuid, bool force=false);
+    void removeApp(const AppInfo &info);
 
     void setAppOrder(const QList<QUuid> &newList);
+
+    void clearApps(bool force=false);
 
 public slots:
     void rescan();
 
 private slots:
+    void blobdbAckHandler(quint8 db, quint8 cmd, const QByteArray &key, quint8 ack);
     void handleAppFetchMessage(const QByteArray &data);
     void sortingReply(const QByteArray &data);
 
 signals:
     void appsChanged();
-
     void uploadRequested(const QString &file, quint32 appInstallId);
-
     void idMismatchDetected();
-
-private:
+    void appInserted(const QUuid &uuid);
 
 private:
     Pebble *m_pebble;
     WatchConnection *m_connection;
     QList<QUuid> m_appList;
     QHash<QUuid, AppInfo> m_apps;
+    QString m_blobDBStoragePath;
 };
 
 #endif // APPMANAGER_H

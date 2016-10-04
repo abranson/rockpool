@@ -15,7 +15,8 @@ public:
         FileTypeApplication,
         FileTypeResources,
         FileTypeWorker,
-        FileTypeFirmware
+        FileTypeFirmware,
+        FileTypeLayouts
     };
 
     Bundle(const QString &path = QString());
