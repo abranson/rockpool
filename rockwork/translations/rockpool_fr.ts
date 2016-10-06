@@ -11,7 +11,7 @@
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="114"/>
         <source>Something going wrong</source>
-        <translation>Quelque chose s&apos;est mal passé</translation>
+        <translation>Quelque chose s'est mal passé</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="115"/>
@@ -28,17 +28,17 @@
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="154"/>
         <source>Host</source>
-        <translation type="unfinished"></translation>
+        <translation>Hôte</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="154"/>
         <source>requests permission for</source>
-        <translation type="unfinished"></translation>
+        <translation>demande l'autorisation pour</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="156"/>
-        <source>Store permission permanently and don&apos;t ask again</source>
-        <translation type="unfinished"></translation>
+        <source>Store permission permanently and don't ask again</source>
+        <translation>Enregistrer les autorisations de façon permanente et ne plus me demander</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="297"/>
@@ -56,7 +56,7 @@
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="191"/>
         <source>Developer</source>
-        <translation>Développeur</translation>
+        <translation>Dévelopeur</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="196"/>
@@ -111,12 +111,12 @@
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="55"/>
         <source>Watchapps</source>
-        <translation>Watchapps</translation>
+        <translation>Applications</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="55"/>
         <source>Watchfaces</source>
-        <translation>Watchfaces</translation>
+        <translation>Cadrans</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="101"/>
@@ -150,7 +150,7 @@
         <location filename="../qml/pages/AppUpgradePage.qml" line="24"/>
         <location filename="../qml/pages/AppUpgradePage.qml" line="25"/>
         <source>Upgrading</source>
-        <translation type="unfinished"></translation>
+        <translation>Mise à niveau en cours</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="49"/>
@@ -175,12 +175,12 @@
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="93"/>
         <source>Compatibility</source>
-        <translation type="unfinished"></translation>
+        <translation>Compatibilité</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="175"/>
         <source>Change Log</source>
-        <translation type="unfinished"></translation>
+        <translation>Journal des modifications</translation>
     </message>
 </context>
 <context>
@@ -192,8 +192,8 @@
     </message>
     <message>
         <location filename="../qml/pages/ContentPeerPickerPage.qml" line="26"/>
-        <source>No Share Providers configured. Please add provider&apos;s account in System Settings</source>
-        <translation>Aucun compte de partage n&apos;est configuré. SVP ajoutez un compte de partage dans les paramètres systèmes</translation>
+        <source>No Share Providers configured. Please add provider's account in System Settings</source>
+        <translation>Aucun compte de partage n'est configuré. SVP ajoutez un compte de partage dans les paramètres systèmes</translation>
     </message>
 </context>
 <context>
@@ -224,17 +224,17 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="66"/>
         <source>Restart Service</source>
-        <translation type="unfinished">Redémarrer le Service</translation>
+        <translation>Redémarrer le Service</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="72"/>
         <source>Screenshots</source>
-        <translation>Captures d&apos;écran</translation>
+        <translation>Captures d'écran</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="78"/>
         <source>Developer Connection</source>
-        <translation type="unfinished"></translation>
+        <translation>Connexion dévelopeur</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="84"/>
@@ -250,67 +250,67 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="113"/>
         <source>Developer Connection Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Paramètre de connexion dévelopeur</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="118"/>
         <source>Enable Connection</source>
-        <translation type="unfinished"></translation>
+        <translation>Permettre la connexion</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="120"/>
         <source>Enable Developer Connection Service</source>
-        <translation type="unfinished"></translation>
+        <translation>Permettre le service de connexion dévelopeur</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="130"/>
         <source>Listen Port</source>
-        <translation type="unfinished"></translation>
+        <translation>Port d'écoute</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="143"/>
         <source>Apply</source>
-        <translation type="unfinished"></translation>
+        <translation>Appliquer</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="153"/>
         <source>Enable</source>
-        <translation type="unfinished"></translation>
+        <translation>Activer</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="154"/>
         <source>Enable DeveloperConnection over CloudPebble</source>
-        <translation type="unfinished"></translation>
+        <translation>Activer la connexion dévelopeur via CloudPebble</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="160"/>
         <source>Runtime Status</source>
-        <translation type="unfinished"></translation>
+        <translation>Etat d'exécution</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="165"/>
         <source>DeveloperConnection Status</source>
-        <translation type="unfinished"></translation>
+        <translation>Etat de la connexion dévelopeur</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="166"/>
         <source>DeveloperConnection port listening state</source>
-        <translation type="unfinished"></translation>
+        <translation>état du port d'écoute de la connexion dévelopeur</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="172"/>
         <source>CloudPebble Status</source>
-        <translation type="unfinished"></translation>
+        <translation>Etat CloudPebble</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="173"/>
         <source>Indicates CloudPebble connection state</source>
-        <translation type="unfinished"></translation>
+        <translation>Indique l'état de la connexion vers CloudPebble</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="178"/>
         <source>Close</source>
-        <translation type="unfinished"></translation>
+        <translation>Fermer</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="208"/>
@@ -383,7 +383,7 @@
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="24"/>
         <source>A new firmware upgrade is available for your Pebble smartwatch.</source>
-        <translation>Une nouvelle mise à jour est disponible pour votre smartwatch Pebble. </translation>
+        <translation>Une nouvelle mise à jour est disponible pour votre smartwatch Pebble.</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="32"/>
@@ -403,7 +403,7 @@
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="46"/>
         <source>This update will also upgrade recovery data. Make sure your Pebble smartwarch is connected to a power adapter.</source>
-        <translation>Cette mise à jour mettra aussi à jour les données de restauration. Soyez bien assurés d&apos;avoir connecté votre smartwatch à un adaptateur secteur.</translation>
+        <translation>Cette mise à jour mettra aussi à jour les données de restauration. Soyez bien assurés d'avoir connecté votre smartwatch à un adaptateur secteur.</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="53"/>
@@ -517,7 +517,7 @@
     <message>
         <location filename="../qml/pages/InfoPage.qml" line="69"/>
         <source>This application is neither affiliated with nor endorsed by Pebble Technology Corp.</source>
-        <translation>Cette application n&apos;est ni affiliée à ni approuvée par Pebble Technology Corp.</translation>
+        <translation>Cette application n'est ni affiliée à ni approuvée par Pebble Technology Corp.</translation>
     </message>
     <message>
         <location filename="../qml/pages/InfoPage.qml" line="79"/>
@@ -555,7 +555,7 @@
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="48"/>
         <source>Really Delete?</source>
-        <translation>Confirmer suppression</translation>
+        <translation>Confirmer la suppression ?</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="54"/>
@@ -578,7 +578,7 @@
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="32"/>
         <source>Apps &amp; Watchfaces</source>
-        <translation>Applications &amp; Watchfaces</translation>
+        <translation>Applications &amp; Cadrans</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="32"/>
@@ -588,12 +588,12 @@
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="32"/>
         <source>Watchfaces</source>
-        <translation>Watchfaces</translation>
+        <translation>Cadrans</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="101"/>
         <source>Save Apps Order</source>
-        <translation>Enregistrer l&apos;ordre des applications</translation>
+        <translation>Enregistrer l'ordre des applications</translation>
     </message>
 </context>
 <context>
@@ -601,27 +601,27 @@
     <message>
         <location filename="../qml/pages/LanguagePage.qml" line="19"/>
         <source>Language Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Paramètre de langue</translation>
     </message>
     <message>
         <location filename="../qml/pages/LanguagePage.qml" line="20"/>
         <source>Set langugage for application and your Pebble</source>
-        <translation type="unfinished"></translation>
+        <translation>Définir la langue pour l'application et votre Pebble</translation>
     </message>
     <message>
         <location filename="../qml/pages/LanguagePage.qml" line="23"/>
         <source>Pebble Language</source>
-        <translation type="unfinished"></translation>
+        <translation>Langue de la Pebble</translation>
     </message>
     <message>
         <location filename="../qml/pages/LanguagePage.qml" line="29"/>
         <source>Select Language</source>
-        <translation type="unfinished"></translation>
+        <translation>Sélectionner la langue</translation>
     </message>
     <message>
         <location filename="../qml/pages/LanguagePage.qml" line="41"/>
         <source>Submit</source>
-        <translation type="unfinished"></translation>
+        <translation>Soumettre</translation>
     </message>
 </context>
 <context>
@@ -670,12 +670,12 @@
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="19"/>
         <source>About</source>
-        <translation type="unfinished"></translation>
+        <translation>A propos</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="25"/>
         <source>Developer tools</source>
-        <translation type="unfinished"></translation>
+        <translation>Outils de dévelopement</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="120"/>
@@ -685,12 +685,12 @@
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="120"/>
         <source>Disconnected</source>
-        <translation type="unfinished"></translation>
+        <translation>Déconnecté</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="128"/>
         <source>Update Available</source>
-        <translation type="unfinished"></translation>
+        <translation>Mise à jour disponible</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="150"/>
@@ -700,12 +700,12 @@
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="162"/>
         <source>Running</source>
-        <translation type="unfinished"></translation>
+        <translation>En fontionnement</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="172"/>
         <source>Your Pebble smartwatch is disconnected. Please make sure it is powered on, within range and it is paired properly in the Bluetooth System Settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>Votre smartwatch Pebble est déconnectée. Vérifiez SVP qu'elle est alimentée, à portée de signal et correctement appairée dans les Réglages Systèmes Bluetooth.</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="182"/>
@@ -715,12 +715,12 @@
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="189"/>
         <source>Your Pebble smartwatch is in factory mode and needs to be initialized.</source>
-        <translation type="unfinished"></translation>
+        <translation>Votre smartwatch Pebble est en paramétrage d'usine et doit être initialisée.</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="198"/>
         <source>Initialize Pebble</source>
-        <translation type="unfinished"></translation>
+        <translation>Initialiser la Pebble</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="267"/>
@@ -730,12 +730,12 @@
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="272"/>
         <source>Watch Apps</source>
-        <translation type="unfinished"></translation>
+        <translation>Applications</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="278"/>
         <source>Watchfaces</source>
-        <translation>Watchfaces</translation>
+        <translation>Cadrans</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="284"/>
@@ -745,7 +745,7 @@
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="291"/>
         <source>Firmware</source>
-        <translation type="unfinished"></translation>
+        <translation>Micrologiciel</translation>
     </message>
 </context>
 <context>
@@ -778,7 +778,7 @@
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="81"/>
         <source>Forget</source>
-        <translation type="unfinished"></translation>
+        <translation>Oublier</translation>
     </message>
 </context>
 <context>
@@ -801,7 +801,7 @@
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="18"/>
         <source>Restart service</source>
-        <translation type="unfinished"></translation>
+        <translation>Redémarrer le service</translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="35"/>
@@ -811,12 +811,12 @@
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="35"/>
         <source>Disconnected</source>
-        <translation>Disconnected</translation>
+        <translation>Déconnecté</translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="55"/>
         <source>No Pebble smartwatches configured yet. Please connect your Pebble smartwatch using System Settings.</source>
-        <translation>Aucune smartwatch Pebble n&apos;est encore configurée. SVP connectez votre smartwatch Pebble depuis les Réglages Système.</translation>
+        <translation>Aucune smartwatch Pebble n'est encore configurée. SVP connectez votre smartwatch Pebble depuis les Réglages Système.</translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="64"/>
@@ -829,52 +829,52 @@
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="17"/>
         <source>Edit and order quick-response messages</source>
-        <translation type="unfinished"></translation>
+        <translation>Editer et ordonner les message de réponse rapide</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="17"/>
         <source>New item will be inserted before current selection</source>
-        <translation type="unfinished"></translation>
+        <translation>Le nouvel élément sera inséré avant la séléction courante</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="21"/>
         <source>Add New</source>
-        <translation type="unfinished">Ajouter</translation>
+        <translation>Ajouter</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="29"/>
         <source>Save changes</source>
-        <translation type="unfinished"></translation>
+        <translation>Sauvegarder les modifications</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="54"/>
         <source>Move Up</source>
-        <translation type="unfinished">Monter</translation>
+        <translation>Monter</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="59"/>
         <source>Edit</source>
-        <translation type="unfinished"></translation>
+        <translation>Editer</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="67"/>
         <source>Delete</source>
-        <translation type="unfinished">Supprimer</translation>
+        <translation>Supprimer</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="69"/>
         <source>Really Delete?</source>
-        <translation type="unfinished">Confirmer suppression</translation>
+        <translation>Confirmer la suppression ?</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="75"/>
         <source>Move Down</source>
-        <translation type="unfinished">Descendre</translation>
+        <translation>Descendre</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="86"/>
         <source>Pre-defined response message</source>
-        <translation type="unfinished"></translation>
+        <translation>Message de réponse prédéfini</translation>
     </message>
 </context>
 <context>
@@ -882,12 +882,12 @@
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="23"/>
         <source>Screenshots</source>
-        <translation>Captures d&apos;écran</translation>
+        <translation>Captures d'écran</translation>
     </message>
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="27"/>
         <source>Take Screenshot</source>
-        <translation>Prendre une capture d&apos;écran</translation>
+        <translation>Prendre une capture d'écran</translation>
     </message>
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="53"/>
@@ -897,12 +897,12 @@
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="55"/>
         <source>Pebble screenshot</source>
-        <translation>Capture d&apos;écran de pebble</translation>
+        <translation>Capture d'écran de pebble</translation>
     </message>
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="56"/>
         <source>Screen snapshot of Pebble Smartwatches</source>
-        <translation>Capture d&apos;écran de Smartwatches Pebble</translation>
+        <translation>Capture d'écran de Smartwatches Pebble</translation>
     </message>
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="62"/>
@@ -912,7 +912,7 @@
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="65"/>
         <source>Really Delete?</source>
-        <translation>Confirmer suppression</translation>
+        <translation>Confirmer la suppression ?</translation>
     </message>
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="72"/>
@@ -925,22 +925,22 @@
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="26"/>
         <source>Messaging Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Paramètres de messages</translation>
     </message>
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="27"/>
         <source>OK</source>
-        <translation type="unfinished">OK</translation>
+        <translation>OK</translation>
     </message>
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="28"/>
         <source>Cancel</source>
-        <translation type="unfinished">Annuler</translation>
+        <translation>Annuler</translation>
     </message>
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="32"/>
         <source>Contacts</source>
-        <translation type="unfinished"></translation>
+        <translation>Contacts</translation>
     </message>
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="77"/>
@@ -955,7 +955,7 @@
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="144"/>
         <source>Messages</source>
-        <translation type="unfinished"></translation>
+        <translation>Messages</translation>
     </message>
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="147"/>
@@ -978,7 +978,7 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="30"/>
         <source>General</source>
-        <translation type="unfinished"></translation>
+        <translation>Général</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="34"/>
@@ -998,7 +998,7 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="50"/>
         <source>Language</source>
-        <translation type="unfinished"></translation>
+        <translation>Langue</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="55"/>
@@ -1013,7 +1013,7 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="68"/>
         <source>Sync Apps from Cloud</source>
-        <translation type="unfinished"></translation>
+        <translation>Synchroniser les Apps depuis le Cloud</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="76"/>
@@ -1033,7 +1033,7 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="97"/>
         <source>Notification re-delivery expiration (seconds)</source>
-        <translation type="unfinished"></translation>
+        <translation>Expiration des notifications de réexpédition (en secondes)</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="105"/>
@@ -1048,12 +1048,12 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="125"/>
         <source>Logout</source>
-        <translation type="unfinished"></translation>
+        <translation>Déconnexion</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="125"/>
         <source>Login</source>
-        <translation type="unfinished"></translation>
+        <translation>Connexion</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="138"/>
@@ -1081,7 +1081,7 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="183"/>
         <source>Canned Messages</source>
-        <translation type="unfinished"></translation>
+        <translation>Messages prédéfinis</translation>
     </message>
 </context>
 <context>
@@ -1089,18 +1089,18 @@
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="23"/>
         <source>Weather Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Paramètres Météo</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="24"/>
         <source>OK</source>
-        <translation type="unfinished">OK</translation>
+        <translation>OK</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="25"/>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="90"/>
         <source>Cancel</source>
-        <translation type="unfinished">Annuler</translation>
+        <translation>Annuler</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="29"/>
@@ -1120,7 +1120,7 @@
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="44"/>
         <source>Locations</source>
-        <translation type="unfinished"></translation>
+        <translation>Endroits</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="68"/>
@@ -1171,6 +1171,21 @@
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="179"/>
         <source>Current Location</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="21"/>
+        <source>Units</source>
+        <translation>Unités</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="23"/>
+        <source>Celsius</source>
+        <translation>Celsius</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="24"/>
+        <source>Fahrenheit</source>
+        <translation>Fahrenheit</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="185"/>
