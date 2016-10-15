@@ -551,7 +551,7 @@
         <translation>Zifferblätter</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppsPage.qml" line="104"/>
+        <location filename="../qml/pages/InstalledAppsPage.qml" line="101"/>
         <source>Save Apps Order</source>
         <translation>App-Reihenfolge speichern</translation>
     </message>
@@ -595,6 +595,34 @@
         <location filename="../qml/pages/LoadingPage.qml" line="23"/>
         <source>Restart Service</source>
         <translation>Dienst neu starten</translation>
+    </message>
+</context>
+<context>
+    <name>LocationPicker</name>
+    <message>
+        <location filename="../qml/pages/LocationPicker.qml" line="12"/>
+        <source>Select Location</source>
+        <translation>Ort wählen</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/LocationPicker.qml" line="14"/>
+        <source>Cancel</source>
+        <translation>Abbrechen</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/LocationPicker.qml" line="18"/>
+        <source>Location Name</source>
+        <translation>Ortsname</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/LocationPicker.qml" line="19"/>
+        <source>Type in location name</source>
+        <translation>Gib die Ortsname ein</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/LocationPicker.qml" line="34"/>
+        <source>Matching locations will be appearing as you type</source>
+        <translation>Passende Orte werde sich zeigen bei der Schreibung </translation>
     </message>
 </context>
 <context>
@@ -1019,39 +1047,125 @@
 <context>
     <name>WeatherSettingsDialog</name>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="15"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="23"/>
         <source>Weather Settings</source>
-        <translation>Wettereinstellungen</translation>
+        <translation>Einstellungen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="16"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="24"/>
         <source>OK</source>
         <translation>OK</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="17"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="25"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="90"/>
         <source>Cancel</source>
         <translation>Abbrechen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="21"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="29"/>
+        <source>Alternate Provider</source>
+        <translation>Alternativanbieter</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="36"/>
+        <source>Provider&apos;s Key, eg. API Key</source>
+        <translation>Schlussel des Anbieters, z.B. der API</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="37"/>
+        <source>Provider Key</source>
+        <translation>Anbieterschlüssel</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="44"/>
+        <source>Locations</source>
+        <translation>Orte</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="68"/>
+        <source>Location Name</source>
+        <translation>Ortsname</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="75"/>
+        <source>Latitude</source>
+        <translation>Breitengrad</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="82"/>
+        <source>Longitude</source>
+        <translation>Längengrad</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="96"/>
+        <source>Save Changes</source>
+        <translation>Änderungen speichern</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="146"/>
+        <source>Edit</source>
+        <translation>Bearbeiten</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="151"/>
+        <source>Move Up</source>
+        <translation>Nach oben verschieben</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="156"/>
+        <source>Move Down</source>
+        <translation>Nach unten verschieben</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="161"/>
+        <source>Delete</source>
+        <translation>Löschen</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="170"/>
+        <source>Add Location</source>
+        <translation>Ort hinzufügen</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="179"/>
+        <source>Current Location</source>
+        <translation>Aktuales Standort</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="185"/>
+        <source>Locales</source>
+        <translation>Ortlichkeit</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="190"/>
         <source>Units</source>
         <translation>Einheiten</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="23"/>
-        <source>Celsius</source>
-        <translation>Celsius</translation>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="209"/>
+        <source>Language</source>
+        <translation>Sprache</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="24"/>
-        <source>Fahrenheit</source>
-        <translation>Fahrenheit</translation>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="334"/>
+        <source>Default (English)</source>
+        <translation>Standard (Englisch)</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="29"/>
-        <source>Locations</source>
-        <translation>Standorte</translation>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="337"/>
+        <source>Metric</source>
+        <translation>Metrisch</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="338"/>
+        <source>Imperial</source>
+        <translation>Angloamerikanisch</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="339"/>
+        <source>Hybrid</source>
+        <translation>Gemischt</translation>
     </message>
 </context>
 </TS>
