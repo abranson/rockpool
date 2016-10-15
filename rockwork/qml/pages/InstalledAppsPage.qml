@@ -71,11 +71,8 @@ Page {
             };
         } else if(uuid === "{61b22bc8-1e29-460d-a236-3fe409a439ff}") {
             popup = pageStack.push(Qt.resolvedUrl("WeatherSettingsDialog.qml"), {
-                                            params: pebble.weatherParams
+                                            pebble: pebble
                                         },PageStackAction.Immediate);
-            cbacc = function () {
-                pebble.weatherParams = popup.params
-            };
         } else if(uuid === "{0863fc6a-66c5-4f62-ab8a-82ed00a98b5d}") {
             popup = pageStack.push(Qt.resolvedUrl("SendTextSettingsDialog.qml"), {
                                             pebble: pebble

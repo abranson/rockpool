@@ -212,6 +212,75 @@ QVariantMap Pebble::getCannedContacts(const QStringList &keys)
     return fetchVarMap("getFavoriteContacts",&keys);
 }
 
+QVariantList Pebble::weatherLocations() const
+{
+    QVariantList retList;
+    QDBusMessage m = m_iface->call("WeatherLocations");
+    if (m.type() == QDBusMessage::ErrorMessage || m.arguments().count() == 0) {
+        qWarning() << "Could not fetch installed apps" << m.errorMessage();
+        return retList;
+    }
+    const QDBusArgument &arg = m.arguments().first().value<QDBusArgument>();
+    arg.beginArray();
+    while (!arg.atEnd()) {
+        QVariant entryVariant;
+        arg >> entryVariant;
+        retList.append(entryVariant);
+    }
+    arg.endArray();
+    qDebug() << retList;
+    return retList;
+}
+void Pebble::setWeatherLocations(const QVariantList &in)
+{
+    qDebug() << in;
+    QVariantList out;
+    foreach(const QVariant &v,in) {
+        if(v.canConvert(QVariant::StringList))
+            out.append(v.toStringList());
+        else if(v.canConvert(QVariant::List)) {
+            QStringList l;
+            foreach(const QVariant &sv,v.toList()) {
+                l.append(sv.toString());
+            }
+            out.append(l);
+        }
+    }
+    qDebug() << out;
+    m_iface->call("SetWeatherLocations",out);
+    emit weatherLocationsChanged();
+}
+
+QString Pebble::weatherUnits() const
+{
+    return fetchProperty("WeatherUnits").toString();
+}
+void Pebble::setWeatherUnits(const QString &u)
+{
+    m_iface->call("setWeatherUnits",u);
+    emit weatherUnitsChanged();
+}
+
+QString Pebble::weatherLanguage() const
+{
+    return fetchProperty("WeatherLanguage").toString();
+}
+void Pebble::setWeatherLanguage(const QString &l)
+{
+    m_iface->call("setWeatherLanguage",l);
+    emit weatherLanguageChanged();
+}
+
+QString Pebble::weatherAltKey() const
+{
+    return fetchProperty("WeatherAltKey").toString();
+}
+void Pebble::setWeatherAltKey(const QString &key)
+{
+    m_iface->call("setWeatherAltKey",key);
+    emit weatherAltKeyChanged();
+}
+
 QVariantMap Pebble::healthParams() const
 {
     return fetchVarMap("HealthParams");
@@ -312,6 +381,37 @@ void Pebble::devConCloudChanged(bool state)
 {
     qDebug() << "DevConCloud state changed:" << (state?"connected":"disconnected");
     emit devConCloudConnectedChanged();
+}
+
+void Pebble::setLogLevel(int level)
+{
+    m_iface->call("setLogLevel",level);
+    emit logLevelChanged();
+}
+int Pebble::getLogLevel() const
+{
+    return fetchProperty("getLogLevel").toInt();
+}
+
+QString Pebble::getLogDump()
+{
+    return fetchProperty("getLogDump").toString();
+}
+QString Pebble::startLogDump()
+{
+    QString ret = fetchProperty("startLogDump").toString();
+    emit logDumpChanged();
+    return ret;
+}
+QString Pebble::stopLogDump()
+{
+    QString ret = fetchProperty("stopLogDump").toString();
+    emit logDumpChanged();
+    return ret;
+}
+bool Pebble::isLogDumping()
+{
+    return fetchProperty("isLogDumping").toBool();
 }
 
 QString Pebble::oauthToken() const
@@ -491,32 +591,8 @@ void Pebble::forgetNotificationFilter(const QString &sourceId)
     emit notificationsFilterChanged();
 }
 
-void Pebble::moveApp(const QString &uuid, int toIndex)
-{
-    // This is a bit tricky:
-    AppItem *item = m_installedApps->findByUuid(uuid);
-    if (!item) {
-        qWarning() << "item not found";
-        return;
-    }
-    int realToIndex = 0;
-    for (int i = 0; i < m_installedApps->rowCount(); i++) {
-        if (item->isWatchFace() && m_installedApps->get(i)->isWatchFace()) {
-            realToIndex++;
-        } else if (!item->isWatchFace() && !m_installedApps->get(i)->isWatchFace()) {
-            realToIndex++;
-        }
-        if (realToIndex == toIndex) {
-            realToIndex = i+1;
-            break;
-        }
-    }
-    m_iface->call("MoveApp", m_installedApps->indexOf(item), realToIndex);
-}
-
 void Pebble::refreshApps()
 {
-
     QDBusMessage m = m_iface->call("InstalledApps");
     if (m.type() == QDBusMessage::ErrorMessage || m.arguments().count() == 0) {
         qWarning() << "Could not fetch installed apps" << m.errorMessage();
