@@ -552,7 +552,7 @@
         <translation>Циферблати</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppsPage.qml" line="104"/>
+        <location filename="../qml/pages/InstalledAppsPage.qml" line="101"/>
         <source>Save Apps Order</source>
         <translation>Зберегти Порядок Додатків</translation>
     </message>
@@ -596,6 +596,34 @@
         <location filename="../qml/pages/LoadingPage.qml" line="23"/>
         <source>Restart Service</source>
         <translation>Перезапустити Службу</translation>
+    </message>
+</context>
+<context>
+    <name>LocationPicker</name>
+    <message>
+        <location filename="../qml/pages/LocationPicker.qml" line="12"/>
+        <source>Select Location</source>
+        <translation>Виберте Локацію</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/LocationPicker.qml" line="14"/>
+        <source>Cancel</source>
+        <translation>Відмінити</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/LocationPicker.qml" line="18"/>
+        <source>Location Name</source>
+        <translation>Ім&apos;я локації</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/LocationPicker.qml" line="19"/>
+        <source>Type in location name</source>
+        <translation>Введіть ім&apos;я локації</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/LocationPicker.qml" line="34"/>
+        <source>Matching locations will be appearing as you type</source>
+        <translation>Співпадаючі локації з&apos;являться протягом вводу текста</translation>
     </message>
 </context>
 <context>
@@ -1020,39 +1048,125 @@
 <context>
     <name>WeatherSettingsDialog</name>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="15"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="23"/>
         <source>Weather Settings</source>
-        <translation>Налаштування Погоди</translation>
+        <translation>Налаштування</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="16"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="24"/>
         <source>OK</source>
         <translation>Добре</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="17"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="25"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="90"/>
         <source>Cancel</source>
-        <translation>Скасувати</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="21"/>
-        <source>Units</source>
-        <translation>Одиниці</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="23"/>
-        <source>Celsius</source>
-        <translation>Целсія</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="24"/>
-        <source>Fahrenheit</source>
-        <translation>Фаренгейта</translation>
+        <translation>Відмінити</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="29"/>
+        <source>Alternate Provider</source>
+        <translation>Альтернативний Провайдер</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="36"/>
+        <source>Provider&apos;s Key, eg. API Key</source>
+        <translation>Ключ провайдера, напр. АПІ ключ</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="37"/>
+        <source>Provider Key</source>
+        <translation>Ключ провайдера</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="44"/>
         <source>Locations</source>
         <translation>Локації</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="68"/>
+        <source>Location Name</source>
+        <translation>Ім&apos;я локації</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="75"/>
+        <source>Latitude</source>
+        <translation>Широта</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="82"/>
+        <source>Longitude</source>
+        <translation>Довгота</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="96"/>
+        <source>Save Changes</source>
+        <translation>Зберігти зміни</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="146"/>
+        <source>Edit</source>
+        <translation>Редагувати</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="151"/>
+        <source>Move Up</source>
+        <translation>Посунути Догори</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="156"/>
+        <source>Move Down</source>
+        <translation>Посунути Донизу</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="161"/>
+        <source>Delete</source>
+        <translation>Видалити</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="170"/>
+        <source>Add Location</source>
+        <translation>Добавити Локацію</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="179"/>
+        <source>Current Location</source>
+        <translation>Актуальне місцезнаходження</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="185"/>
+        <source>Locales</source>
+        <translation>Локалізація</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="190"/>
+        <source>Units</source>
+        <translation>Одиниці виміру</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="209"/>
+        <source>Language</source>
+        <translation>Мова</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="334"/>
+        <source>Default (English)</source>
+        <translation>Стандартна (Англійська)</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="337"/>
+        <source>Metric</source>
+        <translation>Метричні</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="338"/>
+        <source>Imperial</source>
+        <translation>Імперські</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="339"/>
+        <source>Hybrid</source>
+        <translation>Змішані</translation>
     </message>
 </context>
 </TS>
