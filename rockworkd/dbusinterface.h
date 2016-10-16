@@ -118,11 +118,12 @@ public slots:
     void RemoveScreenshot(const QString &filename);
     void DumpLogs(const QString &fileName) const;
 
+    void setWeatherApiKey(const QString &key);
     QString WeatherUnits() const;
     void setWeatherUnits(const QString &u);
     QString WeatherLanguage() const;
     void setWeatherLanguage(const QString &lang);
-    void setWeatherApiKey(const QString &key);
+    QString WeatherAltKey() const;
     void setWeatherAltKey(const QString &key);
     QVariantList WeatherLocations() const;
     void SetWeatherLocations(const QVariantList &locs);

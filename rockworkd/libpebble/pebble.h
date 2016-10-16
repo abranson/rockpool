@@ -112,12 +112,13 @@ public slots:
 
     void setWeatherApiKey(const QString &key);
     void setWeatherAltKey(const QString &key);
+    QString getWeatherAltKey() const;
     void setWeatherLanguage(const QString &lang);
     QString getWeatherLanguage() const;
     void setWeatherUnits(const QString &u);
     QString getWeatherUnits() const;
-    QVariantList getWeatherLocations() const;
     void setWeatherLocations(const QVariantList &locations);
+    QVariantList getWeatherLocations() const;
     void injectWeatherConditions(const QString &location, const QVariantMap &conditions);
 
     QVariantMap notificationsFilter() const;

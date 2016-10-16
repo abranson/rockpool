@@ -540,6 +540,17 @@ void Pebble::setWeatherAltKey(const QString &key)
     initWeatherProvider(appCfg);
     appCfg.endGroup();
 }
+QString Pebble::getWeatherAltKey() const
+{
+    QString key;
+    QSettings appCfg(m_storagePath + "/appsettings.conf", QSettings::IniFormat);
+    appCfg.beginGroup(WeatherApp::appConfigKey);
+#ifdef WEATHERPROVIDERWU_H
+    key = appCfg.value("wuKey").toString();
+#endif
+    appCfg.endGroup();
+    return key;
+}
 
 void Pebble::initWeatherProvider(const QSettings &settings)
 {

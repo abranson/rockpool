@@ -220,6 +220,10 @@ void DBusPebble::setWeatherAltKey(const QString &key)
 {
     m_pebble->setWeatherAltKey(key);
 }
+QString DBusPebble::WeatherAltKey() const
+{
+    return m_pebble->getWeatherAltKey();
+}
 
 void DBusPebble::setWeatherLanguage(const QString &lang)
 {
