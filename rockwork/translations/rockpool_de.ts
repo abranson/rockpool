@@ -238,7 +238,7 @@
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="84"/>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="194"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="195"/>
         <source>Report problem</source>
         <translation>Problem melden</translation>
     </message>
@@ -313,17 +313,37 @@
         <translation>Schließen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="207"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="208"/>
         <source>Preparing logs package...</source>
         <translation>Logpacket vorbereiten...</translation>
     </message>
     <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="233"/>
+        <source>Current log: </source>
+        <translation>Aktuelles Protokoll</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="239"/>
+        <source>Disable service logs</source>
+        <translation>Anwendungsprotokoll deaktivieren</translation>
+    </message>
+    <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="248"/>
+        <source>Send service logs</source>
+        <translation>Anwendungsprotokoll senden</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="239"/>
+        <source>Enable service logs</source>
+        <translation>Anwendungsprotokoll aktivieren</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="266"/>
         <source>Send watch logs</source>
         <translation>Sende Uhr Protokolle</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="257"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="276"/>
         <source>Cancel</source>
         <translation>Abbrechen</translation>
     </message>
@@ -1130,7 +1150,7 @@
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="179"/>
         <source>Current Location</source>
-        <translation>Aktuales Standort</translation>
+        <translation>Aktuelles Standort</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="185"/>
