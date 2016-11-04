@@ -190,6 +190,7 @@ Page {
         Column {
             id: content
             width: parent.width
+            spacing: Theme.paddingSmall
             Label {
                 text: qsTr("Report problem")
                 font.pixelSize: Theme.fontSizeLarge
@@ -226,24 +227,41 @@ Page {
                     sendLogsDocker.hide()
                 }
             }
-            /* On jolla it's in journald
-            Button {
-                text: qsTr("Send")+" rockworkd.log"
+
+            Label {
+                id: currentLog
+                text: qsTr("Current log: ") + pebble.dumpLogFile;
                 width: parent.width
-                visible: !busyIndicator.visible
+                visible: pebble.dumpLogFile !== ""
+            }
+
+            Button {
+                text: pebble.isLogDumping ? qsTr("Disable service logs") : qsTr("Enable service logs")
+                width: parent.width
                 onClicked: {
-                    var filename = homePath + "/.cache/upstart/rockworkd.log"
+                    var file = pebble.isLogDumping ? pebble.stopLogDump() : pebble.startLogDump();
+                    console.log("Toggling log to",file);
+                    sendLogsDocker.hide()
+                }
+            }
+            Button {
+                text: qsTr("Send service logs")
+                width: parent.width
+                visible: pebble.dumpLogFile !== ""
+                onClicked: {
+                    if(pebble.isLogDumping) // stop and flush logs
+                        pebble.stopLogDump();
                     pageStack.push(Qt.resolvedUrl("ContentPeerPickerPage.qml"), {
                            itemName: "rockpoold.log",
                            itemDescription: "RockPool Daemon "+version,
                            contentType: "text/plain",
-                           fileName: filename
+                           filename: pebble.dumpLogFile
                     })
 
                     sendLogsDocker.hide()
                 }
             }
-            */
+
             Button {
                 text: qsTr("Send watch logs")
                 visible: !busyIndicator.visible
@@ -253,6 +271,7 @@ Page {
                     root.pebble.dumpLogs("/tmp/pebble.log")
                 }
             }
+
             Button {
                 text: qsTr("Cancel")
                 visible: !busyIndicator.visible
