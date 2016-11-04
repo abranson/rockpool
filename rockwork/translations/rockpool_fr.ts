@@ -238,7 +238,7 @@
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="84"/>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="194"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="195"/>
         <source>Report problem</source>
         <translation>Rapporter un problème</translation>
     </message>
@@ -313,17 +313,37 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="207"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="208"/>
         <source>Preparing logs package...</source>
         <translation>Préparation du package de journaux...</translation>
     </message>
     <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="233"/>
+        <source>Current log: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="239"/>
+        <source>Disable service logs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="248"/>
+        <source>Send service logs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="239"/>
+        <source>Enable service logs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="266"/>
         <source>Send watch logs</source>
         <translation>Envoyer les journaux de la montre</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="257"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="276"/>
         <source>Cancel</source>
         <translation>Annuler</translation>
     </message>

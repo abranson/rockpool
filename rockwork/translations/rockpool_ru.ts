@@ -240,7 +240,7 @@
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="84"/>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="194"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="195"/>
         <source>Report problem</source>
         <translation>Сообщить о Проблеме</translation>
     </message>
@@ -315,17 +315,37 @@
         <translation>Закрыть</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="207"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="208"/>
         <source>Preparing logs package...</source>
         <translation>Подготовка пакета журналов...</translation>
     </message>
     <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="233"/>
+        <source>Current log: </source>
+        <translation>Текуший лог</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="239"/>
+        <source>Disable service logs</source>
+        <translation>Выключить журнал сервиса</translation>
+    </message>
+    <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="248"/>
+        <source>Send service logs</source>
+        <translation>Послать журнал сервиса</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="239"/>
+        <source>Enable service logs</source>
+        <translation>Включить журнал сервиса</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="266"/>
         <source>Send watch logs</source>
         <translation>Послать журнал с часов</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="257"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="276"/>
         <source>Cancel</source>
         <translation>Отмена</translation>
     </message>
