@@ -339,11 +339,31 @@
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="266"/>
+        <source>Syslog Verbosity</source>
+        <translation>Балакучисть Сіcтемного Журналу</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="268"/>
+        <source>Debug</source>
+        <translation>Налагодження</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="269"/>
+        <source>Warning</source>
+        <translation>Попередження</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="270"/>
+        <source>Critical</source>
+        <translation>Критичні</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="277"/>
         <source>Send watch logs</source>
         <translation>Відіслати журнал з годинника</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="276"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="287"/>
         <source>Cancel</source>
         <translation>Відмінити</translation>
     </message>

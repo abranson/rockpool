@@ -341,11 +341,31 @@
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="266"/>
+        <source>Syslog Verbosity</source>
+        <translation>Уровень системного журнала</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="268"/>
+        <source>Debug</source>
+        <translation>Отладочный</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="269"/>
+        <source>Warning</source>
+        <translation>Предупредительный</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="270"/>
+        <source>Critical</source>
+        <translation>Критический</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="277"/>
         <source>Send watch logs</source>
         <translation>Послать журнал с часов</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="276"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="287"/>
         <source>Cancel</source>
         <translation>Отмена</translation>
     </message>
