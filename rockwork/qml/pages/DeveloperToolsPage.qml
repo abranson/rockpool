@@ -261,6 +261,17 @@ Page {
                     sendLogsDocker.hide()
                 }
             }
+            ComboBox {
+                width: parent.width
+                label: qsTr("Syslog Verbosity")
+                menu: ContextMenu {
+                    MenuItem { text: qsTr("Debug") }
+                    MenuItem { text: qsTr("Warning") }
+                    MenuItem { text: qsTr("Critical") }
+                }
+                currentIndex: pebble.logLevel
+                onValueChanged: pebble.logLevel = currentIndex
+            }
 
             Button {
                 text: qsTr("Send watch logs")
