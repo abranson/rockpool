@@ -20,6 +20,7 @@ License:    GPL3
 URL:        http://getpebble.com/
 Source0:    %{name}-%{version}.tar.xz
 Source100:  rockpool.yaml
+Requires:   sailfish-version >= 2.0.5
 Requires:   sailfishsilica-qt5 >= 0.10.9
 Requires:   systemd-user-session-targets
 Requires:   nemo-qml-plugin-dbus-qt5
