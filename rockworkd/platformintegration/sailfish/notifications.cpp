@@ -20,6 +20,7 @@
 #include <QtDBus/QDBusPendingCall>
 #include <QtDBus/QDBusMessage>
 #include "notifications.h"
+#include <QDataStream>
 #include <QDebug>
 
 namespace watchfish
