@@ -306,9 +306,6 @@ void Pebble::setHardwareRevision(HardwareRevision hardwareRevision)
 {
     m_hardwareRevision = hardwareRevision;
     switch (m_hardwareRevision) {
-    case HardwareRevisionUNKNOWN:
-        m_hardwarePlatform = HardwarePlatformUnknown;
-        break;
     case HardwareRevisionTINTIN_EV1:
     case HardwareRevisionTINTIN_EV2:
     case HardwareRevisionTINTIN_EV2_3:
@@ -331,6 +328,18 @@ void Pebble::setHardwareRevision(HardwareRevision hardwareRevision)
     case HardwareRevisionSPALDING_BB2:
         m_hardwarePlatform = HardwarePlatformChalk;
         break;
+    case HardwareRevisionSILK:
+    case HardwareRevisionSILK_BB:
+    case HardwareRevisionSILK_BB2:
+    case HardwareRevisionSILK_EVT:
+        m_hardwarePlatform = HardwarePlatformDiorite;
+        break;
+    case HardwareRevisionROBERT_EVT:
+    case HardwareRevisionROBERT_BB:
+        m_hardwarePlatform = HardwarePlatformEmery;
+        break;
+    default:
+        m_hardwarePlatform = HardwarePlatformUnknown;
     }
 }
 
@@ -368,6 +377,24 @@ QString Pebble::platformString() const
 HardwarePlatform Pebble::hardwarePlatform() const
 {
     return m_hardwarePlatform;
+}
+
+QString Pebble::platformName() const
+{
+    switch(m_hardwarePlatform) {
+        case HardwarePlatformAplite:
+            return "aplite";
+        case HardwarePlatformBasalt:
+            return "basalt";
+        case HardwarePlatformChalk:
+            return "chalk";
+        case HardwarePlatformDiorite:
+            return "diorite";
+        case HardwarePlatformEmery:
+            return "emery";
+        default:
+            return "unknown";
+    }
 }
 
 QString Pebble::serialNumber() const

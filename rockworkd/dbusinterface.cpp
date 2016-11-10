@@ -453,17 +453,7 @@ QString DBusPebble::PlatformString() const
 
 QString DBusPebble::HardwarePlatform() const
 {
-    switch (m_pebble->hardwarePlatform()) {
-    case HardwarePlatformAplite:
-        return "aplite";
-    case HardwarePlatformBasalt:
-        return "basalt";
-    case HardwarePlatformChalk:
-        return "chalk";
-    default:
-        ;
-    }
-    return "unknown";
+    return m_pebble->platformName();
 }
 
 QString DBusPebble::SoftwareVersion() const

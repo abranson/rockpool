@@ -16,12 +16,18 @@ enum HardwareRevision {
     HardwareRevisionSPALDING_EVT = 9,
     HardwareRevisionBOBBY_SMILES = 10,
     HardwareRevisionSPALDING = 11,
+    HardwareRevisionSILK_EVT = 12,
+    HardwareRevisionROBERT_EVT = 13,
+    HardwareRevisionSILK = 14,
 
     HardwareRevisionTINTIN_BB = 0xFF,
     HardwareRevisionTINTIN_BB2 = 0xFE,
     HardwareRevisionSNOWY_BB = 0xFD,
     HardwareRevisionSNOWY_BB2 = 0xFC,
-    HardwareRevisionSPALDING_BB2 = 0xFB
+    HardwareRevisionSPALDING_BB2 = 0xFB,
+    HardwareRevisionSILK_BB = 0xFA,
+    HardwareRevisionROBERT_BB = 0xF9,
+    HardwareRevisionSILK_BB2 = 0xF8
 };
 
 enum OS {
@@ -37,7 +43,9 @@ enum HardwarePlatform {
     HardwarePlatformUnknown = 0,
     HardwarePlatformAplite,
     HardwarePlatformBasalt,
-    HardwarePlatformChalk
+    HardwarePlatformChalk,
+    HardwarePlatformDiorite,
+    HardwarePlatformEmery
 };
 
 enum Model {
@@ -62,7 +70,16 @@ enum Model {
     ModelSpalding14Black = 18,
     ModelSpalding20Silver = 19,
     ModelSpalding20Black = 20,
-    ModelSpalding14RoseGold = 21
+    ModelSpalding14RoseGold = 21,
+    ModelSilkHrLime = 22,
+    ModelSilkHrFlame = 23,
+    ModelSilkHrWhite = 24,
+    ModelSilkHrAqua = 25,
+    ModelSilkSeBlack = 26,
+    ModelSilkSeWhite = 27,
+    ModelRobertBlack = 28,
+    ModelRobertSilver = 29,
+    ModelRobertGold = 30
 };
 
 enum MusicControlButton {

@@ -74,6 +74,7 @@ public:
     Model model() const;
     HardwarePlatform hardwarePlatform() const;
     QString platformString() const;
+    QString platformName() const;
     QString serialNumber() const;
     QString language() const;
     quint16 langVer() const;

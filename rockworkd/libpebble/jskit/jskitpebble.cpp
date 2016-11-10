@@ -267,19 +267,7 @@ QJSValue JSKitPebble::getActiveWatchInfo() const
 {
     QJSValue watchInfo = m_mgr->m_engine->newObject();
 
-    switch (m_mgr->m_pebble->hardwarePlatform()) {
-    case HardwarePlatformBasalt:
-        watchInfo.setProperty("platform", "basalt");
-        break;
-
-    case HardwarePlatformChalk:
-        watchInfo.setProperty("platform", "chalk");
-        break;
-
-    default:
-        watchInfo.setProperty("platform", "aplite");
-        break;
-    }
+    watchInfo.setProperty("platform", m_mgr->m_pebble->platformName());
 
     switch (m_mgr->m_pebble->model()) {
     case ModelTintinWhite:
@@ -360,6 +348,42 @@ QJSValue JSKitPebble::getActiveWatchInfo() const
 
     case ModelSpalding14RoseGold:
         watchInfo.setProperty("model", "pebble_time_round_rose_gold_14mm");
+        break;
+
+    case ModelSilkHrAqua:
+        watchInfo.setProperty("model", "pebble_2_hr_aqua");
+        break;
+
+    case ModelSilkHrFlame:
+        watchInfo.setProperty("model", "pebble_2_hr_flame");
+        break;
+
+    case ModelSilkHrLime:
+        watchInfo.setProperty("model", "pebble_2_hr_lime");
+        break;
+
+    case ModelSilkHrWhite:
+        watchInfo.setProperty("model", "pebble_2_hr_white");
+        break;
+
+    case ModelSilkSeBlack:
+        watchInfo.setProperty("model", "pebble_2_se_black");
+        break;
+
+    case ModelSilkSeWhite:
+        watchInfo.setProperty("model", "pebble_2_se_white");
+        break;
+
+    case ModelRobertBlack:
+        watchInfo.setProperty("model", "pebble_time_2_black");
+        break;
+
+    case ModelRobertGold:
+        watchInfo.setProperty("model", "pebble_time_2_gold");
+        break;
+
+    case ModelRobertSilver:
+        watchInfo.setProperty("model", "pebble_time_2_silver");
         break;
 
     default:
