@@ -24,5 +24,13 @@ ListModel {
     ListElement { image: 'qrc:///artwork/spalding-20mm-silver.png'; shape: "round" }
     ListElement { image: 'qrc:///artwork/spalding-20mm-black.png'; shape: "round" }
     ListElement { image: 'qrc:///artwork/spalding-14mm-rose-gold.png'; shape: "round" }
+    ListElement { image: 'qrc:///artwork/tintin-green.png'; shape: "rectangle" }// silk lime
+    ListElement { image: 'qrc:///artwork/tintin-red.png'; shape: "rectangle" }  // silk flame
+    ListElement { image: 'qrc:///artwork/tintin-white.png'; shape: "rectangle" }// silk white
+    ListElement { image: 'qrc:///artwork/tintin-blue.png'; shape: "rectangle" } // silk aqua
+    ListElement { image: 'qrc:///artwork/tintin-black.png'; shape: "rectangle" }// silk se black
+    ListElement { image: 'qrc:///artwork/tintin-white.png'; shape: "rectangle" }// silk se white
+    ListElement { image: 'qrc:///artwork/bobby-black.png'; shape: "rectangle" } // robert black
+    ListElement { image: 'qrc:///artwork/bobby-silver.png'; shape: "rectangle" }// robert silver
+    ListElement { image: 'qrc:///artwork/bobby-gold.png'; shape: "rectangle" }  // robert gold
 }
-
