@@ -535,7 +535,8 @@ bool Pebble::imperialUnits() const
 
 void Pebble::setWeatherUnits(const QString &u)
 {
-    m_weatherProv->setUnits(u.at(0));
+    if(m_weatherProv)
+        m_weatherProv->setUnits(u.at(0));
     QSettings appCfg(m_storagePath + "/appsettings.conf", QSettings::IniFormat);
     appCfg.beginGroup(WeatherApp::appConfigKey);
     appCfg.setValue("units",u);
@@ -543,7 +544,7 @@ void Pebble::setWeatherUnits(const QString &u)
 }
 QString Pebble::getWeatherUnits() const
 {
-    return m_weatherProv->getUnits();
+    return m_weatherProv ? m_weatherProv->getUnits() : 'm';
 }
 
 void Pebble::setWeatherApiKey(const QString &key)
@@ -619,7 +620,8 @@ void Pebble::initWeatherProvider(const QSettings &settings)
 
 void Pebble::setWeatherLanguage(const QString &lang)
 {
-    m_weatherProv->setLanguage(lang);
+    if(m_weatherProv)
+        m_weatherProv->setLanguage(lang);
     QSettings appCfg(m_storagePath + "/appsettings.conf", QSettings::IniFormat);
     appCfg.beginGroup(WeatherApp::appConfigKey);
     appCfg.setValue("language",lang);
@@ -627,7 +629,7 @@ void Pebble::setWeatherLanguage(const QString &lang)
 }
 QString Pebble::getWeatherLanguage() const
 {
-    return m_weatherProv->getLanguage();
+    return m_weatherProv ? m_weatherProv->getLanguage() : "";
 }
 
 QVariantList Pebble::getWeatherLocations() const
@@ -644,6 +646,7 @@ QVariantList Pebble::getWeatherLocations() const
         locs.append(city);
     }
     appCfg.endArray();
+    qDebug() << "Deserialized" << locs.size() << "locations";
     return locs;
 }
 
