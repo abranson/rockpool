@@ -357,6 +357,9 @@ QString Pebble::platformString() const
     case HardwareRevisionSNOWY_BB:
     case HardwareRevisionSNOWY_BB2:
     case HardwareRevisionSPALDING_BB2:
+    case HardwareRevisionSILK_BB:
+    case HardwareRevisionSILK_BB2:
+    case HardwareRevisionROBERT_BB:
         break;
     case HardwareRevisionTINTIN_EV2_4:
         return "ev2_4";
@@ -370,6 +373,12 @@ QString Pebble::platformString() const
         return "snowy_s3";
     case HardwareRevisionSPALDING:
         return "spalding";
+    case HardwareRevisionSILK_EVT:
+        return "silk_evt";
+    case HardwareRevisionSILK:
+        return "silk";
+    case HardwareRevisionROBERT_EVT:
+        return "robert_evt";
     }
     return QString();
 }
