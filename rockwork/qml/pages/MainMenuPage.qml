@@ -89,7 +89,7 @@ Page {
                                 anchors.centerIn: parent
                                 color: "transparent"
                                 visible: false
-                                property bool isRound: modelModel.get(root.pebble.model - 1).shape === "round"
+                                property bool isRound: modelModel.get(root.pebble.model).shape === "round"
                                 Rectangle {
                                     color: "blue"
                                     anchors.centerIn: parent
