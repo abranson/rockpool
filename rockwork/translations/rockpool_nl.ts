@@ -339,11 +339,31 @@
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="266"/>
+        <source>Syslog Verbosity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="268"/>
+        <source>Debug</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="269"/>
+        <source>Warning</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="270"/>
+        <source>Critical</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="277"/>
         <source>Send watch logs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="276"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="287"/>
         <source>Cancel</source>
         <translation type="unfinished">Annuleren</translation>
     </message>

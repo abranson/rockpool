@@ -60,16 +60,20 @@ void BlobDB::sendCommand(BlobDBId database, Operation operation, const QByteArra
     sendNext();
 }
 
-static QString BlobDBErrMsg[9]={"Unknown",
-                         "Success",
-                         "General Failure",
-                         "Invalid Operation",
-                         "Invalid BlobId",
-                         "Invalid Data",
-                         "No Such UUID",
-                         "BlobDb is Full",
-                         "BlobDb is Stale"
-                        };
+static QString BlobDBErrMsg[12]={
+    "Unknown",
+    "Success",
+    "General Failure",
+    "Invalid Operation",
+    "Invalid BlobId",
+    "Invalid Data",
+    "No Such UUID",
+    "BlobDb is Full",
+    "BlobDb is Stale",
+    "Operation Not Supported",
+    "Database is locked",
+    "Try Later"
+    };
 
 void BlobDB::blobCommandReply(const QByteArray &data)
 {

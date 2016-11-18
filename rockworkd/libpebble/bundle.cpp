@@ -49,6 +49,15 @@ QString Bundle::file(Bundle::FileType type, HardwarePlatform hardwarePlatform) c
             possibleDirs.append("chalk");
         }
         break;
+    case HardwarePlatformDiorite:
+        if (QFileInfo::exists(path() + "/diorite/")) {
+            possibleDirs.append("diorite");
+        }
+        if (QFileInfo::exists(path() + "/aplite/")) {
+            possibleDirs.append("aplite");
+        }
+        possibleDirs.append("");
+        break;
     default:
         possibleDirs.append("");
         ;

@@ -306,9 +306,6 @@ void Pebble::setHardwareRevision(HardwareRevision hardwareRevision)
 {
     m_hardwareRevision = hardwareRevision;
     switch (m_hardwareRevision) {
-    case HardwareRevisionUNKNOWN:
-        m_hardwarePlatform = HardwarePlatformUnknown;
-        break;
     case HardwareRevisionTINTIN_EV1:
     case HardwareRevisionTINTIN_EV2:
     case HardwareRevisionTINTIN_EV2_3:
@@ -331,6 +328,18 @@ void Pebble::setHardwareRevision(HardwareRevision hardwareRevision)
     case HardwareRevisionSPALDING_BB2:
         m_hardwarePlatform = HardwarePlatformChalk;
         break;
+    case HardwareRevisionSILK:
+    case HardwareRevisionSILK_BB:
+    case HardwareRevisionSILK_BB2:
+    case HardwareRevisionSILK_EVT:
+        m_hardwarePlatform = HardwarePlatformDiorite;
+        break;
+    case HardwareRevisionROBERT_EVT:
+    case HardwareRevisionROBERT_BB:
+        m_hardwarePlatform = HardwarePlatformEmery;
+        break;
+    default:
+        m_hardwarePlatform = HardwarePlatformUnknown;
     }
 }
 
@@ -348,6 +357,9 @@ QString Pebble::platformString() const
     case HardwareRevisionSNOWY_BB:
     case HardwareRevisionSNOWY_BB2:
     case HardwareRevisionSPALDING_BB2:
+    case HardwareRevisionSILK_BB:
+    case HardwareRevisionSILK_BB2:
+    case HardwareRevisionROBERT_BB:
         break;
     case HardwareRevisionTINTIN_EV2_4:
         return "ev2_4";
@@ -361,6 +373,12 @@ QString Pebble::platformString() const
         return "snowy_s3";
     case HardwareRevisionSPALDING:
         return "spalding";
+    case HardwareRevisionSILK_EVT:
+        return "silk_evt";
+    case HardwareRevisionSILK:
+        return "silk";
+    case HardwareRevisionROBERT_EVT:
+        return "robert_evt";
     }
     return QString();
 }
@@ -368,6 +386,24 @@ QString Pebble::platformString() const
 HardwarePlatform Pebble::hardwarePlatform() const
 {
     return m_hardwarePlatform;
+}
+
+QString Pebble::platformName() const
+{
+    switch(m_hardwarePlatform) {
+        case HardwarePlatformAplite:
+            return "aplite";
+        case HardwarePlatformBasalt:
+            return "basalt";
+        case HardwarePlatformChalk:
+            return "chalk";
+        case HardwarePlatformDiorite:
+            return "diorite";
+        case HardwarePlatformEmery:
+            return "emery";
+        default:
+            return "unknown";
+    }
 }
 
 QString Pebble::serialNumber() const
@@ -508,7 +544,8 @@ bool Pebble::imperialUnits() const
 
 void Pebble::setWeatherUnits(const QString &u)
 {
-    m_weatherProv->setUnits(u.at(0));
+    if(m_weatherProv)
+        m_weatherProv->setUnits(u.at(0));
     QSettings appCfg(m_storagePath + "/appsettings.conf", QSettings::IniFormat);
     appCfg.beginGroup(WeatherApp::appConfigKey);
     appCfg.setValue("units",u);
@@ -516,7 +553,7 @@ void Pebble::setWeatherUnits(const QString &u)
 }
 QString Pebble::getWeatherUnits() const
 {
-    return m_weatherProv->getUnits();
+    return m_weatherProv ? m_weatherProv->getUnits() : 'm';
 }
 
 void Pebble::setWeatherApiKey(const QString &key)
@@ -592,7 +629,8 @@ void Pebble::initWeatherProvider(const QSettings &settings)
 
 void Pebble::setWeatherLanguage(const QString &lang)
 {
-    m_weatherProv->setLanguage(lang);
+    if(m_weatherProv)
+        m_weatherProv->setLanguage(lang);
     QSettings appCfg(m_storagePath + "/appsettings.conf", QSettings::IniFormat);
     appCfg.beginGroup(WeatherApp::appConfigKey);
     appCfg.setValue("language",lang);
@@ -600,7 +638,7 @@ void Pebble::setWeatherLanguage(const QString &lang)
 }
 QString Pebble::getWeatherLanguage() const
 {
-    return m_weatherProv->getLanguage();
+    return m_weatherProv ? m_weatherProv->getLanguage() : "";
 }
 
 QVariantList Pebble::getWeatherLocations() const
@@ -617,6 +655,7 @@ QVariantList Pebble::getWeatherLocations() const
         locs.append(city);
     }
     appCfg.endArray();
+    qDebug() << "Deserialized" << locs.size() << "locations";
     return locs;
 }
 
