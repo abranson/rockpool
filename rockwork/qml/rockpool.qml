@@ -61,7 +61,7 @@ ApplicationWindow {
             console.log("Service not running. Starting now.");
             serviceController.startService();
         }
-        if (pebbles.version !== version) {
+        if (pebbles.version !== version && appFilePath.lastIndexOf("/opt/sdk/",0)!==0) {
             console.log("Service file version (", version, ") is not equal running service version (", pebbles.version, "). Restarting service.");
             serviceController.restartService();
         }

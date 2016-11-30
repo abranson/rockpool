@@ -7,7 +7,7 @@ QT += qml quick dbus
 CONFIG += c++11
 CONFIG += sailfishapp
 
-PKGCONFIG += qt5embedwidget
+PKGCONFIG += qt5embedwidget 
 
 HEADERS += \
     notificationsourcemodel.h \

@@ -1,6 +1,6 @@
 import QtQuick 2.2
 import Sailfish.Silica 1.0
-import Qt5Mozilla 1.0
+import Sailfish.WebView 1.0
 
 Page {
     id: appSettings
@@ -21,7 +21,7 @@ Page {
         wrapMode: Text.WordWrap
     }
 
-    QmlMozView {
+    RawWebView {
         id: webview
         anchors { top: header.bottom;bottom:parent.bottom }
         width: parent.width

@@ -22,9 +22,7 @@ This application supports the Pebble v3 firmware in Sailfish (i.e. Pebble Time, 
 
 ## Building
 
-Rockpool requires some extra packages to be installed on the MerSDK to be able to build. Since we switched to the Gecko web engine for the app settings page and added QtWebSockets, building has got a bit more complicated:
-
-  * quazip-devel, qtmozembed-qt5-devel, and qt5-qtwebsockets-devel are needed on the MerSDK. That requires manual intervention, because the repositories containing the latter two packages need to be added to the MerSDK VM, and the prerequisite packages (dependencies) of qtmozembed are hooked to the different versions, hence it raises a conflict which would need to be manually resolved.
+Rockpool requires some extra packages to be installed on the MerSDK to be able to build. Mainly this is to add missing QtWebSockets Qt plugin which is missing in Qt 5.2 in general and in Sailfish in particular.
 
 You would need to perform following steps:
 
@@ -32,16 +30,10 @@ You would need to perform following steps:
   * Enter the scratchbox as root for package installation 
     * Phone: sb2 -t SailfishOS-armv7hl -R -m sdk-install
     * Tablet: sb2 -t SailfishOS-i486 -R -m sdk-install
-  * Add quazip first, to make sure we get the stable version if there's a newer one in mer-core (zypper install quazip-devel)
-  * Add mer-core repository
-    * Phone: zypper ar -f http://repo.merproject.org/obs/mer-core:/armv7hl:/devel/Core_armv7hl/ mer-core
-    * Tablet: zypper ar -f http://repo.merproject.org/obs/mer-core:/i486:/devel/Core_i486/ mer-core
   * Add my repo for QtWebSockets
     * zypper ar -f http://sailfish.openrepos.net/abranson/personal/main openrepos-abranson
-  * Install required package and explicit conflicting down-chain (zypper install xulrunner-qt5 qtmozembed-qt5 qtmozembed-qt5-devel qt5-qtwebsockets-devel qt5-qtwebsockets)
-  * When zypper complains about conflicts - choose option 3 (proceed with broken dependencies)
 
-After that, the package will build. QtCreator will warn you that Qt websockets can't be found, but you can fix that by syncing the target in the 'SailfishOS' pane. To install your package on your phone or tablet, you'll need to add my openrepo. The easiest way to do this is with warehouse, though you'll have to do it manually if you're using the emulator.
+After that, the package will build pulling necessary dependencies from official and newly added repositories. QtCreator will warn you that Qt websockets can't be found locally, but you can fix that by syncing the target in the 'SailfishOS' pane. To install your package on your phone or tablet, you'll need to add my openrepo. The easiest way to do this is with warehouse, though you'll have to do it manually if you're using the emulator.
 
 ## The thanks
 
