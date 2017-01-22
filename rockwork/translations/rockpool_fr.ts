@@ -1003,12 +1003,12 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="55"/>
         <source>Timeline</source>
-        <translation>Calendrier</translation>
+        <translation>Agenda</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="60"/>
         <source>Sync calendar to timeline</source>
-        <translation>Synchroniser le calendrier avec la timeline</translation>
+        <translation>Synchroniser le calendrier avec l'agenda</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="68"/>
@@ -1023,12 +1023,12 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="81"/>
         <source>Timeline Window Start (days ago)</source>
-        <translation>Debut du calendrier (depuis x jours)</translation>
+        <translation>Debut de l'agenda (depuis x jours)</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="89"/>
         <source>Timeline Window End (days ahead)</source>
-        <translation>Fin du calendrier (jusqu'à x jours)</translation>
+        <translation>Fin de l'agenda (jusqu'à x jours)</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="97"/>
@@ -1038,7 +1038,7 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="105"/>
         <source>Set Timeline Window</source>
-        <translation>Definir la plage du calendrier</translation>
+        <translation>Definir la plage de l'agenda</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="111"/>
