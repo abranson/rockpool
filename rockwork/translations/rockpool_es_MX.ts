@@ -6,44 +6,44 @@
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="113"/>
         <source>Alert</source>
-        <translation type="unfinished"></translation>
+        <translation>Alerta</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="114"/>
         <source>Something going wrong</source>
-        <translation type="unfinished"></translation>
+        <translation>Algo esta mal</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="115"/>
         <location filename="../qml/pages/AppSettingsPage.qml" line="242"/>
         <source>Accept</source>
-        <translation type="unfinished"></translation>
+        <translation>Aceptar</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="116"/>
         <location filename="../qml/pages/AppSettingsPage.qml" line="293"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>Cancelar</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="154"/>
         <source>Host</source>
-        <translation type="unfinished"></translation>
+        <translation>Anfitrión</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="154"/>
         <source>requests permission for</source>
-        <translation type="unfinished"></translation>
+        <translation>Solicita permiso para</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="156"/>
         <source>Store permission permanently and don't ask again</source>
-        <translation type="unfinished"></translation>
+        <translation>Almacene el permiso permanentemente y no vuelva a preguntar</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="297"/>
         <source>Select</source>
-        <translation type="unfinished"></translation>
+        <translation>Seleccione</translation>
     </message>
 </context>
 <context>
@@ -51,37 +51,37 @@
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="170"/>
         <source>Description</source>
-        <translation type="unfinished"></translation>
+        <translation>Descripción</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="191"/>
         <source>Developer</source>
-        <translation type="unfinished"></translation>
+        <translation>Desarollador</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="196"/>
         <source>Version</source>
-        <translation type="unfinished"></translation>
+        <translation>Version</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="246"/>
         <source>Install</source>
-        <translation type="unfinished"></translation>
+        <translation>Instalar</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="246"/>
         <source>Installing...</source>
-        <translation type="unfinished"></translation>
+        <translation>Instalando...</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="246"/>
         <source>Installed</source>
-        <translation type="unfinished"></translation>
+        <translation>Instalado</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="246"/>
         <source>Needs Companion</source>
-        <translation type="unfinished"></translation>
+        <translation>Necesita compañero</translation>
     </message>
 </context>
 <context>
@@ -89,59 +89,59 @@
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="43"/>
         <source>Use</source>
-        <translation type="unfinished"></translation>
+        <translation>Usar</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="43"/>
         <location filename="../qml/pages/AppStorePage.qml" line="55"/>
         <source>Collections</source>
-        <translation type="unfinished"></translation>
+        <translation>Coleccion</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="43"/>
         <location filename="../qml/pages/AppStorePage.qml" line="55"/>
         <source>Categories</source>
-        <translation type="unfinished"></translation>
+        <translation>Categorias</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="49"/>
         <source>Search</source>
-        <translation type="unfinished"></translation>
+        <translation>Busqueda</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="55"/>
         <source>Watchapps</source>
-        <translation type="unfinished"></translation>
+        <translation>Aplicaciones</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="55"/>
         <source>Watchfaces</source>
-        <translation type="unfinished"></translation>
+        <translation>Caras de reloj</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="101"/>
         <source>See all</source>
-        <translation type="unfinished"></translation>
+        <translation>Ver todos</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="163"/>
         <source>All Apps</source>
-        <translation type="unfinished"></translation>
+        <translation>Todas las Apps</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="196"/>
         <source>Needs companion</source>
-        <translation type="unfinished"></translation>
+        <translation>Neceista compañero</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="223"/>
         <source>Search app or watchface</source>
-        <translation type="unfinished"></translation>
+        <translation>Buscar applicacion o caratula</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="226"/>
         <source>Search Results</source>
-        <translation type="unfinished"></translation>
+        <translation>busca resultados</translation>
     </message>
 </context>
 <context>
@@ -150,37 +150,37 @@
         <location filename="../qml/pages/AppUpgradePage.qml" line="24"/>
         <location filename="../qml/pages/AppUpgradePage.qml" line="25"/>
         <source>Upgrading</source>
-        <translation type="unfinished"></translation>
+        <translation>Actualizando</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="49"/>
         <source>Version</source>
-        <translation type="unfinished"></translation>
+        <translation>version</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="77"/>
         <source>Upgrade</source>
-        <translation type="unfinished"></translation>
+        <translation>Actualizar</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="77"/>
         <source>Upgrading...</source>
-        <translation type="unfinished"></translation>
+        <translation>Actualizando...</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="77"/>
         <source>Needs Companion</source>
-        <translation type="unfinished"></translation>
+        <translation>Neceista compañero</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="93"/>
         <source>Compatibility</source>
-        <translation type="unfinished"></translation>
+        <translation>Compatibilidad</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="175"/>
         <source>Change Log</source>
-        <translation type="unfinished"></translation>
+        <translation>Registro de cambios</translation>
     </message>
 </context>
 <context>
@@ -188,12 +188,12 @@
     <message>
         <location filename="../qml/pages/ContentPeerPickerPage.qml" line="16"/>
         <source>Share Via</source>
-        <translation type="unfinished"></translation>
+        <translation>Compartir via</translation>
     </message>
     <message>
         <location filename="../qml/pages/ContentPeerPickerPage.qml" line="26"/>
         <source>No Share Providers configured. Please add provider's account in System Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>No hay proveedores de acciones configurados. Agregue la cuenta del proveedor en la configuración del sistema</translation>
     </message>
 </context>
 <context>
@@ -201,12 +201,12 @@
     <message>
         <location filename="../qml/cover/CoverPage.qml" line="27"/>
         <source>connected</source>
-        <translation type="unfinished"></translation>
+        <translation>Conectado</translation>
     </message>
     <message>
         <location filename="../qml/cover/CoverPage.qml" line="27"/>
         <source>disconnected</source>
-        <translation type="unfinished"></translation>
+        <translation>desconectado</translation>
     </message>
 </context>
 <context>
@@ -214,118 +214,118 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="11"/>
         <source>Developer Tools</source>
-        <translation type="unfinished"></translation>
+        <translation>Herramientas de desarrollo</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="60"/>
         <source>Disable Service</source>
-        <translation type="unfinished"></translation>
+        <translation>Desactivar el servicio</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="66"/>
         <source>Restart Service</source>
-        <translation type="unfinished"></translation>
+        <translation>Reiniciar el servicio</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="72"/>
         <source>Screenshots</source>
-        <translation type="unfinished"></translation>
+        <translation>Capturas de pantalla</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="78"/>
         <source>Developer Connection</source>
-        <translation type="unfinished"></translation>
+        <translation>Conexión del desarrollador</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="84"/>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="194"/>
         <source>Report problem</source>
-        <translation type="unfinished"></translation>
+        <translation>Reportar un problema</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="90"/>
         <source>Install app or watchface from file</source>
-        <translation type="unfinished"></translation>
+        <translation>Instalar aplicación o caratula desde un archivo</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="113"/>
         <source>Developer Connection Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Configuración de la conexión del desarrollador</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="118"/>
         <source>Enable Connection</source>
-        <translation type="unfinished"></translation>
+        <translation>Habilitar conexión</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="120"/>
         <source>Enable Developer Connection Service</source>
-        <translation type="unfinished"></translation>
+        <translation>Habilitar servicio de conexión de desarrollador</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="130"/>
         <source>Listen Port</source>
-        <translation type="unfinished"></translation>
+        <translation>Escuchar Puerto</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="143"/>
         <source>Apply</source>
-        <translation type="unfinished"></translation>
+        <translation>aplicar</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="153"/>
         <source>Enable</source>
-        <translation type="unfinished"></translation>
+        <translation>Habilitar</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="154"/>
         <source>Enable DeveloperConnection over CloudPebble</source>
-        <translation type="unfinished"></translation>
+        <translation>Habilitar la conexión de desarrollador sobre CloudPebble</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="160"/>
         <source>Runtime Status</source>
-        <translation type="unfinished"></translation>
+        <translation>Estado  de ejecución</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="165"/>
         <source>DeveloperConnection Status</source>
-        <translation type="unfinished"></translation>
+        <translation>Estado de conexión del desarrollador</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="166"/>
         <source>DeveloperConnection port listening state</source>
-        <translation type="unfinished"></translation>
+        <translation>Estado de escucha del puerto de conexión del desarrollador</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="172"/>
         <source>CloudPebble Status</source>
-        <translation type="unfinished"></translation>
+        <translation>Estado del CloudPebble</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="173"/>
         <source>Indicates CloudPebble connection state</source>
-        <translation type="unfinished"></translation>
+        <translation>Indica el estado de coneccion con el CloudPebble</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="178"/>
         <source>Close</source>
-        <translation type="unfinished"></translation>
+        <translation>Cerrar</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="207"/>
         <source>Preparing logs package...</source>
-        <translation type="unfinished"></translation>
+        <translation>Preparando el paquete de registro ...</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="248"/>
         <source>Send watch logs</source>
-        <translation type="unfinished"></translation>
+        <translation>Enviar registros de reloj</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="257"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>Cancelar</translation>
     </message>
 </context>
 <context>
@@ -333,47 +333,47 @@
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="15"/>
         <source>Firmware upgrade</source>
-        <translation type="unfinished"></translation>
+        <translation>Actualización de firmware</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="18"/>
         <source>Currently installed firmware: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Firmware instalado actualmente:% 1</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="24"/>
         <source>A new firmware upgrade is available for your Pebble smartwatch.</source>
-        <translation type="unfinished"></translation>
+        <translation>Una nueva actualización de firmware está disponible para su smartwatch Pebble.</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="32"/>
         <source>Candidate firmware version: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Versión de el Firmware candidato:% 1</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="39"/>
         <source>Release Notes: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Notas de la versión:% 1</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="46"/>
         <source>Important:</source>
-        <translation type="unfinished"></translation>
+        <translation>Importate:</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="46"/>
         <source>This update will also upgrade recovery data. Make sure your Pebble smartwarch is connected to a power adapter.</source>
-        <translation type="unfinished"></translation>
+        <translation>Esta actualización también actualizará los datos de recuperación. Asegúrese de que su reloj Pebble está conectado a un adaptador de corriente.</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="53"/>
         <source>Upgrade now</source>
-        <translation type="unfinished"></translation>
+        <translation>Actualizar ahora</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="53"/>
         <source>Firmware is Up-To-Date</source>
-        <translation type="unfinished"></translation>
+        <translation>El firmware está actualizado</translation>
     </message>
 </context>
 <context>
@@ -381,72 +381,72 @@
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="13"/>
         <source>Health settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Configuración de salud</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="14"/>
         <source>OK</source>
-        <translation type="unfinished"></translation>
+        <translation>Aceptar</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="16"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>Cancelar</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="20"/>
         <source>Health app enabled</source>
-        <translation type="unfinished"></translation>
+        <translation>Aplicación de salud activada</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="26"/>
         <source>Age</source>
-        <translation type="unfinished"></translation>
+        <translation>Edad</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="37"/>
         <source>Height (cm)</source>
-        <translation type="unfinished"></translation>
+        <translation>Altura (cm)</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="47"/>
         <source>Weight (kg)</source>
-        <translation type="unfinished"></translation>
+        <translation>Peso (kg)</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="58"/>
         <source>Gender</source>
-        <translation type="unfinished"></translation>
+        <translation>Género</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="59"/>
         <source>Female</source>
-        <translation type="unfinished"></translation>
+        <translation>Femenino</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="59"/>
         <source>Male</source>
-        <translation type="unfinished"></translation>
+        <translation>Masculino</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="67"/>
         <source>I want to be more active</source>
-        <translation type="unfinished"></translation>
+        <translation>Quiero ser más activo</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="68"/>
         <source>More Active</source>
-        <translation type="unfinished"></translation>
+        <translation>Mas activo</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="74"/>
         <source>I want to sleep more</source>
-        <translation type="unfinished"></translation>
+        <translation>Quiero dormir más</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="75"/>
         <source>Sleep More</source>
-        <translation type="unfinished"></translation>
+        <translation>Dormir más</translation>
     </message>
 </context>
 <context>
@@ -454,12 +454,12 @@
     <message>
         <location filename="../qml/pages/ImportPackagePage.qml" line="8"/>
         <source>Import watchapp or watchface</source>
-        <translation type="unfinished"></translation>
+        <translation>Importar watchapp o watchface</translation>
     </message>
     <message>
         <location filename="../qml/pages/ImportPackagePage.qml" line="30"/>
         <source>Import File?</source>
-        <translation type="unfinished"></translation>
+        <translation>Importar archivo?</translation>
     </message>
 </context>
 <context>
@@ -467,22 +467,22 @@
     <message>
         <location filename="../qml/pages/InfoPage.qml" line="29"/>
         <source>Version %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Versión 1</translation>
     </message>
     <message>
         <location filename="../qml/pages/InfoPage.qml" line="42"/>
         <source>Legal</source>
-        <translation type="unfinished"></translation>
+        <translation>Legal</translation>
     </message>
     <message>
         <location filename="../qml/pages/InfoPage.qml" line="69"/>
         <source>This application is neither affiliated with nor endorsed by Pebble Technology Corp.</source>
-        <translation type="unfinished"></translation>
+        <translation>Esta aplicación no está afiliada ni respaldada por Pebble Technology Corp.</translation>
     </message>
     <message>
         <location filename="../qml/pages/InfoPage.qml" line="79"/>
         <source>Pebble is a trademark of Pebble Technology Corp.</source>
-        <translation type="unfinished"></translation>
+        <translation>Pebble es una marca registrada de Pebble Technology Corp.</translation>
     </message>
 </context>
 <context>
@@ -490,42 +490,42 @@
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="29"/>
         <source>Upgrade</source>
-        <translation type="unfinished"></translation>
+        <translation>Actualizar</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="29"/>
         <source>Version</source>
-        <translation type="unfinished"></translation>
+        <translation>Versión</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="36"/>
         <source>Launch</source>
-        <translation type="unfinished"></translation>
+        <translation>Iniciar</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="40"/>
         <source>Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Configuracion</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="45"/>
         <source>Delete</source>
-        <translation type="unfinished"></translation>
+        <translation>Borrar</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="48"/>
         <source>Really Delete?</source>
-        <translation type="unfinished"></translation>
+        <translation>Eliminar realmente?</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="54"/>
         <source>Move Up</source>
-        <translation type="unfinished"></translation>
+        <translation>Subir</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="59"/>
         <source>Move Down</source>
-        <translation type="unfinished"></translation>
+        <translation>Bajar</translation>
     </message>
 </context>
 <context>
@@ -533,22 +533,22 @@
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="23"/>
         <source>Add New</source>
-        <translation type="unfinished"></translation>
+        <translation>Añadir nuevo</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="32"/>
         <source>Apps &amp; Watchfaces</source>
-        <translation type="unfinished"></translation>
+        <translation>Aplicaciones y caras de reloj</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="32"/>
         <source>Apps</source>
-        <translation type="unfinished"></translation>
+        <translation>Aplicaciones</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="32"/>
         <source>Watchfaces</source>
-        <translation type="unfinished"></translation>
+        <translation>Cara de reloj</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="104"/>
