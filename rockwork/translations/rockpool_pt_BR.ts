@@ -111,7 +111,7 @@
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="55"/>
         <source>Watchapps</source>
-        <translation type="unfinished"></translation>
+        <translation>Aplicações de reloj</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="55"/>
