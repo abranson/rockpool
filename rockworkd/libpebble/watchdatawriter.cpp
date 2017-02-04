@@ -14,10 +14,21 @@ void WatchDataWriter::writeBytes(int n, const QByteArray &b)
     }
 }
 
+QByteArray WatchDataWriter::chopStringToByteLength(const QString &s, int n) {
+
+    int charLen = n;
+    QByteArray utf8Bytes = s.left(charLen).toUtf8();
+    while (utf8Bytes.length() > n) {
+        utf8Bytes = s.left(--charLen).toUtf8();
+    }
+    return utf8Bytes;
+}
+
 void WatchDataWriter::writeFixedString(int n, const QString &s)
 {
-    _buf->append(s.left(n).toUtf8());
-    for (int i = s.left(n).length(); i < n; i++) {
+    QByteArray utf8Bytes = chopStringToByteLength(s, n-1);
+    _buf->append(utf8Bytes);
+    for (int i = utf8Bytes.length(); i < n; i++) {
         _buf->append('\0');
     }
 }
@@ -30,8 +41,11 @@ void WatchDataWriter::writeCString(const QString &s)
 
 void WatchDataWriter::writePascalString(const QString &s)
 {
-    _buf->append(s.length());
-    _buf->append(s.toLatin1());
+    QByteArray utf8bytes = chopStringToByteLength(s, 0xFE);
+    int length = utf8bytes.length()+1;
+    _buf->append(length);
+    _buf->append(utf8bytes);
+    _buf->append('\0');
 }
 
 void WatchDataWriter::writeUuid(const QUuid &uuid)

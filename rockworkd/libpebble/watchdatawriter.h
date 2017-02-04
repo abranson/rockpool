@@ -21,6 +21,8 @@ public:
 
     void writeBytes(int n, const QByteArray &b);
 
+    static QByteArray chopStringToByteLength(const QString &s, int n);
+
     void writeFixedString(int n, const QString &s);
 
     void writeCString(const QString &s);
@@ -81,5 +83,7 @@ inline uchar * WatchDataWriter::up(int n)
 {
     return reinterpret_cast<uchar *>(p(n));
 }
+
+
 
 #endif

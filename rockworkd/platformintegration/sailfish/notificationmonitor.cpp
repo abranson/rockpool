@@ -471,5 +471,3 @@ NotificationMonitor::~NotificationMonitor()
 }
 
 }
-
-#include "moc_notificationmonitor.cpp"
