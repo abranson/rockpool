@@ -20,7 +20,6 @@
 #include <QtCore/QMessageLogger>
 #include <QtCore/QSettings>
 #include <QtCore/QSocketNotifier>
-#include <dbus/dbus.h>
 
 #include "notifications.h"
 #include "notificationmonitor.h"
@@ -73,10 +72,16 @@ NotificationMonitorPrivate::NotificationMonitorPrivate(NotificationMonitor *q)
 
 NotificationMonitorPrivate::~NotificationMonitorPrivate()
 {
-    QMap<quint32, Notification*>::iterator it = _notifs.begin();
+	QMap<quint32, Notification*>::iterator it = _notifs.begin();
 	while (it != _notifs.end()) {
 		delete it.value();
 	}
+
+#if 0 /* No need to remove match rules since we're closing the connection. */
+	removeMatchRule("type='method_call',interface='org.freedesktop.Notifications',member='Notify',eavesdrop='true'");
+	removeMatchRule("type='method_return',sender='org.freedesktop.Notifications',eavesdrop='true'");
+	removeMatchRule("type='signal',sender='org.freedesktop.Notifications',path='/org/freedesktop/Notifications',interface='org.freedesktop.Notifications',member='NotificationClosed'");
+#endif
 
 	dbus_connection_remove_filter(_conn, busMessageFilter, this);
 
@@ -89,11 +94,11 @@ void NotificationMonitorPrivate::processIncomingNotification(quint32 id, const P
 	Q_Q(NotificationMonitor);
 	qCDebug(notificationMonitorCat) << "Incoming notification" << id << proto;
 
-    Notification *n = _notifs.value(id, 0);
+	Notification *n = _notifs.value(id, 0);
 
 	bool is_new_notification = !n;
 	if (is_new_notification) {
-        n = new Notification(id, q);
+		n = new Notification(id, q);
 	}
 
 	n->setSender(proto.sender);
@@ -114,7 +119,7 @@ void NotificationMonitorPrivate::processIncomingNotification(quint32 id, const P
 	}
 
 	n->setPreviewSummary(proto.hints.value("x-nemo-preview-summary"));
-    n->setPreviewBody(proto.hints.value("x-nemo-preview-body"));
+	n->setPreviewBody(proto.hints.value("x-nemo-preview-body"));
     n->setOwner(proto.hints.value("x-nemo-owner"));
     n->setOriginPackage(proto.hints.value("x-nemo-origin-package"));
     n->setTransient(proto.hints.value("transient", "false") == "true");
@@ -143,18 +148,18 @@ void NotificationMonitorPrivate::processIncomingNotification(quint32 id, const P
         return;
     }
 	if (is_new_notification) {
-        _notifs.insert(id, n);
+		_notifs.insert(id, n);
 	}
-    emit q->notification(n);
-}
+		emit q->notification(n);
+	}
 
 void NotificationMonitorPrivate::processCloseNotification(quint32 id, quint32 reason)
 {
 	qCDebug(notificationMonitorCat) << "Close notification" << id << reason;
-    Notification *n = _notifs.value(id, 0);
+	Notification *n = _notifs.value(id, 0);
 	if (n) {
 		_notifs.remove(id);
-        emit n->closed(static_cast<Notification::CloseReason>(reason));
+		emit n->closed(static_cast<Notification::CloseReason>(reason));
 		n->deleteLater();
 	} else {
 		qCDebug(notificationMonitorCat) << " but it is not found";
@@ -320,7 +325,7 @@ dbus_bool_t NotificationMonitorPrivate::busWatchAdd(DBusWatch *watch, void *data
 	notifier->setProperty("dbus-watch", QVariant::fromValue<void*>(watch));
 
 	notifier->connect(notifier, SIGNAL(activated(int)),
-					  monitor, SLOT(handleBusSocketActivated()));
+					  self, SLOT(handleBusSocketActivated()));
 
 	return TRUE;
 }
@@ -384,8 +389,7 @@ DBusHandlerResult NotificationMonitorPrivate::busMessageFilter(DBusConnection *c
 
 void NotificationMonitorPrivate::handleBusSocketActivated()
 {
-	Q_Q(NotificationMonitor);
-	QSocketNotifier *notifier = static_cast<QSocketNotifier*>(q->sender());
+	QSocketNotifier *notifier = static_cast<QSocketNotifier*>(sender());
 	DBusWatch *watch = static_cast<DBusWatch*>(notifier->property("dbus-watch").value<void*>());
 
 	dbus_watch_handle(watch, dbus_watch_get_flags(watch));

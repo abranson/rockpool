@@ -213,19 +213,15 @@ void TimelineAttribute::setStringList(const QStringList &values, int max)
 {
     m_content.clear();
     for(int i=0;i<values.size();i++) {
-        if (i>0) {
-            m_content.append('\0');
-        }
-//        int charLen = max-m_content.length();
-//        QByteArray utf8Bytes = values.at(i).left(charLen).toUtf8();
-//        while (utf8Bytes.length() > max-m_content.length()) {
-//            utf8Bytes = values.at(i).left(--charLen).toUtf8();
-//        }
-        QByteArray utf8Bytes = WatchDataWriter::chopStringToByteLength(values.at(i), max-m_content.length());
-        m_content.append(utf8Bytes);
         if(m_content.length()==max) {
             return;
         }
+        QByteArray utf8Bytes = WatchDataWriter::chopStringToByteLength(values.at(i), max-m_content.length());
+        m_content.append(utf8Bytes);
+        if (i < values.size()-1) {
+            m_content.append('\0');
+        }
+
     }
 }
 QStringList TimelineAttribute::getStringList() const
