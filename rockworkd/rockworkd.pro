@@ -140,7 +140,8 @@ HEADERS += \
     platformintegration/sailfish/notifications.h \
     platformintegration/sailfish/modecontrolentity.h \
     platformintegration/sailfish/nokia-mce-dbus-names.h \
-    platformintegration/sailfish/walltimemonitor.h
+    platformintegration/sailfish/walltimemonitor.h \
+    platformintegration/sailfish/notificationmonitor_p.h
 
 testing: {
     SOURCES += platformintegration/testing/testingplatform.cpp
