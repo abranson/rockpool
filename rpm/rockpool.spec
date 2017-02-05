@@ -5,9 +5,6 @@
 
 Name:       rockpool
 
-# >> macros
-# << macros
-
 %{!?qtc_qmake:%define qtc_qmake %qmake}
 %{!?qtc_qmake5:%define qtc_qmake5 %qmake5}
 %{!?qtc_make:%define qtc_make make}
@@ -55,43 +52,30 @@ Support for Pebble watch on SailfishOS devices.
 %prep
 %setup -q -n %{name}-%{version}
 
-# >> setup
-# << setup
-
 %build
-# >> build pre
-# << build pre
 
 %qtc_qmake5  \
     VERSION='%{version}-%{release}'
 
 %qtc_make %{?_smp_mflags}
 
-# >> build post
-# << build post
 
 %install
 rm -rf %{buildroot}
-# >> install pre
-# << install pre
 %qmake5_install
 
-# >> install post
 mkdir -p %{buildroot}%{_libdir}/systemd/user/user-session.target.wants
 ln -s ../rockpoold.service %{buildroot}%{_libdir}/systemd/user/user-session.target.wants/
-# << install post
 
 desktop-file-install --delete-original       \
   --dir %{buildroot}%{_datadir}/applications             \
    %{buildroot}%{_datadir}/applications/*.desktop
 
 %post
-# >> post
 grep -q "^/usr/bin/rockpoold" /usr/share/mapplauncherd/privileges || echo "/usr/bin/rockpoold,cehlmnpu" >> /usr/share/mapplauncherd/privileges
 su nemo -c 'systemctl --user daemon-reload'
 su nemo -c 'systemctl --user try-restart rockpoold.service'
 update-desktop-database
-# << post
 
 %files
 %defattr(-,root,root,-)
@@ -107,5 +91,3 @@ update-desktop-database
 %{_datadir}/icons/hicolor/256x256/apps/%{name}.png
 %{_libdir}/systemd/user/%{name}d.service
 %{_libdir}/systemd/user/user-session.target.wants/%{name}d.service
-# >> files
-# << files
