@@ -675,7 +675,7 @@
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="25"/>
         <source>Developer tools</source>
-        <translation>Outils de dévelopement</translation>
+        <translation>Outils de développement</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="120"/>
