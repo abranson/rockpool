@@ -37,7 +37,7 @@
     </message>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="156"/>
-        <source>Store permission permanently and don&apos;t ask again</source>
+        <source>Store permission permanently and don't ask again</source>
         <translation>Запам`ятати дозвіл та більш не питати</translation>
     </message>
     <message>
@@ -192,7 +192,7 @@
     </message>
     <message>
         <location filename="../qml/pages/ContentPeerPickerPage.qml" line="26"/>
-        <source>No Share Providers configured. Please add provider&apos;s account in System Settings</source>
+        <source>No Share Providers configured. Please add provider's account in System Settings</source>
         <translation>Незнайдено конфігурації жодного механізму поширення. Будьласка додайте обліковий запис в Налаштуванні Системи</translation>
     </message>
 </context>
@@ -540,8 +540,7 @@
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="36"/>
         <source>Launch</source>
-        <translation>Запустити
-</translation>
+        <translation>Запустити</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="40"/>
@@ -759,7 +758,7 @@
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="18"/>
         <source>Entries here will be added as notifications appear on the phone. Selected notifications will be shown on your Pebble smartwatch.</source>
-        <translation>Записи нижче будуть з&apos;являтися згідно з їх появою в телефоні. Вибрані категорії будуть відсилатися до годиннику Pebble.</translation>
+        <translation>Записи нижче будуть з'являтися згідно з їх появою в телефоні. Вибрані категорії будуть відсилатися до годиннику Pebble.</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="63"/>
