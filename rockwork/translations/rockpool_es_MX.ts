@@ -37,7 +37,7 @@
     </message>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="156"/>
-        <source>Store permission permanently and don't ask again</source>
+        <source>Store permission permanently and don&apos;t ask again</source>
         <translation>Almacene el permiso permanentemente y no vuelva a preguntar</translation>
     </message>
     <message>
@@ -192,7 +192,7 @@
     </message>
     <message>
         <location filename="../qml/pages/ContentPeerPickerPage.qml" line="26"/>
-        <source>No Share Providers configured. Please add provider's account in System Settings</source>
+        <source>No Share Providers configured. Please add provider&apos;s account in System Settings</source>
         <translation>No hay proveedores de acciones configurados. Agregue la cuenta del proveedor en la configuración del sistema</translation>
     </message>
 </context>
@@ -238,7 +238,7 @@
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="84"/>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="194"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="195"/>
         <source>Report problem</source>
         <translation>Reportar un problema</translation>
     </message>
@@ -313,17 +313,57 @@
         <translation>Cerrar</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="207"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="208"/>
         <source>Preparing logs package...</source>
         <translation>Preparando el paquete de registro ...</translation>
     </message>
     <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="233"/>
+        <source>Current log: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="239"/>
+        <source>Disable service logs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="239"/>
+        <source>Enable service logs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="248"/>
+        <source>Send service logs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="266"/>
+        <source>Syslog Verbosity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="268"/>
+        <source>Debug</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="269"/>
+        <source>Warning</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="270"/>
+        <source>Critical</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="277"/>
         <source>Send watch logs</source>
         <translation>Enviar registros de reloj</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="257"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="287"/>
         <source>Cancel</source>
         <translation>Cancelar</translation>
     </message>
@@ -551,7 +591,7 @@
         <translation>Cara de reloj</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppsPage.qml" line="104"/>
+        <location filename="../qml/pages/InstalledAppsPage.qml" line="101"/>
         <source>Save Apps Order</source>
         <translation>Guardar orden de aplicaciones</translation>
     </message>
@@ -595,6 +635,34 @@
         <location filename="../qml/pages/LoadingPage.qml" line="23"/>
         <source>Restart Service</source>
         <translation>Reiniciar servicio</translation>
+    </message>
+</context>
+<context>
+    <name>LocationPicker</name>
+    <message>
+        <location filename="../qml/pages/LocationPicker.qml" line="12"/>
+        <source>Select Location</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/LocationPicker.qml" line="14"/>
+        <source>Cancel</source>
+        <translation type="unfinished">Cancelar</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/LocationPicker.qml" line="18"/>
+        <source>Location Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/LocationPicker.qml" line="19"/>
+        <source>Type in location name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/LocationPicker.qml" line="34"/>
+        <source>Matching locations will be appearing as you type</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -855,29 +923,49 @@
 <context>
     <name>SendTextSettingsDialog</name>
     <message>
-        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="15"/>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="26"/>
         <source>Messaging Settings</source>
         <translation>Configuración de mensajes</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="16"/>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="27"/>
         <source>OK</source>
         <translation>Aprobar</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="17"/>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="28"/>
         <source>Cancel</source>
         <translation>Cancelar</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="21"/>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="32"/>
         <source>Contacts</source>
         <translation>Contactos</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="29"/>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="77"/>
+        <source>Really Delete?</source>
+        <translation type="unfinished">Eliminar realmente?</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="130"/>
+        <source>Pick SIM for new contacts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="144"/>
         <source>Messages</source>
         <translation>Mensajes</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="147"/>
+        <source>Edit Messages</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="153"/>
+        <source>Send Text Messages</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -999,37 +1087,123 @@
 <context>
     <name>WeatherSettingsDialog</name>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="15"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="23"/>
         <source>Weather Settings</source>
         <translation>Configuración del clima</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="16"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="24"/>
         <source>OK</source>
         <translation>Aceptar</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="17"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="25"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="90"/>
         <source>Cancel</source>
         <translation>Cancelar</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="21"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="29"/>
+        <source>Alternate Provider</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="36"/>
+        <source>Provider&apos;s Key, eg. API Key</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="37"/>
+        <source>Provider Key</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="68"/>
+        <source>Location Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="75"/>
+        <source>Latitude</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="82"/>
+        <source>Longitude</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="96"/>
+        <source>Save Changes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="146"/>
+        <source>Edit</source>
+        <translation type="unfinished">Editar</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="151"/>
+        <source>Move Up</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="156"/>
+        <source>Move Down</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="161"/>
+        <source>Delete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="170"/>
+        <source>Add Location</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="179"/>
+        <source>Current Location</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="185"/>
+        <source>Locales</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="190"/>
         <source>Units</source>
         <translation>Unidades</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="23"/>
-        <source>Celsius</source>
-        <translation>Celsius</translation>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="209"/>
+        <source>Language</source>
+        <translation type="unfinished">Idioma</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="24"/>
-        <source>Fahrenheit</source>
-        <translation>Fahrenheit</translation>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="334"/>
+        <source>Default (English)</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="29"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="337"/>
+        <source>Metric</source>
+        <translation type="unfinished">Sistema métrico</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="338"/>
+        <source>Imperial</source>
+        <translation type="unfinished">Sistema imperial</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="339"/>
+        <source>Hybrid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="44"/>
         <source>Locations</source>
         <translation>Ubicaciones</translation>
     </message>

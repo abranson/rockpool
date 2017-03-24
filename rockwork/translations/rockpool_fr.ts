@@ -11,7 +11,7 @@
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="114"/>
         <source>Something going wrong</source>
-        <translation>Quelque chose s'est mal passé</translation>
+        <translation>Quelque chose s&apos;est mal passé</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="115"/>
@@ -33,11 +33,11 @@
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="154"/>
         <source>requests permission for</source>
-        <translation>demande l'autorisation pour</translation>
+        <translation>demande l&apos;autorisation pour</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="156"/>
-        <source>Store permission permanently and don't ask again</source>
+        <source>Store permission permanently and don&apos;t ask again</source>
         <translation>Enregistrer les autorisations de façon permanente et ne plus me demander</translation>
     </message>
     <message>
@@ -192,8 +192,8 @@
     </message>
     <message>
         <location filename="../qml/pages/ContentPeerPickerPage.qml" line="26"/>
-        <source>No Share Providers configured. Please add provider's account in System Settings</source>
-        <translation>Aucun compte de partage n'est configuré. SVP ajoutez un compte de partage dans les paramètres systèmes</translation>
+        <source>No Share Providers configured. Please add provider&apos;s account in System Settings</source>
+        <translation>Aucun compte de partage n&apos;est configuré. SVP ajoutez un compte de partage dans les paramètres systèmes</translation>
     </message>
 </context>
 <context>
@@ -229,7 +229,7 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="72"/>
         <source>Screenshots</source>
-        <translation>Captures d'écran</translation>
+        <translation>Captures d&apos;écran</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="78"/>
@@ -265,7 +265,7 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="130"/>
         <source>Listen Port</source>
-        <translation>Port d'écoute</translation>
+        <translation>Port d&apos;écoute</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="143"/>
@@ -285,7 +285,7 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="160"/>
         <source>Runtime Status</source>
-        <translation>État d'exécution</translation>
+        <translation>État d&apos;exécution</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="165"/>
@@ -295,7 +295,7 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="166"/>
         <source>DeveloperConnection port listening state</source>
-        <translation>État du port d'écoute de la connexion développeur</translation>
+        <translation>État du port d&apos;écoute de la connexion développeur</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="172"/>
@@ -305,7 +305,7 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="173"/>
         <source>Indicates CloudPebble connection state</source>
-        <translation>Indique l'état de la connexion vers CloudPebble</translation>
+        <translation>Indique l&apos;état de la connexion vers CloudPebble</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="178"/>
@@ -403,7 +403,7 @@
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="46"/>
         <source>This update will also upgrade recovery data. Make sure your Pebble smartwarch is connected to a power adapter.</source>
-        <translation>Cette mise à jour mettra aussi à jour les données de restauration. Soyez bien assurés d'avoir connecté votre montre Pebble à un adaptateur secteur.</translation>
+        <translation>Cette mise à jour mettra aussi à jour les données de restauration. Soyez bien assurés d&apos;avoir connecté votre montre Pebble à un adaptateur secteur.</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="53"/>
@@ -517,7 +517,7 @@
     <message>
         <location filename="../qml/pages/InfoPage.qml" line="69"/>
         <source>This application is neither affiliated with nor endorsed by Pebble Technology Corp.</source>
-        <translation>Cette application n'est ni affiliée à ni approuvée par Pebble Technology Corp.</translation>
+        <translation>Cette application n&apos;est ni affiliée à ni approuvée par Pebble Technology Corp.</translation>
     </message>
     <message>
         <location filename="../qml/pages/InfoPage.qml" line="79"/>
@@ -593,7 +593,7 @@
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="101"/>
         <source>Save Apps Order</source>
-        <translation>Enregistrer l'ordre des applications</translation>
+        <translation>Enregistrer l&apos;ordre des applications</translation>
     </message>
 </context>
 <context>
@@ -606,7 +606,7 @@
     <message>
         <location filename="../qml/pages/LanguagePage.qml" line="20"/>
         <source>Set langugage for application and your Pebble</source>
-        <translation>Définir la langue de l'application et celle de votre Pebble</translation>
+        <translation>Définir la langue de l&apos;application et celle de votre Pebble</translation>
     </message>
     <message>
         <location filename="../qml/pages/LanguagePage.qml" line="23"/>
@@ -705,7 +705,7 @@
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="172"/>
         <source>Your Pebble smartwatch is disconnected. Please make sure it is powered on, within range and it is paired properly in the Bluetooth System Settings.</source>
-        <translation>Votre montre Pebble est déconnectée. SVP Vérifiez qu'elle soit bien alimentée, et à portée de signal, ainsi que d'être correctement appairée dans les Réglages Bluetooth du Système.</translation>
+        <translation>Votre montre Pebble est déconnectée. SVP Vérifiez qu&apos;elle soit bien alimentée, et à portée de signal, ainsi que d&apos;être correctement appairée dans les Réglages Bluetooth du Système.</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="182"/>
@@ -715,7 +715,7 @@
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="189"/>
         <source>Your Pebble smartwatch is in factory mode and needs to be initialized.</source>
-        <translation>Votre montre Pebble est en paramétrage d'usine et doit être initialisée.</translation>
+        <translation>Votre montre Pebble est en paramétrage d&apos;usine et doit être initialisée.</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="198"/>
@@ -882,12 +882,12 @@
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="23"/>
         <source>Screenshots</source>
-        <translation>Captures d'écran</translation>
+        <translation>Captures d&apos;écran</translation>
     </message>
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="27"/>
         <source>Take Screenshot</source>
-        <translation>Prendre une capture d'écran</translation>
+        <translation>Prendre une capture d&apos;écran</translation>
     </message>
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="53"/>
@@ -897,12 +897,12 @@
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="55"/>
         <source>Pebble screenshot</source>
-        <translation>Capture d'écran de la Pebble</translation>
+        <translation>Capture d&apos;écran de la Pebble</translation>
     </message>
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="56"/>
         <source>Screen snapshot of Pebble Smartwatches</source>
-        <translation>Capture d'écran de la montre Pebble</translation>
+        <translation>Capture d&apos;écran de la montre Pebble</translation>
     </message>
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="62"/>
@@ -1008,7 +1008,7 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="60"/>
         <source>Sync calendar to timeline</source>
-        <translation>Synchroniser le calendrier avec l'agenda</translation>
+        <translation>Synchroniser le calendrier avec l&apos;agenda</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="68"/>
@@ -1018,17 +1018,17 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="76"/>
         <source>Reset Timeline</source>
-        <translation>Effacer l'historique</translation>
+        <translation>Effacer l&apos;historique</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="81"/>
         <source>Timeline Window Start (days ago)</source>
-        <translation>Début de l'agenda (depuis x jours)</translation>
+        <translation>Début de l&apos;agenda (depuis x jours)</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="89"/>
         <source>Timeline Window End (days ahead)</source>
-        <translation>Fin de l'agenda (jusqu'à x jours)</translation>
+        <translation>Fin de l&apos;agenda (jusqu&apos;à x jours)</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="97"/>
@@ -1038,7 +1038,7 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="105"/>
         <source>Set Timeline Window</source>
-        <translation>Définir la plage de l'agenda</translation>
+        <translation>Définir la plage de l&apos;agenda</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="111"/>
@@ -1145,7 +1145,7 @@
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="146"/>
         <source>Edit</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Éditer</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="151"/>
@@ -1173,19 +1173,9 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="21"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="190"/>
         <source>Units</source>
         <translation>Unités</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="23"/>
-        <source>Celsius</source>
-        <translation>Celsius</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="24"/>
-        <source>Fahrenheit</source>
-        <translation>Fahrenheit</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="185"/>
@@ -1193,14 +1183,9 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="190"/>
-        <source>Units</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="209"/>
         <source>Language</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Langue</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="334"/>

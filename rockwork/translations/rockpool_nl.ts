@@ -37,7 +37,7 @@
     </message>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="156"/>
-        <source>Store permission permanently and don't ask again</source>
+        <source>Store permission permanently and don&apos;t ask again</source>
         <translation>Sla toestemming voorgoed op en vraag niet opnieuw</translation>
     </message>
     <message>
@@ -192,7 +192,7 @@
     </message>
     <message>
         <location filename="../qml/pages/ContentPeerPickerPage.qml" line="26"/>
-        <source>No Share Providers configured. Please add provider's account in System Settings</source>
+        <source>No Share Providers configured. Please add provider&apos;s account in System Settings</source>
         <translation>Geen deelaanbieders geconfigureerd. Voeg een aanbiedersaccount toe in de systeeminstellingen</translation>
     </message>
 </context>
@@ -945,7 +945,7 @@
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="77"/>
         <source>Really Delete?</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Echt verwijderen?</translation>
     </message>
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="130"/>
@@ -1145,22 +1145,22 @@
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="146"/>
         <source>Edit</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Bewerken</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="151"/>
         <source>Move Up</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Omhoog verplaatsen</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="156"/>
         <source>Move Down</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Omlaag verplaatsen</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="161"/>
         <source>Delete</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Verwijderen</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="170"/>
@@ -1173,19 +1173,9 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="21"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="190"/>
         <source>Units</source>
         <translation>Eenheden</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="23"/>
-        <source>Celsius</source>
-        <translation>Celsius</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="24"/>
-        <source>Fahrenheit</source>
-        <translation>Fahrenheit</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="185"/>
@@ -1193,14 +1183,9 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="190"/>
-        <source>Units</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="209"/>
         <source>Language</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Taal</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="334"/>
@@ -1210,12 +1195,12 @@
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="337"/>
         <source>Metric</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Metriek</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="338"/>
         <source>Imperial</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Imperiaal</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="339"/>
