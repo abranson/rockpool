@@ -1,49 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1" language="uk" sourcelanguage="en">
+<TS version="2.1" language="es_MX">
 <context>
     <name>AppSettingsPage</name>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="113"/>
         <source>Alert</source>
-        <translation></translation>
+        <translation>Alerta</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="114"/>
         <source>Something going wrong</source>
-        <translation>Щось пошкандибало нетуди</translation>
+        <translation>Algo esta mal</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="115"/>
         <location filename="../qml/pages/AppSettingsPage.qml" line="242"/>
         <source>Accept</source>
-        <translation>Добре</translation>
+        <translation>Aceptar</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="116"/>
         <location filename="../qml/pages/AppSettingsPage.qml" line="293"/>
         <source>Cancel</source>
-        <translation>Відмінити</translation>
+        <translation>Cancelar</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="154"/>
         <source>Host</source>
-        <translation>Сервер</translation>
+        <translation>Anfitrión</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="154"/>
         <source>requests permission for</source>
-        <translation>питає дозвіл для</translation>
+        <translation>Solicita permiso para</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="156"/>
         <source>Store permission permanently and don&apos;t ask again</source>
-        <translation>Запам`ятати дозвіл та більш не питати</translation>
+        <translation>Almacene el permiso permanentemente y no vuelva a preguntar</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="297"/>
         <source>Select</source>
-        <translation>Вибрати</translation>
+        <translation>Seleccione</translation>
     </message>
 </context>
 <context>
@@ -51,37 +51,37 @@
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="170"/>
         <source>Description</source>
-        <translation>Опис</translation>
+        <translation>Descripción</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="191"/>
         <source>Developer</source>
-        <translation>Розробник</translation>
+        <translation>Desarollador</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="196"/>
         <source>Version</source>
-        <translation>Версія</translation>
+        <translation>Version</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="246"/>
         <source>Install</source>
-        <translation>Встановити</translation>
+        <translation>Instalar</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="246"/>
         <source>Installing...</source>
-        <translation>Ставиться...</translation>
+        <translation>Instalando...</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="246"/>
         <source>Installed</source>
-        <translation>Встановлено</translation>
+        <translation>Instalado</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="246"/>
         <source>Needs Companion</source>
-        <translation>Потрібен Компаньйон</translation>
+        <translation>Necesita compañero</translation>
     </message>
 </context>
 <context>
@@ -89,59 +89,59 @@
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="43"/>
         <source>Use</source>
-        <translation>Вживати</translation>
+        <translation>Usar</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="43"/>
         <location filename="../qml/pages/AppStorePage.qml" line="55"/>
         <source>Collections</source>
-        <translation>Колекції</translation>
+        <translation>Coleccion</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="43"/>
         <location filename="../qml/pages/AppStorePage.qml" line="55"/>
         <source>Categories</source>
-        <translation>Категорії</translation>
+        <translation>Categorias</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="49"/>
         <source>Search</source>
-        <translation>Пошук</translation>
+        <translation>Busqueda</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="55"/>
         <source>Watchapps</source>
-        <translation>Додатки</translation>
+        <translation>Aplicaciones</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="55"/>
         <source>Watchfaces</source>
-        <translation>Циферблати</translation>
+        <translation>Caras de reloj</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="101"/>
         <source>See all</source>
-        <translation>Всі</translation>
+        <translation>Ver todos</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="163"/>
         <source>All Apps</source>
-        <translation>Всі Додатки</translation>
+        <translation>Todas las Apps</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="196"/>
         <source>Needs companion</source>
-        <translation>Потрібен Компаньйон</translation>
+        <translation>Neceista compañero</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="223"/>
         <source>Search app or watchface</source>
-        <translation>Шукати Додаток або Циферблат</translation>
+        <translation>Buscar applicacion o caratula</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="226"/>
         <source>Search Results</source>
-        <translation>Результати Пошуку</translation>
+        <translation>busca resultados</translation>
     </message>
 </context>
 <context>
@@ -150,37 +150,37 @@
         <location filename="../qml/pages/AppUpgradePage.qml" line="24"/>
         <location filename="../qml/pages/AppUpgradePage.qml" line="25"/>
         <source>Upgrading</source>
-        <translation>Оновлення</translation>
+        <translation>Actualizando</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="49"/>
         <source>Version</source>
-        <translation>Версія</translation>
+        <translation>version</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="77"/>
         <source>Upgrade</source>
-        <translation>Обновити</translation>
+        <translation>Actualizar</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="77"/>
         <source>Upgrading...</source>
-        <translation>Оновлення...</translation>
+        <translation>Actualizando...</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="77"/>
         <source>Needs Companion</source>
-        <translation>Потрібен Компаньйон</translation>
+        <translation>Neceista compañero</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="93"/>
         <source>Compatibility</source>
-        <translation>Cумісність</translation>
+        <translation>Compatibilidad</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="175"/>
         <source>Change Log</source>
-        <translation>Історія Змін</translation>
+        <translation>Registro de cambios</translation>
     </message>
 </context>
 <context>
@@ -188,12 +188,12 @@
     <message>
         <location filename="../qml/pages/ContentPeerPickerPage.qml" line="16"/>
         <source>Share Via</source>
-        <translation>Поширити через</translation>
+        <translation>Compartir via</translation>
     </message>
     <message>
         <location filename="../qml/pages/ContentPeerPickerPage.qml" line="26"/>
         <source>No Share Providers configured. Please add provider&apos;s account in System Settings</source>
-        <translation>Незнайдено конфігурації жодного механізму поширення. Будьласка додайте обліковий запис в Налаштуванні Системи</translation>
+        <translation>No hay proveedores de acciones configurados. Agregue la cuenta del proveedor en la configuración del sistema</translation>
     </message>
 </context>
 <context>
@@ -201,12 +201,12 @@
     <message>
         <location filename="../qml/cover/CoverPage.qml" line="27"/>
         <source>connected</source>
-        <translation>Підключено</translation>
+        <translation>Conectado</translation>
     </message>
     <message>
         <location filename="../qml/cover/CoverPage.qml" line="27"/>
         <source>disconnected</source>
-        <translation>Відключено</translation>
+        <translation>desconectado</translation>
     </message>
 </context>
 <context>
@@ -214,158 +214,158 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="11"/>
         <source>Developer Tools</source>
-        <translation>Інструменти Розробника</translation>
+        <translation>Herramientas de desarrollo</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="60"/>
         <source>Disable Service</source>
-        <translation>Відключити Сервіс</translation>
+        <translation>Desactivar el servicio</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="66"/>
         <source>Restart Service</source>
-        <translation>Перезапустити Службу</translation>
+        <translation>Reiniciar el servicio</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="72"/>
         <source>Screenshots</source>
-        <translation>Знімки Екрану</translation>
+        <translation>Capturas de pantalla</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="78"/>
         <source>Developer Connection</source>
-        <translation>Підключення Розробника</translation>
+        <translation>Conexión del desarrollador</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="84"/>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="195"/>
         <source>Report problem</source>
-        <translation>Повідомити про Проблему</translation>
+        <translation>Reportar un problema</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="90"/>
         <source>Install app or watchface from file</source>
-        <translation>Встановити додаток з файлу</translation>
+        <translation>Instalar aplicación o caratula desde un archivo</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="113"/>
         <source>Developer Connection Settings</source>
-        <translation>Налаштування Підключення Розробника</translation>
+        <translation>Configuración de la conexión del desarrollador</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="118"/>
         <source>Enable Connection</source>
-        <translation>Активувати Підключення</translation>
+        <translation>Habilitar conexión</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="120"/>
         <source>Enable Developer Connection Service</source>
-        <translation>Активувати сервіс Підключення Розробника</translation>
+        <translation>Habilitar servicio de conexión de desarrollador</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="130"/>
         <source>Listen Port</source>
-        <translation>Слухати Порт</translation>
+        <translation>Escuchar Puerto</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="143"/>
         <source>Apply</source>
-        <translation>Прийняти</translation>
+        <translation>aplicar</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="153"/>
         <source>Enable</source>
-        <translation>Ввімкнути</translation>
+        <translation>Habilitar</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="154"/>
         <source>Enable DeveloperConnection over CloudPebble</source>
-        <translation>Активує Підключення Розробника через CloudPebble</translation>
+        <translation>Habilitar la conexión de desarrollador sobre CloudPebble</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="160"/>
         <source>Runtime Status</source>
-        <translation>Поточний статус</translation>
+        <translation>Estado  de ejecución</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="165"/>
         <source>DeveloperConnection Status</source>
-        <translation>Стан Підключення Розробника</translation>
+        <translation>Estado de conexión del desarrollador</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="166"/>
         <source>DeveloperConnection port listening state</source>
-        <translation>Вказує чи слухає Підключення Розробника локальний порт</translation>
+        <translation>Estado de escucha del puerto de conexión del desarrollador</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="172"/>
         <source>CloudPebble Status</source>
-        <translation>Стан CloudPebble</translation>
+        <translation>Estado del CloudPebble</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="173"/>
         <source>Indicates CloudPebble connection state</source>
-        <translation>Вказує чи підключена зараз служба до CloudPebble</translation>
+        <translation>Indica el estado de coneccion con el CloudPebble</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="178"/>
         <source>Close</source>
-        <translation>Закрити</translation>
+        <translation>Cerrar</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="208"/>
         <source>Preparing logs package...</source>
-        <translation>Підготовка пакету журналів...</translation>
+        <translation>Preparando el paquete de registro ...</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="233"/>
         <source>Current log: </source>
-        <translation>Поточний лог</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="239"/>
         <source>Disable service logs</source>
-        <translation>Вимкнути лог сервісу</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="248"/>
-        <source>Send service logs</source>
-        <translation>Заслати лог сервісу</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="239"/>
         <source>Enable service logs</source>
-        <translation>Ввімкнути лог сервісу</translation>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="248"/>
+        <source>Send service logs</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="266"/>
         <source>Syslog Verbosity</source>
-        <translation>Балакучисть Сіcтемного Журналу</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="268"/>
         <source>Debug</source>
-        <translation>Налагодження</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="269"/>
         <source>Warning</source>
-        <translation>Попередження</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="270"/>
         <source>Critical</source>
-        <translation>Критичні</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="277"/>
         <source>Send watch logs</source>
-        <translation>Відіслати журнал з годинника</translation>
+        <translation>Enviar registros de reloj</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="287"/>
         <source>Cancel</source>
-        <translation>Відмінити</translation>
+        <translation>Cancelar</translation>
     </message>
 </context>
 <context>
@@ -373,47 +373,47 @@
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="15"/>
         <source>Firmware upgrade</source>
-        <translation>Оновлення прошивки</translation>
+        <translation>Actualización de firmware</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="18"/>
         <source>Currently installed firmware: %1</source>
-        <translation>Версія поточної прошивки: %1</translation>
+        <translation>Firmware instalado actualmente:% 1</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="24"/>
         <source>A new firmware upgrade is available for your Pebble smartwatch.</source>
-        <translation>Доступне оновлення прошивки для вашого годинника Pebble.</translation>
+        <translation>Una nueva actualización de firmware está disponible para su smartwatch Pebble.</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="32"/>
         <source>Candidate firmware version: %1</source>
-        <translation>Доступна версія прошивки: %1</translation>
+        <translation>Versión de el Firmware candidato:% 1</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="39"/>
         <source>Release Notes: %1</source>
-        <translation>Зауваження до версії: %1</translation>
+        <translation>Notas de la versión:% 1</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="46"/>
         <source>Important:</source>
-        <translation>Важливо:</translation>
+        <translation>Importate:</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="46"/>
         <source>This update will also upgrade recovery data. Make sure your Pebble smartwarch is connected to a power adapter.</source>
-        <translation>Це оновлення також оновить оболонку аварійного відновлення. Будьласка перевірте що ваш Pebble підключен до джерела живлення.</translation>
+        <translation>Esta actualización también actualizará los datos de recuperación. Asegúrese de que su reloj Pebble está conectado a un adaptador de corriente.</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="53"/>
         <source>Upgrade now</source>
-        <translation>Оновити зараз</translation>
+        <translation>Actualizar ahora</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="53"/>
         <source>Firmware is Up-To-Date</source>
-        <translation>Ввас сама свіжа прошивка</translation>
+        <translation>El firmware está actualizado</translation>
     </message>
 </context>
 <context>
@@ -421,72 +421,72 @@
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="13"/>
         <source>Health settings</source>
-        <translation>Налаштування Оздоровлення</translation>
+        <translation>Configuración de salud</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="14"/>
         <source>OK</source>
-        <translation>Добре</translation>
+        <translation>Aceptar</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="16"/>
         <source>Cancel</source>
-        <translation>Скасувати</translation>
+        <translation>Cancelar</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="20"/>
         <source>Health app enabled</source>
-        <translation>Додаток оздоровлення увімкнутий</translation>
+        <translation>Aplicación de salud activada</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="26"/>
         <source>Age</source>
-        <translation>Вік</translation>
+        <translation>Edad</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="37"/>
         <source>Height (cm)</source>
-        <translation>Зріст (см)</translation>
+        <translation>Altura (cm)</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="47"/>
         <source>Weight (kg)</source>
-        <translation>Вага (кг)</translation>
+        <translation>Peso (kg)</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="58"/>
         <source>Gender</source>
-        <translation>Стать</translation>
+        <translation>Género</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="59"/>
         <source>Female</source>
-        <translation>Жіночий</translation>
+        <translation>Femenino</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="59"/>
         <source>Male</source>
-        <translation>Чоловічий</translation>
+        <translation>Masculino</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="67"/>
         <source>I want to be more active</source>
-        <translation>Бажаю більш рухатися</translation>
+        <translation>Quiero ser más activo</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="68"/>
         <source>More Active</source>
-        <translation>Більш активний</translation>
+        <translation>Mas activo</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="74"/>
         <source>I want to sleep more</source>
-        <translation>Бажаю більше спати</translation>
+        <translation>Quiero dormir más</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="75"/>
         <source>Sleep More</source>
-        <translation>Спати довше</translation>
+        <translation>Dormir más</translation>
     </message>
 </context>
 <context>
@@ -494,12 +494,12 @@
     <message>
         <location filename="../qml/pages/ImportPackagePage.qml" line="8"/>
         <source>Import watchapp or watchface</source>
-        <translation>Імпортувати додаток або циферблат</translation>
+        <translation>Importar watchapp o watchface</translation>
     </message>
     <message>
         <location filename="../qml/pages/ImportPackagePage.qml" line="30"/>
         <source>Import File?</source>
-        <translation>Справді імпортувати?</translation>
+        <translation>Importar archivo?</translation>
     </message>
 </context>
 <context>
@@ -507,22 +507,22 @@
     <message>
         <location filename="../qml/pages/InfoPage.qml" line="29"/>
         <source>Version %1</source>
-        <translation>Версія %1</translation>
+        <translation>Versión 1</translation>
     </message>
     <message>
         <location filename="../qml/pages/InfoPage.qml" line="42"/>
         <source>Legal</source>
-        <translation>Правова інформація</translation>
+        <translation>Legal</translation>
     </message>
     <message>
         <location filename="../qml/pages/InfoPage.qml" line="69"/>
         <source>This application is neither affiliated with nor endorsed by Pebble Technology Corp.</source>
-        <translation>Цей додаток в жодній мірі не має відношення до Pebble Technology Corp. не будучи ані офіційною ані рекомендованою оболонкою компанії.</translation>
+        <translation>Esta aplicación no está afiliada ni respaldada por Pebble Technology Corp.</translation>
     </message>
     <message>
         <location filename="../qml/pages/InfoPage.qml" line="79"/>
         <source>Pebble is a trademark of Pebble Technology Corp.</source>
-        <translation>Pebble є регистрованою торгівельною маркою Pebble Technology Corp.</translation>
+        <translation>Pebble es una marca registrada de Pebble Technology Corp.</translation>
     </message>
 </context>
 <context>
@@ -530,42 +530,42 @@
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="29"/>
         <source>Upgrade</source>
-        <translation>Обновити</translation>
+        <translation>Actualizar</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="29"/>
         <source>Version</source>
-        <translation>Версія</translation>
+        <translation>Versión</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="36"/>
         <source>Launch</source>
-        <translation>Запустити</translation>
+        <translation>Iniciar</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="40"/>
         <source>Settings</source>
-        <translation>Налаштування</translation>
+        <translation>Configuracion</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="45"/>
         <source>Delete</source>
-        <translation>Видалити</translation>
+        <translation>Borrar</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="48"/>
         <source>Really Delete?</source>
-        <translation>Дійсно Видалити?</translation>
+        <translation>Eliminar realmente?</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="54"/>
         <source>Move Up</source>
-        <translation>Посунути Догори</translation>
+        <translation>Subir</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="59"/>
         <source>Move Down</source>
-        <translation>Посунути Донизу</translation>
+        <translation>Bajar</translation>
     </message>
 </context>
 <context>
@@ -573,27 +573,27 @@
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="23"/>
         <source>Add New</source>
-        <translation>Добавити</translation>
+        <translation>Añadir nuevo</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="32"/>
         <source>Apps &amp; Watchfaces</source>
-        <translation>Додатки та Циферблати</translation>
+        <translation>Aplicaciones y caras de reloj</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="32"/>
         <source>Apps</source>
-        <translation>Додатки</translation>
+        <translation>Aplicaciones</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="32"/>
         <source>Watchfaces</source>
-        <translation>Циферблати</translation>
+        <translation>Cara de reloj</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="101"/>
         <source>Save Apps Order</source>
-        <translation>Зберегти Порядок Додатків</translation>
+        <translation>Guardar orden de aplicaciones</translation>
     </message>
 </context>
 <context>
@@ -601,27 +601,27 @@
     <message>
         <location filename="../qml/pages/LanguagePage.qml" line="19"/>
         <source>Language Settings</source>
-        <translation>Параметри Мови</translation>
+        <translation>Configuración de lenguaje</translation>
     </message>
     <message>
         <location filename="../qml/pages/LanguagePage.qml" line="20"/>
         <source>Set langugage for application and your Pebble</source>
-        <translation>Встановити мову додатку та годиннику Pebble</translation>
+        <translation>Establecer el idioma para la aplicación y su Pebble</translation>
     </message>
     <message>
         <location filename="../qml/pages/LanguagePage.qml" line="23"/>
         <source>Pebble Language</source>
-        <translation>Мовний Пакет Pebble</translation>
+        <translation>Idioma del Pebble</translation>
     </message>
     <message>
         <location filename="../qml/pages/LanguagePage.qml" line="29"/>
         <source>Select Language</source>
-        <translation>Виберте мову</translation>
+        <translation>Seleccionar idioma</translation>
     </message>
     <message>
         <location filename="../qml/pages/LanguagePage.qml" line="41"/>
         <source>Submit</source>
-        <translation>Підтвердити</translation>
+        <translation>Enviar</translation>
     </message>
 </context>
 <context>
@@ -629,12 +629,12 @@
     <message>
         <location filename="../qml/pages/LoadingPage.qml" line="20"/>
         <source>Loading and Connecting...</source>
-        <translation>Завантаження та Підключення...</translation>
+        <translation>Cargando y conectándose...</translation>
     </message>
     <message>
         <location filename="../qml/pages/LoadingPage.qml" line="23"/>
         <source>Restart Service</source>
-        <translation>Перезапустити Службу</translation>
+        <translation>Reiniciar servicio</translation>
     </message>
 </context>
 <context>
@@ -642,27 +642,27 @@
     <message>
         <location filename="../qml/pages/LocationPicker.qml" line="12"/>
         <source>Select Location</source>
-        <translation>Виберте Локацію</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/pages/LocationPicker.qml" line="14"/>
         <source>Cancel</source>
-        <translation>Відмінити</translation>
+        <translation type="unfinished">Cancelar</translation>
     </message>
     <message>
         <location filename="../qml/pages/LocationPicker.qml" line="18"/>
         <source>Location Name</source>
-        <translation>Ім&apos;я локації</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/pages/LocationPicker.qml" line="19"/>
         <source>Type in location name</source>
-        <translation>Введіть ім&apos;я локації</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/pages/LocationPicker.qml" line="34"/>
         <source>Matching locations will be appearing as you type</source>
-        <translation>Співпадаючі локації з&apos;являться протягом вводу текста</translation>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -670,82 +670,82 @@
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="19"/>
         <source>About</source>
-        <translation>Про Програму</translation>
+        <translation>Acerca de</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="25"/>
         <source>Developer tools</source>
-        <translation>Інструменти Розробника</translation>
+        <translation>Herramientas de desarrollo</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="120"/>
         <source>Connected</source>
-        <translation>Підключено</translation>
+        <translation>Conectado</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="120"/>
         <source>Disconnected</source>
-        <translation>Відключено</translation>
+        <translation>Desconectado</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="128"/>
         <source>Update Available</source>
-        <translation>Нова Прошивка</translation>
+        <translation>Actualización disponible</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="150"/>
         <source>Upgrading...</source>
-        <translation>Оновлення...</translation>
+        <translation>Actualizando...</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="162"/>
         <source>Running</source>
-        <translation>Активно</translation>
+        <translation>En marcha</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="172"/>
         <source>Your Pebble smartwatch is disconnected. Please make sure it is powered on, within range and it is paired properly in the Bluetooth System Settings.</source>
-        <translation>Ваш годинник Pebble зараз відключен. Будьласка перевірте що він включен, є в досязі та чинно спарений з сістемою Bluetooth.</translation>
+        <translation>Su reloj Pebble está desconectado. Por favor asegúrese de que esté encendido, dentro del alcance y que esté sincronizado correctamente en la configuración del sistema Bluetooth.</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="182"/>
         <source>Open Bluetooth Settings</source>
-        <translation>Відкрити Налаштування Bluetooth</translation>
+        <translation>Abrir configuración de Bluetooth</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="189"/>
         <source>Your Pebble smartwatch is in factory mode and needs to be initialized.</source>
-        <translation>Ваш годинник Pebble знаходиться в спеціальному режимі та потребує ініціалізації.</translation>
+        <translation>Su reloj Pebble está en modo de fábrica y necesita ser inicializado.</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="198"/>
         <source>Initialize Pebble</source>
-        <translation>Ініціалізувати Pebble</translation>
+        <translation>Inicializar Pebble</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="267"/>
         <source>Notifications</source>
-        <translation>Повідомлення</translation>
+        <translation>Notificaciones</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="272"/>
         <source>Watch Apps</source>
-        <translation>Додатки</translation>
+        <translation>Aplicaciones de Reloj</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="278"/>
         <source>Watchfaces</source>
-        <translation>Циферблати</translation>
+        <translation>Carátulas de Reloj</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="284"/>
         <source>Settings</source>
-        <translation>Налаштування</translation>
+        <translation>Configuración</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="291"/>
         <source>Firmware</source>
-        <translation>Прошивка</translation>
+        <translation>Firmware</translation>
     </message>
 </context>
 <context>
@@ -753,32 +753,32 @@
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="15"/>
         <source>Notifications</source>
-        <translation>Повідомлення</translation>
+        <translation>Notificaciones</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="18"/>
         <source>Entries here will be added as notifications appear on the phone. Selected notifications will be shown on your Pebble smartwatch.</source>
-        <translation>Записи нижче будуть з&apos;являтися згідно з їх появою в телефоні. Вибрані категорії будуть відсилатися до годиннику Pebble.</translation>
+        <translation>Las entradas aquí se agregarán a medida que las notificaciones aparezcan en el teléfono. Las notificaciones seleccionadas se mostrarán en su Pebble.</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="63"/>
         <source>Always Enabled</source>
-        <translation>Завжди Ввімкнено</translation>
+        <translation>Habilitado siempre</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="69"/>
         <source>Disabled When Active</source>
-        <translation>Вимкнуто Якщо Авктивний</translation>
+        <translation>Deshabilitado cuando esta activo</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="75"/>
         <source>Always Disabled</source>
-        <translation>Завжди Вимкнуто</translation>
+        <translation>Siempre deshabilitado</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="81"/>
         <source>Forget</source>
-        <translation>Забути</translation>
+        <translation>Olvidar</translation>
     </message>
 </context>
 <context>
@@ -786,42 +786,42 @@
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="9"/>
         <source>RockPool</source>
-        <translation></translation>
+        <translation>RockPool</translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="10"/>
         <source>Manage Pebble Watches</source>
-        <translation>Справа Годинників Pebble</translation>
+        <translation>Gestionar relojes Pebble</translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="14"/>
         <source>Bluetooth Settings</source>
-        <translation>Налаштування Bluetooth</translation>
+        <translation>Configuración de Bluetooth</translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="18"/>
         <source>Restart service</source>
-        <translation>Перезапустити Службу</translation>
+        <translation>Reiniciar el servicio</translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="35"/>
         <source>Connected</source>
-        <translation>Підключено</translation>
+        <translation>Conectado</translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="35"/>
         <source>Disconnected</source>
-        <translation>Відключено</translation>
+        <translation>Desconectado</translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="55"/>
         <source>No Pebble smartwatches configured yet. Please connect your Pebble smartwatch using System Settings.</source>
-        <translation>Відсутня жодна конфігурація годинників Pebble. Будьласка підключьте Pebble в Налаштуванні Сістеми.</translation>
+        <translation>No se han configurado ningún reloj Pebble. Conecte su reloj Pebble usando la configuración del sistema.</translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="64"/>
         <source>Open Bluetooth Settings</source>
-        <translation>Відкрити Налаштування Bluetooth</translation>
+        <translation>Abrir la configuración de Bluetooth</translation>
     </message>
 </context>
 <context>
@@ -829,52 +829,52 @@
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="17"/>
         <source>Edit and order quick-response messages</source>
-        <translation>Редагування та упорядкування повідомлень</translation>
+        <translation>Editar y ordenar mensajes de respuesta rápida</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="17"/>
         <source>New item will be inserted before current selection</source>
-        <translation>Нове повідомлення добавиться перед вибраним</translation>
+        <translation>Un nuevo elemento se insertará antes de la selección actual</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="21"/>
         <source>Add New</source>
-        <translation>Добавити</translation>
+        <translation>Añadir nuevo</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="29"/>
         <source>Save changes</source>
-        <translation>Зберігти зміни</translation>
+        <translation>Guardar los cambios</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="54"/>
         <source>Move Up</source>
-        <translation>Посунути Догори</translation>
+        <translation>Mover arriba</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="59"/>
         <source>Edit</source>
-        <translation>Редагувати</translation>
+        <translation>Editar</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="67"/>
         <source>Delete</source>
-        <translation>Видалити</translation>
+        <translation>Borrar</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="69"/>
         <source>Really Delete?</source>
-        <translation>Дійсно Видалити?</translation>
+        <translation>Eliminar realmente?</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="75"/>
         <source>Move Down</source>
-        <translation>Посунути Донизу</translation>
+        <translation>Mover abajo</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="86"/>
         <source>Pre-defined response message</source>
-        <translation>Заготовлена відповідь</translation>
+        <translation>Mensaje de respuesta predefinido</translation>
     </message>
 </context>
 <context>
@@ -882,42 +882,42 @@
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="23"/>
         <source>Screenshots</source>
-        <translation>Знімки Екрану</translation>
+        <translation>Capturas de pantalla</translation>
     </message>
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="27"/>
         <source>Take Screenshot</source>
-        <translation>Зробити Знімок</translation>
+        <translation>Tomar captura de pantalla</translation>
     </message>
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="53"/>
         <source>Share</source>
-        <translation>Поділитися</translation>
+        <translation>Compartir</translation>
     </message>
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="55"/>
         <source>Pebble screenshot</source>
-        <translation>Скріншот Pebble</translation>
+        <translation>Captura de pantalla Pebble</translation>
     </message>
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="56"/>
         <source>Screen snapshot of Pebble Smartwatches</source>
-        <translation>Знімок екрану годинників Pebble</translation>
+        <translation>Pantalla instantánea de Pebble</translation>
     </message>
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="62"/>
         <source>Delete</source>
-        <translation>Видалити</translation>
+        <translation>Eliminar</translation>
     </message>
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="65"/>
         <source>Really Delete?</source>
-        <translation>Дійсно Видалити?</translation>
+        <translation>Eliminar realmente?</translation>
     </message>
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="72"/>
         <source>Cancel</source>
-        <translation>Відмінити</translation>
+        <translation>Cancelar</translation>
     </message>
 </context>
 <context>
@@ -925,47 +925,47 @@
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="26"/>
         <source>Messaging Settings</source>
-        <translation>Повідомлення</translation>
+        <translation>Configuración de mensajes</translation>
     </message>
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="27"/>
         <source>OK</source>
-        <translation>Добре</translation>
+        <translation>Aprobar</translation>
     </message>
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="28"/>
         <source>Cancel</source>
-        <translation>Скасувати</translation>
+        <translation>Cancelar</translation>
     </message>
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="32"/>
         <source>Contacts</source>
-        <translation>Контакти</translation>
+        <translation>Contactos</translation>
     </message>
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="77"/>
         <source>Really Delete?</source>
-        <translation>Дійсно Видалити?</translation>
+        <translation type="unfinished">Eliminar realmente?</translation>
     </message>
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="130"/>
         <source>Pick SIM for new contacts</source>
-        <translation>Вкажіть СІМ для нових контактів</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="144"/>
         <source>Messages</source>
-        <translation>Повідомлення</translation>
+        <translation>Mensajes</translation>
     </message>
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="147"/>
         <source>Edit Messages</source>
-        <translation>Правити Повідомлення</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="153"/>
         <source>Send Text Messages</source>
-        <translation>Текстові Повідомлення</translation>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -973,97 +973,97 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="26"/>
         <source>Settings</source>
-        <translation>Налаштування</translation>
+        <translation>Configuración</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="30"/>
         <source>General</source>
-        <translation>Загальні</translation>
+        <translation>General</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="34"/>
         <source>Distance Units</source>
-        <translation>Одиниці виміру</translation>
+        <translation>Unidades de distancia</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="37"/>
         <source>Metric</source>
-        <translation>Метричні</translation>
+        <translation>Sistema métrico</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="40"/>
         <source>Imperial</source>
-        <translation>Імперські</translation>
+        <translation>Sistema imperial</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="50"/>
         <source>Language</source>
-        <translation>Мова</translation>
+        <translation>Idioma</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="55"/>
         <source>Timeline</source>
-        <translation>Стрічка Повідомлень</translation>
+        <translation>Cronograma</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="60"/>
         <source>Sync calendar to timeline</source>
-        <translation>Синхронизувати Календар з Pebble Timeline</translation>
+        <translation>Sincronizar calendario con el cronograma</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="68"/>
         <source>Sync Apps from Cloud</source>
-        <translation>Синхронізувати Додатки з Хмар</translation>
+        <translation>Sincronizar aplicaciones de la nube</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="76"/>
         <source>Reset Timeline</source>
-        <translation>Перезавантажити Стрічку</translation>
+        <translation>Reiniciar el cronograma</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="81"/>
         <source>Timeline Window Start (days ago)</source>
-        <translation>Початок Стрічки (днів тому)</translation>
+        <translation>Inicio del rango del cronograma (días anteriores)</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="89"/>
         <source>Timeline Window End (days ahead)</source>
-        <translation>Кінець Стрічки (за днів)</translation>
+        <translation>Final del rango del cronograma (días posteriores)</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="97"/>
         <source>Notification re-delivery expiration (seconds)</source>
-        <translation>Намагатися відіслати повідомлення (сек)</translation>
+        <translation>Vencimiento de la re-entrega de notificaciones (segundos)</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="105"/>
         <source>Set Timeline Window</source>
-        <translation>Встановити Вікно Стрічки</translation>
+        <translation>Configurar rango del cronograma</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="111"/>
         <source>Active Timeline WebSync account</source>
-        <translation>Поточний Обліковий Запис</translation>
+        <translation>Activar cuenta de WebSync para el cronograma</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="125"/>
         <source>Logout</source>
-        <translation>Вийти</translation>
+        <translation>cerrar sesión</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="125"/>
         <source>Login</source>
-        <translation>Ввійти</translation>
+        <translation>Iniciar sesión</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="138"/>
         <source>Automatic Profile</source>
-        <translation>Автоматичний Профіль</translation>
+        <translation>Perfil automático</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="142"/>
         <source>Connected</source>
-        <translation>Підключено</translation>
+        <translation>Conectado</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="145"/>
@@ -1071,17 +1071,17 @@
         <location filename="../qml/pages/SettingsPage.qml" line="166"/>
         <location filename="../qml/pages/SettingsPage.qml" line="176"/>
         <source>no change</source>
-        <translation>без змін</translation>
+        <translation>ningún cambio</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="163"/>
         <source>Disconnected</source>
-        <translation>Відключено</translation>
+        <translation>Desconectado</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="183"/>
         <source>Canned Messages</source>
-        <translation>Заготовленні відповіді</translation>
+        <translation>Mensajes almacenados</translation>
     </message>
 </context>
 <context>
@@ -1089,123 +1089,123 @@
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="23"/>
         <source>Weather Settings</source>
-        <translation>Налаштування</translation>
+        <translation>Configuración del clima</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="24"/>
         <source>OK</source>
-        <translation>Добре</translation>
+        <translation>Aceptar</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="25"/>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="90"/>
         <source>Cancel</source>
-        <translation>Відмінити</translation>
+        <translation>Cancelar</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="29"/>
         <source>Alternate Provider</source>
-        <translation>Альтернативний Провайдер</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="36"/>
         <source>Provider&apos;s Key, eg. API Key</source>
-        <translation>Ключ провайдера, напр. АПІ ключ</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="37"/>
         <source>Provider Key</source>
-        <translation>Ключ провайдера</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="44"/>
-        <source>Locations</source>
-        <translation>Локації</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="68"/>
         <source>Location Name</source>
-        <translation>Ім&apos;я локації</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="75"/>
         <source>Latitude</source>
-        <translation>Широта</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="82"/>
         <source>Longitude</source>
-        <translation>Довгота</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="96"/>
         <source>Save Changes</source>
-        <translation>Зберігти зміни</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="146"/>
         <source>Edit</source>
-        <translation>Редагувати</translation>
+        <translation type="unfinished">Editar</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="151"/>
         <source>Move Up</source>
-        <translation>Посунути Догори</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="156"/>
         <source>Move Down</source>
-        <translation>Посунути Донизу</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="161"/>
         <source>Delete</source>
-        <translation>Видалити</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="170"/>
         <source>Add Location</source>
-        <translation>Добавити Локацію</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="179"/>
         <source>Current Location</source>
-        <translation>Актуальне місцезнаходження</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="185"/>
         <source>Locales</source>
-        <translation>Локалізація</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="190"/>
         <source>Units</source>
-        <translation>Одиниці виміру</translation>
+        <translation>Unidades</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="209"/>
         <source>Language</source>
-        <translation>Мова</translation>
+        <translation type="unfinished">Idioma</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="334"/>
         <source>Default (English)</source>
-        <translation>Стандартна (Англійська)</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="337"/>
         <source>Metric</source>
-        <translation>Метричні</translation>
+        <translation type="unfinished">Sistema métrico</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="338"/>
         <source>Imperial</source>
-        <translation>Імперські</translation>
+        <translation type="unfinished">Sistema imperial</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="339"/>
         <source>Hybrid</source>
-        <translation>Змішані</translation>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="44"/>
+        <source>Locations</source>
+        <translation>Ubicaciones</translation>
     </message>
 </context>
 </TS>
