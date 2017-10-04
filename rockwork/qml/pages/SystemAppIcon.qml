@@ -19,7 +19,7 @@ Item {
                 icon = "watch";
                 break;
             case "{36d8c6ed-4c83-4fa1-a9e2-8f12dc941f8c}":
-                icon = "health";
+                icon = "diagnostic";
                 break;
             case "{1f03293d-47af-4f28-b960-f2b02a6dd757}":
                 icon = "music";
@@ -38,6 +38,9 @@ Item {
                 break;
             case "{0863fc6a-66c5-4f62-ab8a-82ed00a98b5d}":
                 icon = "chat";
+                break;
+            case "{4dab81a6-d2fc-458a-992c-7a1f3b96a970}":
+                icon = "person";
             }
             if (icon)
                 return "image://theme/icon-m-" + icon

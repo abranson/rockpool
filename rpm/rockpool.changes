@@ -1,3 +1,9 @@
+* Wed Oct 04 2017 Andrew Branson <github@andrewbranson.net> 1.3-3
+- Rebuild for SFOS 2.1.2
+- Updated translations
+- Fix Notification hang
+- Properly trim utf8 byte arrays at character boundaries
+
 * Mon Nov 07 2016 Andrew Branson <github@andrewbranson.net> 1.3-2
 - Rebuild for 2.0.5 ABI
 
