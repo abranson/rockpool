@@ -6,29 +6,29 @@
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="113"/>
         <source>Alert</source>
-        <translation type="unfinished"></translation>
+        <translation>Riasztás</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="114"/>
         <source>Something going wrong</source>
-        <translation type="unfinished"></translation>
+        <translation>Valami baj történt</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="115"/>
         <location filename="../qml/pages/AppSettingsPage.qml" line="242"/>
         <source>Accept</source>
-        <translation type="unfinished"></translation>
+        <translation>Elfogadás</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="116"/>
         <location filename="../qml/pages/AppSettingsPage.qml" line="293"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>Mégsem</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="154"/>
         <source>Host</source>
-        <translation type="unfinished"></translation>
+        <translation>Kiszolgáló</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="154"/>
@@ -43,7 +43,7 @@
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="297"/>
         <source>Select</source>
-        <translation type="unfinished"></translation>
+        <translation>Kiválaszt</translation>
     </message>
 </context>
 <context>
@@ -51,32 +51,32 @@
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="170"/>
         <source>Description</source>
-        <translation type="unfinished"></translation>
+        <translation>Leírás</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="191"/>
         <source>Developer</source>
-        <translation type="unfinished"></translation>
+        <translation>Fejlesztő</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="196"/>
         <source>Version</source>
-        <translation type="unfinished"></translation>
+        <translation>Verzió</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="246"/>
         <source>Install</source>
-        <translation type="unfinished"></translation>
+        <translation>Telepítés</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="246"/>
         <source>Installing...</source>
-        <translation type="unfinished"></translation>
+        <translation>Telepítés...</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="246"/>
         <source>Installed</source>
-        <translation type="unfinished"></translation>
+        <translation>Telepítve</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="246"/>
@@ -95,38 +95,38 @@
         <location filename="../qml/pages/AppStorePage.qml" line="43"/>
         <location filename="../qml/pages/AppStorePage.qml" line="55"/>
         <source>Collections</source>
-        <translation type="unfinished"></translation>
+        <translation>Gyűjtemények</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="43"/>
         <location filename="../qml/pages/AppStorePage.qml" line="55"/>
         <source>Categories</source>
-        <translation type="unfinished"></translation>
+        <translation>Kategóriák</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="49"/>
         <source>Search</source>
-        <translation type="unfinished"></translation>
+        <translation>Keresés</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="55"/>
         <source>Watchapps</source>
-        <translation type="unfinished"></translation>
+        <translation>Watchapps</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="55"/>
         <source>Watchfaces</source>
-        <translation type="unfinished"></translation>
+        <translation>Watchfaces</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="101"/>
         <source>See all</source>
-        <translation type="unfinished"></translation>
+        <translation>Mutasd mindet</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="163"/>
         <source>All Apps</source>
-        <translation type="unfinished"></translation>
+        <translation>Összes alkalmazás</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="196"/>
@@ -136,12 +136,12 @@
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="223"/>
         <source>Search app or watchface</source>
-        <translation type="unfinished"></translation>
+        <translation>Alkalmazás vagy Watchface keresése</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="226"/>
         <source>Search Results</source>
-        <translation type="unfinished"></translation>
+        <translation>Keresési eredmények</translation>
     </message>
 </context>
 <context>
@@ -150,22 +150,22 @@
         <location filename="../qml/pages/AppUpgradePage.qml" line="24"/>
         <location filename="../qml/pages/AppUpgradePage.qml" line="25"/>
         <source>Upgrading</source>
-        <translation type="unfinished"></translation>
+        <translation>Frissítés</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="49"/>
         <source>Version</source>
-        <translation type="unfinished"></translation>
+        <translation>Verzió</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="77"/>
         <source>Upgrade</source>
-        <translation type="unfinished"></translation>
+        <translation>Frissítés</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="77"/>
         <source>Upgrading...</source>
-        <translation type="unfinished"></translation>
+        <translation>Frissítés...</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="77"/>
@@ -175,12 +175,12 @@
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="93"/>
         <source>Compatibility</source>
-        <translation type="unfinished"></translation>
+        <translation>Kompatibilitás</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="175"/>
         <source>Change Log</source>
-        <translation type="unfinished"></translation>
+        <translation>Változásnapló</translation>
     </message>
 </context>
 <context>
@@ -201,12 +201,12 @@
     <message>
         <location filename="../qml/cover/CoverPage.qml" line="27"/>
         <source>connected</source>
-        <translation type="unfinished"></translation>
+        <translation>Kapcsolódva</translation>
     </message>
     <message>
         <location filename="../qml/cover/CoverPage.qml" line="27"/>
         <source>disconnected</source>
-        <translation type="unfinished"></translation>
+        <translation>Lecsatlakoztatva</translation>
     </message>
 </context>
 <context>
@@ -214,22 +214,22 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="11"/>
         <source>Developer Tools</source>
-        <translation type="unfinished"></translation>
+        <translation>Fejlesztői eszközök</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="60"/>
         <source>Disable Service</source>
-        <translation type="unfinished"></translation>
+        <translation>Szolgáltatás letiltása</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="66"/>
         <source>Restart Service</source>
-        <translation type="unfinished"></translation>
+        <translation>Szolgáltatás újraindítása</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="72"/>
         <source>Screenshots</source>
-        <translation type="unfinished"></translation>
+        <translation>Képernyőképek</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="78"/>
@@ -240,12 +240,12 @@
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="84"/>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="195"/>
         <source>Report problem</source>
-        <translation type="unfinished"></translation>
+        <translation>Hiba jelentése</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="90"/>
         <source>Install app or watchface from file</source>
-        <translation type="unfinished"></translation>
+        <translation>Alkalmazás vagy Watchface telepítése fájlból</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="113"/>
@@ -255,7 +255,7 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="118"/>
         <source>Enable Connection</source>
-        <translation type="unfinished"></translation>
+        <translation>Kapcsolat engedélyezése</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="120"/>
@@ -270,12 +270,12 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="143"/>
         <source>Apply</source>
-        <translation type="unfinished"></translation>
+        <translation>Alkalmaz</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="153"/>
         <source>Enable</source>
-        <translation type="unfinished"></translation>
+        <translation>Engedélyez</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="154"/>
@@ -285,7 +285,7 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="160"/>
         <source>Runtime Status</source>
-        <translation type="unfinished"></translation>
+        <translation>Runtime Állapota</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="165"/>
@@ -310,7 +310,7 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="178"/>
         <source>Close</source>
-        <translation type="unfinished"></translation>
+        <translation>Bezárás</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="208"/>
@@ -320,7 +320,7 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="233"/>
         <source>Current log: </source>
-        <translation type="unfinished"></translation>
+        <translation>Jelenlegi napló: </translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="239"/>
@@ -345,17 +345,17 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="268"/>
         <source>Debug</source>
-        <translation type="unfinished"></translation>
+        <translation>Hibakeresés</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="269"/>
         <source>Warning</source>
-        <translation type="unfinished"></translation>
+        <translation>Figyelmeztetés</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="270"/>
         <source>Critical</source>
-        <translation type="unfinished"></translation>
+        <translation>Kritikus</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="277"/>
@@ -365,7 +365,7 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="287"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>Mégse</translation>
     </message>
 </context>
 <context>
@@ -373,17 +373,17 @@
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="15"/>
         <source>Firmware upgrade</source>
-        <translation type="unfinished"></translation>
+        <translation>Firmware frissítés</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="18"/>
         <source>Currently installed firmware: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Jelenleg telepített firmware: %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="24"/>
         <source>A new firmware upgrade is available for your Pebble smartwatch.</source>
-        <translation type="unfinished"></translation>
+        <translation>Elérhető egy új firmware frissítés a Pebble okosórádhoz.</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="32"/>
@@ -393,12 +393,12 @@
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="39"/>
         <source>Release Notes: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>A programverzióra vonatkozó megjegyzések: %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="46"/>
         <source>Important:</source>
-        <translation type="unfinished"></translation>
+        <translation>Fontos:</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="46"/>
@@ -408,12 +408,12 @@
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="53"/>
         <source>Upgrade now</source>
-        <translation type="unfinished"></translation>
+        <translation>Frissítés most</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="53"/>
         <source>Firmware is Up-To-Date</source>
-        <translation type="unfinished"></translation>
+        <translation>A Firmware naprakész</translation>
     </message>
 </context>
 <context>
@@ -426,12 +426,12 @@
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="14"/>
         <source>OK</source>
-        <translation type="unfinished"></translation>
+        <translation>OK</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="16"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>Mégse</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="20"/>
@@ -441,37 +441,37 @@
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="26"/>
         <source>Age</source>
-        <translation type="unfinished"></translation>
+        <translation>Életkor</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="37"/>
         <source>Height (cm)</source>
-        <translation type="unfinished"></translation>
+        <translation>Magasság (cm)</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="47"/>
         <source>Weight (kg)</source>
-        <translation type="unfinished"></translation>
+        <translation>Testsúly (kg)</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="58"/>
         <source>Gender</source>
-        <translation type="unfinished"></translation>
+        <translation>Nem</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="59"/>
         <source>Female</source>
-        <translation type="unfinished"></translation>
+        <translation>Nő</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="59"/>
         <source>Male</source>
-        <translation type="unfinished"></translation>
+        <translation>Férfi</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="67"/>
         <source>I want to be more active</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktívabb akarok lenni</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="68"/>
@@ -481,7 +481,7 @@
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="74"/>
         <source>I want to sleep more</source>
-        <translation type="unfinished"></translation>
+        <translation>Többet akarok aludni</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="75"/>
@@ -494,7 +494,7 @@
     <message>
         <location filename="../qml/pages/ImportPackagePage.qml" line="8"/>
         <source>Import watchapp or watchface</source>
-        <translation type="unfinished"></translation>
+        <translation>Watchapp vagy Watchface importálása</translation>
     </message>
     <message>
         <location filename="../qml/pages/ImportPackagePage.qml" line="30"/>
@@ -507,7 +507,7 @@
     <message>
         <location filename="../qml/pages/InfoPage.qml" line="29"/>
         <source>Version %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Verzió %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/InfoPage.qml" line="42"/>
@@ -522,7 +522,7 @@
     <message>
         <location filename="../qml/pages/InfoPage.qml" line="79"/>
         <source>Pebble is a trademark of Pebble Technology Corp.</source>
-        <translation type="unfinished"></translation>
+        <translation>A Pebble a Pebble Technology Corp. bejegyzett védjegye</translation>
     </message>
 </context>
 <context>
@@ -530,32 +530,32 @@
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="29"/>
         <source>Upgrade</source>
-        <translation type="unfinished"></translation>
+        <translation>Frissítés</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="29"/>
         <source>Version</source>
-        <translation type="unfinished"></translation>
+        <translation>Verzió</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="36"/>
         <source>Launch</source>
-        <translation type="unfinished"></translation>
+        <translation>Indítás</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="40"/>
         <source>Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Beállítások</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="45"/>
         <source>Delete</source>
-        <translation type="unfinished"></translation>
+        <translation>Törlés</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="48"/>
         <source>Really Delete?</source>
-        <translation type="unfinished"></translation>
+        <translation>Valóban törli?</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="54"/>
@@ -573,7 +573,7 @@
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="23"/>
         <source>Add New</source>
-        <translation type="unfinished"></translation>
+        <translation>Új hozzáadása</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="32"/>
@@ -583,12 +583,12 @@
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="32"/>
         <source>Apps</source>
-        <translation type="unfinished"></translation>
+        <translation>Alkalmazások</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="32"/>
         <source>Watchfaces</source>
-        <translation type="unfinished"></translation>
+        <translation>Watchfaces</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="101"/>
@@ -601,7 +601,7 @@
     <message>
         <location filename="../qml/pages/LanguagePage.qml" line="19"/>
         <source>Language Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Nyelvi Beállítások</translation>
     </message>
     <message>
         <location filename="../qml/pages/LanguagePage.qml" line="20"/>
@@ -611,12 +611,12 @@
     <message>
         <location filename="../qml/pages/LanguagePage.qml" line="23"/>
         <source>Pebble Language</source>
-        <translation type="unfinished"></translation>
+        <translation>Pebble nyelve</translation>
     </message>
     <message>
         <location filename="../qml/pages/LanguagePage.qml" line="29"/>
         <source>Select Language</source>
-        <translation type="unfinished"></translation>
+        <translation>Nyelv kiválasztása</translation>
     </message>
     <message>
         <location filename="../qml/pages/LanguagePage.qml" line="41"/>
@@ -634,7 +634,7 @@
     <message>
         <location filename="../qml/pages/LoadingPage.qml" line="23"/>
         <source>Restart Service</source>
-        <translation type="unfinished"></translation>
+        <translation>Szolgáltatás újraindítása</translation>
     </message>
 </context>
 <context>
@@ -642,12 +642,12 @@
     <message>
         <location filename="../qml/pages/LocationPicker.qml" line="12"/>
         <source>Select Location</source>
-        <translation type="unfinished"></translation>
+        <translation>Helyszín kiválasztása</translation>
     </message>
     <message>
         <location filename="../qml/pages/LocationPicker.qml" line="14"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>Mégse</translation>
     </message>
     <message>
         <location filename="../qml/pages/LocationPicker.qml" line="18"/>
@@ -670,22 +670,22 @@
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="19"/>
         <source>About</source>
-        <translation type="unfinished"></translation>
+        <translation>Névjegy</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="25"/>
         <source>Developer tools</source>
-        <translation type="unfinished"></translation>
+        <translation>Fejlesztői eszközök</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="120"/>
         <source>Connected</source>
-        <translation type="unfinished"></translation>
+        <translation>Csatlakozva</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="120"/>
         <source>Disconnected</source>
-        <translation type="unfinished"></translation>
+        <translation>Lecsatlakoztatva</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="128"/>
@@ -695,7 +695,7 @@
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="150"/>
         <source>Upgrading...</source>
-        <translation type="unfinished"></translation>
+        <translation>Frissítés...</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="162"/>
@@ -710,7 +710,7 @@
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="182"/>
         <source>Open Bluetooth Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Bluetooth beállítások megnyitása</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="189"/>
@@ -720,12 +720,12 @@
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="198"/>
         <source>Initialize Pebble</source>
-        <translation type="unfinished"></translation>
+        <translation>Pebble inicializálása</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="267"/>
         <source>Notifications</source>
-        <translation type="unfinished"></translation>
+        <translation>Értesítések</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="272"/>
@@ -735,17 +735,17 @@
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="278"/>
         <source>Watchfaces</source>
-        <translation type="unfinished"></translation>
+        <translation>Watchfaces</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="284"/>
         <source>Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Beállítások</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="291"/>
         <source>Firmware</source>
-        <translation type="unfinished"></translation>
+        <translation>Firmware</translation>
     </message>
 </context>
 <context>
@@ -753,7 +753,7 @@
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="15"/>
         <source>Notifications</source>
-        <translation type="unfinished"></translation>
+        <translation>Értesítések</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="18"/>
@@ -763,7 +763,7 @@
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="63"/>
         <source>Always Enabled</source>
-        <translation type="unfinished"></translation>
+        <translation>Mindig engedélyezve</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="69"/>
@@ -773,7 +773,7 @@
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="75"/>
         <source>Always Disabled</source>
-        <translation type="unfinished"></translation>
+        <translation>Mindig tiltva</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="81"/>
@@ -786,7 +786,7 @@
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="9"/>
         <source>RockPool</source>
-        <translation type="unfinished"></translation>
+        <translation>RockPool</translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="10"/>
