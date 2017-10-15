@@ -6,34 +6,34 @@
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="113"/>
         <source>Alert</source>
-        <translation type="unfinished"></translation>
+        <translation>Hoiatus</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="114"/>
         <source>Something going wrong</source>
-        <translation type="unfinished"></translation>
+        <translation>Midagi läheb valesti</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="115"/>
         <location filename="../qml/pages/AppSettingsPage.qml" line="242"/>
         <source>Accept</source>
-        <translation type="unfinished"></translation>
+        <translation>Nõustu</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="116"/>
         <location filename="../qml/pages/AppSettingsPage.qml" line="293"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>Katkesta</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="154"/>
         <source>Host</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Host</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="154"/>
         <source>requests permission for</source>
-        <translation type="unfinished"></translation>
+        <translation>palun luba</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="156"/>
@@ -43,7 +43,7 @@
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="297"/>
         <source>Select</source>
-        <translation type="unfinished"></translation>
+        <translation>Vali</translation>
     </message>
 </context>
 <context>
@@ -51,37 +51,37 @@
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="170"/>
         <source>Description</source>
-        <translation type="unfinished"></translation>
+        <translation>Kirjeldus</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="191"/>
         <source>Developer</source>
-        <translation type="unfinished"></translation>
+        <translation>Arendaja</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="196"/>
         <source>Version</source>
-        <translation type="unfinished"></translation>
+        <translation>Versioon</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="246"/>
         <source>Install</source>
-        <translation type="unfinished"></translation>
+        <translation>Installi</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="246"/>
         <source>Installing...</source>
-        <translation type="unfinished"></translation>
+        <translation>Installimine...</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="246"/>
         <source>Installed</source>
-        <translation type="unfinished"></translation>
+        <translation>Paigaldatud</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="246"/>
         <source>Needs Companion</source>
-        <translation type="unfinished"></translation>
+        <translation>Vajab kaaslast</translation>
     </message>
 </context>
 <context>
@@ -89,59 +89,59 @@
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="43"/>
         <source>Use</source>
-        <translation type="unfinished"></translation>
+        <translation>Kasuta</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="43"/>
         <location filename="../qml/pages/AppStorePage.qml" line="55"/>
         <source>Collections</source>
-        <translation type="unfinished"></translation>
+        <translation>Kogud</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="43"/>
         <location filename="../qml/pages/AppStorePage.qml" line="55"/>
         <source>Categories</source>
-        <translation type="unfinished"></translation>
+        <translation>Kategooriad</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="49"/>
         <source>Search</source>
-        <translation type="unfinished"></translation>
+        <translation>Otsing</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="55"/>
         <source>Watchapps</source>
-        <translation type="unfinished"></translation>
+        <translation>Käekell Äpid</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="55"/>
         <source>Watchfaces</source>
-        <translation type="unfinished"></translation>
+        <translation>Käekell nägu</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="101"/>
         <source>See all</source>
-        <translation type="unfinished"></translation>
+        <translation>Vaata kõiki</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="163"/>
         <source>All Apps</source>
-        <translation type="unfinished"></translation>
+        <translation>Kõik äpid</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="196"/>
         <source>Needs companion</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Vajab kaaslast</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="223"/>
         <source>Search app or watchface</source>
-        <translation type="unfinished"></translation>
+        <translation>Otsing äpid või käekell nägu</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="226"/>
         <source>Search Results</source>
-        <translation type="unfinished"></translation>
+        <translation>Otsingu tulemused</translation>
     </message>
 </context>
 <context>
@@ -150,27 +150,27 @@
         <location filename="../qml/pages/AppUpgradePage.qml" line="24"/>
         <location filename="../qml/pages/AppUpgradePage.qml" line="25"/>
         <source>Upgrading</source>
-        <translation type="unfinished"></translation>
+        <translation>Uuendamine</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="49"/>
         <source>Version</source>
-        <translation type="unfinished"></translation>
+        <translation>Versioon</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="77"/>
         <source>Upgrade</source>
-        <translation type="unfinished"></translation>
+        <translation>Uuendused</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="77"/>
         <source>Upgrading...</source>
-        <translation type="unfinished"></translation>
+        <translation>Uuendamine...</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="77"/>
         <source>Needs Companion</source>
-        <translation type="unfinished"></translation>
+        <translation>Vajab kaaslast</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="93"/>
