@@ -175,12 +175,12 @@
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="93"/>
         <source>Compatibility</source>
-        <translation type="unfinished"></translation>
+        <translation>Ühilduvus</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="175"/>
         <source>Change Log</source>
-        <translation type="unfinished"></translation>
+        <translation>Muuda logi</translation>
     </message>
 </context>
 <context>
@@ -188,7 +188,7 @@
     <message>
         <location filename="../qml/pages/ContentPeerPickerPage.qml" line="16"/>
         <source>Share Via</source>
-        <translation type="unfinished"></translation>
+        <translation>Jagama</translation>
     </message>
     <message>
         <location filename="../qml/pages/ContentPeerPickerPage.qml" line="26"/>
@@ -201,12 +201,12 @@
     <message>
         <location filename="../qml/cover/CoverPage.qml" line="27"/>
         <source>connected</source>
-        <translation type="unfinished"></translation>
+        <translation>Vooluvõrgus</translation>
     </message>
     <message>
         <location filename="../qml/cover/CoverPage.qml" line="27"/>
         <source>disconnected</source>
-        <translation type="unfinished"></translation>
+        <translation>Lahtiühendatud</translation>
     </message>
 </context>
 <context>
@@ -214,7 +214,7 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="11"/>
         <source>Developer Tools</source>
-        <translation type="unfinished"></translation>
+        <translation>Arendaja tööriistad</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="60"/>
