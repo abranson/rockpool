@@ -1201,6 +1201,16 @@ void Pebble::removeApp(const QUuid &uuid)
     m_timelineSync->syncLocker(true);
 }
 
+void Pebble::sendAppData(const QUuid &uuid, const QVariantMap &data)
+{
+    m_appMsgManager->send(uuid, data);
+}
+
+void Pebble::closeApp(const QUuid &uuid)
+{
+    m_appMsgManager->closeApp(uuid);
+}
+
 void Pebble::launchApp(const QUuid &uuid)
 {
     m_appMsgManager->launchApp(uuid);
