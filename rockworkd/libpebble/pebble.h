@@ -150,6 +150,8 @@ public slots:
     void removeApp(const QUuid &uuid);
     AppInfo currentApp();
 
+    void closeApp(const QUuid &uuid);    
+    void sendAppData(const QUuid &uuid, const QVariantMap &data);
     void launchApp(const QUuid &uuid);
 
     void requestConfigurationURL(const QUuid &uuid);

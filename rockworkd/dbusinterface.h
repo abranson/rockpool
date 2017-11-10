@@ -112,6 +112,8 @@ public slots:
     void ConfigurationURL(const QString &uuid);
     void ConfigurationClosed(const QString &uuid, const QString &result);
     void SetAppOrder(const QStringList &newList);
+    void SendAppData(const QString &uuid, const QVariantMap &data);    
+    void CloseApp(const QString &uuid);
     void LaunchApp(const QString &uuid);
     void RequestScreenshot();
     QStringList Screenshots() const;

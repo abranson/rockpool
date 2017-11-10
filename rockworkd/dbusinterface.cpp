@@ -405,6 +405,16 @@ void DBusPebble::SetAppOrder(const QStringList &newList)
     m_pebble->setAppOrder(uuidList);
 }
 
+void DBusPebble::SendAppData(const QString &uuid, const QVariantMap &data)
+{
+    m_pebble->sendAppData(QUuid(uuid), QVariantMap(data));
+}
+
+void DBusPebble::CloseApp(const QString &uuid)
+{
+    m_pebble->closeApp(QUuid(uuid));
+}
+
 void DBusPebble::LaunchApp(const QString &uuid)
 {
     m_pebble->launchApp(QUuid(uuid));
