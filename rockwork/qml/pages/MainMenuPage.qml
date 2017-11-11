@@ -125,7 +125,7 @@ Page {
                             visible: root.pebble.connected && root.pebble.firmwareUpgradeAvailable && !root.pebble.upgradingFirmware
                         }
                         Label {
-                            text: qsTr("Update Available")
+                            text: qsTr("Upgrade Available")
                             anchors.horizontalCenter: parent.horizontalCenter
                             visible: root.pebble.connected && root.pebble.firmwareUpgradeAvailable && !root.pebble.upgradingFirmware
                         }
