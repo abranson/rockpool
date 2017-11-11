@@ -1081,7 +1081,7 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="183"/>
         <source>Canned Messages</source>
-        <translation type="unfinished">Kansellerte meldinger</translation>
+        <translation>Forhåndslagrede meldinger</translation>
     </message>
 </context>
 <context>
