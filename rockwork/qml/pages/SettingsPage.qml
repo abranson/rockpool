@@ -122,7 +122,7 @@ Page {
             }
             Button {
                 width: parent.width
-                text: oauth ? qsTr("Logout") : qsTr("Login")
+                text: oauth ? qsTr("Log out") : qsTr("Log in")
                 onClicked: if(oauth) {
                                pebble.setOAuthToken("");
                                oauth = "";
