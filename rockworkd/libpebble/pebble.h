@@ -150,6 +150,10 @@ public slots:
     void removeApp(const QUuid &uuid);
     AppInfo currentApp();
 
+    void sendAppDataCallback(const QUuid &uuid, const QVariantMap &data,
+              const std::function<void()> &ackCallback,
+              const std::function<void()> &nackCallback);
+
     void closeApp(const QUuid &uuid);    
     void sendAppData(const QUuid &uuid, const QVariantMap &data);
     void launchApp(const QUuid &uuid);
