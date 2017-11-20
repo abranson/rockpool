@@ -11,6 +11,9 @@ class DBusPebble: public QObject
 {
     Q_OBJECT
     Q_CLASSINFO("D-Bus Interface", "org.rockwork.Pebble")
+    Q_PROPERTY(bool IsConnected READ IsConnected)
+    Q_PROPERTY(QString Name READ Name)
+    Q_PROPERTY(QString Address READ Address)
 public:
     DBusPebble(Pebble *pebble, QObject *parent);
 
@@ -112,6 +115,9 @@ public slots:
     void ConfigurationURL(const QString &uuid);
     void ConfigurationClosed(const QString &uuid, const QString &result);
     void SetAppOrder(const QStringList &newList);
+    void SendAppDataCallback(const QUuid &uuid, const QVariantMap &data,
+              const std::function<void()> &ackCallback,
+              const std::function<void()> &nackCallback);
     void SendAppData(const QString &uuid, const QVariantMap &data);    
     void CloseApp(const QString &uuid);
     void LaunchApp(const QString &uuid);
