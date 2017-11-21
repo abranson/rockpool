@@ -30,6 +30,7 @@ DBusPebble::DBusPebble(Pebble *pebble, QObject *parent):
     connect(pebble, &Pebble::voiceSessionStream, this, &DBusPebble::voiceSessionStream);
     connect(pebble, &Pebble::voiceSessionDumped, this, &DBusPebble::voiceSessionDumped);
     connect(pebble, &Pebble::voiceSessionClosed, this, &DBusPebble::voiceSessionClosed);
+    connect(pebble, &Pebble::appButtonPressed, this, &DBusPebble::AppButtonPressed);
 }
 
 QString DBusPebble::Address() const
