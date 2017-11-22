@@ -45,6 +45,7 @@ public slots:
 signals:
     void appStarted(const QUuid &uuid);
     void appStopped(const QUuid &uuid);
+    void appButtonPressed(const QString &uuid, const int &key);
 
 private:
     WatchConnection::Dict mapAppKeys(const QUuid &uuid, const QVariantMap &data);

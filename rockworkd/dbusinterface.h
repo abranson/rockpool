@@ -47,6 +47,8 @@ signals:
     void voiceSessionDumped(const QString &dumpFile);
     void voiceSessionClosed(const QString &dumpFIle);
 
+    void AppButtonPressed(const QString &uuid, const int &key);
+
 public slots:
     QString Address() const;
     QString Name() const;

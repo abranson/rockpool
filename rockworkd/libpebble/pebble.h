@@ -211,6 +211,8 @@ private slots:
 
     void slotUpdateAvailableChanged();
 
+    void onAppButtonPressed(const QString &uuid, const int &key);
+
 signals:
     void pebbleConnected();
     void pebbleDisconnected();
@@ -239,6 +241,8 @@ signals:
     void devConServerStateChanged(bool state);
     void devConCloudStateChanged(bool state);
     void oauthTokenChanged(const QString &token);
+
+    void appButtonPressed(const QString &uuid, const int &key);
 private:
     void setHardwareRevision(HardwareRevision hardwareRevision);
 

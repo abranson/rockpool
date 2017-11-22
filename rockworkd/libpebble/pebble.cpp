@@ -99,6 +99,7 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
     QObject::connect(m_jskitManager, &JSKitManager::openURL, this, &Pebble::openURL);
     QObject::connect(m_jskitManager, &JSKitManager::appNotification, this, &Pebble::insertPin);
     QObject::connect(m_appMsgManager, &AppMsgManager::appStarted, this, &Pebble::appStarted);
+    QObject::connect(m_appMsgManager, &AppMsgManager::appButtonPressed, this, &Pebble::onAppButtonPressed);
 
     m_weatherApp = new WeatherApp(this, getWeatherLocations());
     QObject::connect(m_weatherApp, &WeatherApp::locationsChanged, this, &Pebble::saveWeatherLocations);
@@ -1510,6 +1511,11 @@ void Pebble::appStarted(const QUuid &uuid)
     } else if(uuid == WeatherApp::appUUID && m_weatherProv != nullptr) {
         m_weatherProv->refreshWeather();
     }
+}
+
+void Pebble::onAppButtonPressed(const QString &uuid, const int &key)
+{
+    emit appButtonPressed(uuid, key);
 }
 
 void Pebble::muteNotificationSource(const QString &source)

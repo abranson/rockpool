@@ -201,6 +201,7 @@ QVariantMap AppMsgManager::mapAppKeys(const QUuid &uuid, const WatchConnection::
             data.insert(info.appKeys().key(it.key()), it.value());
         } else {
             qWarning() << "Unknown appKey value" << it.key() << "for app with GUID" << uuid;
+            emit appButtonPressed(uuid.toString(), it.key());
             data.insert(QString::number(it.key()), it.value());
         }
     }
