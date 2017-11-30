@@ -38,7 +38,7 @@
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="156"/>
         <source>Store permission permanently and don&apos;t ask again</source>
-        <translation type="unfinished"></translation>
+        <translation>Engedélyt véglegesen tárolja, és többet ne kérdezze</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="297"/>
@@ -89,7 +89,7 @@
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="43"/>
         <source>Use</source>
-        <translation type="unfinished"></translation>
+        <translation>Használat</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="43"/>
@@ -265,7 +265,7 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="130"/>
         <source>Listen Port</source>
-        <translation type="unfinished"></translation>
+        <translation>Figyelőport</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="143"/>
@@ -300,12 +300,12 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="172"/>
         <source>CloudPebble Status</source>
-        <translation type="unfinished"></translation>
+        <translation>CloudPebble Állapota</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="173"/>
         <source>Indicates CloudPebble connection state</source>
-        <translation type="unfinished"></translation>
+        <translation>CloudPebble kapcsolat állapotát jelzi</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="178"/>
@@ -325,17 +325,17 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="239"/>
         <source>Disable service logs</source>
-        <translation type="unfinished"></translation>
+        <translation>Szolgáltatási naplók letiltása</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="248"/>
         <source>Send service logs</source>
-        <translation type="unfinished"></translation>
+        <translation>Szolgáltatási naplók küldése</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="239"/>
         <source>Enable service logs</source>
-        <translation type="unfinished"></translation>
+        <translation>Szolgáltatási naplók engedélyezése</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="266"/>
@@ -421,7 +421,7 @@
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="13"/>
         <source>Health settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Egészségügyi beállítások</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="14"/>
@@ -436,7 +436,7 @@
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="20"/>
         <source>Health app enabled</source>
-        <translation type="unfinished"></translation>
+        <translation>Egészségügyi app engedélyezve</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="26"/>
@@ -499,7 +499,7 @@
     <message>
         <location filename="../qml/pages/ImportPackagePage.qml" line="30"/>
         <source>Import File?</source>
-        <translation type="unfinished"></translation>
+        <translation>Importálja a fájlt?</translation>
     </message>
 </context>
 <context>
@@ -522,7 +522,7 @@
     <message>
         <location filename="../qml/pages/InfoPage.qml" line="79"/>
         <source>Pebble is a trademark of Pebble Technology Corp.</source>
-        <translation>A Pebble a Pebble Technology Corp. bejegyzett védjegye</translation>
+        <translation>A Pebble a Pebble Technology Corp. bejegyzett védjegye.</translation>
     </message>
 </context>
 <context>
@@ -560,12 +560,12 @@
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="54"/>
         <source>Move Up</source>
-        <translation type="unfinished"></translation>
+        <translation>Mozgatás fel</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="59"/>
         <source>Move Down</source>
-        <translation type="unfinished"></translation>
+        <translation>Mozgatás le</translation>
     </message>
 </context>
 <context>
@@ -621,7 +621,7 @@
     <message>
         <location filename="../qml/pages/LanguagePage.qml" line="41"/>
         <source>Submit</source>
-        <translation type="unfinished"></translation>
+        <translation>Elküld</translation>
     </message>
 </context>
 <context>
@@ -652,12 +652,12 @@
     <message>
         <location filename="../qml/pages/LocationPicker.qml" line="18"/>
         <source>Location Name</source>
-        <translation type="unfinished"></translation>
+        <translation>Helyszín Neve</translation>
     </message>
     <message>
         <location filename="../qml/pages/LocationPicker.qml" line="19"/>
         <source>Type in location name</source>
-        <translation type="unfinished"></translation>
+        <translation>Írja be a hely nevét</translation>
     </message>
     <message>
         <location filename="../qml/pages/LocationPicker.qml" line="34"/>
