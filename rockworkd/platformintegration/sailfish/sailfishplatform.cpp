@@ -339,10 +339,10 @@ void SailfishPlatform::handleClosedNotification(watchfish::Notification::CloseRe
     disconnect(n, 0, this, 0);
     QMap<QUuid, watchfish::Notification*>::iterator it = m_notifs.begin();
     while (it != m_notifs.end()) {
-        if (it.value()->id() == n->id()) {
+        if (it.value() && it.value()->id() == n->id()) {
             qDebug() << "Found notification to remove " << it.key();
             emit delTimelinePin(it.key().toString()); // Not sure we want it, but why not?
-            m_notifs.remove(it.key());
+            m_notifs.erase(it);
             return;
         }
         it++;

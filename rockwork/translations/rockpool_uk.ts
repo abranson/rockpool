@@ -2,6 +2,20 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="uk" sourcelanguage="en">
 <context>
+    <name></name>
+    <message id="filemanager-la-file_details">
+        <location filename="../qml/pages/ImportPackagePage.qml" line="149"/>
+        <source>%1, %2</source>
+        <extracomment>Shows size and modification date, e.g. &quot;15.5MB, 02/03/2016&quot;</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="filemanager-la-no_files">
+        <location filename="../qml/pages/ImportPackagePage.qml" line="174"/>
+        <source>No files</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>AppSettingsPage</name>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="113"/>
@@ -492,14 +506,9 @@
 <context>
     <name>ImportPackagePage</name>
     <message>
-        <location filename="../qml/pages/ImportPackagePage.qml" line="8"/>
-        <source>Import watchapp or watchface</source>
-        <translation>Імпортувати додаток або циферблат</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/ImportPackagePage.qml" line="30"/>
-        <source>Import File?</source>
-        <translation>Справді імпортувати?</translation>
+        <location filename="../qml/pages/ImportPackagePage.qml" line="164"/>
+        <source>Sideloading file</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

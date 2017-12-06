@@ -10,14 +10,12 @@ Name:       rockpool
 %{!?qtc_make:%define qtc_make make}
 %{?qtc_builddir:%define _builddir %qtc_builddir}
 Summary:    Support for Pebble watches in SailfishOS
-Version:    1.3
-Release:    3
+Version:    1.4
+Release:    1
 Group:      Qt/Qt
 License:    GPL3
 URL:        http://getpebble.com/
 Source0:    %{name}-%{version}.tar.xz
-Source100:  rockpool.yaml
-Requires:   sailfish-version >= 2.1.0
 Requires:   systemd-user-session-targets
 Requires:   nemo-qml-plugin-dbus-qt5
 Requires:   qt5-qtwebsockets
