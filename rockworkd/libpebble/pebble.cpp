@@ -1202,11 +1202,6 @@ void Pebble::removeApp(const QUuid &uuid)
     m_timelineSync->syncLocker(true);
 }
 
-void Pebble::sendAppDataCallback(const QUuid &uuid, const QVariantMap &data, const std::function<void ()> &ackCallback, const std::function<void ()> &nackCallback)
-{
-    m_appMsgManager->send(uuid, data, ackCallback, nackCallback);
-}
-
 void Pebble::sendAppData(const QUuid &uuid, const QVariantMap &data)
 {
     m_appMsgManager->send(uuid, data);

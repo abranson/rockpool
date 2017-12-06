@@ -406,11 +406,6 @@ void DBusPebble::SetAppOrder(const QStringList &newList)
     m_pebble->setAppOrder(uuidList);
 }
 
-void DBusPebble::SendAppDataCallback(const QUuid &uuid, const QVariantMap &data, const std::function<void ()> &ackCallback, const std::function<void ()> &nackCallback)
-{
-    m_pebble->sendAppDataCallback(uuid, data, ackCallback, nackCallback);
-}
-
 void DBusPebble::SendAppData(const QString &uuid, const QVariantMap &data)
 {
     m_pebble->sendAppData(QUuid(uuid), QVariantMap(data));
