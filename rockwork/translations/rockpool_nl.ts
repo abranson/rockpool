@@ -93,7 +93,7 @@
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="59"/>
         <source>Watchfaces</source>
-        <translation>Watchfaces</translation>
+        <translation>Horlogethema’s</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="105"/>
@@ -502,7 +502,7 @@
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="29"/>
         <source>Upgrade</source>
-        <translation>Upgrade</translation>
+        <translation>Opwaardering</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="29"/>
@@ -560,7 +560,7 @@
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="32"/>
         <source>Watchfaces</source>
-        <translation>Watchfaces</translation>
+        <translation>Horlogethema’s</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="101"/>
@@ -707,7 +707,7 @@
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="278"/>
         <source>Watchfaces</source>
-        <translation>Watchfaces</translation>
+        <translation>Horlogethema’s</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="284"/>
