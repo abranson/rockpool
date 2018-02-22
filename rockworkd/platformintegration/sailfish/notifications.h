@@ -31,22 +31,23 @@ class NotificationPrivate;
 class Notification : public QObject
 {
 	Q_OBJECT
-    Q_DECLARE_PRIVATE(Notification)
+	Q_DECLARE_PRIVATE(Notification)
 
 	/** Notification ID */
 	Q_PROPERTY(uint id READ id CONSTANT)
 	/** Name of sender program */
 	Q_PROPERTY(QString sender READ sender WRITE setSender NOTIFY senderChanged)
 	Q_PROPERTY(QString summary READ summary WRITE setSummary NOTIFY summaryChanged)
-    Q_PROPERTY(QString body READ body WRITE setBody NOTIFY bodyChanged)
-    Q_PROPERTY(QString owner READ owner WRITE setOwner NOTIFY ownerChanged)
-    Q_PROPERTY(QString originPackage READ originPackage WRITE setOriginPackage NOTIFY originPackageChanged)
+	Q_PROPERTY(QString body READ body WRITE setBody NOTIFY bodyChanged)
+	Q_PROPERTY(QString owner READ owner WRITE setOwner NOTIFY ownerChanged)
+	Q_PROPERTY(uint replacesId READ replacesId WRITE setReplacesId NOTIFY replacesIdChanged)
+	Q_PROPERTY(QString originPackage READ originPackage WRITE setOriginPackage NOTIFY originPackageChanged)
 	Q_PROPERTY(QDateTime timestamp READ timestamp WRITE setTimestamp NOTIFY timestampChanged)
 	/** Icon file path */
 	Q_PROPERTY(QString icon READ icon WRITE setIcon NOTIFY iconChanged)
 	Q_PROPERTY(int urgency READ urgency WRITE setUrgency NOTIFY urgencyChanged)
 	Q_PROPERTY(bool transient READ transient WRITE setTransient NOTIFY transientChanged)
-    Q_PROPERTY(bool hidden READ hidden WRITE setHidden NOTIFY hiddenChanged)
+	Q_PROPERTY(bool hidden READ hidden WRITE setHidden NOTIFY hiddenChanged)
 
 	/* Nemo stuff */
 	Q_PROPERTY(QString previewSummary READ previewSummary WRITE setPreviewSummary NOTIFY previewSummaryChanged)
@@ -57,17 +58,21 @@ class Notification : public QObject
 	Q_ENUMS(CloseReason)
 
 public:
-    explicit Notification(uint id, QObject *parent = 0);
-    ~Notification();
+	explicit Notification(uint id, QObject *parent = 0);
+	~Notification();
 
 	enum CloseReason {
 		Expired = 1,
 		DismissedByUser = 2,
 		DismissedByProgram = 3,
-		ClosedOther = 4
+		ClosedOther = 4,
+		Replaced = 5
 	};
 
-	uint id() const;
+	quint32 id() const;
+
+	quint32 replacesId() const;
+	void setReplacesId(quint32 id);
 
 	QString sender() const;
 	void setSender(const QString &sender);
@@ -75,17 +80,17 @@ public:
 	QString summary() const;
 	void setSummary(const QString &summary);
 
-    QString category() const;
-    void setCategory(const QString &category);
+	QString category() const;
+	void setCategory(const QString &category);
 
 	QString body() const;
 	void setBody(const QString &body);
 
-    QString owner() const;
-    void setOwner(const QString &owner);
+	QString owner() const;
+	void setOwner(const QString &owner);
 
-    QString originPackage() const;
-    void setOriginPackage(const QString &originPackage);
+	QString originPackage() const;
+	void setOriginPackage(const QString &originPackage);
 
 	QDateTime timestamp() const;
 	void setTimestamp(const QDateTime &dt);
@@ -99,8 +104,8 @@ public:
 	bool transient() const;
 	void setTransient(bool transient);
 
-    bool hidden() const;
-    void setHidden(bool hidden);
+	bool hidden() const;
+	void setHidden(bool hidden);
 
 	QString previewSummary() const;
 	void setPreviewSummary(const QString &summary);
@@ -117,27 +122,26 @@ public slots:
 	void close();
 
 signals:
+	void replacesIdChanged();
 	void senderChanged();
 	void summaryChanged();
-    void categoryChanged();
-    void bodyChanged();
-    void ownerChanged();
-    void originPackageChanged();
+	void categoryChanged();
+	void bodyChanged();
+	void ownerChanged();
+	void originPackageChanged();
 	void timestampChanged();
 	void iconChanged();
 	void urgencyChanged();
 	void transientChanged();
-    void hiddenChanged();
+	void hiddenChanged();
 
 	void previewSummaryChanged();
 	void previewBodyChanged();
 
 	void actionsChanged();
 
-	void closed(CloseReason reason);
-
 private:
-    NotificationPrivate * const d_ptr;
+	NotificationPrivate * const d_ptr;
 };
 
 }

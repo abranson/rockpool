@@ -27,6 +27,7 @@ struct ProtoNotification
     QString body;
     QHash<QString, QString> hints;
     int expireTimeout;
+    quint32 replacesId;
     QStringList actions;
 };
 

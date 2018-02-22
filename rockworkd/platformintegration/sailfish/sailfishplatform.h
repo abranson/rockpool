@@ -47,7 +47,7 @@ public:
 
 public slots:
     void newNotificationPin(watchfish::Notification *notification);
-    void handleClosedNotification(watchfish::Notification::CloseReason reason);
+    void handleClosedNotification(uint id, watchfish::Notification::CloseReason reason);
     void onTimeChanged();
     void updateMusicStatus();
 
@@ -66,6 +66,7 @@ private:
     OrganizerAdapter *m_organizerAdapter;
     ModeControlEntity *m_nokiaMCE;
     mutable QMap<QUuid, watchfish::Notification*> m_notifs;
+    mutable QMap<uint, QUuid> m_notifs_by_id;
     watchfish::MusicController *m_musicController;
     watchfish::NotificationMonitor *m_notificationMonitor;
     watchfish::WallTimeMonitor *m_wallTimeMonitor;

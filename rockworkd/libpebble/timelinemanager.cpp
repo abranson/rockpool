@@ -1028,10 +1028,10 @@ void TimelineManager::insertTimelinePin(const QJsonObject &json)
     TimelinePin pin(obj,this);
     if(pin.type() == TimelineItem::TypeNotification) {
         // Simple persistence checks for volatile (system) notification. Also do some sanity checks
-        if(!pin.guid().isNull() && !pin.layout().isEmpty() && !pin.kind().isEmpty() && !pin.parent().isNull() && !pinExists(pin.guid()) && pin.created() >= QDateTime::currentDateTimeUtc().addSecs(m_event_fadeout))
+        if(!pin.guid().isNull() && !pin.layout().isEmpty() && !pin.kind().isEmpty() && !pin.parent().isNull())
             pin.send();
         else
-            qWarning() << (pin.guid().isNull()?"GUID":"") << (pin.layout().isEmpty()?"Layout":"") << (pin.kind().isEmpty()?"Kind":"") << (pin.parent().isNull()?"Parent":"") << (pinExists(pin.guid())?"Notification pin exists,":"missing from notification,") << "ignoring.";
+            qWarning() << (pin.guid().isNull()?"GUID":"") << (pin.layout().isEmpty()?"Layout":"") << (pin.kind().isEmpty()?"Kind":"") << (pin.parent().isNull()?"Parent":"") << "missing from notification, ignoring.";
         return;
     }
     // Below logic is mimicking reference implementation at pypkjs
@@ -1058,11 +1058,11 @@ void TimelineManager::insertTimelinePin(const QJsonObject &json)
     }
     // At this stage we are positive to insert the pin.
     // Insert it first so that user could open it from notification or reminder
-    //qDebug() << "Sending pin" << pin.guid() << pin.time().toString(Qt::ISODate);
+    qDebug() << "Sending pin" << pin.guid() << pin.time().toString(Qt::ISODate);
     pin.send();
     TimelinePin notice = pin.makeNotification(old);
     if(notice.isValid()) {
-        //qDebug() << "Sending notification" << notice.guid() << "for pin" << pin.guid();
+        qDebug() << "Sending notification" << notice.guid() << "for pin" << pin.guid();
         notice.send(); // Store, add to index and send to watches
     }
     if(!pin.reminders().isEmpty()) {

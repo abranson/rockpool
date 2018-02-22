@@ -40,7 +40,8 @@ struct Action
 
 struct NotificationPrivate
 {
-	uint id;
+    quint32 id;
+    quint32 replacesId;
 	QString sender;
 	QString summary;
     QString category;
@@ -67,10 +68,25 @@ Notification::~Notification()
 {
 }
 
-uint Notification::id() const
+quint32 Notification::id() const
 {
     Q_D(const Notification);
 	return d->id;
+}
+
+quint32 Notification::replacesId() const
+{
+    Q_D(const Notification);
+    return d->replacesId;
+}
+
+void Notification::setReplacesId(quint32 id)
+{
+    Q_D(Notification);
+    if (id != d->replacesId) {
+        d->replacesId = id;
+        emit replacesIdChanged();
+    }
 }
 
 QString Notification::sender() const

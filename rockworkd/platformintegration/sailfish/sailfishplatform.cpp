@@ -27,8 +27,8 @@ SailfishPlatform::SailfishPlatform(QObject *parent):
 
     // Notifications
     m_notificationMonitor = new watchfish::NotificationMonitor(this);
-    //connect(m_notificationMonitor, &watchfish::NotificationMonitor::notification, this, &SailfishPlatform::onNotification);
     connect(m_notificationMonitor, &watchfish::NotificationMonitor::notification, this, &SailfishPlatform::newNotificationPin);
+    connect(m_notificationMonitor, &watchfish::NotificationMonitor::notificationClosed, this, &SailfishPlatform::handleClosedNotification);
 
     // Calls
     m_voiceCallManager = new VoiceCallManager(this);
@@ -252,9 +252,8 @@ void SailfishPlatform::newNotificationPin(watchfish::Notification *notification)
 
     pin.insert("layout",layout);
 
-    connect(notification, &watchfish::Notification::closed, this, &SailfishPlatform::handleClosedNotification);
     m_notifs.insert(guid, notification); // keep for the action. TimelineManager will take care cleaning it up
-
+    m_notifs_by_id.insert(notification->id(), guid);
     qDebug() << "Emitting new pin" << pin.value("id").toString() << pin.value("dataSource").toString() << pin.value("guid").toString();
     emit newTimelinePin(pin);
 }
@@ -328,26 +327,24 @@ void SailfishPlatform::removeNotification(const QUuid &uuid) const
     if (notif) {
         notif->close();
         m_notifs.remove(uuid);
+        m_notifs_by_id.remove(notif->id());
     }
     else
         qDebug() << "Not found";
 }
 
-void SailfishPlatform::handleClosedNotification(watchfish::Notification::CloseReason reason) {
-    watchfish::Notification *n = static_cast<watchfish::Notification*>(sender());
-    qDebug() << "Notification closed:" << n->id() << "Reason: " << reason;
-    disconnect(n, 0, this, 0);
-    QMap<QUuid, watchfish::Notification*>::iterator it = m_notifs.begin();
-    while (it != m_notifs.end()) {
-        if (it.value() && it.value()->id() == n->id()) {
-            qDebug() << "Found notification to remove " << it.key();
-            emit delTimelinePin(it.key().toString()); // Not sure we want it, but why not?
-            m_notifs.erase(it);
-            return;
-        }
-        it++;
+void SailfishPlatform::handleClosedNotification(uint nid, watchfish::Notification::CloseReason reason) {
+    qDebug() << "Notification closed:" << nid << "Reason: " << reason;
+
+    if (m_notifs_by_id.contains(nid)) {
+        QUuid uuid = m_notifs_by_id.value(nid);
+        m_notifs_by_id.remove(nid);
+        qDebug() << "Removing notification " << uuid;
+        emit delTimelinePin(uuid.toString()); // Not sure we want it, but why not?
+        m_notifs.remove(uuid);
     }
-    qDebug() << "Notification not found";
+    else
+        qDebug() << "Notification not found";
 }
 
 void SailfishPlatform::sendMusicControlCommand(MusicControlButton controlButton)

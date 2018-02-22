@@ -105,6 +105,7 @@ void NotificationMonitorPrivate::processIncomingNotification(quint32 id, const P
 	n->setSummary(proto.summary);
 	n->setBody(proto.body);
 	n->setIcon(proto.appIcon);
+    if (proto.replacesId) n->setReplacesId(proto.replacesId);
     if (n->icon().isEmpty())
         n->setIcon(proto.hints.value("x-nemo-icon"));
     if (n->icon().isEmpty())
@@ -149,17 +150,22 @@ void NotificationMonitorPrivate::processIncomingNotification(quint32 id, const P
     }
 	if (is_new_notification) {
 		_notifs.insert(id, n);
+        if (n->replacesId() && _notifs.contains(n->replacesId())) {
+            _notifs.remove(n->replacesId());
+            emit q->notificationClosed(n->replacesId(), Notification::Replaced);
+        }
 	}
 		emit q->notification(n);
 	}
 
 void NotificationMonitorPrivate::processCloseNotification(quint32 id, quint32 reason)
 {
+    Q_Q(NotificationMonitor);
 	qCDebug(notificationMonitorCat) << "Close notification" << id << reason;
 	Notification *n = _notifs.value(id, 0);
 	if (n) {
 		_notifs.remove(id);
-		emit n->closed(static_cast<Notification::CloseReason>(reason));
+        emit q->notificationClosed(id, static_cast<Notification::CloseReason>(reason));
 		n->deleteLater();
 	} else {
 		qCDebug(notificationMonitorCat) << " but it is not found";
@@ -195,7 +201,7 @@ ProtoNotification NotificationMonitorPrivate::parseNotifyCall(DBusMessage *msg) 
 	ProtoNotification proto;
 	DBusMessageIter iter, sub;
 	const char *app_name, *app_icon, *summary, *body;
-	quint32 replaces_id;
+    qint32 replaces_id;
 	qint32 expire_timeout;
 
 	if (strcmp(dbus_message_get_signature(msg), "susssasa{sv}i") != 0) {
@@ -223,6 +229,8 @@ ProtoNotification NotificationMonitorPrivate::parseNotifyCall(DBusMessage *msg) 
 	proto.appIcon = QString::fromUtf8(app_icon);
 	proto.summary = QString::fromUtf8(summary);
 	proto.body = QString::fromUtf8(body);
+    if (replaces_id)
+        proto.replacesId = replaces_id;
 
 	dbus_message_iter_recurse(&iter, &sub);
 	while (dbus_message_iter_get_arg_type(&sub) == DBUS_TYPE_STRING) {

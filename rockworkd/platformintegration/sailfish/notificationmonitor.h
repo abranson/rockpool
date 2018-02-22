@@ -44,6 +44,7 @@ public:
 signals:
     /** Emitted when a notification arrives. */
     void notification(watchfish::Notification *n);
+    void notificationClosed(uint id, Notification::CloseReason reason);
 
 private:
 	NotificationMonitorPrivate * const d_ptr;
