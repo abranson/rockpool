@@ -1,3 +1,7 @@
+* Thu Feb 22 2018 Andrew Branson <github@andrewbranson.net> 1.5-1
+- Fix segfault on notification closing
+- Try to handle notification replacement by removing the old one.
+
 * Wed Dec 06 2017 Andrew Branson <github@andrewbranson.net> 1.4-1
 - Add basic native app API
 - Fix sideloading file picker
