@@ -458,7 +458,7 @@
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="74"/>
         <source>I want to sleep more</source>
-        <translation>I wil meer slapen</translation>
+        <translation>Ik wil meer slapen</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="75"/>
