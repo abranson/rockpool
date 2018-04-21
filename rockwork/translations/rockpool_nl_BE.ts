@@ -33,12 +33,12 @@
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="154"/>
         <source>requests permission for</source>
-        <translation>Vraagt toestemming voor</translation>
+        <translation>Vraagd toestemming voor</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="156"/>
         <source>Store permission permanently and don&apos;t ask again</source>
-        <translation>Sla toestemming voorgoed op en vraag niet opnieuw</translation>
+        <translation>Toestemming voorgoed opslaan en niet meer vragen</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="297"/>
@@ -111,7 +111,7 @@
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="55"/>
         <source>Watchapps</source>
-        <translation>Horlogetoepassingen</translation>
+        <translation>Horlogeapps</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="55"/>
@@ -121,12 +121,12 @@
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="101"/>
         <source>See all</source>
-        <translation>Toon alles</translation>
+        <translation>Toond alles</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="163"/>
         <source>All Apps</source>
-        <translation>Alle toepassingen</translation>
+        <translation>Alle apps</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="196"/>
@@ -136,7 +136,7 @@
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="223"/>
         <source>Search app or watchface</source>
-        <translation>Zoek toepassing of horlogethema</translation>
+        <translation>Zoekt nen app of een horlogethema</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="226"/>
@@ -193,7 +193,7 @@
     <message>
         <location filename="../qml/pages/ContentPeerPickerPage.qml" line="26"/>
         <source>No Share Providers configured. Please add provider&apos;s account in System Settings</source>
-        <translation>Geen deelaanbieders geconfigureerd. Voeg nen account van de leverancier toe in de systeeminstellingen</translation>
+        <translation>Geen deelaanbieders geconfigureerd. Voegd nen account van de leverancier toe in de systeeminstellingen</translation>
     </message>
 </context>
 <context>
@@ -245,7 +245,7 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="90"/>
         <source>Install app or watchface from file</source>
-        <translation>Toepassing of horlogethema vanuit bestand installeren</translation>
+        <translation>App of horlogethema vanuit bestand installeren</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="113"/>
@@ -305,7 +305,7 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="173"/>
         <source>Indicates CloudPebble connection state</source>
-        <translation>Duidt verbindingsstatus van CloudPebble aan</translation>
+        <translation>Duid verbindingsstatus van CloudPebble aan</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="178"/>
@@ -403,7 +403,7 @@
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="46"/>
         <source>This update will also upgrade recovery data. Make sure your Pebble smartwarch is connected to a power adapter.</source>
-        <translation>Dezen update zal ook herstelgegevens opwaarderen. Zorg dat uwe Pebble-smartwatch met nen oplader verbonden is.</translation>
+        <translation>Dezen update zal ook herstelgegevens opwaarderen. Zorgd dat uwe Pebble-smartwatch met nen oplader verbonden is.</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="53"/>
@@ -436,7 +436,7 @@
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="20"/>
         <source>Health app enabled</source>
-        <translation>Gezondheidstoepassing ingeschakeld</translation>
+        <translation>Gezondheidsapp ingeschakeld</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="26"/>
@@ -494,7 +494,7 @@
     <message>
         <location filename="../qml/pages/ImportPackagePage.qml" line="8"/>
         <source>Import watchapp or watchface</source>
-        <translation>Horlogetoepassing of -thema importeren</translation>
+        <translation>Horlogeapp of -thema importeren</translation>
     </message>
     <message>
         <location filename="../qml/pages/ImportPackagePage.qml" line="30"/>
@@ -517,7 +517,7 @@
     <message>
         <location filename="../qml/pages/InfoPage.qml" line="69"/>
         <source>This application is neither affiliated with nor endorsed by Pebble Technology Corp.</source>
-        <translation>Deze toepassing is noch aangesloten bij noch ondersteund door Pebble Technology Corp.</translation>
+        <translation>Dezen app is noch aangesloten bij noch ondersteund door Pebble Technology Corp.</translation>
     </message>
     <message>
         <location filename="../qml/pages/InfoPage.qml" line="79"/>
@@ -573,17 +573,17 @@
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="23"/>
         <source>Add New</source>
-        <translation>Nieuwe toepassing toevoegen</translation>
+        <translation>Nieuwen app toevoegen</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="32"/>
         <source>Apps &amp; Watchfaces</source>
-        <translation>Toepassingen &amp; horlogethema’s</translation>
+        <translation>Apps &amp; horlogethema’s</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="32"/>
         <source>Apps</source>
-        <translation>Toepassingen</translation>
+        <translation>Apps</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="32"/>
@@ -606,7 +606,7 @@
     <message>
         <location filename="../qml/pages/LanguagePage.qml" line="20"/>
         <source>Set langugage for application and your Pebble</source>
-        <translation>Stel de taal voor de toepassing en uwe Pebble in</translation>
+        <translation>Steld de taal voor den app en uwe Pebble in</translation>
     </message>
     <message>
         <location filename="../qml/pages/LanguagePage.qml" line="23"/>
@@ -616,7 +616,7 @@
     <message>
         <location filename="../qml/pages/LanguagePage.qml" line="29"/>
         <source>Select Language</source>
-        <translation>Selecteer taal</translation>
+        <translation>Selecteerd een taal</translation>
     </message>
     <message>
         <location filename="../qml/pages/LanguagePage.qml" line="41"/>
@@ -657,7 +657,7 @@
     <message>
         <location filename="../qml/pages/LocationPicker.qml" line="19"/>
         <source>Type in location name</source>
-        <translation>Voer ne locatienaam in</translation>
+        <translation>Voerd ne locatienaam in</translation>
     </message>
     <message>
         <location filename="../qml/pages/LocationPicker.qml" line="34"/>
@@ -705,7 +705,7 @@
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="172"/>
         <source>Your Pebble smartwatch is disconnected. Please make sure it is powered on, within range and it is paired properly in the Bluetooth System Settings.</source>
-        <translation>De verbinding met uwe Pebble-smartwatch is verbroken. Zorg dat dezen ingeschakeld, binnen bereik en goed gekoppeld is in de Bluetooth-systeeminstellingen.</translation>
+        <translation>De verbinding met uwe Pebble-smartwatch is verbroken. Zorgd dat dezen ingeschakeld, binnen bereik en goed gekoppeld is in de Bluetooth-systeeminstellingen.</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="182"/>
@@ -730,7 +730,7 @@
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="272"/>
         <source>Watch Apps</source>
-        <translation>Horlogetoepassingen</translation>
+        <translation>Horlogeapps</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="278"/>
@@ -816,12 +816,12 @@
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="55"/>
         <source>No Pebble smartwatches configured yet. Please connect your Pebble smartwatch using System Settings.</source>
-        <translation>Der zijn nog geen Pebble-smartwatches geconfigureerd. Maak verbinding met uwe Pebble-smartwatch via de systeeminstellingen.</translation>
+        <translation>Der zijn nog geen Pebble-smartwatches geconfigureerd. Maakt verbinding met uwe Pebble-smartwatch via de systeeminstellingen.</translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="64"/>
         <source>Open Bluetooth Settings</source>
-        <translation>Open Bluetooth-instellingen</translation>
+        <translation>Bluetooth-instellingen openen</translation>
     </message>
 </context>
 <context>
@@ -834,7 +834,7 @@
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="17"/>
         <source>New item will be inserted before current selection</source>
-        <translation>De nieuwen blauwdruk wordt vóór de huidige selectie ingevoegd</translation>
+        <translation>De nieuwen blauwdruk word vóór de huidige selectie ingevoegd</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="21"/>
@@ -950,7 +950,7 @@
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="130"/>
         <source>Pick SIM for new contacts</source>
-        <translation>Kies ne simkaart voor nieuwe contacten</translation>
+        <translation>Kiesd ne simkaart voor nieuwe contacten</translation>
     </message>
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="144"/>
@@ -1013,7 +1013,7 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="68"/>
         <source>Sync Apps from Cloud</source>
-        <translation>Toepassingen vanuit de wolken synchroniseren</translation>
+        <translation>Apps vanuit de wolken synchroniseren</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="76"/>
