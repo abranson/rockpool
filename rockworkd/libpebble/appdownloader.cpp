@@ -19,7 +19,7 @@ AppDownloader::AppDownloader(const QString &storagePath, QObject *parent) :
 
 void AppDownloader::downloadApp(const QString &id)
 {
-    QNetworkRequest request(QUrl("https://api2.getpebble.com/v2/apps/id/" + id));
+    QNetworkRequest request(QUrl("https://appstore-api.rebble.io/api/v1/apps/id/" + id));
     QNetworkReply *reply = m_nam->get(request);
     connect(reply, &QNetworkReply::finished, this, &AppDownloader::appJsonFetched);
 }

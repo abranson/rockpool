@@ -6,6 +6,7 @@
 #include <QNetworkReply>
 #include <QUrlQuery>
 #include <QJsonDocument>
+#include <QJsonObject>
 #include <QJsonParseError>
 
 #include <libintl.h>
@@ -89,9 +90,9 @@ void AppStoreClient::fetchHome(Type type)
 
     QString url;
     if (type == TypeWatchapp) {
-        url = "https://api2.getpebble.com/v2/home/apps";
+        url = "https://appstore-api.rebble.io/api/v1/home/apps";
     } else {
-        url = "https://api2.getpebble.com/v2/home/watchfaces";
+        url = "https://appstore-api.rebble.io/api/v1/home/watchfaces";
     }
     QUrl storeUrl(url);
     storeUrl.setQuery(query);
@@ -142,7 +143,7 @@ void AppStoreClient::fetchHome(Type type)
             if(m_enableCategories) {
                 item->setGroupId(entry.toMap().value("category_id").toString(),AppItem::GroupCategory);
             }
-            qDebug() << "have entry" << item->name() << item->groupId() << item->companion() << item->collection();
+            //qDebug() << "have entry" << item->name() << item->groupId() << item->companion() << item->collection();
 
             /* Let's just disable ability to install, and give user ability to filter
             if (item->groupId().isEmpty() || item->companion()) {
@@ -218,7 +219,7 @@ void AppStoreClient::fetchLink(const QString &link)
 
 void AppStoreClient::fetchAppDetails(const QString &appId)
 {
-    QUrl url("https://api2.getpebble.com/v2/apps/id/" + appId);
+    QUrl url("https://appstore-api.rebble.io/api/v1/apps/id/" + appId);
     QUrlQuery query;
     if (!m_hardwarePlatform.isEmpty()) {
         query.addQueryItem("hardware", m_hardwarePlatform);
@@ -276,24 +277,29 @@ void AppStoreClient::search(const QString &searchString, Type type)
     m_model->clear();
     setBusy(true);
 
-    QUrl url("https://bujatnzd81-dsn.algolia.io/1/indexes/pebble-appstore-production");
+    QUrl url("https://7683ow76eq-dsn.algolia.net/1/indexes/rebble-appstore-production/query");
     QUrlQuery query;
-    query.addQueryItem("x-algolia-api-key", "8dbb11cdde0f4f9d7bf787e83ac955ed");
-    query.addQueryItem("x-algolia-application-id", "BUJATNZD81");
-    query.addQueryItem("query", searchString);
-    QStringList filters;
-    if (type == TypeWatchapp) {
-        filters.append("watchapp");
-    } else if (type == TypeWatchface) {
-        filters.append("watchface");
-    }
-    filters.append(m_hardwarePlatform);
-    query.addQueryItem("tagFilters", filters.join(","));
+    query.addQueryItem("x-algolia-api-key", "252f4938082b8693a8a9fc0157d1d24f");
+    query.addQueryItem("x-algolia-application-id", "7683OW76EQ");
     url.setQuery(query);
 
+    QString filter = "watchapp";
+    if (type == TypeWatchface) {
+        filter = "watchface";
+    }
+
+    QString pluralFilter = filter + "s";
+    QString params = QString("query=%1&hitsPerPage=30&page=0&tagFilters=(%2)&analyticsTags=product-variant-time,%3,%4,appstore-search")
+        .arg(searchString).arg(filter).arg(m_hardwarePlatform).arg(pluralFilter);
+    QJsonObject json;
+    json.insert("params", params);
+    QJsonDocument doc;
+    doc.setObject(json);
+    QByteArray body = doc.toJson();
+
     QNetworkRequest request(url);
-    qDebug() << "Search query:" << url;
-    QNetworkReply *reply = m_nam->get(request);
+    qDebug() << "Search query:" << url << params;
+    QNetworkReply *reply = m_nam->post(request, body);
     connect(reply, &QNetworkReply::finished, [this, reply]() {
         m_model->clear();
         setBusy(false);
@@ -305,7 +311,7 @@ void AppStoreClient::search(const QString &searchString, Type type)
         foreach (const QVariant &entry, resultMap.value("hits").toList()) {
             AppItem *item = parseAppItem(entry.toMap());
             m_model->insert(item);
-//            qDebug() << "have item" << item->name() << item->icon();
+//            qDebug() << "have item" << item->storeId() << item->name() << item->icon();
         }
         qDebug() << "Found" << m_model->rowCount() << "items";
     });

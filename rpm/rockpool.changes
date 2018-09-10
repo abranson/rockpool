@@ -1,3 +1,6 @@
+* Mon Sep 10 2018 Andrew Branson <github@andrewbranson.net> 1.6-1
+- Switch appstore to rebble. Thanks to bhbhdouglass.
+
 * Thu Feb 22 2018 Andrew Branson <github@andrewbranson.net> 1.5-1
 - Fix segfault on notification closing
 - Try to handle notification replacement by removing the old one.
