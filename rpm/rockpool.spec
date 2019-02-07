@@ -70,7 +70,6 @@ desktop-file-install --delete-original       \
    %{buildroot}%{_datadir}/applications/*.desktop
 
 %post
-grep -q "^/usr/bin/rockpoold" /usr/share/mapplauncherd/privileges || echo "/usr/bin/rockpoold,cehlmnpu" >> /usr/share/mapplauncherd/privileges
 su nemo -c 'systemctl --user daemon-reload'
 su nemo -c 'systemctl --user try-restart rockpoold.service'
 update-desktop-database
@@ -90,3 +89,4 @@ update-desktop-database
 %{_datadir}/icons/hicolor/256x256/apps/%{name}.png
 %{_libdir}/systemd/user/%{name}d.service
 %{_libdir}/systemd/user/user-session.target.wants/%{name}d.service
+%{_datadir}/mapplauncherd/privileges.d/%{name}d.privileges

@@ -151,10 +151,13 @@ testing: {
     QT += qml quick
 }
 
-INSTALLS += target systemd layout
+INSTALLS += target systemd layout privilege
 
 systemd.files = $${TARGET}.service
 systemd.path = /usr/lib/systemd/user
+
+privilege.files = $${TARGET}.privileges
+privilege.path = /usr/share/mapplauncherd/privileges.d/
 
 SHARED_DATA_PATH = /usr/share/$$replace(TARGET,d,)
 #fetch from https://github.com/pebble/pypkjs/blob/master/pypkjs/timeline/layouts.json
@@ -163,7 +166,7 @@ JSON_FILES = libpebble/layouts.json
 layout.files = $${JSON_FILES}
 layout.path = $${SHARED_DATA_PATH}
 
-DISTFILES += JSON_FILES
+DISTFILES += JSON_FILES $${TARGET}.privileges
 
 # Default rules for deployment.
 target.path = /usr/bin

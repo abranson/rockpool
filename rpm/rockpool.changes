@@ -1,5 +1,5 @@
 * Mon Sep 10 2018 Andrew Branson <github@andrewbranson.net> 1.6-1
-- Switch appstore to rebble. Thanks to bhbhdouglass.
+- Switch appstore to rebble. Thanks to bhdouglass.
 
 * Thu Feb 22 2018 Andrew Branson <github@andrewbranson.net> 1.5-1
 - Fix segfault on notification closing
@@ -45,7 +45,7 @@
 - Rewrite entire timeline engine using proper JSON pins, to be compatible with websync
 - Add watch notification when new pebble firmware available
 
-* Fri May 12 2016 Andrew Branson <github@andrewbranson.net> 0.11-2
+* Fri May 13 2016 Andrew Branson <github@andrewbranson.net> 0.11-2
 - Added service restart option when no pebbles found
 
 * Thu Apr 28 2016 Andrew Branson <github@andrewbranson.net> 0.11-1
