@@ -1026,7 +1026,6 @@ void Pebble::insertPin(const QJsonObject &json)
             NotificationFilter f = NotificationFilter(notifFilter.value("enabled", QVariant(NotificationEnabled)).toInt());
             if (f==NotificationDisabled || (f==Pebble::NotificationDisabledActive && Core::instance()->platform()->deviceIsActive())) {
                 qDebug() << "Notifications for" << sourceId << "disabled.";
-                Core::instance()->platform()->removeNotification(QUuid(pinObj.value("guid").toString()));
                 return;
             }
             // In case it wasn't there before, make sure to write it to the config now so it will appear in the config app.
