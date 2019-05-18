@@ -634,7 +634,7 @@
     <message>
         <location filename="../qml/pages/LocationPicker.qml" line="34"/>
         <source>Matching locations will be appearing as you type</source>
-        <translation>Passende Orte werde sich zeigen bei der Schreibung </translation>
+        <translation>Passende Orte werden während der Eingabe angezeigt</translation>
     </message>
 </context>
 <context>
