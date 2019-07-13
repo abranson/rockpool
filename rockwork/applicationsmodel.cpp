@@ -93,6 +93,8 @@ void ApplicationsModel::clear()
     m_groupIcons.clear();
     m_links.clear();
     m_linkNames.clear();
+    m_linkQueries.clear();
+    m_linkPages.clear();
     emit linksChanged();
     emit changed();
 }
@@ -176,6 +178,16 @@ QString ApplicationsModel::linkName(const QString &link) const
     return m_linkNames.value(link);
 }
 
+QString ApplicationsModel::linkQuery(const QString &link) const
+{
+    return m_linkQueries.value(link);
+}
+
+int ApplicationsModel::linkPage(const QString &link) const
+{
+    return m_linkPages.value(link);
+}
+
 QStringList ApplicationsModel::links() const
 {
     return m_links;
@@ -185,6 +197,17 @@ void ApplicationsModel::addLink(const QString &link, const QString &name)
 {
     m_links.append(link);
     m_linkNames[link] = name;
+    m_linkQueries[link] = "";
+    m_linkPages[link] = 0;
+    emit linksChanged();
+}
+
+void ApplicationsModel::addLink(const QString &link, const QString &name, const QString &query, const int page)
+{
+    m_links.append(link);
+    m_linkNames[link] = name;
+    m_linkQueries[link] = query;
+    m_linkPages[link] = page;
     emit linksChanged();
 }
 

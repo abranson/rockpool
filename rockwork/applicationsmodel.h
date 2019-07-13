@@ -179,6 +179,11 @@ public:
     Q_INVOKABLE QString linkName(const QString &link) const;
     void addLink(const QString &link, const QString &name);
 
+    // Added to enable pagination in searches. The QML page decides the correct call by reading the search page.
+    Q_INVOKABLE QString linkQuery(const QString &link) const;
+    Q_INVOKABLE int linkPage(const QString &link) const;
+    void addLink(const QString &link, const QString &name, const QString &query, const int page);
+
     Q_INVOKABLE void move(int from, int to);
     Q_INVOKABLE void commitMove();
 
@@ -194,6 +199,8 @@ private:
     QHash<QString, QString> m_groupIcons;
     QStringList m_links;
     QHash<QString, QString> m_linkNames;
+    QHash<QString, QString> m_linkQueries;
+    QHash<QString, int> m_linkPages;
 };
 
 #endif // APPLICATIONSMODEL_H

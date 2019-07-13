@@ -115,7 +115,10 @@ void AppStoreClient::fetchHome(Type type)
             }
             QString slug = entry.toMap().value("slug").toString();
             collections[slug] = appIds;
-            m_model->insertGroup(slug, entry.toMap().value("name").toString(), entry.toMap().value("links").toMap().value("apps").toString());
+            m_model->insertGroup(slug,
+                                 entry.toMap().value("name").toString(),
+                                 // Only the home page links are relative, so prepend here.
+                                 "https://appstore-api.rebble.io" + entry.toMap().value("links").toMap().value("apps").toString());
         }
 
         QHash<QString, QString> categoryNames;
@@ -124,7 +127,8 @@ void AppStoreClient::fetchHome(Type type)
             if(m_enableCategories) {
                 m_model->insertGroup(entry.toMap().value("id").toString(),
                                      entry.toMap().value("name").toString(),
-                                     entry.toMap().value("links").toMap().value("apps").toString(),
+                                     // Only the home page links are relative, so prepend here.
+                                     "https://appstore-api.rebble.io" + entry.toMap().value("links").toMap().value("apps").toString(),
                                      entry.toMap().value("icon").toMap().value("88x88").toString());
             }
         }
@@ -274,6 +278,11 @@ void AppStoreClient::fetchAppDetails(const QString &appId)
 
 void AppStoreClient::search(const QString &searchString, Type type)
 {
+    search(searchString, type, 0);
+}
+
+void AppStoreClient::search(const QString &searchString, Type type, int page)
+{
     m_model->clear();
     setBusy(true);
 
@@ -289,8 +298,8 @@ void AppStoreClient::search(const QString &searchString, Type type)
     }
 
     QString pluralFilter = filter + "s";
-    QString params = QString("query=%1&hitsPerPage=30&page=0&tagFilters=(%2)&analyticsTags=product-variant-time,%3,%4,appstore-search")
-        .arg(searchString).arg(filter).arg(m_hardwarePlatform).arg(pluralFilter);
+    QString params = QString("query=%1&hitsPerPage=30&page=%5&tagFilters=(%2)&analyticsTags=product-variant-time,%3,%4,appstore-search")
+        .arg(searchString).arg(filter).arg(m_hardwarePlatform).arg(pluralFilter).arg(page);
     QJsonObject json;
     json.insert("params", params);
     QJsonDocument doc;
@@ -313,6 +322,13 @@ void AppStoreClient::search(const QString &searchString, Type type)
             m_model->insert(item);
 //            qDebug() << "have item" << item->storeId() << item->name() << item->icon();
         }
+        // Add pagination. The extra search parameters will be used as query and page. The link is just an identifier.
+        if (resultMap.value("page").toInt() > 0) {
+            m_model->addLink("previous", gettext("Previous"), resultMap.value("query").toString(), resultMap.value("page").toInt() - 1);
+        }
+        if (resultMap.value("page").toInt() < resultMap.value("nbPages").toInt() - 1) {
+            m_model->addLink("next", gettext("Next"), resultMap.value("query").toString(), resultMap.value("page").toInt() + 1);
+        }
         qDebug() << "Found" << m_model->rowCount() << "items";
     });
 }
@@ -330,7 +346,12 @@ AppItem* AppStoreClient::parseAppItem(const QVariantMap &map)
     item->setDescription(map.value("description").toString());
     item->setHearts(map.value("hearts").toInt());
     item->setCategory(map.value("category_name").toString());
-    item->setCompanion(!map.value("companions").toMap().value("android").isNull() || !map.value("companions").toMap().value("ios").isNull());
+    // The search returns the companions as 00 01 10 11 string instead of a map.
+    if (map.value("companions").type() == QVariant::Type::String) {
+        item->setCompanion(map.value("companions") != "00");
+    } else {
+        item->setCompanion(!map.value("companions").toMap().value("android").isNull() || !map.value("companions").toMap().value("ios").isNull());
+    }
 
     QVariantList screenshotsList = map.value("screenshot_images").toList();
     // try to get more hardware specific screenshots. The store search keeps them in a subgroup.

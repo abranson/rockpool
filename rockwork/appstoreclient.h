@@ -52,6 +52,7 @@ public slots:
 
     void fetchAppDetails(const QString &appId);
 
+    void search(const QString &searchString, Type type, int page);
     void search(const QString &searchString, Type type);
 
 private:

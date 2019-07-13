@@ -13,6 +13,8 @@ Page {
     property string grpName: ""
 
     property string link: ""
+    // To open a new page from the search field, see Component.onCompleted.
+    property string search: ""
 
     AppStoreClient {
         id: client
@@ -31,6 +33,8 @@ Page {
     Component.onCompleted: {
         if (root.link) {
             client.fetchLink(link)
+        } else if (root.search) {
+            client.search(root.search, root.showWatchApps ? AppStoreClient.TypeWatchapp : AppStoreClient.TypeWatchface);
         } else {
             root.fetchHome()
         }
@@ -41,7 +45,7 @@ Page {
         PullDownMenu {
             MenuItem {
                 text: qsTr("Use")+" "+(showCategories ? qsTr("Collections") : qsTr("Categories"))
-                onClicked: showCategories=!showCategories;
+                onClicked: showCategories=!showCategories
                 enabled: client.enableCategories && showWatchApps
                 visible: enabled
             }
@@ -104,15 +108,16 @@ Page {
                     id: seeAllBtn
                     anchors.verticalCenter: parent.verticalCenter
                     icon.source: "image://theme/icon-m-enter-accept"
-                    onClicked: {
-                        pageStack.push(Qt.resolvedUrl("AppStorePage.qml"), {
-                                           pebble: root.pebble,
-                                           link: client.model.groupLink(section),
-                                           grpName: client.model.groupName(section),
-                                           enableCategories: false
-                                       });
-                    }
                 }
+            }
+            // Allow the complete header to be clicked instead of just the button.
+            onClicked: {
+                pageStack.push(Qt.resolvedUrl("AppStorePage.qml"), {
+                                   pebble: root.pebble,
+                                   link: client.model.groupLink(section),
+                                   grpName: client.model.groupName(section),
+                                   enableCategories: false
+                               });
             }
         }
 
@@ -130,7 +135,15 @@ Page {
                     Button {
                         width: root.width/client.model.links.length - Theme.paddingSmall
                         text: client.model.linkName(client.model.links[index])
-                        onClicked: client.fetchLink(client.model.links[index]);
+                        onClicked: {
+                            // The page and query were set from the search to indicate an active search pagination.
+                            var query = client.model.linkQuery(client.model.links[index]);
+                            if (query) {
+                                client.search(query, root.showWatchApps ? AppStoreClient.TypeWatchapp : AppStoreClient.TypeWatchface, client.model.linkPage(client.model.links[index]));
+                            } else {
+                                client.fetchLink(client.model.links[index]);
+                            }
+                        }
                     }
                 }
             }
@@ -222,8 +235,14 @@ Page {
         icon: "image://theme/icon-m-search"
         hint: qsTr("Search app or watchface")
         onSubmit: {
-            client.search(text, root.showWatchApps ? AppStoreClient.TypeWatchapp : AppStoreClient.TypeWatchface);
-            root.grpName = qsTr("Search Results")
+            // Open in a new page to be able to cancel the search.
+            pageStack.push(Qt.resolvedUrl("AppStorePage.qml"), {
+                               pebble: root.pebble,
+                               search: text,
+                               showWatchApps: root.showWatchApps,
+                               grpName: qsTr("Search Results"),
+                               enableCategories: false
+                           });
         }
     }
 }

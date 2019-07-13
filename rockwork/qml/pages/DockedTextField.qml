@@ -36,15 +36,27 @@ DockedPanel {
         anchors.horizontalCenter: parent.horizontalCenter
         width: parent.width - parent.height*1.8
         placeholderText: dockedField.hint
+        // Simulate the button with the keyboard.
+        EnterKey.enabled: text.length > 0
+        EnterKey.iconSource: dockedField.icon
+        EnterKey.onClicked: {
+            dockedField.open = false;
+            dockedTextField.focus = false;
+            dockedField.submit();
+        }
     }
     IconButton {
         anchors { top: parent.top; right: parent.right }
         height: parent.height
         width: height
         icon.source: dockedField.icon
+        // Submitting without text would break the app store search.
+        enabled: text.length > 0
         onClicked: {
-            dockedField.open=false;
-            dockedField.submit()
+            dockedField.open = false;
+            // Hide the keyboard.
+            dockedTextField.focus = false;
+            dockedField.submit();
         }
     }
 }

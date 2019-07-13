@@ -101,59 +101,59 @@
 <context>
     <name>AppStorePage</name>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="43"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="47"/>
         <source>Use</source>
         <translation>Nutze</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="43"/>
-        <location filename="../qml/pages/AppStorePage.qml" line="55"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="47"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="59"/>
         <source>Collections</source>
         <translation>Sammlungen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="43"/>
-        <location filename="../qml/pages/AppStorePage.qml" line="55"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="47"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="59"/>
         <source>Categories</source>
         <translation>Kategorien</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="49"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="53"/>
         <source>Search</source>
         <translation>Suche</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="55"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="59"/>
         <source>Watchapps</source>
         <translation>Watchapps</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="55"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="59"/>
         <source>Watchfaces</source>
         <translation>Zifferblätter</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="101"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="105"/>
         <source>See all</source>
         <translation>Alle ansehen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="163"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="176"/>
         <source>All Apps</source>
         <translation>Alle Apps</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="196"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="209"/>
         <source>Needs companion</source>
         <translation>Companion benötigt</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="223"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="236"/>
         <source>Search app or watchface</source>
         <translation>Suche App oder Zifferblatt</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="226"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="243"/>
         <source>Search Results</source>
         <translation>Suchergebnisse</translation>
     </message>
