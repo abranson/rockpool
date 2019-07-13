@@ -2,6 +2,7 @@
 #define APPGLANCES_H
 
 #include <QObject>
+#include <functional>
 
 #include "watchconnection.h"
 #include "timelineitem.h"
