@@ -151,7 +151,8 @@ Dialog {
                                        pebble: pebble,
                                        source: msgKey,
                                        title: qsTr("Send Text Messages"),
-                                       list: pebble.getCannedResponses([msgKey])[msgKey]})
+                                       list: pebble.getCannedResponses([msgKey])[msgKey] || []
+                                   });
                 }
 
             }
