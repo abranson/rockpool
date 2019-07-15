@@ -52,7 +52,7 @@ Page {
         if(ret) {
             ver = ret[1]+"."+ret[2]+"."+(ret[3]? ret[3] : "0");
         }
-        var url = "https://lp.getpebble.com/v1/languages?mobileVersion=3.13.0-1055-06644a6&mobilePlatform=android&isoLocal="+locale+"&hardware="+pebble.platformString+"&firmware="+ver;
+        var url = "https://lp.rebble.io/v1/languages?mobileVersion=3.13.0-1055-06644a6&mobilePlatform=android&isoLocal="+locale+"&hardware="+pebble.platformString+"&firmware="+ver;
         var xhr = new XMLHttpRequest();
         xhr.open("GET",url);
         xhr.onreadystatechange = function() {
