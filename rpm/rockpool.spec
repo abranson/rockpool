@@ -42,6 +42,7 @@ BuildRequires:  pkgconfig(libkcalcoren-qt5)
 BuildRequires:  pkgconfig(qt5embedwidget)
 BuildRequires:  quazip-devel
 BuildRequires:  desktop-file-utils
+BuildRequires:  qt5-qttools-linguist
 
 %description
 Support for Pebble watch on SailfishOS devices.
