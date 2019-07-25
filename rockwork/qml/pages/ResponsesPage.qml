@@ -30,7 +30,7 @@ Page {
                 onClicked: {
                     var cans = {};
                     cans[source] = list;
-                    pebble.cannedResponses=cans;
+                    pebble.setCannedResponses(cans);
                     pageStack.pop();
                 }
                 visible: changed
