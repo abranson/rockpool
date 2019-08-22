@@ -18,46 +18,9 @@
 <context>
     <name>AppSettingsPage</name>
     <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="113"/>
-        <source>Alert</source>
-        <translation>Alerta</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="114"/>
-        <source>Something going wrong</source>
-        <translation>Algo esta mal</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="115"/>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="242"/>
-        <source>Accept</source>
-        <translation>Aceptar</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="116"/>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="293"/>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="46"/>
         <source>Cancel</source>
         <translation>Cancelar</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="154"/>
-        <source>Host</source>
-        <translation>Anfitrión</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="154"/>
-        <source>requests permission for</source>
-        <translation>Solicita permiso para</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="156"/>
-        <source>Store permission permanently and don&apos;t ask again</source>
-        <translation>Almacene el permiso permanentemente y no vuelva a preguntar</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="297"/>
-        <source>Select</source>
-        <translation>Seleccione</translation>
     </message>
 </context>
 <context>

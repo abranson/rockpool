@@ -18,46 +18,9 @@
 <context>
     <name>AppSettingsPage</name>
     <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="113"/>
-        <source>Alert</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="114"/>
-        <source>Something going wrong</source>
-        <translation>Что-то пошло не так</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="115"/>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="242"/>
-        <source>Accept</source>
-        <translation>Принять</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="116"/>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="293"/>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="46"/>
         <source>Cancel</source>
         <translation>Отмена</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="154"/>
-        <source>Host</source>
-        <translation>Сервер</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="154"/>
-        <source>requests permission for</source>
-        <translation>просит разрешения для</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="156"/>
-        <source>Store permission permanently and don&apos;t ask again</source>
-        <translation>Запомнить выбор и не спрашивать больше</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="297"/>
-        <source>Select</source>
-        <translation>Выбрать</translation>
     </message>
 </context>
 <context>

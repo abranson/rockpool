@@ -5,7 +5,7 @@ Name:       rockpool
 %{!?qtc_make:%define qtc_make make}
 %{?qtc_builddir:%define _builddir %qtc_builddir}
 Summary:    Support for Pebble watches in SailfishOS
-Version:    1.8
+Version:    1.9
 Release:    1
 Group:      Qt/Qt
 License:    GPL3
@@ -15,7 +15,6 @@ Requires:   systemd-user-session-targets
 Requires:   nemo-qml-plugin-dbus-qt5
 Requires:   qt5-qtwebsockets
 Requires:   quazip
-Requires:   sailfish-components-webview-qt5 >= 0.0.5
 BuildRequires:  pkgconfig(Qt5DBus)
 BuildRequires:  pkgconfig(Qt5Bluetooth)
 BuildRequires:  pkgconfig(Qt5Contacts)
@@ -34,7 +33,6 @@ BuildRequires:  pkgconfig(icu-i18n)
 BuildRequires:  pkgconfig(zlib)
 BuildRequires:  pkgconfig(libmkcal-qt5)
 BuildRequires:  pkgconfig(libkcalcoren-qt5)
-BuildRequires:  pkgconfig(qt5embedwidget)
 BuildRequires:  quazip-devel
 BuildRequires:  desktop-file-utils
 BuildRequires:  qt5-qttools-linguist
@@ -75,7 +73,6 @@ update-desktop-database
 %{_bindir}/rockpool
 %{_bindir}/rockpoold
 %{_datadir}/%{name}/qml
-%{_datadir}/%{name}/jsm
 %{_datadir}/%{name}/layouts.json
 %{_datadir}/%{name}/translations
 %{_datadir}/applications/%{name}.desktop

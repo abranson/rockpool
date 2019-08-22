@@ -18,45 +18,8 @@
 <context>
     <name>AppSettingsPage</name>
     <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="113"/>
-        <source>Alert</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="114"/>
-        <source>Something going wrong</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="115"/>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="242"/>
-        <source>Accept</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="116"/>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="293"/>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="46"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="154"/>
-        <source>Host</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="154"/>
-        <source>requests permission for</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="156"/>
-        <source>Store permission permanently and don&apos;t ask again</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="297"/>
-        <source>Select</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

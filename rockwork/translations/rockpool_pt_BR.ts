@@ -18,46 +18,9 @@
 <context>
     <name>AppSettingsPage</name>
     <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="113"/>
-        <source>Alert</source>
-        <translation>Alerta</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="114"/>
-        <source>Something going wrong</source>
-        <translation>Alguma coisa deu errado</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="115"/>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="242"/>
-        <source>Accept</source>
-        <translation>Aceitar</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="116"/>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="293"/>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="46"/>
         <source>Cancel</source>
         <translation>Cancelar</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="154"/>
-        <source>Host</source>
-        <translation>Host</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="154"/>
-        <source>requests permission for</source>
-        <translation>solicitar permissão para</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="156"/>
-        <source>Store permission permanently and don&apos;t ask again</source>
-        <translation>Armazenar permissão permanentemente e não perguntar novamente</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="297"/>
-        <source>Select</source>
-        <translation>Selecionar</translation>
     </message>
 </context>
 <context>
