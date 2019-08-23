@@ -93,7 +93,7 @@
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="59"/>
         <source>Watchfaces</source>
-        <translation>Watchfaces</translation>
+        <translation>Horlogethema’s</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="105"/>
@@ -297,42 +297,42 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="233"/>
         <source>Current log: </source>
-        <translation type="unfinished"></translation>
+        <translation>Huidig logboek: </translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="239"/>
         <source>Disable service logs</source>
-        <translation type="unfinished"></translation>
+        <translation>Dienstlogboeken uitschakelen</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="248"/>
         <source>Send service logs</source>
-        <translation type="unfinished"></translation>
+        <translation>Dienstlogboeken verzenden</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="239"/>
         <source>Enable service logs</source>
-        <translation type="unfinished"></translation>
+        <translation>Dienstlogboeken inschakelen</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="266"/>
         <source>Syslog Verbosity</source>
-        <translation type="unfinished"></translation>
+        <translation>Detailniveau systeemlogboek</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="268"/>
         <source>Debug</source>
-        <translation type="unfinished"></translation>
+        <translation>Debug</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="269"/>
         <source>Warning</source>
-        <translation type="unfinished"></translation>
+        <translation>Waarschuwing</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="270"/>
         <source>Critical</source>
-        <translation type="unfinished"></translation>
+        <translation>Kritiek</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="277"/>
@@ -458,7 +458,7 @@
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="74"/>
         <source>I want to sleep more</source>
-        <translation>I wil meer slapen</translation>
+        <translation>Ik wil meer slapen</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="75"/>
@@ -502,7 +502,7 @@
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="29"/>
         <source>Upgrade</source>
-        <translation>Upgrade</translation>
+        <translation>Opwaardering</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="29"/>
@@ -560,7 +560,7 @@
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="32"/>
         <source>Watchfaces</source>
-        <translation>Watchfaces</translation>
+        <translation>Horlogethema’s</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="101"/>
@@ -614,27 +614,27 @@
     <message>
         <location filename="../qml/pages/LocationPicker.qml" line="12"/>
         <source>Select Location</source>
-        <translation type="unfinished"></translation>
+        <translation>Locatie selecteren</translation>
     </message>
     <message>
         <location filename="../qml/pages/LocationPicker.qml" line="14"/>
         <source>Cancel</source>
-        <translation type="unfinished">Annuleren</translation>
+        <translation>Annuleren</translation>
     </message>
     <message>
         <location filename="../qml/pages/LocationPicker.qml" line="18"/>
         <source>Location Name</source>
-        <translation type="unfinished"></translation>
+        <translation>Locatienaam</translation>
     </message>
     <message>
         <location filename="../qml/pages/LocationPicker.qml" line="19"/>
         <source>Type in location name</source>
-        <translation type="unfinished"></translation>
+        <translation>Voer een locatienaam in</translation>
     </message>
     <message>
         <location filename="../qml/pages/LocationPicker.qml" line="34"/>
         <source>Matching locations will be appearing as you type</source>
-        <translation type="unfinished"></translation>
+        <translation>Overeenkomstige locaties zullen verschijnen terwijl je typt</translation>
     </message>
 </context>
 <context>
@@ -707,7 +707,7 @@
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="278"/>
         <source>Watchfaces</source>
-        <translation>Watchfaces</translation>
+        <translation>Horlogethema’s</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="284"/>
@@ -917,12 +917,12 @@
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="77"/>
         <source>Really Delete?</source>
-        <translation type="unfinished">Echt verwijderen?</translation>
+        <translation>Echt verwijderen?</translation>
     </message>
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="130"/>
         <source>Pick SIM for new contacts</source>
-        <translation type="unfinished"></translation>
+        <translation>Simkaart kiezen voor nieuwe contacten</translation>
     </message>
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="144"/>
@@ -932,12 +932,12 @@
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="147"/>
         <source>Edit Messages</source>
-        <translation type="unfinished"></translation>
+        <translation>Berichten bewerken</translation>
     </message>
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="153"/>
         <source>Send Text Messages</source>
-        <translation type="unfinished"></translation>
+        <translation>Tekstberichten verzenden</translation>
     </message>
 </context>
 <context>
@@ -1077,17 +1077,17 @@
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="29"/>
         <source>Alternate Provider</source>
-        <translation type="unfinished"></translation>
+        <translation>Alternatieve leverancier</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="36"/>
         <source>Provider&apos;s Key, eg. API Key</source>
-        <translation type="unfinished"></translation>
+        <translation>Leverancierssleutel, bv. API-sleutel</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="37"/>
         <source>Provider Key</source>
-        <translation type="unfinished"></translation>
+        <translation>Leverancierssleutel</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="44"/>
@@ -1097,52 +1097,52 @@
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="68"/>
         <source>Location Name</source>
-        <translation type="unfinished"></translation>
+        <translation>Locatienaam</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="75"/>
         <source>Latitude</source>
-        <translation type="unfinished"></translation>
+        <translation>Breedtegraad</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="82"/>
         <source>Longitude</source>
-        <translation type="unfinished"></translation>
+        <translation>Lengtegraad</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="96"/>
         <source>Save Changes</source>
-        <translation type="unfinished"></translation>
+        <translation>Wijzigingen opslaan</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="146"/>
         <source>Edit</source>
-        <translation type="unfinished">Bewerken</translation>
+        <translation>Bewerken</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="151"/>
         <source>Move Up</source>
-        <translation type="unfinished">Omhoog verplaatsen</translation>
+        <translation>Omhoog verplaatsen</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="156"/>
         <source>Move Down</source>
-        <translation type="unfinished">Omlaag verplaatsen</translation>
+        <translation>Omlaag verplaatsen</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="161"/>
         <source>Delete</source>
-        <translation type="unfinished">Verwijderen</translation>
+        <translation>Verwijderen</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="170"/>
         <source>Add Location</source>
-        <translation type="unfinished"></translation>
+        <translation>Locatie toevoegen</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="179"/>
         <source>Current Location</source>
-        <translation type="unfinished"></translation>
+        <translation>Huidige locatie</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="190"/>
@@ -1152,32 +1152,32 @@
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="185"/>
         <source>Locales</source>
-        <translation type="unfinished"></translation>
+        <translation>Landinstellingen</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="209"/>
         <source>Language</source>
-        <translation type="unfinished">Taal</translation>
+        <translation>Taal</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="334"/>
         <source>Default (English)</source>
-        <translation type="unfinished"></translation>
+        <translation>Standaard (Engels)</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="337"/>
         <source>Metric</source>
-        <translation type="unfinished">Metriek</translation>
+        <translation>Metriek</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="338"/>
         <source>Imperial</source>
-        <translation type="unfinished">Imperiaal</translation>
+        <translation>Imperiaal</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="339"/>
         <source>Hybrid</source>
-        <translation type="unfinished"></translation>
+        <translation>Hybride</translation>
     </message>
 </context>
 </TS>
