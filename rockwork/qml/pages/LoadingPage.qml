@@ -17,7 +17,7 @@ Page {
             width: parent.width
             horizontalAlignment: Text.AlignHCenter
             font.pixelSize: Theme.fontSizeLarge
-            text: qsTr("Loading and Connecting...")
+            text: qsTr("Loading and Connecting…")
         }
         Button {
             text: qsTr("Restart Service")
