@@ -147,7 +147,7 @@ Page {
                             visible: root.pebble.connected && root.pebble.upgradingFirmware
                         }
                         Label {
-                            text: qsTr("Upgrading...")
+                            text: qsTr("Upgrading…")
                             font.pixelSize: Theme.fontSizeLarge
                             anchors.horizontalCenter: parent.horizontalCenter
                             visible: root.pebble.connected && root.pebble.upgradingFirmware
