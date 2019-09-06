@@ -74,7 +74,7 @@ Page {
                 width: parent.width
                 enabled: !installing && !root.app.companion
                 property bool installing: false
-                text: enabled ? qsTr("Upgrade") : (installing ? qsTr("Upgrading...") : qsTr("Needs Companion"))
+                text: enabled ? qsTr("Upgrade") : (installing ? qsTr("Upgrading…") : qsTr("Needs Companion"))
                 Connections {
                     target: root.pebble.installedApps
                     onChanged: pageStack.pop()
