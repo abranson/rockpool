@@ -205,7 +205,7 @@ Page {
                 anchors.horizontalCenter: parent.horizontalCenter
             }
             Label {
-                text: qsTr("Preparing logs package...")
+                text: qsTr("Preparing logs package…")
                 visible: busyIndicator.visible
                 horizontalAlignment: Text.AlignHCenter
                 width: parent.width
