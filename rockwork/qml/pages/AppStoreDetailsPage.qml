@@ -243,7 +243,7 @@ Page {
                 id: installButton
                 anchors { right: parent.right; top: parent.top; margins: Theme.paddingSmall }
                 enabled: !installed && !installing && !root.app.companion
-                text: enabled ? qsTr("Install") : (installing && !installed ? qsTr("Installing...") : (root.app.companion ? qsTr("Needs Companion") : qsTr("Installed")))
+                text: enabled ? qsTr("Install") : (installing && !installed ? qsTr("Installing…") : (root.app.companion ? qsTr("Needs Companion") : qsTr("Installed")))
                 property bool installing: false
                 property bool installed: root.pebble.installedApps.contains(root.app.storeId) || root.pebble.installedWatchfaces.contains(root.app.storeId)
                 Connections {
