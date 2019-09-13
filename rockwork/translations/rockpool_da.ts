@@ -7,12 +7,12 @@
         <location filename="../qml/pages/ImportPackagePage.qml" line="149"/>
         <source>%1, %2</source>
         <extracomment>Shows size and modification date, e.g. &quot;15.5MB, 02/03/2016&quot;</extracomment>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Viser størrelse og ændringsdato, f.eks. &quot;15.5MB, 02/03/2016&quot;</translation>
     </message>
     <message id="filemanager-la-no_files">
         <location filename="../qml/pages/ImportPackagePage.qml" line="174"/>
         <source>No files</source>
-        <translation type="unfinished"></translation>
+        <translation>Ingen filer</translation>
     </message>
 </context>
 <context>
@@ -20,7 +20,7 @@
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="46"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>Annullér</translation>
     </message>
 </context>
 <context>
@@ -28,32 +28,32 @@
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="170"/>
         <source>Description</source>
-        <translation type="unfinished"></translation>
+        <translation>Beskrivelse</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="191"/>
         <source>Developer</source>
-        <translation type="unfinished"></translation>
+        <translation>Udvikler</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="196"/>
         <source>Version</source>
-        <translation type="unfinished"></translation>
+        <translation>Version</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="246"/>
         <source>Install</source>
-        <translation type="unfinished"></translation>
+        <translation>Installér</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="246"/>
         <source>Installing...</source>
-        <translation type="unfinished"></translation>
+        <translation>Installerer...</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="246"/>
         <source>Installed</source>
-        <translation type="unfinished"></translation>
+        <translation>Installeret</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="246"/>
@@ -66,29 +66,29 @@
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="47"/>
         <source>Use</source>
-        <translation type="unfinished"></translation>
+        <translation>Brug</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="47"/>
         <location filename="../qml/pages/AppStorePage.qml" line="59"/>
         <source>Collections</source>
-        <translation type="unfinished"></translation>
+        <translation>Samlinger</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="47"/>
         <location filename="../qml/pages/AppStorePage.qml" line="59"/>
         <source>Categories</source>
-        <translation type="unfinished"></translation>
+        <translation>Kategorier</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="53"/>
         <source>Search</source>
-        <translation type="unfinished"></translation>
+        <translation>Søg</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="59"/>
         <source>Watchapps</source>
-        <translation type="unfinished"></translation>
+        <translation>Ur-applikationer</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="59"/>
@@ -98,12 +98,12 @@
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="105"/>
         <source>See all</source>
-        <translation type="unfinished"></translation>
+        <translation>Se alle</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="176"/>
         <source>All Apps</source>
-        <translation type="unfinished"></translation>
+        <translation>Alle applikationer</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="209"/>
@@ -118,7 +118,7 @@
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="243"/>
         <source>Search Results</source>
-        <translation type="unfinished"></translation>
+        <translation>Søgeresultater</translation>
     </message>
 </context>
 <context>
@@ -127,22 +127,22 @@
         <location filename="../qml/pages/AppUpgradePage.qml" line="24"/>
         <location filename="../qml/pages/AppUpgradePage.qml" line="25"/>
         <source>Upgrading</source>
-        <translation type="unfinished"></translation>
+        <translation>Opgraderer</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="49"/>
         <source>Version</source>
-        <translation type="unfinished"></translation>
+        <translation>Version</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="77"/>
         <source>Upgrade</source>
-        <translation type="unfinished"></translation>
+        <translation>opgraderer</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="77"/>
         <source>Upgrading...</source>
-        <translation type="unfinished"></translation>
+        <translation>Opgraderer...</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="77"/>
@@ -152,7 +152,7 @@
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="93"/>
         <source>Compatibility</source>
-        <translation type="unfinished"></translation>
+        <translation>kompatibilitet</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="175"/>
@@ -178,7 +178,7 @@
     <message>
         <location filename="../qml/cover/CoverPage.qml" line="27"/>
         <source>connected</source>
-        <translation type="unfinished"></translation>
+        <translation>forbundet</translation>
     </message>
     <message>
         <location filename="../qml/cover/CoverPage.qml" line="27"/>
