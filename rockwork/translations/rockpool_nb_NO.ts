@@ -7,12 +7,12 @@
         <location filename="../qml/pages/ImportPackagePage.qml" line="149"/>
         <source>%1, %2</source>
         <extracomment>Shows size and modification date, e.g. &quot;15.5MB, 02/03/2016&quot;</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>%1, %2</translation>
     </message>
     <message id="filemanager-la-no_files">
         <location filename="../qml/pages/ImportPackagePage.qml" line="174"/>
         <source>No files</source>
-        <translation type="unfinished"></translation>
+        <translation>Ingen filer</translation>
     </message>
 </context>
 <context>
@@ -471,7 +471,7 @@
     <message>
         <location filename="../qml/pages/ImportPackagePage.qml" line="164"/>
         <source>Sideloading file</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Sideinnlaster fil</translation>
     </message>
 </context>
 <context>
