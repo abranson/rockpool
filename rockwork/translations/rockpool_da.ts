@@ -7,7 +7,7 @@
         <location filename="../qml/pages/ImportPackagePage.qml" line="149"/>
         <source>%1, %2</source>
         <extracomment>Shows size and modification date, e.g. &quot;15.5MB, 02/03/2016&quot;</extracomment>
-        <translation type="unfinished">Viser størrelse og ændringsdato, f.eks. &quot;15.5MB, 02/03/2016&quot;</translation>
+        <translation>%1, %2</translation>
     </message>
     <message id="filemanager-la-no_files">
         <location filename="../qml/pages/ImportPackagePage.qml" line="174"/>
@@ -58,7 +58,7 @@
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="246"/>
         <source>Needs Companion</source>
-        <translation type="unfinished"></translation>
+        <translation>Mangler Ledsager</translation>
     </message>
 </context>
 <context>
@@ -108,7 +108,7 @@
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="209"/>
         <source>Needs companion</source>
-        <translation type="unfinished"></translation>
+        <translation>Mangler ledsager</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="236"/>
@@ -262,7 +262,7 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="160"/>
         <source>Runtime Status</source>
-        <translation type="unfinished"></translation>
+        <translation>Runtime status</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="165"/>
@@ -277,12 +277,12 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="172"/>
         <source>CloudPebble Status</source>
-        <translation type="unfinished"></translation>
+        <translation>CloudPebble Status</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="173"/>
         <source>Indicates CloudPebble connection state</source>
-        <translation type="unfinished"></translation>
+        <translation>Indikerer CloudPebble forbindelsesstatus</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="178"/>
@@ -292,37 +292,37 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="208"/>
         <source>Preparing logs package...</source>
-        <translation type="unfinished"></translation>
+        <translation>Forbereder pakke med logninger...</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="233"/>
         <source>Current log: </source>
-        <translation type="unfinished"></translation>
+        <translation>Nuværende log: </translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="239"/>
         <source>Disable service logs</source>
-        <translation type="unfinished"></translation>
+        <translation>Déaktiver tjeneste logninger</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="248"/>
         <source>Send service logs</source>
-        <translation type="unfinished"></translation>
+        <translation>Send tjeneste logninger</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="239"/>
         <source>Enable service logs</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktivér tjeneste logninger</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="266"/>
         <source>Syslog Verbosity</source>
-        <translation type="unfinished"></translation>
+        <translation>Syslog Verbositet</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="268"/>
         <source>Debug</source>
-        <translation type="unfinished"></translation>
+        <translation>Debug</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="269"/>
@@ -337,7 +337,7 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="277"/>
         <source>Send watch logs</source>
-        <translation type="unfinished"></translation>
+        <translation>Send ur logninger</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="287"/>
@@ -350,27 +350,27 @@
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="15"/>
         <source>Firmware upgrade</source>
-        <translation type="unfinished"></translation>
+        <translation>Firmware opgradering</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="18"/>
         <source>Currently installed firmware: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Nuværende installerede firmware</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="24"/>
         <source>A new firmware upgrade is available for your Pebble smartwatch.</source>
-        <translation type="unfinished"></translation>
+        <translation>En ny firmware opgradering er tilgængelig til dit Pebble smart ur.</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="32"/>
         <source>Candidate firmware version: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Kandidat firmware version: %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="39"/>
         <source>Release Notes: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Udgivelsesnoter: %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="46"/>
@@ -390,7 +390,7 @@
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="53"/>
         <source>Firmware is Up-To-Date</source>
-        <translation type="unfinished"></translation>
+        <translation>Firmware er nyeste tilgængelige</translation>
     </message>
 </context>
 <context>
@@ -471,7 +471,7 @@
     <message>
         <location filename="../qml/pages/ImportPackagePage.qml" line="164"/>
         <source>Sideloading file</source>
-        <translation type="unfinished"></translation>
+        <translation>Sideloader fil</translation>
     </message>
 </context>
 <context>
@@ -512,7 +512,7 @@
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="36"/>
         <source>Launch</source>
-        <translation type="unfinished"></translation>
+        <translation>Kør</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="40"/>
@@ -593,7 +593,7 @@
     <message>
         <location filename="../qml/pages/LanguagePage.qml" line="41"/>
         <source>Submit</source>
-        <translation type="unfinished"></translation>
+        <translation>Fremsæt</translation>
     </message>
 </context>
 <context>
@@ -629,12 +629,12 @@
     <message>
         <location filename="../qml/pages/LocationPicker.qml" line="19"/>
         <source>Type in location name</source>
-        <translation type="unfinished"></translation>
+        <translation>Skriv navn på lokation</translation>
     </message>
     <message>
         <location filename="../qml/pages/LocationPicker.qml" line="34"/>
         <source>Matching locations will be appearing as you type</source>
-        <translation type="unfinished"></translation>
+        <translation>Matchende lokationer vil fremkomme mens du skriver</translation>
     </message>
 </context>
 <context>
@@ -717,7 +717,7 @@
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="291"/>
         <source>Firmware</source>
-        <translation type="unfinished"></translation>
+        <translation>Firmware</translation>
     </message>
 </context>
 <context>
@@ -740,7 +740,7 @@
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="69"/>
         <source>Disabled When Active</source>
-        <translation type="unfinished"></translation>
+        <translation>Deaktiveret når Aktiv</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="75"/>
@@ -965,7 +965,7 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="40"/>
         <source>Imperial</source>
-        <translation type="unfinished"></translation>
+        <translation>Imperial</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="50"/>
@@ -985,7 +985,7 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="68"/>
         <source>Sync Apps from Cloud</source>
-        <translation type="unfinished"></translation>
+        <translation>Synkroniser Applikationer fra Skyen</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="76"/>
@@ -1066,7 +1066,7 @@
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="24"/>
         <source>OK</source>
-        <translation type="unfinished">OK</translation>
+        <translation>OK</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="25"/>
@@ -1082,12 +1082,12 @@
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="36"/>
         <source>Provider&apos;s Key, eg. API Key</source>
-        <translation type="unfinished"></translation>
+        <translation>Udbyders Nøgle, f.eks. API Key</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="37"/>
         <source>Provider Key</source>
-        <translation type="unfinished"></translation>
+        <translation>Udbyders Nøgle</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="44"/>
@@ -1147,7 +1147,7 @@
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="185"/>
         <source>Locales</source>
-        <translation type="unfinished"></translation>
+        <translation>Locales</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="190"/>
@@ -1162,7 +1162,7 @@
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="334"/>
         <source>Default (English)</source>
-        <translation type="unfinished"></translation>
+        <translation>Udgangspunkt (Engelsk)</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="337"/>
@@ -1172,12 +1172,12 @@
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="338"/>
         <source>Imperial</source>
-        <translation type="unfinished">Imperial</translation>
+        <translation>Imperial</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="339"/>
         <source>Hybrid</source>
-        <translation type="unfinished">Hybrid</translation>
+        <translation>Hybrid</translation>
     </message>
 </context>
 </TS>
