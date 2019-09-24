@@ -55,7 +55,7 @@ const QUuid PlatformInterface::UUID(PlatformInterface::SysID);
 // App Specific Resources for Pins. appType: {icon, color, [name, [...]]}
 const QHash<QString,QStringList> PlatformInterface::AppResMap = {
     {"generic",{"system://images/NOTIFICATION_GENERIC","red"}},
-    {"email",{"system://images/GENERIC_EMAIL","gray","E-Mails"}},
+    {"email",{"system://images/GENERIC_EMAIL","yellow","E-Mails"}},
     {"gmail",{"system://images/NOTIFICATION_GMAIL","red","GMail"}},
     {"sms",{"system://images/GENERIC_SMS","lightblue","SMS"}},
     {"hangouts",{"system://images/NOTIFICATION_GOOGLE_HANGOUTS","green","Hangouts"}},

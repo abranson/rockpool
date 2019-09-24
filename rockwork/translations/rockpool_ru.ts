@@ -477,29 +477,6 @@
     </message>
 </context>
 <context>
-    <name>InfoPage</name>
-    <message>
-        <location filename="../qml/pages/InfoPage.qml" line="29"/>
-        <source>Version %1</source>
-        <translation>Версия %1</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/InfoPage.qml" line="42"/>
-        <source>Legal</source>
-        <translation>Правовая информация</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/InfoPage.qml" line="69"/>
-        <source>This application is neither affiliated with nor endorsed by Pebble Technology Corp.</source>
-        <translation>Данное приложение никоим образом не имеет отношения к Pebble Technology Corp. не являясь ни оффициальной ни рекоммендованной компанией оболочкой.</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/InfoPage.qml" line="79"/>
-        <source>Pebble is a trademark of Pebble Technology Corp.</source>
-        <translation>Pebble является регистрированной торговой маркой Pebble Technology Corp.</translation>
-    </message>
-</context>
-<context>
     <name>InstalledAppDelegate</name>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="29"/>

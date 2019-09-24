@@ -58,7 +58,18 @@ Page {
                       + "licenses/\">http://www.gnu.org/licenses</a>."
                 wrapMode: Text.WordWrap
             }
-
+            Separator {
+                width: parent.width
+                height: Theme.paddingSmall
+                color: Theme.secondaryHighlightColor
+            }
+            Label {
+                width: parent.width
+                text: "Translators: Christopher Frost, Kristjan Räts" +
+                      " István Hovai, Allan Nordhøy, Omar Anwar Aglan, "+
+                      "J Li, Nathan Follens, Olexandr Nesterenko, ssantos, Jakob Jespersen")
+                wrapMode: Text.WordWrap
+            }
             Separator {
                 width: parent.width
                 height: Theme.paddingSmall

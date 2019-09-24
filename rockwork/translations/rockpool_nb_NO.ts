@@ -2,48 +2,25 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="nb_NO">
 <context>
+    <name></name>
+    <message id="filemanager-la-file_details">
+        <location filename="../qml/pages/ImportPackagePage.qml" line="149"/>
+        <source>%1, %2</source>
+        <extracomment>Shows size and modification date, e.g. &quot;15.5MB, 02/03/2016&quot;</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="filemanager-la-no_files">
+        <location filename="../qml/pages/ImportPackagePage.qml" line="174"/>
+        <source>No files</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>AppSettingsPage</name>
     <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="113"/>
-        <source>Alert</source>
-        <translation>Alarm</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="114"/>
-        <source>Something going wrong</source>
-        <translation>Noe gikk galt</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="115"/>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="242"/>
-        <source>Accept</source>
-        <translation>Godta</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="116"/>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="293"/>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="46"/>
         <source>Cancel</source>
         <translation>Avbryt</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="154"/>
-        <source>Host</source>
-        <translation>Vert</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="154"/>
-        <source>requests permission for</source>
-        <translation>forespør tilgang til</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="156"/>
-        <source>Store permission permanently and don&apos;t ask again</source>
-        <translation>Lagre tilgang og ikke spør igjen</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="297"/>
-        <source>Select</source>
-        <translation>Velg</translation>
     </message>
 </context>
 <context>
@@ -87,59 +64,59 @@
 <context>
     <name>AppStorePage</name>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="43"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="47"/>
         <source>Use</source>
         <translation>Bruk</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="43"/>
-        <location filename="../qml/pages/AppStorePage.qml" line="55"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="47"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="59"/>
         <source>Collections</source>
         <translation>Samlinger</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="43"/>
-        <location filename="../qml/pages/AppStorePage.qml" line="55"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="47"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="59"/>
         <source>Categories</source>
         <translation>Kategorier</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="49"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="53"/>
         <source>Search</source>
         <translation>Søk</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="55"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="59"/>
         <source>Watchapps</source>
         <translation>Klokkeprogrammer</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="55"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="59"/>
         <source>Watchfaces</source>
         <translation>Urskiver</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="101"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="105"/>
         <source>See all</source>
         <translation>Se alle</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="163"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="176"/>
         <source>All Apps</source>
         <translation>Alle programmer</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="196"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="209"/>
         <source>Needs companion</source>
         <translation>Behøver kompanjong</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="223"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="236"/>
         <source>Search app or watchface</source>
         <translation>Søk for program eller urskive</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="226"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="243"/>
         <source>Search Results</source>
         <translation>Søkeresultater</translation>
     </message>
@@ -492,37 +469,9 @@
 <context>
     <name>ImportPackagePage</name>
     <message>
-        <location filename="../qml/pages/ImportPackagePage.qml" line="8"/>
-        <source>Import watchapp or watchface</source>
-        <translation>Importer klokkeprogram eller urskive</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/ImportPackagePage.qml" line="30"/>
-        <source>Import File?</source>
-        <translation>Importer fil?</translation>
-    </message>
-</context>
-<context>
-    <name>InfoPage</name>
-    <message>
-        <location filename="../qml/pages/InfoPage.qml" line="29"/>
-        <source>Version %1</source>
-        <translation>Versjon %1</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/InfoPage.qml" line="42"/>
-        <source>Legal</source>
-        <translation>Juridisk</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/InfoPage.qml" line="69"/>
-        <source>This application is neither affiliated with nor endorsed by Pebble Technology Corp.</source>
-        <translation>Dette programmet er ikke tilknyttet eller anerkjent av Pebble Technology Corp.</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/InfoPage.qml" line="79"/>
-        <source>Pebble is a trademark of Pebble Technology Corp.</source>
-        <translation>Pebble er et varemerke tilhørende Pebble Technology Corp.</translation>
+        <location filename="../qml/pages/ImportPackagePage.qml" line="164"/>
+        <source>Sideloading file</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

@@ -2,48 +2,25 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="nl_BE">
 <context>
+    <name></name>
+    <message id="filemanager-la-file_details">
+        <location filename="../qml/pages/ImportPackagePage.qml" line="149"/>
+        <source>%1, %2</source>
+        <extracomment>Shows size and modification date, e.g. &quot;15.5MB, 02/03/2016&quot;</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="filemanager-la-no_files">
+        <location filename="../qml/pages/ImportPackagePage.qml" line="174"/>
+        <source>No files</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>AppSettingsPage</name>
     <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="113"/>
-        <source>Alert</source>
-        <translation>Alarm</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="114"/>
-        <source>Something going wrong</source>
-        <translation>Der gaat iets mis</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="115"/>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="242"/>
-        <source>Accept</source>
-        <translation>Aanvaarden</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="116"/>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="293"/>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="46"/>
         <source>Cancel</source>
         <translation>Annuleren</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="154"/>
-        <source>Host</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="154"/>
-        <source>requests permission for</source>
-        <translation>Vraagd toestemming voor</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="156"/>
-        <source>Store permission permanently and don&apos;t ask again</source>
-        <translation>Toestemming voorgoed opslaan en niet meer vragen</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="297"/>
-        <source>Select</source>
-        <translation>Selecteren</translation>
     </message>
 </context>
 <context>
@@ -87,59 +64,59 @@
 <context>
     <name>AppStorePage</name>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="43"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="47"/>
         <source>Use</source>
         <translation>Gebruik</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="43"/>
-        <location filename="../qml/pages/AppStorePage.qml" line="55"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="47"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="59"/>
         <source>Collections</source>
         <translation>Verzamelingen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="43"/>
-        <location filename="../qml/pages/AppStorePage.qml" line="55"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="47"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="59"/>
         <source>Categories</source>
         <translation>Categorieën</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="49"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="53"/>
         <source>Search</source>
         <translation>Zoeken</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="55"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="59"/>
         <source>Watchapps</source>
         <translation>Horlogeapps</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="55"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="59"/>
         <source>Watchfaces</source>
         <translation>Horlogethema’s</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="101"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="105"/>
         <source>See all</source>
         <translation>Toond alles</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="163"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="176"/>
         <source>All Apps</source>
         <translation>Alle apps</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="196"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="209"/>
         <source>Needs companion</source>
         <translation>Companion vereist</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="223"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="236"/>
         <source>Search app or watchface</source>
         <translation>Zoekt nen app of een horlogethema</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="226"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="243"/>
         <source>Search Results</source>
         <translation>Zoekresultaten</translation>
     </message>
@@ -492,37 +469,9 @@
 <context>
     <name>ImportPackagePage</name>
     <message>
-        <location filename="../qml/pages/ImportPackagePage.qml" line="8"/>
-        <source>Import watchapp or watchface</source>
-        <translation>Horlogeapp of -thema importeren</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/ImportPackagePage.qml" line="30"/>
-        <source>Import File?</source>
-        <translation>Bestand importeren?</translation>
-    </message>
-</context>
-<context>
-    <name>InfoPage</name>
-    <message>
-        <location filename="../qml/pages/InfoPage.qml" line="29"/>
-        <source>Version %1</source>
-        <translation>Versie %1</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/InfoPage.qml" line="42"/>
-        <source>Legal</source>
-        <translation>Juridische informatie</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/InfoPage.qml" line="69"/>
-        <source>This application is neither affiliated with nor endorsed by Pebble Technology Corp.</source>
-        <translation>Dezen app is noch aangesloten bij noch ondersteund door Pebble Technology Corp.</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/InfoPage.qml" line="79"/>
-        <source>Pebble is a trademark of Pebble Technology Corp.</source>
-        <translation>Pebble is een handelsmerk van Pebble Technology Corp.</translation>
+        <location filename="../qml/pages/ImportPackagePage.qml" line="164"/>
+        <source>Sideloading file</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

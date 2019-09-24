@@ -1,6 +1,4 @@
-# Rockpool, a Sailfish port of Rockwork on Ubuntu, which is a port of Pebbled for Sailfish
-
-[![Join the chat at https://gitter.im/abranson/rockpool](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/abranson/rockpool?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+# Rockpool, Pebble support for Sailfish
 
 [TMO thread](http://talk.maemo.org/showthread.php?t=96490) [Openrepos](https://openrepos.net/content/abranson/rockpool)
 
@@ -44,3 +42,4 @@ After that, the package will build pulling necessary dependencies from official 
 * Brian Douglass - RockWork contributor
 * Katharine Berry - Pebble authority
 * Robert Meijers, Philipp Andreas - Hints and tips
+* Christopher Frost, Kristjan Räts, István Hovai, Allan Nordhøy, Omar Anwar Aglan, J Li, Nathan Follens, Olexandr Nesterenko, ssantos, Jakob Jespersen - Translators

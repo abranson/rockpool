@@ -2,48 +2,25 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="hu">
 <context>
-    <name>AppSettingsPage</name>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="113"/>
-        <source>Alert</source>
-        <translation>Riasztás</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="114"/>
-        <source>Something going wrong</source>
-        <translation>Valami baj történt</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="115"/>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="242"/>
-        <source>Accept</source>
-        <translation>Elfogadás</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="116"/>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="293"/>
-        <source>Cancel</source>
-        <translation>Mégsem</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="154"/>
-        <source>Host</source>
-        <translation>Kiszolgáló</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="154"/>
-        <source>requests permission for</source>
+    <name></name>
+    <message id="filemanager-la-file_details">
+        <location filename="../qml/pages/ImportPackagePage.qml" line="149"/>
+        <source>%1, %2</source>
+        <extracomment>Shows size and modification date, e.g. &quot;15.5MB, 02/03/2016&quot;</extracomment>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="156"/>
-        <source>Store permission permanently and don&apos;t ask again</source>
-        <translation>Engedélyt véglegesen tárolja, és többet ne kérdezze</translation>
+    <message id="filemanager-la-no_files">
+        <location filename="../qml/pages/ImportPackagePage.qml" line="174"/>
+        <source>No files</source>
+        <translation type="unfinished"></translation>
     </message>
+</context>
+<context>
+    <name>AppSettingsPage</name>
     <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="297"/>
-        <source>Select</source>
-        <translation>Kiválaszt</translation>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="46"/>
+        <source>Cancel</source>
+        <translation>Mégsem</translation>
     </message>
 </context>
 <context>
@@ -87,59 +64,59 @@
 <context>
     <name>AppStorePage</name>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="43"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="47"/>
         <source>Use</source>
         <translation>Használat</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="43"/>
-        <location filename="../qml/pages/AppStorePage.qml" line="55"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="47"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="59"/>
         <source>Collections</source>
         <translation>Gyűjtemények</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="43"/>
-        <location filename="../qml/pages/AppStorePage.qml" line="55"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="47"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="59"/>
         <source>Categories</source>
         <translation>Kategóriák</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="49"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="53"/>
         <source>Search</source>
         <translation>Keresés</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="55"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="59"/>
         <source>Watchapps</source>
         <translation>Watchapps</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="55"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="59"/>
         <source>Watchfaces</source>
         <translation>Watchfaces</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="101"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="105"/>
         <source>See all</source>
         <translation>Mutasd mindet</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="163"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="176"/>
         <source>All Apps</source>
         <translation>Összes alkalmazás</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="196"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="209"/>
         <source>Needs companion</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="223"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="236"/>
         <source>Search app or watchface</source>
         <translation>Alkalmazás vagy Watchface keresése</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="226"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="243"/>
         <source>Search Results</source>
         <translation>Keresési eredmények</translation>
     </message>
@@ -492,37 +469,9 @@
 <context>
     <name>ImportPackagePage</name>
     <message>
-        <location filename="../qml/pages/ImportPackagePage.qml" line="8"/>
-        <source>Import watchapp or watchface</source>
-        <translation>Watchapp vagy Watchface importálása</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/ImportPackagePage.qml" line="30"/>
-        <source>Import File?</source>
-        <translation>Importálja a fájlt?</translation>
-    </message>
-</context>
-<context>
-    <name>InfoPage</name>
-    <message>
-        <location filename="../qml/pages/InfoPage.qml" line="29"/>
-        <source>Version %1</source>
-        <translation>Verzió %1</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/InfoPage.qml" line="42"/>
-        <source>Legal</source>
+        <location filename="../qml/pages/ImportPackagePage.qml" line="164"/>
+        <source>Sideloading file</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/InfoPage.qml" line="69"/>
-        <source>This application is neither affiliated with nor endorsed by Pebble Technology Corp.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/InfoPage.qml" line="79"/>
-        <source>Pebble is a trademark of Pebble Technology Corp.</source>
-        <translation>A Pebble a Pebble Technology Corp. bejegyzett védjegye.</translation>
     </message>
 </context>
 <context>
@@ -806,12 +755,12 @@
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="35"/>
         <source>Connected</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Csatlakozva</translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="35"/>
         <source>Disconnected</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Lecsatlakoztatva</translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="55"/>
@@ -821,7 +770,7 @@
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="64"/>
         <source>Open Bluetooth Settings</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Bluetooth beállítások megnyitása</translation>
     </message>
 </context>
 <context>
@@ -839,7 +788,7 @@
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="21"/>
         <source>Add New</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Új hozzáadása</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="29"/>
@@ -849,7 +798,7 @@
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="54"/>
         <source>Move Up</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Mozgatás fel</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="59"/>
@@ -859,17 +808,17 @@
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="67"/>
         <source>Delete</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Törlés</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="69"/>
         <source>Really Delete?</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Valóban törli?</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="75"/>
         <source>Move Down</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Mozgatás le</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="86"/>
@@ -882,7 +831,7 @@
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="23"/>
         <source>Screenshots</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Képernyőképek</translation>
     </message>
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="27"/>
@@ -907,12 +856,12 @@
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="62"/>
         <source>Delete</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Törlés</translation>
     </message>
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="65"/>
         <source>Really Delete?</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Valóban törli?</translation>
     </message>
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="72"/>
@@ -930,7 +879,7 @@
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="27"/>
         <source>OK</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">OK</translation>
     </message>
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="28"/>
@@ -945,7 +894,7 @@
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="77"/>
         <source>Really Delete?</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Valóban törli?</translation>
     </message>
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="130"/>
@@ -973,7 +922,7 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="26"/>
         <source>Settings</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Beállítások</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="30"/>
@@ -1063,7 +1012,7 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="142"/>
         <source>Connected</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Csatlakozva</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="145"/>
@@ -1076,7 +1025,7 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="163"/>
         <source>Disconnected</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Lecsatlakoztatva</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="183"/>
@@ -1094,7 +1043,7 @@
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="24"/>
         <source>OK</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">OK</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="25"/>
@@ -1125,7 +1074,7 @@
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="68"/>
         <source>Location Name</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Helyszín Neve</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="75"/>
@@ -1150,17 +1099,17 @@
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="151"/>
         <source>Move Up</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Mozgatás fel</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="156"/>
         <source>Move Down</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Mozgatás le</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="161"/>
         <source>Delete</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Törlés</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="170"/>
