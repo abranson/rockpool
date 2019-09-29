@@ -7,12 +7,12 @@
         <location filename="../qml/pages/ImportPackagePage.qml" line="149"/>
         <source>%1, %2</source>
         <extracomment>Shows size and modification date, e.g. &quot;15.5MB, 02/03/2016&quot;</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>%1, %2</translation>
     </message>
     <message id="filemanager-la-no_files">
         <location filename="../qml/pages/ImportPackagePage.qml" line="174"/>
         <source>No files</source>
-        <translation type="unfinished"></translation>
+        <translation>Inga filer</translation>
     </message>
 </context>
 <context>
@@ -20,7 +20,7 @@
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="46"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>Avbryt</translation>
     </message>
 </context>
 <context>
@@ -28,37 +28,37 @@
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="170"/>
         <source>Description</source>
-        <translation type="unfinished"></translation>
+        <translation>Beskrivning</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="191"/>
         <source>Developer</source>
-        <translation type="unfinished"></translation>
+        <translation>Utvecklare</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="196"/>
         <source>Version</source>
-        <translation type="unfinished"></translation>
+        <translation>Version</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="246"/>
         <source>Install</source>
-        <translation type="unfinished"></translation>
+        <translation>Installera</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="246"/>
         <source>Installing...</source>
-        <translation type="unfinished"></translation>
+        <translation>Installerar...</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="246"/>
         <source>Installed</source>
-        <translation type="unfinished"></translation>
+        <translation>Installerad</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="246"/>
         <source>Needs Companion</source>
-        <translation type="unfinished"></translation>
+        <translation>Kräver Companion</translation>
     </message>
 </context>
 <context>
@@ -66,59 +66,59 @@
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="47"/>
         <source>Use</source>
-        <translation type="unfinished"></translation>
+        <translation>Användning</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="47"/>
         <location filename="../qml/pages/AppStorePage.qml" line="59"/>
         <source>Collections</source>
-        <translation type="unfinished"></translation>
+        <translation>Samlingar</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="47"/>
         <location filename="../qml/pages/AppStorePage.qml" line="59"/>
         <source>Categories</source>
-        <translation type="unfinished"></translation>
+        <translation>Kategorier</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="53"/>
         <source>Search</source>
-        <translation type="unfinished"></translation>
+        <translation>Sök</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="59"/>
         <source>Watchapps</source>
-        <translation type="unfinished"></translation>
+        <translation>Klock-appar</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="59"/>
         <source>Watchfaces</source>
-        <translation type="unfinished"></translation>
+        <translation>Urtavlor</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="105"/>
         <source>See all</source>
-        <translation type="unfinished"></translation>
+        <translation>Se alla</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="176"/>
         <source>All Apps</source>
-        <translation type="unfinished"></translation>
+        <translation>Alla appar</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="209"/>
         <source>Needs companion</source>
-        <translation type="unfinished"></translation>
+        <translation>Kräver companion</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="236"/>
         <source>Search app or watchface</source>
-        <translation type="unfinished"></translation>
+        <translation>Sök app eller urtavla</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="243"/>
         <source>Search Results</source>
-        <translation type="unfinished"></translation>
+        <translation>Sökresultat</translation>
     </message>
 </context>
 <context>
@@ -127,37 +127,37 @@
         <location filename="../qml/pages/AppUpgradePage.qml" line="24"/>
         <location filename="../qml/pages/AppUpgradePage.qml" line="25"/>
         <source>Upgrading</source>
-        <translation type="unfinished"></translation>
+        <translation>Uppgradering</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="49"/>
         <source>Version</source>
-        <translation type="unfinished"></translation>
+        <translation>Version</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="77"/>
         <source>Upgrade</source>
-        <translation type="unfinished"></translation>
+        <translation>Uppgradera</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="77"/>
         <source>Upgrading...</source>
-        <translation type="unfinished"></translation>
+        <translation>Uppgraderar...</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="77"/>
         <source>Needs Companion</source>
-        <translation type="unfinished"></translation>
+        <translation>Kräver Companion</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="93"/>
         <source>Compatibility</source>
-        <translation type="unfinished"></translation>
+        <translation>Kompatibilitet</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="175"/>
         <source>Change Log</source>
-        <translation type="unfinished"></translation>
+        <translation>Ändringslogg</translation>
     </message>
 </context>
 <context>
@@ -165,12 +165,12 @@
     <message>
         <location filename="../qml/pages/ContentPeerPickerPage.qml" line="16"/>
         <source>Share Via</source>
-        <translation type="unfinished"></translation>
+        <translation>Dela via</translation>
     </message>
     <message>
         <location filename="../qml/pages/ContentPeerPickerPage.qml" line="26"/>
         <source>No Share Providers configured. Please add provider&apos;s account in System Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Inga resursleverantörer har konfigurerats. Lägg till ett delningskonto i systeminställningarna</translation>
     </message>
 </context>
 <context>
@@ -178,12 +178,12 @@
     <message>
         <location filename="../qml/cover/CoverPage.qml" line="27"/>
         <source>connected</source>
-        <translation type="unfinished"></translation>
+        <translation>ansluten</translation>
     </message>
     <message>
         <location filename="../qml/cover/CoverPage.qml" line="27"/>
         <source>disconnected</source>
-        <translation type="unfinished"></translation>
+        <translation>inte ansluten</translation>
     </message>
 </context>
 <context>
@@ -191,158 +191,158 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="11"/>
         <source>Developer Tools</source>
-        <translation type="unfinished"></translation>
+        <translation>Utvecklarverktyg</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="60"/>
         <source>Disable Service</source>
-        <translation type="unfinished"></translation>
+        <translation>Inaktivera tjänsten</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="66"/>
         <source>Restart Service</source>
-        <translation type="unfinished"></translation>
+        <translation>Starta om tjänsten</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="72"/>
         <source>Screenshots</source>
-        <translation type="unfinished"></translation>
+        <translation>Skärmklipp</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="78"/>
         <source>Developer Connection</source>
-        <translation type="unfinished"></translation>
+        <translation>Utvecklaranslutning</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="84"/>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="195"/>
         <source>Report problem</source>
-        <translation type="unfinished"></translation>
+        <translation>Rapportera problem</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="90"/>
         <source>Install app or watchface from file</source>
-        <translation type="unfinished"></translation>
+        <translation>Installera app eller urtavla från fil</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="113"/>
         <source>Developer Connection Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Inställningar för utvecklaranslutning</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="118"/>
         <source>Enable Connection</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktivera anslutning</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="120"/>
         <source>Enable Developer Connection Service</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktivera tjänst för utvecklaranslutning</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="130"/>
         <source>Listen Port</source>
-        <translation type="unfinished"></translation>
+        <translation>Lyssningsport</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="143"/>
         <source>Apply</source>
-        <translation type="unfinished"></translation>
+        <translation>Tillämpa</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="153"/>
         <source>Enable</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktivera</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="154"/>
         <source>Enable DeveloperConnection over CloudPebble</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktivera utvecklaranslutning över CloudPebble</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="160"/>
         <source>Runtime Status</source>
-        <translation type="unfinished"></translation>
+        <translation>Körtidsstatus</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="165"/>
         <source>DeveloperConnection Status</source>
-        <translation type="unfinished"></translation>
+        <translation>Utvecklaranslutningsstatus</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="166"/>
         <source>DeveloperConnection port listening state</source>
-        <translation type="unfinished"></translation>
+        <translation>Status för tvecklaranslutningens lyssningsport</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="172"/>
         <source>CloudPebble Status</source>
-        <translation type="unfinished"></translation>
+        <translation>CloudPebble-status</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="173"/>
         <source>Indicates CloudPebble connection state</source>
-        <translation type="unfinished"></translation>
+        <translation>Indikerar status för CloudPebbles anslutningsläge</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="178"/>
         <source>Close</source>
-        <translation type="unfinished"></translation>
+        <translation>Stäng</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="208"/>
         <source>Preparing logs package...</source>
-        <translation type="unfinished"></translation>
+        <translation>Förbereder loggpaket...</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="233"/>
         <source>Current log: </source>
-        <translation type="unfinished"></translation>
+        <translation>Aktuell logg: </translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="239"/>
         <source>Disable service logs</source>
-        <translation type="unfinished"></translation>
+        <translation>Avaktivera tjänstloggar</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="248"/>
         <source>Send service logs</source>
-        <translation type="unfinished"></translation>
+        <translation>Skicka tjänstloggar</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="239"/>
         <source>Enable service logs</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktivera tjänstloggar</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="266"/>
         <source>Syslog Verbosity</source>
-        <translation type="unfinished"></translation>
+        <translation>Informationsnivå för Syslog</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="268"/>
         <source>Debug</source>
-        <translation type="unfinished"></translation>
+        <translation>Felsök</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="269"/>
         <source>Warning</source>
-        <translation type="unfinished"></translation>
+        <translation>Varning</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="270"/>
         <source>Critical</source>
-        <translation type="unfinished"></translation>
+        <translation>Kritisk</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="277"/>
         <source>Send watch logs</source>
-        <translation type="unfinished"></translation>
+        <translation>Skicka klockloggar</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="287"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>Avbryt</translation>
     </message>
 </context>
 <context>
@@ -350,47 +350,47 @@
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="15"/>
         <source>Firmware upgrade</source>
-        <translation type="unfinished"></translation>
+        <translation>Mjukvaruuppgradering</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="18"/>
         <source>Currently installed firmware: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Installerad mjukvara: %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="24"/>
         <source>A new firmware upgrade is available for your Pebble smartwatch.</source>
-        <translation type="unfinished"></translation>
+        <translation>En ny uppgradering finns tillgänglig för din Pebble-klocka.</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="32"/>
         <source>Candidate firmware version: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Ny mjukvaruversion: %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="39"/>
         <source>Release Notes: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Ändringar: %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="46"/>
         <source>Important:</source>
-        <translation type="unfinished"></translation>
+        <translation>Viktigt:</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="46"/>
         <source>This update will also upgrade recovery data. Make sure your Pebble smartwarch is connected to a power adapter.</source>
-        <translation type="unfinished"></translation>
+        <translation>Denna uppgradering kommer också att uppgradera din återställningsdata. Tillse att din Pebble är ansluten till en laddare.</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="53"/>
         <source>Upgrade now</source>
-        <translation type="unfinished"></translation>
+        <translation>Uppgradera nu</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="53"/>
         <source>Firmware is Up-To-Date</source>
-        <translation type="unfinished"></translation>
+        <translation>Mjukvaran är den senaste</translation>
     </message>
 </context>
 <context>
@@ -398,72 +398,72 @@
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="13"/>
         <source>Health settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Hälsoinställningar</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="14"/>
         <source>OK</source>
-        <translation type="unfinished"></translation>
+        <translation>OK</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="16"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>Avbryt</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="20"/>
         <source>Health app enabled</source>
-        <translation type="unfinished"></translation>
+        <translation>Hälso-app aktiverad</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="26"/>
         <source>Age</source>
-        <translation type="unfinished"></translation>
+        <translation>Ålder</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="37"/>
         <source>Height (cm)</source>
-        <translation type="unfinished"></translation>
+        <translation>Längd (cm)</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="47"/>
         <source>Weight (kg)</source>
-        <translation type="unfinished"></translation>
+        <translation>Vikt (kg)</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="58"/>
         <source>Gender</source>
-        <translation type="unfinished"></translation>
+        <translation>Kön</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="59"/>
         <source>Female</source>
-        <translation type="unfinished"></translation>
+        <translation>Kvinna</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="59"/>
         <source>Male</source>
-        <translation type="unfinished"></translation>
+        <translation>Man</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="67"/>
         <source>I want to be more active</source>
-        <translation type="unfinished"></translation>
+        <translation>Jag vill vara mer aktiv</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="68"/>
         <source>More Active</source>
-        <translation type="unfinished"></translation>
+        <translation>Mer aktiv</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="74"/>
         <source>I want to sleep more</source>
-        <translation type="unfinished"></translation>
+        <translation>Jag vill sova mer</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="75"/>
         <source>Sleep More</source>
-        <translation type="unfinished"></translation>
+        <translation>Sova mer</translation>
     </message>
 </context>
 <context>
@@ -471,7 +471,7 @@
     <message>
         <location filename="../qml/pages/ImportPackagePage.qml" line="164"/>
         <source>Sideloading file</source>
-        <translation type="unfinished"></translation>
+        <translation>Sidinläsningsfil</translation>
     </message>
 </context>
 <context>
@@ -479,42 +479,42 @@
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="29"/>
         <source>Upgrade</source>
-        <translation type="unfinished"></translation>
+        <translation>Uppgradera</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="29"/>
         <source>Version</source>
-        <translation type="unfinished"></translation>
+        <translation>Version</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="36"/>
         <source>Launch</source>
-        <translation type="unfinished"></translation>
+        <translation>Starta</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="40"/>
         <source>Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Inställningar</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="45"/>
         <source>Delete</source>
-        <translation type="unfinished"></translation>
+        <translation>Ta bort</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="48"/>
         <source>Really Delete?</source>
-        <translation type="unfinished"></translation>
+        <translation>Verkligen ta bort?</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="54"/>
         <source>Move Up</source>
-        <translation type="unfinished"></translation>
+        <translation>Flytta upp</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="59"/>
         <source>Move Down</source>
-        <translation type="unfinished"></translation>
+        <translation>Flytta ner</translation>
     </message>
 </context>
 <context>
@@ -522,27 +522,27 @@
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="23"/>
         <source>Add New</source>
-        <translation type="unfinished"></translation>
+        <translation>Lägg till ny</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="32"/>
         <source>Apps &amp; Watchfaces</source>
-        <translation type="unfinished"></translation>
+        <translation>Appar &amp; urtavlor</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="32"/>
         <source>Apps</source>
-        <translation type="unfinished"></translation>
+        <translation>Appar</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="32"/>
         <source>Watchfaces</source>
-        <translation type="unfinished"></translation>
+        <translation>Urtavlor</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="101"/>
         <source>Save Apps Order</source>
-        <translation type="unfinished"></translation>
+        <translation>Spara app-ordning</translation>
     </message>
 </context>
 <context>
@@ -550,27 +550,27 @@
     <message>
         <location filename="../qml/pages/LanguagePage.qml" line="19"/>
         <source>Language Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Språkinställningar</translation>
     </message>
     <message>
         <location filename="../qml/pages/LanguagePage.qml" line="20"/>
         <source>Set langugage for application and your Pebble</source>
-        <translation type="unfinished"></translation>
+        <translation>Ange språk för appen och din Pebble</translation>
     </message>
     <message>
         <location filename="../qml/pages/LanguagePage.qml" line="23"/>
         <source>Pebble Language</source>
-        <translation type="unfinished"></translation>
+        <translation>Pebble-språk</translation>
     </message>
     <message>
         <location filename="../qml/pages/LanguagePage.qml" line="29"/>
         <source>Select Language</source>
-        <translation type="unfinished"></translation>
+        <translation>Välj språk</translation>
     </message>
     <message>
         <location filename="../qml/pages/LanguagePage.qml" line="41"/>
         <source>Submit</source>
-        <translation type="unfinished"></translation>
+        <translation>Verkställ</translation>
     </message>
 </context>
 <context>
@@ -578,12 +578,12 @@
     <message>
         <location filename="../qml/pages/LoadingPage.qml" line="20"/>
         <source>Loading and Connecting...</source>
-        <translation type="unfinished"></translation>
+        <translation>Läser in och ansluter...</translation>
     </message>
     <message>
         <location filename="../qml/pages/LoadingPage.qml" line="23"/>
         <source>Restart Service</source>
-        <translation type="unfinished"></translation>
+        <translation>Starta om tjänsten</translation>
     </message>
 </context>
 <context>
@@ -591,27 +591,27 @@
     <message>
         <location filename="../qml/pages/LocationPicker.qml" line="12"/>
         <source>Select Location</source>
-        <translation type="unfinished"></translation>
+        <translation>Välj plats</translation>
     </message>
     <message>
         <location filename="../qml/pages/LocationPicker.qml" line="14"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>Avbryt</translation>
     </message>
     <message>
         <location filename="../qml/pages/LocationPicker.qml" line="18"/>
         <source>Location Name</source>
-        <translation type="unfinished"></translation>
+        <translation>Platsnamn</translation>
     </message>
     <message>
         <location filename="../qml/pages/LocationPicker.qml" line="19"/>
         <source>Type in location name</source>
-        <translation type="unfinished"></translation>
+        <translation>Skriv in platsnamnet</translation>
     </message>
     <message>
         <location filename="../qml/pages/LocationPicker.qml" line="34"/>
         <source>Matching locations will be appearing as you type</source>
-        <translation type="unfinished"></translation>
+        <translation>Matchande platsnamn blir synliga efterhand som du skriver</translation>
     </message>
 </context>
 <context>
@@ -619,82 +619,82 @@
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="19"/>
         <source>About</source>
-        <translation type="unfinished"></translation>
+        <translation>Om</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="25"/>
         <source>Developer tools</source>
-        <translation type="unfinished"></translation>
+        <translation>Utvecklarverktyg</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="120"/>
         <source>Connected</source>
-        <translation type="unfinished"></translation>
+        <translation>Ansluten</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="120"/>
         <source>Disconnected</source>
-        <translation type="unfinished"></translation>
+        <translation>Inte ansluten</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="128"/>
         <source>Update Available</source>
-        <translation type="unfinished"></translation>
+        <translation>Uppdatering tillgänglig</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="150"/>
         <source>Upgrading...</source>
-        <translation type="unfinished"></translation>
+        <translation>Uppgraderar...</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="162"/>
         <source>Running</source>
-        <translation type="unfinished"></translation>
+        <translation>Körs</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="172"/>
         <source>Your Pebble smartwatch is disconnected. Please make sure it is powered on, within range and it is paired properly in the Bluetooth System Settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>Din Pebble är inte ansluten. Tillse att den är påslagen, inom räckhåll och korrekt parad i Bluetooth Systeminställningar.</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="182"/>
         <source>Open Bluetooth Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Öppna bluetooth-inställningar</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="189"/>
         <source>Your Pebble smartwatch is in factory mode and needs to be initialized.</source>
-        <translation type="unfinished"></translation>
+        <translation>Din Pebble är i fabriksläge och måste startas upp.</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="198"/>
         <source>Initialize Pebble</source>
-        <translation type="unfinished"></translation>
+        <translation>Starta Pebble</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="267"/>
         <source>Notifications</source>
-        <translation type="unfinished"></translation>
+        <translation>Aviseringar</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="272"/>
         <source>Watch Apps</source>
-        <translation type="unfinished"></translation>
+        <translation>Klock-appar</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="278"/>
         <source>Watchfaces</source>
-        <translation type="unfinished"></translation>
+        <translation>Urtavlor</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="284"/>
         <source>Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Inställningar</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="291"/>
         <source>Firmware</source>
-        <translation type="unfinished"></translation>
+        <translation>Mjukvara</translation>
     </message>
 </context>
 <context>
@@ -702,32 +702,32 @@
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="15"/>
         <source>Notifications</source>
-        <translation type="unfinished"></translation>
+        <translation>Aviseringar</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="18"/>
         <source>Entries here will be added as notifications appear on the phone. Selected notifications will be shown on your Pebble smartwatch.</source>
-        <translation type="unfinished"></translation>
+        <translation>Poster här, kommer att läggas till som aviseringar synliga på telefonen. Markerade aviseringar visas på din Pebble smartklocka.</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="63"/>
         <source>Always Enabled</source>
-        <translation type="unfinished"></translation>
+        <translation>Alltid aktiverat</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="69"/>
         <source>Disabled When Active</source>
-        <translation type="unfinished"></translation>
+        <translation>Inaktiverat vid aktiv</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="75"/>
         <source>Always Disabled</source>
-        <translation type="unfinished"></translation>
+        <translation>Alltid inaktiverat</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="81"/>
         <source>Forget</source>
-        <translation type="unfinished"></translation>
+        <translation>Glöm</translation>
     </message>
 </context>
 <context>
@@ -735,42 +735,42 @@
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="9"/>
         <source>RockPool</source>
-        <translation type="unfinished"></translation>
+        <translation>RockPool</translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="10"/>
         <source>Manage Pebble Watches</source>
-        <translation type="unfinished"></translation>
+        <translation>Hantera Pebble-klockor</translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="14"/>
         <source>Bluetooth Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Bluetooth-inställningar</translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="18"/>
         <source>Restart service</source>
-        <translation type="unfinished"></translation>
+        <translation>Starta om tjänsten</translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="35"/>
         <source>Connected</source>
-        <translation type="unfinished"></translation>
+        <translation>Ansluten</translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="35"/>
         <source>Disconnected</source>
-        <translation type="unfinished"></translation>
+        <translation>Inte ansluten</translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="55"/>
         <source>No Pebble smartwatches configured yet. Please connect your Pebble smartwatch using System Settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>Inga Pebble smartklockor konfigurerade ännu. Anslut din Pebble med systeminställningarna.</translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="64"/>
         <source>Open Bluetooth Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Öppna bluetooth-inställningarna</translation>
     </message>
 </context>
 <context>
@@ -778,52 +778,52 @@
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="17"/>
         <source>Edit and order quick-response messages</source>
-        <translation type="unfinished"></translation>
+        <translation>Redigera och ordna snabbsvarsmeddelanden</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="17"/>
         <source>New item will be inserted before current selection</source>
-        <translation type="unfinished"></translation>
+        <translation>Nytt objekt kommer att infogas före aktuell samling</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="21"/>
         <source>Add New</source>
-        <translation type="unfinished"></translation>
+        <translation>Lägg till ny</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="29"/>
         <source>Save changes</source>
-        <translation type="unfinished"></translation>
+        <translation>Spara ändringar</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="54"/>
         <source>Move Up</source>
-        <translation type="unfinished"></translation>
+        <translation>Flytta upp</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="59"/>
         <source>Edit</source>
-        <translation type="unfinished"></translation>
+        <translation>Redigera</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="67"/>
         <source>Delete</source>
-        <translation type="unfinished"></translation>
+        <translation>Ta bort</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="69"/>
         <source>Really Delete?</source>
-        <translation type="unfinished"></translation>
+        <translation>Verkligen ta bort?</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="75"/>
         <source>Move Down</source>
-        <translation type="unfinished"></translation>
+        <translation>Flytta ner</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="86"/>
         <source>Pre-defined response message</source>
-        <translation type="unfinished"></translation>
+        <translation>Fördefinierat svarsmeddelande</translation>
     </message>
 </context>
 <context>
@@ -831,42 +831,42 @@
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="23"/>
         <source>Screenshots</source>
-        <translation type="unfinished"></translation>
+        <translation>Skärmklipp</translation>
     </message>
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="27"/>
         <source>Take Screenshot</source>
-        <translation type="unfinished"></translation>
+        <translation>Ta ett skärmklipp</translation>
     </message>
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="53"/>
         <source>Share</source>
-        <translation type="unfinished"></translation>
+        <translation>Dela</translation>
     </message>
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="55"/>
         <source>Pebble screenshot</source>
-        <translation type="unfinished"></translation>
+        <translation>Pebble-skärmklipp</translation>
     </message>
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="56"/>
         <source>Screen snapshot of Pebble Smartwatches</source>
-        <translation type="unfinished"></translation>
+        <translation>Skärmklipp från Pebble smartklocka</translation>
     </message>
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="62"/>
         <source>Delete</source>
-        <translation type="unfinished"></translation>
+        <translation>Ta bort</translation>
     </message>
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="65"/>
         <source>Really Delete?</source>
-        <translation type="unfinished"></translation>
+        <translation>Verkligen ta bort?</translation>
     </message>
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="72"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>Avbryt</translation>
     </message>
 </context>
 <context>
@@ -874,47 +874,47 @@
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="26"/>
         <source>Messaging Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Meddelandeinställningar</translation>
     </message>
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="27"/>
         <source>OK</source>
-        <translation type="unfinished"></translation>
+        <translation>OK</translation>
     </message>
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="28"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>Avbryt</translation>
     </message>
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="32"/>
         <source>Contacts</source>
-        <translation type="unfinished"></translation>
+        <translation>Kontakter</translation>
     </message>
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="77"/>
         <source>Really Delete?</source>
-        <translation type="unfinished"></translation>
+        <translation>Verkligen ta bort?</translation>
     </message>
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="130"/>
         <source>Pick SIM for new contacts</source>
-        <translation type="unfinished"></translation>
+        <translation>Välj SIM-kort för nya kontakter</translation>
     </message>
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="144"/>
         <source>Messages</source>
-        <translation type="unfinished"></translation>
+        <translation>Meddelanden</translation>
     </message>
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="147"/>
         <source>Edit Messages</source>
-        <translation type="unfinished"></translation>
+        <translation>Redigera meddelanden</translation>
     </message>
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="153"/>
         <source>Send Text Messages</source>
-        <translation type="unfinished"></translation>
+        <translation>Skicka textmeddelanden</translation>
     </message>
 </context>
 <context>
@@ -922,97 +922,97 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="26"/>
         <source>Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Inställningar</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="30"/>
         <source>General</source>
-        <translation type="unfinished"></translation>
+        <translation>Allmänt</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="34"/>
         <source>Distance Units</source>
-        <translation type="unfinished"></translation>
+        <translation>Avståndsenheter</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="37"/>
         <source>Metric</source>
-        <translation type="unfinished"></translation>
+        <translation>Meter</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="40"/>
         <source>Imperial</source>
-        <translation type="unfinished"></translation>
+        <translation>Imperial</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="50"/>
         <source>Language</source>
-        <translation type="unfinished"></translation>
+        <translation>Språk</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="55"/>
         <source>Timeline</source>
-        <translation type="unfinished"></translation>
+        <translation>Tidslinje</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="60"/>
         <source>Sync calendar to timeline</source>
-        <translation type="unfinished"></translation>
+        <translation>Synkronisera kalender med tidslinje</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="68"/>
         <source>Sync Apps from Cloud</source>
-        <translation type="unfinished"></translation>
+        <translation>Synkronisera appar från molnet</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="76"/>
         <source>Reset Timeline</source>
-        <translation type="unfinished"></translation>
+        <translation>Återställ tidslinjen</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="81"/>
         <source>Timeline Window Start (days ago)</source>
-        <translation type="unfinished"></translation>
+        <translation>Tidslinjefönstrets start (dagar bakåt)</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="89"/>
         <source>Timeline Window End (days ahead)</source>
-        <translation type="unfinished"></translation>
+        <translation>Tidslinjefönstrets slut (dagar framåt)</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="97"/>
         <source>Notification re-delivery expiration (seconds)</source>
-        <translation type="unfinished"></translation>
+        <translation>Förfallotid för avisering om återleverans (sekunder)</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="105"/>
         <source>Set Timeline Window</source>
-        <translation type="unfinished"></translation>
+        <translation>Ställ in tidslinjefönstret</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="111"/>
         <source>Active Timeline WebSync account</source>
-        <translation type="unfinished"></translation>
+        <translation>WebSync-konto för aktiv tidslinje</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="125"/>
         <source>Logout</source>
-        <translation type="unfinished"></translation>
+        <translation>Logga ut</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="125"/>
         <source>Login</source>
-        <translation type="unfinished"></translation>
+        <translation>Logga in</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="138"/>
         <source>Automatic Profile</source>
-        <translation type="unfinished"></translation>
+        <translation>Automatisk profil</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="142"/>
         <source>Connected</source>
-        <translation type="unfinished"></translation>
+        <translation>Ansluten</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="145"/>
@@ -1020,17 +1020,17 @@
         <location filename="../qml/pages/SettingsPage.qml" line="166"/>
         <location filename="../qml/pages/SettingsPage.qml" line="176"/>
         <source>no change</source>
-        <translation type="unfinished"></translation>
+        <translation>ingen ändring</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="163"/>
         <source>Disconnected</source>
-        <translation type="unfinished"></translation>
+        <translation>Inte ansluten</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="183"/>
         <source>Canned Messages</source>
-        <translation type="unfinished"></translation>
+        <translation>Fördefinierade meddelanden</translation>
     </message>
 </context>
 <context>
@@ -1038,123 +1038,123 @@
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="23"/>
         <source>Weather Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Väderinställningar</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="24"/>
         <source>OK</source>
-        <translation type="unfinished"></translation>
+        <translation>OK</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="25"/>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="90"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>Avbryt</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="29"/>
         <source>Alternate Provider</source>
-        <translation type="unfinished"></translation>
+        <translation>Alternativ leverantör</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="36"/>
         <source>Provider&apos;s Key, eg. API Key</source>
-        <translation type="unfinished"></translation>
+        <translation>Leverantörsnyckel, t.ex. API-nyckel</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="37"/>
         <source>Provider Key</source>
-        <translation type="unfinished"></translation>
+        <translation>Leverantörsnyckel</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="44"/>
         <source>Locations</source>
-        <translation type="unfinished"></translation>
+        <translation>Platser</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="68"/>
         <source>Location Name</source>
-        <translation type="unfinished"></translation>
+        <translation>Platsnamn</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="75"/>
         <source>Latitude</source>
-        <translation type="unfinished"></translation>
+        <translation>Latitud</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="82"/>
         <source>Longitude</source>
-        <translation type="unfinished"></translation>
+        <translation>Longitud</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="96"/>
         <source>Save Changes</source>
-        <translation type="unfinished"></translation>
+        <translation>Spara ändringar</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="146"/>
         <source>Edit</source>
-        <translation type="unfinished"></translation>
+        <translation>Redigera</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="151"/>
         <source>Move Up</source>
-        <translation type="unfinished"></translation>
+        <translation>Flytta upp</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="156"/>
         <source>Move Down</source>
-        <translation type="unfinished"></translation>
+        <translation>Flytta ner</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="161"/>
         <source>Delete</source>
-        <translation type="unfinished"></translation>
+        <translation>Ta bort</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="170"/>
         <source>Add Location</source>
-        <translation type="unfinished"></translation>
+        <translation>Lägg till plats</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="179"/>
         <source>Current Location</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktuell plats</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="185"/>
         <source>Locales</source>
-        <translation type="unfinished"></translation>
+        <translation>Platser</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="190"/>
         <source>Units</source>
-        <translation type="unfinished"></translation>
+        <translation>Enheter</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="209"/>
         <source>Language</source>
-        <translation type="unfinished"></translation>
+        <translation>Språk</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="334"/>
         <source>Default (English)</source>
-        <translation type="unfinished"></translation>
+        <translation>Standard {Engelska)</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="337"/>
         <source>Metric</source>
-        <translation type="unfinished"></translation>
+        <translation>Meter</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="338"/>
         <source>Imperial</source>
-        <translation type="unfinished"></translation>
+        <translation>Imperial</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="339"/>
         <source>Hybrid</source>
-        <translation type="unfinished"></translation>
+        <translation>Hybrid</translation>
     </message>
 </context>
 </TS>
