@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1" language="nb_NO">
+<TS version="2.1" language="zh_Hans">
 <context>
     <name></name>
     <message id="filemanager-la-file_details">
         <location filename="../qml/pages/ImportPackagePage.qml" line="149"/>
         <source>%1, %2</source>
         <extracomment>Shows size and modification date, e.g. &quot;15.5MB, 02/03/2016&quot;</extracomment>
-        <translation>%1, %2</translation>
+        <translation>％1，％2</translation>
     </message>
     <message id="filemanager-la-no_files">
         <location filename="../qml/pages/ImportPackagePage.qml" line="174"/>
         <source>No files</source>
-        <translation>Ingen filer</translation>
+        <translation>无文件</translation>
     </message>
 </context>
 <context>
@@ -20,7 +20,7 @@
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="46"/>
         <source>Cancel</source>
-        <translation>Avbryt</translation>
+        <translation>取消</translation>
     </message>
 </context>
 <context>
@@ -28,37 +28,37 @@
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="170"/>
         <source>Description</source>
-        <translation>Beskrivelse</translation>
+        <translation>描述</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="191"/>
         <source>Developer</source>
-        <translation>Utvikler</translation>
+        <translation>开发者</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="196"/>
         <source>Version</source>
-        <translation>Versjon</translation>
+        <translation>版本</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="246"/>
         <source>Install</source>
-        <translation>Installer</translation>
+        <translation>安装</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="246"/>
         <source>Installing...</source>
-        <translation>Installerer…</translation>
+        <translation>正在安装…</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="246"/>
         <source>Installed</source>
-        <translation>Installert</translation>
+        <translation>已安装</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="246"/>
         <source>Needs Companion</source>
-        <translation>Behøver kompanjong</translation>
+        <translation>需要配对</translation>
     </message>
 </context>
 <context>
@@ -66,59 +66,59 @@
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="47"/>
         <source>Use</source>
-        <translation>Bruk</translation>
+        <translation>使用</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="47"/>
         <location filename="../qml/pages/AppStorePage.qml" line="59"/>
         <source>Collections</source>
-        <translation>Samlinger</translation>
+        <translation>收藏</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="47"/>
         <location filename="../qml/pages/AppStorePage.qml" line="59"/>
         <source>Categories</source>
-        <translation>Kategorier</translation>
+        <translation>分类</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="53"/>
         <source>Search</source>
-        <translation>Søk</translation>
+        <translation>搜索</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="59"/>
         <source>Watchapps</source>
-        <translation>Klokkeprogrammer</translation>
+        <translation>手表软件</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="59"/>
         <source>Watchfaces</source>
-        <translation>Urskiver</translation>
+        <translation>表盘</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="105"/>
         <source>See all</source>
-        <translation>Se alle</translation>
+        <translation>查看全部</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="176"/>
         <source>All Apps</source>
-        <translation>Alle programmer</translation>
+        <translation>所有应用</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="209"/>
         <source>Needs companion</source>
-        <translation>Behøver kompanjong</translation>
+        <translation>需要配对</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="236"/>
         <source>Search app or watchface</source>
-        <translation>Søk for program eller urskive</translation>
+        <translation>搜索软件或表盘</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="243"/>
         <source>Search Results</source>
-        <translation>Søkeresultater</translation>
+        <translation>搜索结果</translation>
     </message>
 </context>
 <context>
@@ -127,37 +127,37 @@
         <location filename="../qml/pages/AppUpgradePage.qml" line="24"/>
         <location filename="../qml/pages/AppUpgradePage.qml" line="25"/>
         <source>Upgrading</source>
-        <translation>Oppgraderer</translation>
+        <translation>更新</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="49"/>
         <source>Version</source>
-        <translation>Versjon</translation>
+        <translation>版本</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="77"/>
         <source>Upgrade</source>
-        <translation>Oppgrader</translation>
+        <translation>更新</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="77"/>
         <source>Upgrading...</source>
-        <translation>Oppgraderer…</translation>
+        <translation>正在更新……</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="77"/>
         <source>Needs Companion</source>
-        <translation>Behøver kompanjong</translation>
+        <translation>需要配对</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="93"/>
         <source>Compatibility</source>
-        <translation>Kompabilitet</translation>
+        <translation>兼容</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="175"/>
         <source>Change Log</source>
-        <translation>Endringslogg</translation>
+        <translation>更新日志</translation>
     </message>
 </context>
 <context>
@@ -165,12 +165,12 @@
     <message>
         <location filename="../qml/pages/ContentPeerPickerPage.qml" line="16"/>
         <source>Share Via</source>
-        <translation>Del via</translation>
+        <translation>分享通过</translation>
     </message>
     <message>
         <location filename="../qml/pages/ContentPeerPickerPage.qml" line="26"/>
         <source>No Share Providers configured. Please add provider&apos;s account in System Settings</source>
-        <translation>Ingen delingstilbydere satt opp. Legg til en delingstilbyderkonto i systeminnstillingene</translation>
+        <translation>未配置提供分享应用软件，请在系统设置中添加提供软件账户。</translation>
     </message>
 </context>
 <context>
@@ -178,12 +178,12 @@
     <message>
         <location filename="../qml/cover/CoverPage.qml" line="27"/>
         <source>connected</source>
-        <translation>tilkoblet</translation>
+        <translation>已连接</translation>
     </message>
     <message>
         <location filename="../qml/cover/CoverPage.qml" line="27"/>
         <source>disconnected</source>
-        <translation>frakoblet</translation>
+        <translation>已断开</translation>
     </message>
 </context>
 <context>
@@ -191,158 +191,158 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="11"/>
         <source>Developer Tools</source>
-        <translation>Utviklerverktøy</translation>
+        <translation>开发者工具</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="60"/>
         <source>Disable Service</source>
-        <translation>Skru av tjeneste</translation>
+        <translation>禁用服务</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="66"/>
         <source>Restart Service</source>
-        <translation>Start tjeneste på nytt</translation>
+        <translation>重启服务</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="72"/>
         <source>Screenshots</source>
-        <translation>Skjermavbildninger</translation>
+        <translation>截图</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="78"/>
         <source>Developer Connection</source>
-        <translation>Utviklertilkobling</translation>
+        <translation>开发者连接</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="84"/>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="195"/>
         <source>Report problem</source>
-        <translation>Rapporter problem</translation>
+        <translation>报告问题</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="90"/>
         <source>Install app or watchface from file</source>
-        <translation>Installer program eller urskive fra fil</translation>
+        <translation>从文件安装软件及表盘</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="113"/>
         <source>Developer Connection Settings</source>
-        <translation>Innstillinger for utviklertilkobling</translation>
+        <translation>开发者连接设置</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="118"/>
         <source>Enable Connection</source>
-        <translation>Skru på tilkobling</translation>
+        <translation>启用连接</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="120"/>
         <source>Enable Developer Connection Service</source>
-        <translation>Skru på utviklertilkoblingstjeneste</translation>
+        <translation>启用开发者连接服务</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="130"/>
         <source>Listen Port</source>
-        <translation>Lytteport</translation>
+        <translation>侦听端口</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="143"/>
         <source>Apply</source>
-        <translation>Legg til</translation>
+        <translation>应用</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="153"/>
         <source>Enable</source>
-        <translation>Skru på</translation>
+        <translation>启用</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="154"/>
         <source>Enable DeveloperConnection over CloudPebble</source>
-        <translation>Skru på utviklertilkobling over CloudPebble</translation>
+        <translation>通过 CloudPebble 打开开发者连接</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="160"/>
         <source>Runtime Status</source>
-        <translation>Kjøringsstatus</translation>
+        <translation>运行状态</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="165"/>
         <source>DeveloperConnection Status</source>
-        <translation>Status for utviklertilkobling</translation>
+        <translation>开发者连接状态</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="166"/>
         <source>DeveloperConnection port listening state</source>
-        <translation>Lytteportstilstand for utviklertilkobling</translation>
+        <translation>开发者连接端口监听状态</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="172"/>
         <source>CloudPebble Status</source>
-        <translation>CloudPebble-status</translation>
+        <translation>CloudPebble 状态</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="173"/>
         <source>Indicates CloudPebble connection state</source>
-        <translation>Indikerer tilkoblingstilstand for CloudPebble</translation>
+        <translation>显示 CloudPebble 连接状态</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="178"/>
         <source>Close</source>
-        <translation>Lukk</translation>
+        <translation>关闭</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="208"/>
         <source>Preparing logs package...</source>
-        <translation>Forbereder loggpakke…</translation>
+        <translation>正在准备日志包...</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="233"/>
         <source>Current log: </source>
-        <translation>Nåværende logg: </translation>
+        <translation>当前日志： </translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="239"/>
         <source>Disable service logs</source>
-        <translation>Skru av tjenestelogger</translation>
+        <translation>禁用服务日志</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="248"/>
         <source>Send service logs</source>
-        <translation>Finn tjenestelogger</translation>
+        <translation>发送服务日志</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="239"/>
         <source>Enable service logs</source>
-        <translation>Skru på tjenestelogger</translation>
+        <translation>启用服务日志</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="266"/>
         <source>Syslog Verbosity</source>
-        <translation>Ordrikhet for systemlogg</translation>
+        <translation>系统日志详细度</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="268"/>
         <source>Debug</source>
-        <translation>Feilretting</translation>
+        <translation>调试</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="269"/>
         <source>Warning</source>
-        <translation>Advarsel</translation>
+        <translation>警告</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="270"/>
         <source>Critical</source>
-        <translation>Kritisk</translation>
+        <translation>临界点</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="277"/>
         <source>Send watch logs</source>
-        <translation>Send klokkelogger</translation>
+        <translation>发送手表日志</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="287"/>
         <source>Cancel</source>
-        <translation>Avbryt</translation>
+        <translation>取消</translation>
     </message>
 </context>
 <context>
@@ -350,47 +350,47 @@
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="15"/>
         <source>Firmware upgrade</source>
-        <translation>Fastvareoppgradering</translation>
+        <translation>固件升级</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="18"/>
         <source>Currently installed firmware: %1</source>
-        <translation>Installert fastvare: %1</translation>
+        <translation>当前安装固件： %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="24"/>
         <source>A new firmware upgrade is available for your Pebble smartwatch.</source>
-        <translation>En ny fastvareoppgradering er tilgjengelig for din Pebble-smartklokke.</translation>
+        <translation>Pebble 智能手表有新的可用固件升级。</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="32"/>
         <source>Candidate firmware version: %1</source>
-        <translation>Fastvarekandidatversjon: %1</translation>
+        <translation>可供升级固件版本： %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="39"/>
         <source>Release Notes: %1</source>
-        <translation>Utgivelsesmerknader: %1</translation>
+        <translation>更新日志： %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="46"/>
         <source>Important:</source>
-        <translation>Viktig:</translation>
+        <translation>重要提示：</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="46"/>
         <source>This update will also upgrade recovery data. Make sure your Pebble smartwarch is connected to a power adapter.</source>
-        <translation>Denne oppdateringen vil også oppgradere gjenopprettelsesdata. Forsikre deg om at din Pebble-smartklokke er tilknyttet ekstern strømtilførsel.</translation>
+        <translation>此更新还将更新恢复数据。确保 Pebble 智能手表已连接到电源适配器。</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="53"/>
         <source>Upgrade now</source>
-        <translation>Oppgrader nå</translation>
+        <translation>立即更新</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="53"/>
         <source>Firmware is Up-To-Date</source>
-        <translation>Fastvare av nyeste dato</translation>
+        <translation>固件已是最新版本</translation>
     </message>
 </context>
 <context>
@@ -398,72 +398,72 @@
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="13"/>
         <source>Health settings</source>
-        <translation>Helseinnstillinger</translation>
+        <translation>健康设置</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="14"/>
         <source>OK</source>
-        <translation>OK</translation>
+        <translation>确定</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="16"/>
         <source>Cancel</source>
-        <translation>Avbryt</translation>
+        <translation>取消</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="20"/>
         <source>Health app enabled</source>
-        <translation>Helseprogram påskrudd</translation>
+        <translation>已启用健康软件</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="26"/>
         <source>Age</source>
-        <translation>Alder</translation>
+        <translation>年龄</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="37"/>
         <source>Height (cm)</source>
-        <translation>Høyde (cm)</translation>
+        <translation>身高（厘米）</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="47"/>
         <source>Weight (kg)</source>
-        <translation>Vekt (kg)</translation>
+        <translation>体重（千克）</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="58"/>
         <source>Gender</source>
-        <translation>Kjønn</translation>
+        <translation>性别</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="59"/>
         <source>Female</source>
-        <translation>Kvinne</translation>
+        <translation>女性</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="59"/>
         <source>Male</source>
-        <translation>Mann</translation>
+        <translation>男性</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="67"/>
         <source>I want to be more active</source>
-        <translation>Jeg ønsker å være mer aktiv</translation>
+        <translation>我想更有活力</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="68"/>
         <source>More Active</source>
-        <translation>Mer aktiv</translation>
+        <translation>更有活力</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="74"/>
         <source>I want to sleep more</source>
-        <translation>Jeg ønsker å sove mer</translation>
+        <translation>我想多睡一会儿</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="75"/>
         <source>Sleep More</source>
-        <translation>Sov mer</translation>
+        <translation>多睡一会</translation>
     </message>
 </context>
 <context>
@@ -471,7 +471,7 @@
     <message>
         <location filename="../qml/pages/ImportPackagePage.qml" line="164"/>
         <source>Sideloading file</source>
-        <translation type="unfinished">Sideinnlaster fil</translation>
+        <translation>侧加载文件</translation>
     </message>
 </context>
 <context>
@@ -479,42 +479,42 @@
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="29"/>
         <source>Upgrade</source>
-        <translation>Oppgrader</translation>
+        <translation>更新</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="29"/>
         <source>Version</source>
-        <translation>Versjon</translation>
+        <translation>版本</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="36"/>
         <source>Launch</source>
-        <translation>Start</translation>
+        <translation>打开</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="40"/>
         <source>Settings</source>
-        <translation>Innstillinger</translation>
+        <translation>设置</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="45"/>
         <source>Delete</source>
-        <translation>Slett</translation>
+        <translation>删除</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="48"/>
         <source>Really Delete?</source>
-        <translation>Bekreft sletting.</translation>
+        <translation>真要删除吗？</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="54"/>
         <source>Move Up</source>
-        <translation>Flytt oppover</translation>
+        <translation>上移</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="59"/>
         <source>Move Down</source>
-        <translation>Flytt nedover</translation>
+        <translation>下移</translation>
     </message>
 </context>
 <context>
@@ -522,27 +522,27 @@
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="23"/>
         <source>Add New</source>
-        <translation>Legg til ny</translation>
+        <translation>添加新的</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="32"/>
         <source>Apps &amp; Watchfaces</source>
-        <translation>Programmer og urskiver</translation>
+        <translation>软件及表盘</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="32"/>
         <source>Apps</source>
-        <translation>Programmer</translation>
+        <translation>软件</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="32"/>
         <source>Watchfaces</source>
-        <translation>Urskiver</translation>
+        <translation>表盘</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="101"/>
         <source>Save Apps Order</source>
-        <translation>Lagre programrekkefølge</translation>
+        <translation>保存软件顺序</translation>
     </message>
 </context>
 <context>
@@ -550,27 +550,27 @@
     <message>
         <location filename="../qml/pages/LanguagePage.qml" line="19"/>
         <source>Language Settings</source>
-        <translation>Språkinnstillinger</translation>
+        <translation>语言设置</translation>
     </message>
     <message>
         <location filename="../qml/pages/LanguagePage.qml" line="20"/>
         <source>Set langugage for application and your Pebble</source>
-        <translation>Sett språk for programmet og din Pebble</translation>
+        <translation>设置软件及 Pebble 的语言</translation>
     </message>
     <message>
         <location filename="../qml/pages/LanguagePage.qml" line="23"/>
         <source>Pebble Language</source>
-        <translation>Pebble-språk</translation>
+        <translation>Pebble  语言</translation>
     </message>
     <message>
         <location filename="../qml/pages/LanguagePage.qml" line="29"/>
         <source>Select Language</source>
-        <translation>Velg språk</translation>
+        <translation>选择语言</translation>
     </message>
     <message>
         <location filename="../qml/pages/LanguagePage.qml" line="41"/>
         <source>Submit</source>
-        <translation>Send inn</translation>
+        <translation>提交</translation>
     </message>
 </context>
 <context>
@@ -578,12 +578,12 @@
     <message>
         <location filename="../qml/pages/LoadingPage.qml" line="20"/>
         <source>Loading and Connecting...</source>
-        <translation>Last og koble til…</translation>
+        <translation>正在加载及连接……</translation>
     </message>
     <message>
         <location filename="../qml/pages/LoadingPage.qml" line="23"/>
         <source>Restart Service</source>
-        <translation>Start tjeneste på nytt</translation>
+        <translation>重启服务</translation>
     </message>
 </context>
 <context>
@@ -591,27 +591,27 @@
     <message>
         <location filename="../qml/pages/LocationPicker.qml" line="12"/>
         <source>Select Location</source>
-        <translation>Velg plassering</translation>
+        <translation>选择位置</translation>
     </message>
     <message>
         <location filename="../qml/pages/LocationPicker.qml" line="14"/>
         <source>Cancel</source>
-        <translation>Avbryt</translation>
+        <translation>取消</translation>
     </message>
     <message>
         <location filename="../qml/pages/LocationPicker.qml" line="18"/>
         <source>Location Name</source>
-        <translation>Plasseringsnavn</translation>
+        <translation>位置名称</translation>
     </message>
     <message>
         <location filename="../qml/pages/LocationPicker.qml" line="19"/>
         <source>Type in location name</source>
-        <translation>Skriv inn plasseringsnavn</translation>
+        <translation>输入位置名称</translation>
     </message>
     <message>
         <location filename="../qml/pages/LocationPicker.qml" line="34"/>
         <source>Matching locations will be appearing as you type</source>
-        <translation>Samsvarende plasseringer vil vises mens du skriver</translation>
+        <translation>输入时将会显示匹配的位置</translation>
     </message>
 </context>
 <context>
@@ -619,82 +619,82 @@
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="19"/>
         <source>About</source>
-        <translation>Om</translation>
+        <translation>关于</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="25"/>
         <source>Developer tools</source>
-        <translation>Utviklerverktøy</translation>
+        <translation>开发者工具</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="120"/>
         <source>Connected</source>
-        <translation>Tilkoblet</translation>
+        <translation>已连接</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="120"/>
         <source>Disconnected</source>
-        <translation>Frakoblet</translation>
+        <translation>已断开</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="128"/>
         <source>Update Available</source>
-        <translation>Oppgradering tilgjengelig</translation>
+        <translation>有可用更新</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="150"/>
         <source>Upgrading...</source>
-        <translation>Oppgraderer…</translation>
+        <translation>正在更新……</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="162"/>
         <source>Running</source>
-        <translation>Kjører</translation>
+        <translation>运行</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="172"/>
         <source>Your Pebble smartwatch is disconnected. Please make sure it is powered on, within range and it is paired properly in the Bluetooth System Settings.</source>
-        <translation>Din Pebble-smartklokke er frakoblet. Forsikre deg om at den er påslått, i rekkevidde, og parret på rett vis i systeminnstillingene for Blåtann.</translation>
+        <translation>你的 Pebble 智能手表已断开连接。请确保其在可用范围内、电量充沛，并在系统蓝牙设置中正确配对。</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="182"/>
         <source>Open Bluetooth Settings</source>
-        <translation>Åpne Blåtannsinnstillinger</translation>
+        <translation>打开蓝牙设置</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="189"/>
         <source>Your Pebble smartwatch is in factory mode and needs to be initialized.</source>
-        <translation>Din Pebble-smartklokke er i fabrikkmodus og må igangsettes.</translation>
+        <translation>你的 Pebble 智能手表处于出厂模式，需要初始化。</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="198"/>
         <source>Initialize Pebble</source>
-        <translation>Igangsett Pebble</translation>
+        <translation>初始化 Pebble</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="267"/>
         <source>Notifications</source>
-        <translation>Merknader</translation>
+        <translation>通知</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="272"/>
         <source>Watch Apps</source>
-        <translation>Klokkeprogrammer</translation>
+        <translation>手表软件</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="278"/>
         <source>Watchfaces</source>
-        <translation>Urskiver</translation>
+        <translation>表盘</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="284"/>
         <source>Settings</source>
-        <translation>Innstillinger</translation>
+        <translation>设置</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="291"/>
         <source>Firmware</source>
-        <translation>Fastvare</translation>
+        <translation>固件</translation>
     </message>
 </context>
 <context>
@@ -702,32 +702,32 @@
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="15"/>
         <source>Notifications</source>
-        <translation>Merknader</translation>
+        <translation>通知</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="18"/>
         <source>Entries here will be added as notifications appear on the phone. Selected notifications will be shown on your Pebble smartwatch.</source>
-        <translation>Oppføringer her vil bli lagt til ettersom merknader opptrer på telefonen. Valgte merknader vil bli vist på din Pebble-smartklokke.</translation>
+        <translation>当手机收到通知时，选定的通知将显示在你的 Pebble 智能手表上。</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="63"/>
         <source>Always Enabled</source>
-        <translation>Alltid påskrudd</translation>
+        <translation>总是启用</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="69"/>
         <source>Disabled When Active</source>
-        <translation>Skru av når aktiv</translation>
+        <translation>当活动时禁用</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="75"/>
         <source>Always Disabled</source>
-        <translation>Alltid avskrudd</translation>
+        <translation>总是禁用</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="81"/>
         <source>Forget</source>
-        <translation>Glem</translation>
+        <translation>忘记</translation>
     </message>
 </context>
 <context>
@@ -740,37 +740,37 @@
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="10"/>
         <source>Manage Pebble Watches</source>
-        <translation>Håndter Pebble-klokker</translation>
+        <translation>管理 Pebble 手表</translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="14"/>
         <source>Bluetooth Settings</source>
-        <translation>Blåtannsinnstillinger</translation>
+        <translation>蓝牙设置</translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="18"/>
         <source>Restart service</source>
-        <translation>Start tjeneste på nytt</translation>
+        <translation>重启服务</translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="35"/>
         <source>Connected</source>
-        <translation>Tilkoblet</translation>
+        <translation>已连接</translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="35"/>
         <source>Disconnected</source>
-        <translation>Frakoblet</translation>
+        <translation>已断开</translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="55"/>
         <source>No Pebble smartwatches configured yet. Please connect your Pebble smartwatch using System Settings.</source>
-        <translation>Ingen Pebble-smartklokker satt opp enda. Koble til din Pebble-smartklokke fra systeminnstillingene.</translation>
+        <translation>尚未配置 Pebble 智能手表。请使用系统设置连接你的 Pebble 智能手表。</translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="64"/>
         <source>Open Bluetooth Settings</source>
-        <translation>Åpne Blåtannsinnstillinger</translation>
+        <translation>打开蓝牙设置</translation>
     </message>
 </context>
 <context>
@@ -778,52 +778,52 @@
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="17"/>
         <source>Edit and order quick-response messages</source>
-        <translation>Rediger og arranger hurtigsvarsmeldinger</translation>
+        <translation>编辑和设定快速回复短信</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="17"/>
         <source>New item will be inserted before current selection</source>
-        <translation>Nytt element vil bli smettet inn før gjeldende valg</translation>
+        <translation>新项目将插入在当前位置之前</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="21"/>
         <source>Add New</source>
-        <translation>Legg til ny</translation>
+        <translation>添加新的</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="29"/>
         <source>Save changes</source>
-        <translation>Lagre endringer</translation>
+        <translation>保存更改</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="54"/>
         <source>Move Up</source>
-        <translation>Flytt oppover</translation>
+        <translation>上移</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="59"/>
         <source>Edit</source>
-        <translation>Rediger</translation>
+        <translation>编辑</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="67"/>
         <source>Delete</source>
-        <translation>Slett</translation>
+        <translation>删除</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="69"/>
         <source>Really Delete?</source>
-        <translation>Bekreft sletting.</translation>
+        <translation>真要删除吗？</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="75"/>
         <source>Move Down</source>
-        <translation>Flytt nedover</translation>
+        <translation>下移</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="86"/>
         <source>Pre-defined response message</source>
-        <translation>Forhåndsdefinert svarmelding</translation>
+        <translation>预设短信回复</translation>
     </message>
 </context>
 <context>
@@ -831,42 +831,42 @@
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="23"/>
         <source>Screenshots</source>
-        <translation>Skjermavbildninger</translation>
+        <translation>截图</translation>
     </message>
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="27"/>
         <source>Take Screenshot</source>
-        <translation>Ta skjermavbildning</translation>
+        <translation>截图</translation>
     </message>
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="53"/>
         <source>Share</source>
-        <translation>Del</translation>
+        <translation>共享</translation>
     </message>
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="55"/>
         <source>Pebble screenshot</source>
-        <translation>Pebble-skjermavbildning</translation>
+        <translation>Pebble 截图</translation>
     </message>
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="56"/>
         <source>Screen snapshot of Pebble Smartwatches</source>
-        <translation>Skjermavbildning av Pebble-smartklokker</translation>
+        <translation>Pebble 智能手表屏幕快照</translation>
     </message>
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="62"/>
         <source>Delete</source>
-        <translation>Slett</translation>
+        <translation>删除</translation>
     </message>
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="65"/>
         <source>Really Delete?</source>
-        <translation>Bekreft sletting.</translation>
+        <translation>真要删除吗？</translation>
     </message>
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="72"/>
         <source>Cancel</source>
-        <translation>Avbryt</translation>
+        <translation>取消</translation>
     </message>
 </context>
 <context>
@@ -874,47 +874,47 @@
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="26"/>
         <source>Messaging Settings</source>
-        <translation>Meldingsinnstillinger</translation>
+        <translation>消息设置</translation>
     </message>
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="27"/>
         <source>OK</source>
-        <translation>OK</translation>
+        <translation>确认</translation>
     </message>
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="28"/>
         <source>Cancel</source>
-        <translation>Avbryt</translation>
+        <translation>取消</translation>
     </message>
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="32"/>
         <source>Contacts</source>
-        <translation>Kontakter</translation>
+        <translation>联络人</translation>
     </message>
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="77"/>
         <source>Really Delete?</source>
-        <translation>Bekreft sletting.</translation>
+        <translation>真要删除吗？</translation>
     </message>
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="130"/>
         <source>Pick SIM for new contacts</source>
-        <translation>Velg SIM for nye kontakter</translation>
+        <translation>为新联系人选择 SIM 卡</translation>
     </message>
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="144"/>
         <source>Messages</source>
-        <translation>Meldinger</translation>
+        <translation>消息</translation>
     </message>
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="147"/>
         <source>Edit Messages</source>
-        <translation>Rediger meldinger</translation>
+        <translation>编辑消息</translation>
     </message>
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="153"/>
         <source>Send Text Messages</source>
-        <translation>Send tekstmeldinger</translation>
+        <translation>发送文本消息</translation>
     </message>
 </context>
 <context>
@@ -922,97 +922,97 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="26"/>
         <source>Settings</source>
-        <translation>Innstillinger</translation>
+        <translation>设置</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="30"/>
         <source>General</source>
-        <translation>Hovedinnstillinger</translation>
+        <translation>常规</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="34"/>
         <source>Distance Units</source>
-        <translation>Avstandsmål</translation>
+        <translation>距离单位</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="37"/>
         <source>Metric</source>
-        <translation>Metrisk</translation>
+        <translation>公制</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="40"/>
         <source>Imperial</source>
-        <translation>Imperialt</translation>
+        <translation>英制</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="50"/>
         <source>Language</source>
-        <translation>Språk</translation>
+        <translation>语言</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="55"/>
         <source>Timeline</source>
-        <translation>Tidslinje</translation>
+        <translation>时间线</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="60"/>
         <source>Sync calendar to timeline</source>
-        <translation>Synk. kalender til tidslinje</translation>
+        <translation>将日历同步到时间线</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="68"/>
         <source>Sync Apps from Cloud</source>
-        <translation>Synk. programmer fra sky</translation>
+        <translation>从云端同步软件</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="76"/>
         <source>Reset Timeline</source>
-        <translation>Tilbakestill tidslinje</translation>
+        <translation>重置时间线</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="81"/>
         <source>Timeline Window Start (days ago)</source>
-        <translation>Tidslinjevindusstart (dager siden)</translation>
+        <translation>时间线窗口启动（天前）</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="89"/>
         <source>Timeline Window End (days ahead)</source>
-        <translation>Tidslinjevindusslutt (dager i fremtiden)</translation>
+        <translation>时间线结束（天前）</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="97"/>
         <source>Notification re-delivery expiration (seconds)</source>
-        <translation>Merknadsutløp for leveringsforsøk (sekunder)</translation>
+        <translation>通知重新传递淡出时间（秒）</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="105"/>
         <source>Set Timeline Window</source>
-        <translation>Sett tidslinjevindu</translation>
+        <translation>设置时间线窗口</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="111"/>
         <source>Active Timeline WebSync account</source>
-        <translation>Altiv tidslinje-WebSync-konto</translation>
+        <translation>启用时间线网络同步账户</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="125"/>
         <source>Logout</source>
-        <translation>Logg ut</translation>
+        <translation>登出</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="125"/>
         <source>Login</source>
-        <translation>Logg inn</translation>
+        <translation>登录</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="138"/>
         <source>Automatic Profile</source>
-        <translation>Automatisk profil</translation>
+        <translation>自动配置文件</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="142"/>
         <source>Connected</source>
-        <translation>Tilkoblet</translation>
+        <translation>已连接</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="145"/>
@@ -1020,17 +1020,17 @@
         <location filename="../qml/pages/SettingsPage.qml" line="166"/>
         <location filename="../qml/pages/SettingsPage.qml" line="176"/>
         <source>no change</source>
-        <translation>ingen endring</translation>
+        <translation>无更改</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="163"/>
         <source>Disconnected</source>
-        <translation>Frakoblet</translation>
+        <translation>已断开</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="183"/>
         <source>Canned Messages</source>
-        <translation>Forhåndslagrede meldinger</translation>
+        <translation>罐装消息</translation>
     </message>
 </context>
 <context>
@@ -1038,123 +1038,123 @@
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="23"/>
         <source>Weather Settings</source>
-        <translation>Værinnstillinger</translation>
+        <translation>天气设置</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="24"/>
         <source>OK</source>
-        <translation>OK</translation>
+        <translation>确认</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="25"/>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="90"/>
         <source>Cancel</source>
-        <translation>Avbryt</translation>
+        <translation>取消</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="29"/>
         <source>Alternate Provider</source>
-        <translation>Alternativ tilbyder</translation>
+        <translation>可选提供商</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="36"/>
         <source>Provider&apos;s Key, eg. API Key</source>
-        <translation>Tilbyders nøkkel, f.eks. API-nøkkel</translation>
+        <translation>提供商密钥，例如，API 密钥</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="37"/>
         <source>Provider Key</source>
-        <translation>Tilbydernøkkel</translation>
+        <translation>提供商密钥</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="44"/>
         <source>Locations</source>
-        <translation>Plasseringer</translation>
+        <translation>位置</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="68"/>
         <source>Location Name</source>
-        <translation>Plasseringsnavn</translation>
+        <translation>位置名称</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="75"/>
         <source>Latitude</source>
-        <translation>Breddegrad</translation>
+        <translation>纬度</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="82"/>
         <source>Longitude</source>
-        <translation>Lengdegrad</translation>
+        <translation>经度</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="96"/>
         <source>Save Changes</source>
-        <translation>Lagre endringer</translation>
+        <translation>保存更改</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="146"/>
         <source>Edit</source>
-        <translation>Rediger</translation>
+        <translation>编辑</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="151"/>
         <source>Move Up</source>
-        <translation>Flytt oppover</translation>
+        <translation>上移</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="156"/>
         <source>Move Down</source>
-        <translation>Flytt nedover</translation>
+        <translation>下移</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="161"/>
         <source>Delete</source>
-        <translation>Slett</translation>
+        <translation>删除</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="170"/>
         <source>Add Location</source>
-        <translation>Legg til plassering</translation>
+        <translation>添加位置</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="179"/>
         <source>Current Location</source>
-        <translation>Nåværende plassering</translation>
+        <translation>当前位置</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="185"/>
         <source>Locales</source>
-        <translation>Lokaliteter</translation>
+        <translation>地区</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="190"/>
         <source>Units</source>
-        <translation>Enheter</translation>
+        <translation>单位</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="209"/>
         <source>Language</source>
-        <translation>Språk</translation>
+        <translation>语言</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="334"/>
         <source>Default (English)</source>
-        <translation>Forvalg (Engelsk)</translation>
+        <translation>默认（English）</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="337"/>
         <source>Metric</source>
-        <translation>Metrisk</translation>
+        <translation>公制</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="338"/>
         <source>Imperial</source>
-        <translation>Imperiale</translation>
+        <translation>英制</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="339"/>
         <source>Hybrid</source>
-        <translation>Hybrid</translation>
+        <translation>混合</translation>
     </message>
 </context>
 </TS>

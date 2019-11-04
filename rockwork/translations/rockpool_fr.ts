@@ -7,12 +7,12 @@
         <location filename="../qml/pages/ImportPackagePage.qml" line="149"/>
         <source>%1, %2</source>
         <extracomment>Shows size and modification date, e.g. &quot;15.5MB, 02/03/2016&quot;</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>%1, %2</translation>
     </message>
     <message id="filemanager-la-no_files">
         <location filename="../qml/pages/ImportPackagePage.qml" line="174"/>
         <source>No files</source>
-        <translation type="unfinished"></translation>
+        <translation>Aucun fichier</translation>
     </message>
 </context>
 <context>
@@ -322,17 +322,17 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="268"/>
         <source>Debug</source>
-        <translation type="unfinished"></translation>
+        <translation>Débogage</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="269"/>
         <source>Warning</source>
-        <translation type="unfinished"></translation>
+        <translation>Avertissement</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="270"/>
         <source>Critical</source>
-        <translation type="unfinished"></translation>
+        <translation>Critique</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="277"/>
@@ -398,7 +398,7 @@
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="13"/>
         <source>Health settings</source>
-        <translation>Paramètres Santé</translation>
+        <translation>Paramètres de santé</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="14"/>
@@ -591,17 +591,17 @@
     <message>
         <location filename="../qml/pages/LocationPicker.qml" line="12"/>
         <source>Select Location</source>
-        <translation type="unfinished"></translation>
+        <translation>Sélectionner l&apos;emplacement</translation>
     </message>
     <message>
         <location filename="../qml/pages/LocationPicker.qml" line="14"/>
         <source>Cancel</source>
-        <translation type="unfinished">Annuler</translation>
+        <translation>Annuler</translation>
     </message>
     <message>
         <location filename="../qml/pages/LocationPicker.qml" line="18"/>
         <source>Location Name</source>
-        <translation type="unfinished"></translation>
+        <translation>Nom de l&apos;emplacement</translation>
     </message>
     <message>
         <location filename="../qml/pages/LocationPicker.qml" line="19"/>
@@ -654,7 +654,7 @@
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="172"/>
         <source>Your Pebble smartwatch is disconnected. Please make sure it is powered on, within range and it is paired properly in the Bluetooth System Settings.</source>
-        <translation>Votre montre Pebble est déconnectée. SVP Vérifiez qu&apos;elle soit bien alimentée, et à portée de signal, ainsi que d&apos;être correctement appairée dans les Réglages Bluetooth du Système.</translation>
+        <translation>Votre montre Pebble est déconnectée. Veuillez vérifier qu&apos;elle soit bien alimentée, à portée de signal et correctement appairée dans les Réglages Systèmes du Bluetooth.</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="182"/>
@@ -851,7 +851,7 @@
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="56"/>
         <source>Screen snapshot of Pebble Smartwatches</source>
-        <translation>Capture d&apos;écran de la montre Pebble</translation>
+        <translation>Capture d&apos;écran des montres Pebble</translation>
     </message>
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="62"/>
@@ -894,7 +894,7 @@
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="77"/>
         <source>Really Delete?</source>
-        <translation type="unfinished">Confirmer suppression</translation>
+        <translation>Supprimer ?</translation>
     </message>
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="130"/>
@@ -909,12 +909,12 @@
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="147"/>
         <source>Edit Messages</source>
-        <translation type="unfinished"></translation>
+        <translation>Modifier les messages</translation>
     </message>
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="153"/>
         <source>Send Text Messages</source>
-        <translation type="unfinished"></translation>
+        <translation>Envoyer des messages</translation>
     </message>
 </context>
 <context>
@@ -1054,72 +1054,72 @@
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="29"/>
         <source>Alternate Provider</source>
-        <translation type="unfinished"></translation>
+        <translation>Fournisseur alternatif</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="36"/>
         <source>Provider&apos;s Key, eg. API Key</source>
-        <translation type="unfinished"></translation>
+        <translation>Clé de fournisseur, ex : clé d&apos;API</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="37"/>
         <source>Provider Key</source>
-        <translation type="unfinished"></translation>
+        <translation>Clé de fournisseur</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="44"/>
         <source>Locations</source>
-        <translation>Endroits</translation>
+        <translation>Emplacements</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="68"/>
         <source>Location Name</source>
-        <translation type="unfinished"></translation>
+        <translation>Nom de l&apos;emplacement</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="75"/>
         <source>Latitude</source>
-        <translation type="unfinished"></translation>
+        <translation>Latitude</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="82"/>
         <source>Longitude</source>
-        <translation type="unfinished"></translation>
+        <translation>Longitude</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="96"/>
         <source>Save Changes</source>
-        <translation type="unfinished"></translation>
+        <translation>Enregistrer les modifications</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="146"/>
         <source>Edit</source>
-        <translation type="unfinished">Éditer</translation>
+        <translation>Modifier</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="151"/>
         <source>Move Up</source>
-        <translation type="unfinished">Monter</translation>
+        <translation>Monter</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="156"/>
         <source>Move Down</source>
-        <translation type="unfinished">Descendre</translation>
+        <translation>Descendre</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="161"/>
         <source>Delete</source>
-        <translation type="unfinished">Supprimer</translation>
+        <translation>Supprimer</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="170"/>
         <source>Add Location</source>
-        <translation type="unfinished"></translation>
+        <translation>Ajouter un emplacement</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="179"/>
         <source>Current Location</source>
-        <translation type="unfinished"></translation>
+        <translation>Emplacement actuel</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="190"/>
@@ -1129,32 +1129,32 @@
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="185"/>
         <source>Locales</source>
-        <translation type="unfinished"></translation>
+        <translation>Langues</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="209"/>
         <source>Language</source>
-        <translation type="unfinished">Langue</translation>
+        <translation>Langue</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="334"/>
         <source>Default (English)</source>
-        <translation type="unfinished"></translation>
+        <translation>Par défaut (Anglais)</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="337"/>
         <source>Metric</source>
-        <translation type="unfinished">Métrique</translation>
+        <translation>Métrique</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="338"/>
         <source>Imperial</source>
-        <translation type="unfinished">Impérial</translation>
+        <translation>Impérial</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="339"/>
         <source>Hybrid</source>
-        <translation type="unfinished"></translation>
+        <translation>Hybride</translation>
     </message>
 </context>
 </TS>
