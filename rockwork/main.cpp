@@ -24,8 +24,8 @@
 int main(int argc, char *argv[])
 {
     QScopedPointer<const QGuiApplication> app(SailfishApp::application(argc, argv));
-    app->setApplicationName("rockpool");
-    app->setOrganizationName("");
+    QGuiApplication::setApplicationName("rockpool");
+    QGuiApplication::setOrganizationName("");
 
     QSettings ini(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)+"/"+app->applicationName()+"/app.ini",QSettings::IniFormat);
     QString locale = ini.contains("LANG") ? ini.value("LANG").toString() : QLocale::system().name();
