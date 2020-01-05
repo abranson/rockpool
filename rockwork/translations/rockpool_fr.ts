@@ -297,22 +297,22 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="233"/>
         <source>Current log: </source>
-        <translation type="unfinished"></translation>
+        <translation>Journal actuel : </translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="239"/>
         <source>Disable service logs</source>
-        <translation type="unfinished"></translation>
+        <translation>Désactiver les journaux des services</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="248"/>
         <source>Send service logs</source>
-        <translation type="unfinished"></translation>
+        <translation>Envoyer des journaux de service</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="239"/>
         <source>Enable service logs</source>
-        <translation type="unfinished"></translation>
+        <translation>Activer les journaux de service</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="266"/>
