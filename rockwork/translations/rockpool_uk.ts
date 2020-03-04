@@ -7,12 +7,12 @@
         <location filename="../qml/pages/ImportPackagePage.qml" line="149"/>
         <source>%1, %2</source>
         <extracomment>Shows size and modification date, e.g. &quot;15.5MB, 02/03/2016&quot;</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>%1, %2</translation>
     </message>
     <message id="filemanager-la-no_files">
         <location filename="../qml/pages/ImportPackagePage.qml" line="174"/>
         <source>No files</source>
-        <translation type="unfinished"></translation>
+        <translation>Нема файлів</translation>
     </message>
 </context>
 <context>
@@ -317,12 +317,12 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="266"/>
         <source>Syslog Verbosity</source>
-        <translation>Балакучисть Сіcтемного Журналу</translation>
+        <translation>Докладність системного часопису</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="268"/>
         <source>Debug</source>
-        <translation>Налагодження</translation>
+        <translation>Відлагодження</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="269"/>
@@ -471,7 +471,7 @@
     <message>
         <location filename="../qml/pages/ImportPackagePage.qml" line="164"/>
         <source>Sideloading file</source>
-        <translation type="unfinished"></translation>
+        <translation>Файл бічного завантаження</translation>
     </message>
 </context>
 <context>
