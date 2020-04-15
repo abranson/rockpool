@@ -606,12 +606,12 @@
     <message>
         <location filename="../qml/pages/LocationPicker.qml" line="19"/>
         <source>Type in location name</source>
-        <translation type="unfinished"></translation>
+        <translation>Entrez le nom de l&apos;emplacement</translation>
     </message>
     <message>
         <location filename="../qml/pages/LocationPicker.qml" line="34"/>
         <source>Matching locations will be appearing as you type</source>
-        <translation type="unfinished"></translation>
+        <translation>Les emplacements correspondants apparaîtront pendant la frappe</translation>
     </message>
 </context>
 <context>
@@ -619,7 +619,7 @@
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="19"/>
         <source>About</source>
-        <translation>A propos</translation>
+        <translation>À propos</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="25"/>
