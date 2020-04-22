@@ -418,7 +418,7 @@
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="26"/>
         <source>Age</source>
-        <translation>Age</translation>
+        <translation>Âge</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="37"/>
@@ -504,7 +504,7 @@
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="48"/>
         <source>Really Delete?</source>
-        <translation>Confirmer la suppression ?</translation>
+        <translation>Confirmer la suppression ?</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="54"/>
@@ -578,7 +578,7 @@
     <message>
         <location filename="../qml/pages/LoadingPage.qml" line="20"/>
         <source>Loading and Connecting...</source>
-        <translation>Chargement et Connexion...</translation>
+        <translation>Chargement et connexion...</translation>
     </message>
     <message>
         <location filename="../qml/pages/LoadingPage.qml" line="23"/>
@@ -679,7 +679,7 @@
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="272"/>
         <source>Watch Apps</source>
-        <translation>Applications</translation>
+        <translation type="unfinished">Applications</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="278"/>
@@ -778,7 +778,7 @@
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="17"/>
         <source>Edit and order quick-response messages</source>
-        <translation>Éditer et ordonner les message de réponse rapide</translation>
+        <translation>Modifier et ordonner les messages de réponse rapide</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="17"/>
@@ -803,7 +803,7 @@
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="59"/>
         <source>Edit</source>
-        <translation>Éditer</translation>
+        <translation>Modifier</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="67"/>
@@ -813,7 +813,7 @@
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="69"/>
         <source>Really Delete?</source>
-        <translation>Confirmer la suppression ?</translation>
+        <translation>Confirmer la suppression ?</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="75"/>
@@ -861,7 +861,7 @@
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="65"/>
         <source>Really Delete?</source>
-        <translation>Confirmer la suppression ?</translation>
+        <translation>Confirmer la suppression ?</translation>
     </message>
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="72"/>
@@ -894,12 +894,12 @@
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="77"/>
         <source>Really Delete?</source>
-        <translation>Supprimer ?</translation>
+        <translation>Supprimer ?</translation>
     </message>
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="130"/>
         <source>Pick SIM for new contacts</source>
-        <translation type="unfinished"></translation>
+        <translation>Choisissez la carte SIM pour vos nouveaux contacts</translation>
     </message>
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="144"/>
@@ -1038,7 +1038,7 @@
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="23"/>
         <source>Weather Settings</source>
-        <translation>Paramètres Météo</translation>
+        <translation>Paramètres météo</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="24"/>
@@ -1059,7 +1059,7 @@
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="36"/>
         <source>Provider&apos;s Key, eg. API Key</source>
-        <translation>Clé de fournisseur, ex : clé d&apos;API</translation>
+        <translation>Clé de fournisseur, ex : clé d&apos;API</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="37"/>
