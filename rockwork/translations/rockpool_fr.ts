@@ -1069,7 +1069,7 @@
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="44"/>
         <source>Locations</source>
-        <translation>Emplacements</translation>
+        <translation>Localisations</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="68"/>
