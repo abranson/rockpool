@@ -15,6 +15,7 @@ Requires:   systemd-user-session-targets
 Requires:   nemo-qml-plugin-dbus-qt5
 Requires:   qt5-qtwebsockets
 Requires:   quazip
+Requires:   sailfish-components-webview-qt5 >= 0.0.5
 BuildRequires:  pkgconfig(Qt5DBus)
 BuildRequires:  pkgconfig(Qt5Bluetooth)
 BuildRequires:  pkgconfig(Qt5Contacts)
@@ -34,6 +35,7 @@ BuildRequires:  pkgconfig(icu-i18n)
 BuildRequires:  pkgconfig(zlib)
 BuildRequires:  pkgconfig(libmkcal-qt5)
 BuildRequires:  pkgconfig(libkcalcoren-qt5)
+BuildRequires:  pkgconfig(qt5embedwidget)
 BuildRequires:  quazip-devel
 BuildRequires:  desktop-file-utils
 BuildRequires:  qt5-qttools-linguist
@@ -74,6 +76,7 @@ update-desktop-database
 %{_bindir}/rockpool
 %{_bindir}/rockpoold
 %{_datadir}/%{name}/qml
+%{_datadir}/%{name}/jsm
 %{_datadir}/%{name}/layouts.json
 %{_datadir}/%{name}/translations
 %{_datadir}/applications/%{name}.desktop

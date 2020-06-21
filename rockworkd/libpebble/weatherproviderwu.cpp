@@ -7,6 +7,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <math.h>
 
 #define CALCULATE_SUNRISE
 #ifdef CALCULATE_SUNRISE

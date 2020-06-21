@@ -1,8 +1,4 @@
-#include <QGuiApplication>
-//#include <QQmlApplicationEngine>
-#include <QQuickView>
-#include <QtQml>
-//#include <QFile>
+#include <QtQuick>
 
 #include <sailfishapp.h>
 
@@ -42,6 +38,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<ServiceControl>("RockPool", 1, 0, "ServiceController");
     qmlRegisterType<AppStoreClient>("RockPool", 1, 0, "AppStoreClient");
     qmlRegisterType<ScreenshotModel>("RockPool", 1, 0, "ScreenshotModel");
+
 
     QScopedPointer<QQuickView> view(SailfishApp::createView());
     view->rootContext()->setContextProperty("version", QStringLiteral(VERSION));
