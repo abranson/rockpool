@@ -128,7 +128,7 @@ Page {
                                oauth = "";
                            } else {
                                pageStack.push(Qt.resolvedUrl("AppSettingsPage.qml"), {
-                                              url: "https://auth-client.getpebble.com/en_US/",
+                                              url: "https://auth-client.rebble.io/en_US/",
                                               pebble: pebble
                                           })
                            }

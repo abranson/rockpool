@@ -65,9 +65,9 @@ Page {
             }
             Label {
                 width: parent.width
-                text: "Translators: Christopher Frost, Kristjan Räts" +
-                      " István Hovai, Allan Nordhøy, Omar Anwar Aglan, "+
-                      "J Li, Nathan Follens, Olexandr Nesterenko, ssantos, Jakob Jespersen")
+                text: "Translators: Christopher Frost, Kristjan Räts, "
+                      + " István Hovai, Allan Nordhøy, Omar Anwar Aglan, "
+                      + "J Li, Nathan Follens, Olexandr Nesterenko, ssantos, Jakob Jespersen"
                 wrapMode: Text.WordWrap
             }
             Separator {

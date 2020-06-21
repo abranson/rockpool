@@ -141,8 +141,8 @@ void FirmwareDownloader::checkForNewFirmware()
         return;
     }
 
-    QString url("https://pebblefw.s3.amazonaws.com/pebble/%1/%2/latest.json");
-    url = url.arg(platformString).arg("release-v3.8");
+    QString url("https://binaries.rebble.io/fw/%1/latest.json");
+    url = url.arg(platformString);
     qDebug() << "fetching firmware info:" << url;
     QNetworkRequest request(url);
     QNetworkReply *reply = m_nam->get(request);

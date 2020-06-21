@@ -54,9 +54,9 @@ TimelineSync::TimelineSync(Pebble *pebble, TimelineManager *manager):
         m_tmr_websync = startTimer(30000);
 }
 
-const QString TimelineSync::subscriptionsUrl = "https://timeline-api.getpebble.com/v1/user/subscriptions";
-const QString TimelineSync::s_internalApi = "https://timeline-sync.getpebble.com";
-const QString TimelineSync::s_lockerUrl = "https://api2.getpebble.com/v2/locker/";
+const QString TimelineSync::subscriptionsUrl = "https://timeline-api.rebble.io/v1/user/subscriptions";
+const QString TimelineSync::s_internalApi = "https://timeline-sync.rebble.io";
+const QString TimelineSync::s_lockerUrl = "https://api2.rebble.io/v2/locker/";
 
 void TimelineSync::resyncUrl(const QString &url)
 {
@@ -216,7 +216,7 @@ void TimelineSync::setOAuthToken(const QString &token)
     } else {
         // Try to validate token by requesting accountId and comparing it to current
         qDebug() << "Validating OAuth token" << token;
-        QNetworkReply *rpl = m_nam->get(authedRequest("https://auth.getpebble.com/api/v1/me.json"));
+        QNetworkReply *rpl = m_nam->get(authedRequest("https://auth.rebble.io/api/v1/me.json"));
         connect(rpl,&QNetworkReply::finished,[this,rpl](){
             QString err;
             QJsonObject obj = processJsonReply(rpl,err);
