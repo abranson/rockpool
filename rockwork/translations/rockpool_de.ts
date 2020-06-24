@@ -471,7 +471,7 @@
     <message>
         <location filename="../qml/pages/ImportPackagePage.qml" line="164"/>
         <source>Sideloading file</source>
-        <translation type="unfinished"></translation>
+        <translation>Datei wird vom lokalen Medium heruntergeladen</translation>
     </message>
 </context>
 <context>
