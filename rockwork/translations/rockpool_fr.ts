@@ -365,7 +365,7 @@
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="32"/>
         <source>Candidate firmware version: %1</source>
-        <translation>Firmware version candidate: %1</translation>
+        <translation>Firmware version candidate : %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="39"/>
@@ -375,7 +375,7 @@
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="46"/>
         <source>Important:</source>
-        <translation>Important : </translation>
+        <translation>Important :</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="46"/>
