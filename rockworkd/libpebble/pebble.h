@@ -220,7 +220,7 @@ signals:
     void screenshotRemoved(const QString &filename);
     void updateAvailableChanged();
     void upgradingFirmwareChanged();
-    void languagePackChanged();
+    void languagePackChanged() const;
     void logsDumped(bool success);
     void contactsChanged() const;
     void messagesChanged() const;

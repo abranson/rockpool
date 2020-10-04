@@ -4,8 +4,8 @@
 #include <QDebug>
 #include <QDir>
 
-#include <quazip/quazipfile.h>
-#include <quazip/quazip.h>
+#include <quazip5/quazipfile.h>
+#include <quazip5/quazip.h>
 
 ZipHelper::ZipHelper()
 {

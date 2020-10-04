@@ -10,7 +10,7 @@ CONFIG += console
 CONFIG += link_pkgconfig
 
 INCLUDEPATH += $$[QT_HOST_PREFIX]/include/quazip/
-LIBS += -lquazip
+LIBS += -lquazip5
 
 PKGCONFIG += qt5-boostable libmkcal-qt5 libkcalcoren-qt5 dbus-1 mpris-qt5 timed-qt5 Qt5WebSockets
 INCLUDEPATH += /usr/include/mkcal-qt5 /usr/include/kcalcoren-qt5

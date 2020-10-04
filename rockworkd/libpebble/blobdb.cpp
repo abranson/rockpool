@@ -5,6 +5,7 @@
 #include "watchdatawriter.h"
 
 #include <QDebug>
+#include <math.h>
 
 BlobDB::BlobDB(Pebble *pebble, WatchConnection *connection):
     QObject(pebble),
