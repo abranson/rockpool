@@ -7,12 +7,12 @@
         <location filename="../qml/pages/ImportPackagePage.qml" line="149"/>
         <source>%1, %2</source>
         <extracomment>Shows size and modification date, e.g. &quot;15.5MB, 02/03/2016&quot;</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>1%,2%</translation>
     </message>
     <message id="filemanager-la-no_files">
         <location filename="../qml/pages/ImportPackagePage.qml" line="174"/>
         <source>No files</source>
-        <translation type="unfinished"></translation>
+        <translation>No archivos</translation>
     </message>
 </context>
 <context>
@@ -297,22 +297,22 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="233"/>
         <source>Current log: </source>
-        <translation type="unfinished"></translation>
+        <translation>Registro actual: </translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="239"/>
         <source>Disable service logs</source>
-        <translation type="unfinished"></translation>
+        <translation>desabilitar registros de servicio</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="239"/>
         <source>Enable service logs</source>
-        <translation type="unfinished"></translation>
+        <translation>habilite servicios de registro</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="248"/>
         <source>Send service logs</source>
-        <translation type="unfinished"></translation>
+        <translation>enviar servicio de registro</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="266"/>
@@ -322,17 +322,17 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="268"/>
         <source>Debug</source>
-        <translation type="unfinished"></translation>
+        <translation>Depuracion</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="269"/>
         <source>Warning</source>
-        <translation type="unfinished"></translation>
+        <translation>Advertencia</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="270"/>
         <source>Critical</source>
-        <translation type="unfinished"></translation>
+        <translation>Critico</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="277"/>
