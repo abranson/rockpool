@@ -14,7 +14,7 @@
 #define MANAGER_FALLBACK  "memory"
 
 OrganizerAdapter::OrganizerAdapter(QObject *parent) : QObject(parent),
-    _calendar(new mKCal::ExtendedCalendar(KDateTime::Spec::LocalZone())),
+    _calendar(new mKCal::ExtendedCalendar(QTimeZone::systemTimeZone())),
     _calendarStorage(_calendar->defaultStorage(_calendar)),
     _refreshTimer(new QTimer(this))
 {
@@ -97,7 +97,7 @@ void OrganizerAdapter::refresh()
     auto events = _calendar->rawExpandedEvents(startDate, endDate, true, true);
     for (const auto &expanded : events) {
         const QDateTime &start = expanded.first.dtStart;
-        KCalCore::Incidence::Ptr incidence = expanded.second;
+        KCalendarCore::Incidence::Ptr incidence = expanded.second;
 
         QJsonObject calPin,pinLayout,actSnooze,actOpen;
         QJsonArray reminders,actions;
@@ -124,12 +124,12 @@ void OrganizerAdapter::refresh()
         }
         if(m_track.contains(calPin.value("guid").toString())) {
             todel.removeAll(calPin.value("guid").toString());
-            if(m_track.value(calPin.value("guid").toString()).toUtc() == incidence->lastModified().toUtc())
+            if(m_track.value(calPin.value("guid").toString()).toUTC() == incidence->lastModified().toUTC())
                 continue;
         }
         m_track.insert(calPin.value("guid").toString(),incidence->lastModified());
-        calPin.insert("createTime",incidence->created().toUtc().toString());
-        calPin.insert("updateTime",incidence->lastModified().toUtc().toString());
+        calPin.insert("createTime",incidence->created().toUTC().toString());
+        calPin.insert("updateTime",incidence->lastModified().toUTC().toString());
         calPin.insert("time",start.toUTC().toString(Qt::ISODate));
         calPin.insert("dataSource",QString("calendarEvent:%1").arg(PlatformInterface::SysID));
         if(incidence->hasDuration())
@@ -148,8 +148,8 @@ void OrganizerAdapter::refresh()
         }
 
         QStringList attendees;
-        foreach (const QSharedPointer<KCalCore::Attendee> attendee, incidence->attendees()) {
-            attendees.append(attendee->fullName());
+        foreach (const KCalendarCore::Attendee attendee, incidence->attendees()) {
+            attendees.append(attendee.fullName());
         }
         if(!incidence->comments().isEmpty()) {
             headings.append("Comments");
@@ -165,15 +165,15 @@ void OrganizerAdapter::refresh()
         }
         calPin.insert("layout",pinLayout);
 
-        foreach (const QSharedPointer<KCalCore::Alarm> alarm, incidence->alarms()) {
+        foreach (const QSharedPointer<KCalendarCore::Alarm> alarm, incidence->alarms()) {
             if (alarm->enabled()) {
                 QString reminderTime;
                 if(alarm->hasStartOffset()) {
                     reminderTime = start.toUTC().addSecs(alarm->startOffset().asSeconds()).toString(Qt::ISODate);
                 } else if(alarm->hasTime()) {
                     reminderTime = incidence->recurs() ?
-                        alarm->nextTime(KDateTime::currentDateTime(KDateTime::Spec::LocalZone()), false).toUtc().toString()
-                        : alarm->time().toUtc().toString();
+                        alarm->nextTime(QDateTime::currentDateTime(), false).toUTC().toString()
+                        : alarm->time().toUTC().toString();
                 } else {
                     qDebug() << "Skipping reminder, has no time";
                     continue;
@@ -182,7 +182,7 @@ void OrganizerAdapter::refresh()
                 QJsonObject rem,rLy;
                 rem.insert("time",reminderTime);
                 rLy.insert("type",QString("genericReminder"));
-                rLy.insert("title",(alarm->type() == KCalCore::Alarm::Display) ? alarm->text() : pinLayout.value("title"));
+                rLy.insert("title",(alarm->type() == KCalendarCore::Alarm::Display) ? alarm->text() : pinLayout.value("title"));
                 if(pinLayout.contains("locationName"))
                     rLy.insert("locationName",pinLayout.value("locationName"));
                 rLy.insert("tinyIcon",QString("system://images/NOTIFICATION_REMINDER"));

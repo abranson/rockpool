@@ -596,7 +596,7 @@
     <message>
         <location filename="../qml/pages/LocationPicker.qml" line="14"/>
         <source>Cancel</source>
-        <translation >Cancelar</translation>
+        <translation>Cancelar</translation>
     </message>
     <message>
         <location filename="../qml/pages/LocationPicker.qml" line="18"/>

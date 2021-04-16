@@ -43,7 +43,7 @@ signals:
 private:
     QString normalizeCalendarName(QString name);
     void setSchedule(int interval);
-    QHash<QString,KDateTime> m_track;
+    QHash<QString,QDateTime> m_track;
     bool m_disabled = false;
     mKCal::ExtendedCalendar::Ptr _calendar;
     mKCal::ExtendedStorage::Ptr _calendarStorage;

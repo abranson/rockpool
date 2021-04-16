@@ -33,7 +33,7 @@ BuildRequires:  pkgconfig(sailfishapp) >= 0.0.10
 BuildRequires:  pkgconfig(icu-i18n)
 BuildRequires:  pkgconfig(zlib)
 BuildRequires:  pkgconfig(libmkcal-qt5)
-BuildRequires:  pkgconfig(libkcalcoren-qt5)
+BuildRequires:  pkgconfig(KF5CalendarCore)
 BuildRequires:  quazip-devel
 BuildRequires:  desktop-file-utils
 BuildRequires:  qt5-qttools-linguist
@@ -57,8 +57,8 @@ Support for Pebble watch on SailfishOS devices.
 rm -rf %{buildroot}
 %qmake5_install
 
-mkdir -p %{buildroot}%{_libdir}/systemd/user/user-session.target.wants
-ln -s ../rockpoold.service %{buildroot}%{_libdir}/systemd/user/user-session.target.wants/
+mkdir -p %{buildroot}%{_userunitdir}/user-session.target.wants
+ln -s ../rockpoold.service %{buildroot}%{_userunitdir}/user-session.target.wants/
 
 desktop-file-install --delete-original       \
   --dir %{buildroot}%{_datadir}/applications             \
@@ -81,6 +81,6 @@ update-desktop-database
 %{_datadir}/icons/hicolor/108x108/apps/%{name}.png
 %{_datadir}/icons/hicolor/128x128/apps/%{name}.png
 %{_datadir}/icons/hicolor/256x256/apps/%{name}.png
-%{_libdir}/systemd/user/%{name}d.service
-%{_libdir}/systemd/user/user-session.target.wants/%{name}d.service
+%{_userunitdir}/%{name}d.service
+%{_userunitdir}/user-session.target.wants/%{name}d.service
 %{_datadir}/mapplauncherd/privileges.d/%{name}d.privileges

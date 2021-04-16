@@ -12,8 +12,8 @@ CONFIG += link_pkgconfig
 INCLUDEPATH += $$[QT_HOST_PREFIX]/include/quazip/
 LIBS += -lquazip5
 
-PKGCONFIG += qt5-boostable libmkcal-qt5 libkcalcoren-qt5 dbus-1 mpris-qt5 timed-qt5 Qt5WebSockets
-INCLUDEPATH += /usr/include/mkcal-qt5 /usr/include/kcalcoren-qt5
+PKGCONFIG += qt5-boostable libmkcal-qt5 KF5CalendarCore dbus-1 mpris-qt5 timed-qt5 Qt5WebSockets
+#INCLUDEPATH += /usr/include/mkcal-qt5 /usr/include/kcalcoren-qt5
 
 SOURCES += main.cpp \
     libpebble/watchconnection.cpp \
@@ -154,7 +154,7 @@ testing: {
 INSTALLS += target systemd layout privilege
 
 systemd.files = $${TARGET}.service
-systemd.path = $$[QT_INSTALL_LIBS]/systemd/user
+systemd.path = /usr/lib/systemd/user
 
 privilege.files = $${TARGET}.privileges
 privilege.path = /usr/share/mapplauncherd/privileges.d/
