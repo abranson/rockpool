@@ -106,10 +106,12 @@ void NotificationMonitorPrivate::processIncomingNotification(quint32 id, const P
 	n->setBody(proto.body);
 	n->setIcon(proto.appIcon);
     if (proto.replacesId) n->setReplacesId(proto.replacesId);
-    if (n->icon().isEmpty())
+    if (n->icon().isEmpty()) {
         n->setIcon(proto.hints.value("x-nemo-icon"));
-    if (n->icon().isEmpty())
+    }
+    if (n->icon().isEmpty()) {
         n->setIcon(proto.hints.value("x-nemo-preview-icon"));
+    }
 
 	// Handle nemo specific stuff
 	QDateTime timestamp = QDateTime::fromString(proto.hints["x-nemo-timestamp"], Qt::ISODate);
@@ -121,6 +123,7 @@ void NotificationMonitorPrivate::processIncomingNotification(quint32 id, const P
 
 	n->setPreviewSummary(proto.hints.value("x-nemo-preview-summary"));
 	n->setPreviewBody(proto.hints.value("x-nemo-preview-body"));
+	n->setFeedback(proto.hints.value("x-nemo-feedback"));
     n->setOwner(proto.hints.value("x-nemo-owner"));
     n->setOriginPackage(proto.hints.value("x-nemo-origin-package"));
     n->setTransient(proto.hints.value("transient", "false") == "true");
@@ -229,8 +232,9 @@ ProtoNotification NotificationMonitorPrivate::parseNotifyCall(DBusMessage *msg) 
 	proto.appIcon = QString::fromUtf8(app_icon);
 	proto.summary = QString::fromUtf8(summary);
 	proto.body = QString::fromUtf8(body);
-    if (replaces_id)
+    if (replaces_id) {
         proto.replacesId = replaces_id;
+    }
 
 	dbus_message_iter_recurse(&iter, &sub);
 	while (dbus_message_iter_get_arg_type(&sub) == DBUS_TYPE_STRING) {

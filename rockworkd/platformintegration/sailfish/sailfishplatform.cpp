@@ -131,7 +131,7 @@ AppID getAppID(watchfish::Notification *notification)
         ret.type="twitter";
         ret.srcId=notification->owner();
         ret.sender="Twitter";
-    } else if (notification->category() == "x-nemo.email") {
+    } else if (notification->feedback().startsWith("email")) {
         if (notification->sender().toLower().contains("gmail")) {
             ret.type="gmail";
             ret.sender="GMail";
@@ -196,6 +196,10 @@ void SailfishPlatform::newNotificationPin(watchfish::Notification *notification)
     //HACK: ignore group notifications
     if (notification->category().endsWith(".group")) {
         qDebug() << "Skipping group notification.";
+        return;
+    }
+    if (notification->summary().isEmpty() && notification->body().isEmpty()) {
+        qDebug() << "Skipping empty notification.";
         return;
     }
     QJsonObject pin;

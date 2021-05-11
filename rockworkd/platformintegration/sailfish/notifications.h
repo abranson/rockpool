@@ -52,6 +52,7 @@ class Notification : public QObject
 	/* Nemo stuff */
 	Q_PROPERTY(QString previewSummary READ previewSummary WRITE setPreviewSummary NOTIFY previewSummaryChanged)
 	Q_PROPERTY(QString previewBody READ previewBody WRITE setPreviewBody NOTIFY previewBodyChanged)
+    Q_PROPERTY(QString feedback READ feedback WRITE setFeedback NOTIFY feedbackChanged)
 
 	Q_PROPERTY(QStringList actions READ actions NOTIFY actionsChanged)
 
@@ -113,6 +114,9 @@ public:
 	QString previewBody() const;
 	void setPreviewBody(const QString &body);
 
+    QString feedback() const;
+    void setFeedback(const QString &feedback);
+
 	QStringList actions() const;
 	void addDBusAction(const QString &action, const QString &service, const QString &path, const QString &iface, const QString &method, const QStringList &args = QStringList());
 	QVariantList actionArgs(const QString &action) const;
@@ -137,6 +141,7 @@ signals:
 
 	void previewSummaryChanged();
 	void previewBodyChanged();
+	void feedbackChanged();
 
 	void actionsChanged();
 

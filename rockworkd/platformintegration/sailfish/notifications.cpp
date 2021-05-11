@@ -55,6 +55,7 @@ struct NotificationPrivate
     bool hidden;
 	QString previewSummary;
 	QString previewBody;
+	QString feedback;
 	QHash<QString, Action> actions;
 };
 
@@ -282,6 +283,21 @@ void Notification::setPreviewBody(const QString &body)
 		d->previewBody = body;
 		emit previewBodyChanged();
 	}
+}
+
+QString Notification::feedback() const
+{
+    Q_D(const Notification);
+    return d->feedback;
+}
+
+void Notification::setFeedback(const QString &feedback)
+{
+    Q_D(Notification);
+    if (feedback != d->feedback) {
+        d->feedback = feedback;
+        emit feedbackChanged();
+    }
 }
 
 QStringList Notification::actions() const
