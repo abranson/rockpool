@@ -292,7 +292,7 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="208"/>
         <source>Preparing logs package...</source>
-        <translation>Préparation du package de journaux...</translation>
+        <translation>Préparation des fichiers de journalisation…</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="233"/>
@@ -317,7 +317,7 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="266"/>
         <source>Syslog Verbosity</source>
-        <translation type="unfinished"></translation>
+        <translation>Niveau de détails du système de journalisation</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="268"/>
@@ -471,7 +471,7 @@
     <message>
         <location filename="../qml/pages/ImportPackagePage.qml" line="164"/>
         <source>Sideloading file</source>
-        <translation type="unfinished"></translation>
+        <translation>Le fichier est téléchargé sur un média local</translation>
     </message>
 </context>
 <context>
@@ -479,7 +479,7 @@
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="29"/>
         <source>Upgrade</source>
-        <translation>Mise à jour</translation>
+        <translation>Mettre à niveau</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="29"/>
@@ -679,7 +679,7 @@
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="272"/>
         <source>Watch Apps</source>
-        <translation type="unfinished">Applications</translation>
+        <translation>Applications horloge</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="278"/>
