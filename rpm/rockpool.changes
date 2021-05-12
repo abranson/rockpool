@@ -1,3 +1,9 @@
+* Wed May 12 2021 Andrew Branson <github@andrewbranson.net> 1.12-1
+- Translations update
+- Fix email pins
+- Lib updates for SFOS 4.1.0
+- 64-bit working
+
 * Sun Oct 04 2020 Andrew Branson <github@andrewbranson.net> 1.11-1
 - More translations.
 - Contributions to: French, German, Ukrainian, Polish, Croatian, Russian & Portuguese
