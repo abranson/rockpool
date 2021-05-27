@@ -23,7 +23,6 @@ BuildRequires:  pkgconfig(Qt5Network)
 BuildRequires:  pkgconfig(Qt5Location)
 BuildRequires:  pkgconfig(qt5-boostable)
 BuildRequires:  pkgconfig(Qt5WebSockets)
-BuildRequires:  pkgconfig(Qt5WebKit)
 BuildRequires:  pkgconfig(mpris-qt5)
 BuildRequires:  pkgconfig(timed-qt5)
 BuildRequires:  pkgconfig(mlite5)
@@ -32,6 +31,7 @@ BuildRequires:  pkgconfig(icu-i18n)
 BuildRequires:  pkgconfig(zlib)
 BuildRequires:  pkgconfig(libmkcal-qt5)
 BuildRequires:  pkgconfig(KF5CalendarCore)
+BuildRequires:  pkgconfig(sailfishwebengine)
 BuildRequires:  pkgconfig(quazip)
 BuildRequires:  desktop-file-utils
 BuildRequires:  qt5-qttools-linguist
@@ -72,6 +72,7 @@ update-desktop-database
 %{_bindir}/rockpool
 %{_bindir}/rockpoold
 %{_datadir}/%{name}/qml
+%{_datadir}/%{name}/jsm
 %{_datadir}/%{name}/layouts.json
 %{_datadir}/%{name}/translations
 %{_datadir}/applications/%{name}.desktop
