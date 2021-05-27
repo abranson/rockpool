@@ -1,8 +1,4 @@
-#include <QGuiApplication>
-//#include <QQmlApplicationEngine>
-#include <QQuickView>
-#include <QtQml>
-//#include <QFile>
+#include <QtQuick>
 
 #include <sailfishapp.h>
 
@@ -14,7 +10,8 @@
 #include "applicationsfiltermodel.h"
 #include "appstoreclient.h"
 #include "screenshotmodel.h"
-
+#include <libsailfishwebengine/webengine.h>
+#include <libsailfishwebengine/webenginesettings.h>
 #include <QTimer>
 
 #ifndef ROCKPOOL_DATA_PATH
@@ -43,11 +40,13 @@ int main(int argc, char *argv[])
     qmlRegisterType<AppStoreClient>("RockPool", 1, 0, "AppStoreClient");
     qmlRegisterType<ScreenshotModel>("RockPool", 1, 0, "ScreenshotModel");
 
+
     QScopedPointer<QQuickView> view(SailfishApp::createView());
     view->rootContext()->setContextProperty("version", QStringLiteral(VERSION));
     view->rootContext()->setContextProperty("locale", locale);
     view->rootContext()->setContextProperty("appFilePath",QCoreApplication::applicationFilePath());
 
+    SailfishOS::WebEngine::instance()->addComponentManifest(QLatin1String("/usr/share/rockpool/jsm/RockpoolJSComponents.manifest"));
 
     view->setSource(SailfishApp::pathTo("qml/rockpool.qml"));
     view->show();
