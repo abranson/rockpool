@@ -7,6 +7,7 @@
 #include <QJsonObject>
 #include <extendedcalendar.h>
 #include <extendedstorage.h>
+#include <KCalendarCore/OccurrenceIterator>
 
 #include <libintl.h>
 
@@ -84,29 +85,31 @@ void OrganizerAdapter::refresh()
     if(m_disabled)
         return;
     QStringList todel = m_track.keys();
-    QDate startDate = QDate::currentDate().addDays(m_windowStart);
-    QDate endDate = QDate::currentDate().addDays(m_windowEnd);
+    QDateTime startDate = QDateTime::currentDateTime().addDays(m_windowStart);
+    QDateTime endDate = QDateTime::currentDateTime().addDays(m_windowEnd);
     _calendarStorage->loadRecurringIncidences();
-    _calendarStorage->load(startDate, endDate);
+    _calendarStorage->load(startDate.date(), endDate.date());
     qDebug() << "Refreshing organizer from" << startDate.toString() << "to" << endDate.toString();
 
-    //TODO: Didn't know about nemo-qml-plugin-calendar, we should probably use this instead of mKCal
-    //We have to use it to detect which calendars have been turned off, and
     QSettings nemoSettings("nemo", "nemo-qml-plugin-calendar");
 
-    auto events = _calendar->rawExpandedEvents(startDate, endDate, true, true);
-    for (const auto &expanded : events) {
-        const QDateTime &start = expanded.first.dtStart;
-        KCalendarCore::Incidence::Ptr incidence = expanded.second;
-
+    KCalendarCore::OccurrenceIterator it(*_calendar, startDate, endDate);
+    while (it.hasNext()) {
+        it.next();
+        if (!_calendar->isVisible(it.incidence())
+                        || it.incidence()->type() != KCalendarCore::IncidenceBase::TypeEvent) {
+            continue;
+        }
+        const QDateTime start = it.occurrenceStartDate();
+        
         QJsonObject calPin,pinLayout,actSnooze,actOpen;
         QJsonArray reminders,actions;
         QStringList headings,paragraphs;
 
-        mKCal::Notebook::Ptr notebook = _calendarStorage->notebook(_calendar->notebook(incidence));
+        mKCal::Notebook::Ptr notebook = _calendarStorage->notebook(_calendar->notebook(it.incidence()));
         if (notebook) {
             if (nemoSettings.value("exclude/"+notebook->uid()).toBool()) {
-                qDebug() << "Event " << incidence->summary() << " ignored because calendar " << notebook->name() << " excluded. ";
+                qDebug() << "Event " << it.incidence()->summary() << " ignored because calendar " << notebook->name() << " excluded. ";
                 continue;
             }
             pinLayout.insert("backgroundColor",nemoSettings.value("colors/"+notebook->uid(),"vividcerulean").toString());
@@ -114,46 +117,46 @@ void OrganizerAdapter::refresh()
             paragraphs.append(normalizeCalendarName(notebook->name()));
         }
 
-        if (incidence->recurs()) {
-            calPin.insert("id",incidence->uid() + QString::number(start.toUTC().toTime_t()));
+        if (it.incidence()->recurs()) {
+            calPin.insert("id",it.incidence()->uid() + QString::number(start.toUTC().toTime_t()));
             calPin.insert("guid",PlatformInterface::idToGuid(calPin.value("id").toString()).toString().mid(1,36));
             pinLayout.insert("displayRecurring",QString("recurring"));
         } else {
-            calPin.insert("id",incidence->uid());
-            calPin.insert("guid",incidence->uid());
+            calPin.insert("id",it.incidence()->uid());
+            calPin.insert("guid",it.incidence()->uid());
         }
         if(m_track.contains(calPin.value("guid").toString())) {
             todel.removeAll(calPin.value("guid").toString());
-            if(m_track.value(calPin.value("guid").toString()).toUTC() == incidence->lastModified().toUTC())
+            if(m_track.value(calPin.value("guid").toString()).toUTC() == it.incidence()->lastModified().toUTC())
                 continue;
         }
-        m_track.insert(calPin.value("guid").toString(),incidence->lastModified());
-        calPin.insert("createTime",incidence->created().toUTC().toString());
-        calPin.insert("updateTime",incidence->lastModified().toUTC().toString());
+        m_track.insert(calPin.value("guid").toString(),it.incidence()->lastModified());
+        calPin.insert("createTime",it.incidence()->created().toUTC().toString());
+        calPin.insert("updateTime",it.incidence()->lastModified().toUTC().toString());
         calPin.insert("time",start.toUTC().toString(Qt::ISODate));
         calPin.insert("dataSource",QString("calendarEvent:%1").arg(PlatformInterface::SysID));
-        if(incidence->hasDuration())
-            calPin.insert("duration",incidence->duration().asSeconds() / 60);
-        if(incidence->allDay()) {
+        if(it.incidence()->hasDuration())
+            calPin.insert("duration",it.incidence()->duration().asSeconds() / 60);
+        if(it.incidence()->allDay()) {
             calPin.insert("allDay",true);
-            qDebug() << "Preparing all-day event, the reported duration is (sec)" << incidence->duration().asSeconds();
+            qDebug() << "Preparing all-day event, the reported duration is (sec)" << it.incidence()->duration().asSeconds();
         }
         pinLayout.insert("type",QString("calendarPin"));
-        pinLayout.insert("title",incidence->summary());
-        if(!incidence->description().isEmpty())
-            pinLayout.insert("body",incidence->description());
+        pinLayout.insert("title",it.incidence()->summary());
+        if(!it.incidence()->description().isEmpty())
+            pinLayout.insert("body",it.incidence()->description());
 
-        if (!incidence->location().isEmpty()) {
-            pinLayout.insert("locationName",incidence->location());
+        if (!it.incidence()->location().isEmpty()) {
+            pinLayout.insert("locationName",it.incidence()->location());
         }
 
         QStringList attendees;
-        foreach (const KCalendarCore::Attendee attendee, incidence->attendees()) {
+        foreach (const KCalendarCore::Attendee attendee, it.incidence()->attendees()) {
             attendees.append(attendee.fullName());
         }
-        if(!incidence->comments().isEmpty()) {
+        if(!it.incidence()->comments().isEmpty()) {
             headings.append("Comments");
-            paragraphs.append(incidence->comments().join(";"));
+            paragraphs.append(it.incidence()->comments().join(";"));
         }
         if(!attendees.isEmpty()) {
             headings.append("Attendees");
@@ -165,20 +168,20 @@ void OrganizerAdapter::refresh()
         }
         calPin.insert("layout",pinLayout);
 
-        foreach (const QSharedPointer<KCalendarCore::Alarm> alarm, incidence->alarms()) {
+        foreach (const QSharedPointer<KCalendarCore::Alarm> alarm, it.incidence()->alarms()) {
             if (alarm->enabled()) {
                 QString reminderTime;
                 if(alarm->hasStartOffset()) {
                     reminderTime = start.toUTC().addSecs(alarm->startOffset().asSeconds()).toString(Qt::ISODate);
                 } else if(alarm->hasTime()) {
-                    reminderTime = incidence->recurs() ?
+                    reminderTime = it.incidence()->recurs() ?
                         alarm->nextTime(QDateTime::currentDateTime(), false).toUTC().toString()
                         : alarm->time().toUTC().toString();
                 } else {
                     qDebug() << "Skipping reminder, has no time";
                     continue;
                 }
-                qDebug() << "Alarm enabled for " << incidence->summary() << " at " << reminderTime;
+                qDebug() << "Alarm enabled for " << it.incidence()->summary() << " at " << reminderTime;
                 QJsonObject rem,rLy;
                 rem.insert("time",reminderTime);
                 rLy.insert("type",QString("genericReminder"));
