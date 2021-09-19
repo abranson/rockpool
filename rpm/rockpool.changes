@@ -1,3 +1,11 @@
+* Sun Sep 19 2021 Andrew Branson <github@andrewbranson.net> 1.13-1
+- Fix AppSettings pages using new official Gecko WebView
+- SailJail compatibility
+- Added Rockpool permission for other apps to talk to the daemon
+- Calendar API changes
+- Update translations, contributions to Ukrainian and Russian
+- Fixed manual package upload and About pages
+
 * Wed May 12 2021 Andrew Branson <github@andrewbranson.net> 1.12-1
 - Translations update
 - Fix email pins

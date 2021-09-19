@@ -5,7 +5,7 @@ Name:       rockpool
 %{!?qtc_make:%define qtc_make make}
 %{?qtc_builddir:%define _builddir %qtc_builddir}
 Summary:    Support for Pebble watches in SailfishOS
-Version:    1.12
+Version:    1.13
 Release:    1
 Group:      Qt/Qt
 License:    GPL3
@@ -32,6 +32,7 @@ BuildRequires:  pkgconfig(zlib)
 BuildRequires:  pkgconfig(libmkcal-qt5)
 BuildRequires:  pkgconfig(KF5CalendarCore)
 BuildRequires:  pkgconfig(sailfishwebengine)
+BuildRequires:  pkgconfig(qt5embedwidget)
 BuildRequires:  pkgconfig(quazip)
 BuildRequires:  desktop-file-utils
 BuildRequires:  qt5-qttools-linguist
@@ -46,7 +47,7 @@ Support for Pebble watch on SailfishOS devices.
 %build
 
 %qtc_qmake5  \
-    VERSION='%{version}-%{release}'
+    DEFINES+=VERSION=\\\'\\\"%{version}-%{release}\\\"\\\'
 
 %qtc_make %{?_smp_mflags}
 
@@ -83,3 +84,6 @@ update-desktop-database
 %{_userunitdir}/%{name}d.service
 %{_userunitdir}/user-session.target.wants/%{name}d.service
 %{_datadir}/mapplauncherd/privileges.d/%{name}d.privileges
+%{_sysconfdir}/sailjail/permissions/Rockpool.permission
+%{_sysconfdir}/sailjail/permissions/rockpool.profile
+

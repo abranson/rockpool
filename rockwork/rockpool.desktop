@@ -3,3 +3,6 @@ Name=RockPool
 Exec=invoker -s --type=browser -G /usr/bin/rockpool
 Icon=rockpool
 Type=Application
+
+[X-Sailjail]
+Permissions=Rockpool;UserDirs;AppLaunch;WebView;Internet

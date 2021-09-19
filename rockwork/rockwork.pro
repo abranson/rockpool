@@ -1,13 +1,11 @@
 TARGET = rockpool
 
-include(../version.pri)
-
 QT += qml quick dbus
 
 CONFIG += c++11
 CONFIG += sailfishapp
 
-PKGCONFIG += sailfishwebengine
+PKGCONFIG += sailfishwebengine qt5embedwidget
 
 HEADERS += \
     notificationsourcemodel.h \
@@ -42,10 +40,14 @@ CONF_FILES +=  rockpool.png \
 JSM_FILES += $$files(jsm/*.manifest,true)
 JSM_FILES += $$files(jsm/*.js,true)
 
+SAILJAIL_FILES = $$files(Rockpool.permission,true) \
+                 $$files(rockpool.profile,true)
+
 #show all the files in QtCreator
 OTHER_FILES += $${QML_FILES} \
                $${JSM_FILES} \
-               $${CONF_FILES}
+               $${CONF_FILES} \
+               $${SAILJAIL_FILES}
 
 #specify where the qml files are installed to
 qml.path = /usr/share/rockpool/qml
@@ -60,12 +62,15 @@ jsm.files += $${JSM_FILES}
 
 SAILFISHAPP_ICONS += 86x86 108x108 128x128 256x256
 
+sailjail.path = /etc/sailjail/permissions
+sailjail.files += $${SAILJAIL_FILES}
+
 DISTFILES += JSM_FILES \
     icons/86x86/rockpool.png \
     icons/108x108/rockpool.png \
     icons/128x128/rockpool.png \
     icons/256x256/rockpool.png
-INSTALLS += jsm
+INSTALLS += jsm sailjail
 
 CONFIG(debug, debug|release) {
     DEFINES += 'ROCKPOOL_DATA_PATH=\\"/opt/sdk/rockpool/usr/share/rockpool/\\"'

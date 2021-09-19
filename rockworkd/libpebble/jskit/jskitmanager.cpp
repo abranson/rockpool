@@ -58,7 +58,7 @@ void JSKitManager::handleWebviewClosed(const QString &result)
 {
     if (m_engine) {
         QJSValue eventObj = m_engine->newObject();
-        eventObj.setProperty("response", QUrl::fromPercentEncoding(result.toUtf8()));
+        eventObj.setProperty("response", QUrl::fromEncoded(result.toUtf8()).fragment(QUrl::FullyDecoded));
 
         qCDebug(l) << "Sending" << eventObj.property("response").toString();
         m_jspebble->invokeCallbacks("webviewclosed", QJSValueList({eventObj}));

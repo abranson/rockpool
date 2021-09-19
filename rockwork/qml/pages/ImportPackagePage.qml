@@ -29,9 +29,6 @@ Page {
         active: root.status === PageStatus.Active
         directorySort: FileModel.SortDirectoriesBeforeFiles
         caseSensitivity: Qt.CaseInsensitive
-        onError: {
-            console.log("###", fileName, error)
-        }
     }
     SilicaListView {
         id: fileList

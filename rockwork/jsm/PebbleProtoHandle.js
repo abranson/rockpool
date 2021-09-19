@@ -24,23 +24,24 @@ PebbleProtoHandler.prototype = {
   QueryInterface: XPCOMUtils.generateQI([Ci.nsIProtocolHandler]),
   classID: Components.ID("{0bb628c0-8f22-4273-b966-bae528f3a1d6}"),
   scheme: "pebble",
-  defaultPort: -1,
   protocolFlags: Ci.nsIProtocolHandler.URI_NORELATIVE |
                  Ci.nsIProtocolHandler.URI_NOAUTH |
                  Ci.nsIProtocolHandler.URI_LOADABLE_BY_ANYONE |
                  Ci.nsIProtocolHandler.URI_DOES_NOT_RETURN_DATA,
-  allowPort: function() false,
 
-  newURI: function Proto_newURI(aSpec, aOriginCharset) {
-    let uri = Cc["@mozilla.org/network/simple-uri;1"].createInstance(Ci.nsIURI);
-    uri.spec = aSpec;
-    return uri;
+  newURI(spec, charset, baseURI) {
+      dump("newURI: "+spec+"\n");
+      const cls = Cc["@mozilla.org/network/standard-url-mutator;1"];
+      const newUrl = cls.createInstance(Ci.nsIStandardURLMutator);
+      newUrl.init(Ci.nsIStandardURL.URLTYPE_AUTHORITY, 80, spec, charset, baseURI);
+      return newUrl.finalize().QueryInterface(Ci.nsIURI);
   },
 
-  newChannel: function Proto_newChannel(aURI) {
+  newChannel(aURI) {
+    dump("URI: "+aURI.spec+"\n");
     let hIdx = aURI.spec.indexOf("://")+3;
     let qIdx = aURI.spec.indexOf("#");
-    let action = aURI.spec.substring(hIdx,qIdx);
+    let action = aURI.spec.substring(hIdx,qIdx-1);
     let query = aURI.spec.substring(qIdx+1);
 
     let win = Services.embedlite.getAnyEmbedWindow(true);

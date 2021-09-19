@@ -4,23 +4,15 @@
 <context>
     <name></name>
     <message id="filemanager-la-file_details">
-        <location filename="../qml/pages/ImportPackagePage.qml" line="149"/>
+        <location filename="../qml/pages/ImportPackagePage.qml" line="146"/>
         <source>%1, %2</source>
         <extracomment>Shows size and modification date, e.g. &quot;15.5MB, 02/03/2016&quot;</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message id="filemanager-la-no_files">
-        <location filename="../qml/pages/ImportPackagePage.qml" line="174"/>
+        <location filename="../qml/pages/ImportPackagePage.qml" line="171"/>
         <source>No files</source>
         <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>AppSettingsPage</name>
-    <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="46"/>
-        <source>Cancel</source>
-        <translation>Annuleren</translation>
     </message>
 </context>
 <context>
@@ -469,8 +461,31 @@
 <context>
     <name>ImportPackagePage</name>
     <message>
-        <location filename="../qml/pages/ImportPackagePage.qml" line="164"/>
+        <location filename="../qml/pages/ImportPackagePage.qml" line="161"/>
         <source>Sideloading file</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>InfoPage</name>
+    <message>
+        <location filename="../qml/pages/InfoPage.qml" line="29"/>
+        <source>Version %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/InfoPage.qml" line="42"/>
+        <source>Legal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/InfoPage.qml" line="80"/>
+        <source>This application is neither affiliated with nor endorsed by Pebble Technology Corp.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/InfoPage.qml" line="90"/>
+        <source>Pebble is a trademark of Pebble Technology Corp.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

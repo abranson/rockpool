@@ -1,2 +1,0 @@
-VERSION = "1.12-1"
-DEFINES += VERSION=\\\"$$VERSION\\\"

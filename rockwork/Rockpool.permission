@@ -1,0 +1,4 @@
+# x-sailjail-description = Pebble Smartwatch Interface
+# x-sailjail-long-description = Communicate with Pebble smartwatches
+
+dbus-user.talk org.rockwork

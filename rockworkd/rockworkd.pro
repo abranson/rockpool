@@ -1,8 +1,6 @@
 QT += core bluetooth dbus network contacts qml location
 QT -= gui
 
-include(../version.pri)
-
 TARGET = rockpoold
 
 CONFIG += c++11

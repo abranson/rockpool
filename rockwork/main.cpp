@@ -21,8 +21,8 @@
 int main(int argc, char *argv[])
 {
     QScopedPointer<const QGuiApplication> app(SailfishApp::application(argc, argv));
-    QGuiApplication::setApplicationName("rockpool");
-    QGuiApplication::setOrganizationName("");
+    QGuiApplication::setApplicationName("Rockpool");
+    QGuiApplication::setOrganizationName("Rockpool");
 
     QSettings ini(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)+"/"+app->applicationName()+"/app.ini",QSettings::IniFormat);
     QString locale = ini.contains("LANG") ? ini.value("LANG").toString() : QLocale::system().name();
@@ -45,8 +45,6 @@ int main(int argc, char *argv[])
     view->rootContext()->setContextProperty("version", QStringLiteral(VERSION));
     view->rootContext()->setContextProperty("locale", locale);
     view->rootContext()->setContextProperty("appFilePath",QCoreApplication::applicationFilePath());
-
-    SailfishOS::WebEngine::instance()->addComponentManifest(QLatin1String("/usr/share/rockpool/jsm/RockpoolJSComponents.manifest"));
 
     view->setSource(SailfishApp::pathTo("qml/rockpool.qml"));
     view->show();
