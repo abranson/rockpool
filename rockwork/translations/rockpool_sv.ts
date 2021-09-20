@@ -471,22 +471,22 @@
     <message>
         <location filename="../qml/pages/InfoPage.qml" line="29"/>
         <source>Version %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Version %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/InfoPage.qml" line="42"/>
         <source>Legal</source>
-        <translation type="unfinished"></translation>
+        <translation>Juridik</translation>
     </message>
     <message>
         <location filename="../qml/pages/InfoPage.qml" line="80"/>
         <source>This application is neither affiliated with nor endorsed by Pebble Technology Corp.</source>
-        <translation type="unfinished"></translation>
+        <translation>Den här appen är varken ansluten till eller stöds av Pebble Technology Corp.</translation>
     </message>
     <message>
         <location filename="../qml/pages/InfoPage.qml" line="90"/>
         <source>Pebble is a trademark of Pebble Technology Corp.</source>
-        <translation type="unfinished"></translation>
+        <translation>Pebble är ett varumärke som tillhör Pebble Technology Corp.</translation>
     </message>
 </context>
 <context>
