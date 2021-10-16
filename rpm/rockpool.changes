@@ -1,3 +1,7 @@
+* Sat Oct 16 2021 Andrew Branson <github@andrewbranson.net> 1.14-1
+- Fix calendar sync
+- Update translations, contributions to Ukrainian, Swedish and Croatian
+
 * Sun Sep 19 2021 Andrew Branson <github@andrewbranson.net> 1.13-1
 - Fix AppSettings pages using new official Gecko WebView
 - SailJail compatibility
