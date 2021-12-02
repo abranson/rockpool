@@ -166,6 +166,9 @@ AppID getAppID(watchfish::Notification *notification)
     } else if (notification->originPackage() == "org.telegram.messenger" || notification->category().startsWith("harbour.sailorgram")) {
         ret.type="telegram";
         ret.srcId=owner;
+    } else if (notification->category().startsWith("harbour-whisperfish")) {
+        ret.type="sms";
+        ret.srcId=owner;
     } else if (notification->originPackage() == "com.whatsapp" || notification->owner().toLower().contains("whatsup")) {
         ret.type="whatsapp";
         ret.srcId=owner;
