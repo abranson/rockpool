@@ -32,7 +32,7 @@ BuildRequires:  pkgconfig(libmkcal-qt5)
 BuildRequires:  pkgconfig(KF5CalendarCore)
 BuildRequires:  pkgconfig(sailfishwebengine)
 BuildRequires:  pkgconfig(qt5embedwidget)
-BuildRequires:  pkgconfig(quazip)
+BuildRequires:  pkgconfig(quazip1-qt5)
 BuildRequires:  desktop-file-utils
 BuildRequires:  qt5-qttools-linguist
 

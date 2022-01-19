@@ -7,11 +7,7 @@ CONFIG += c++11
 CONFIG += console
 CONFIG += link_pkgconfig
 
-INCLUDEPATH += $$[QT_HOST_PREFIX]/include/quazip/
-LIBS += -lquazip5
-
-PKGCONFIG += qt5-boostable libmkcal-qt5 KF5CalendarCore dbus-1 mpris-qt5 timed-qt5 Qt5WebSockets
-#INCLUDEPATH += /usr/include/mkcal-qt5 /usr/include/kcalcoren-qt5
+PKGCONFIG += qt5-boostable libmkcal-qt5 KF5CalendarCore dbus-1 mpris-qt5 timed-qt5 Qt5WebSockets quazip1-qt5
 
 SOURCES += main.cpp \
     libpebble/watchconnection.cpp \
