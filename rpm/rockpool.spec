@@ -82,7 +82,6 @@ update-desktop-database
 %{_datadir}/icons/hicolor/256x256/apps/%{name}.png
 %{_userunitdir}/%{name}d.service
 %{_userunitdir}/user-session.target.wants/%{name}d.service
-%{_datadir}/mapplauncherd/privileges.d/%{name}d.privileges
 %{_sysconfdir}/sailjail/permissions/Rockpool.permission
 %{_sysconfdir}/sailjail/permissions/rockpool.profile
 

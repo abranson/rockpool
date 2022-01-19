@@ -149,13 +149,10 @@ testing: {
     QT += qml quick
 }
 
-INSTALLS += target systemd layout privilege
+INSTALLS += target systemd layout
 
 systemd.files = $${TARGET}.service
 systemd.path = /usr/lib/systemd/user
-
-privilege.files = $${TARGET}.privileges
-privilege.path = /usr/share/mapplauncherd/privileges.d/
 
 SHARED_DATA_PATH = /usr/share/$$replace(TARGET,d,)
 #fetch from https://github.com/pebble/pypkjs/blob/master/pypkjs/timeline/layouts.json
