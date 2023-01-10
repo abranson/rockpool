@@ -21,7 +21,7 @@ function PebbleProtoHandler() {
 }
 
 PebbleProtoHandler.prototype = {
-  QueryInterface: XPCOMUtils.generateQI([Ci.nsIProtocolHandler]),
+  QueryInterface: ChromeUtils.generateQI([Ci.nsIProtocolHandler]),
   classID: Components.ID("{0bb628c0-8f22-4273-b966-bae528f3a1d6}"),
   scheme: "pebble",
   protocolFlags: Ci.nsIProtocolHandler.URI_NORELATIVE |
@@ -54,7 +54,9 @@ PebbleProtoHandler.prototype = {
         "uri": aURI.spec
       }));
       //dump("Pebble sent the query "+query+"\n");
-      return Services.io.newChannel("file:///dev/null",null,null);
+      // The result cannot be handled by the WebView, so stop the process with a meaningful error.
+      // It would be better to render an empty page, but I did not manage to make achieve this.
+      throw new Error('message sent to pebble');
     }
     throw Components.results.NS_ERROR_ILLEGAL_VALUE;
   }
