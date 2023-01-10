@@ -41,7 +41,7 @@ PebbleProtoHandler.prototype = {
     dump("URI: "+aURI.spec+"\n");
     let hIdx = aURI.spec.indexOf("://")+3;
     let qIdx = aURI.spec.indexOf("#");
-    let action = aURI.spec.substring(hIdx,qIdx-1);
+    let action = aURI.spec.substring(hIdx,qIdx);
     let query = aURI.spec.substring(qIdx+1);
 
     let win = Services.embedlite.getAnyEmbedWindow(true);
