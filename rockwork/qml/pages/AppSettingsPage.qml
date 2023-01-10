@@ -15,7 +15,8 @@ Page {
         id: header
         width: parent.width
         anchors.top: parent.top
-        text: url
+        // The generated data URL from pebble-clay does not help the user and make it seem like a bug.
+        text: url.substring(0, 5) == "data:" ? "" : url
         height: Theme.itemSizeMedium
         horizontalAlignment: Text.AlignHCenter
         font.pixelSize: Theme.fontSizeTiny
