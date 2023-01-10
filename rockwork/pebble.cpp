@@ -459,7 +459,7 @@ void Pebble::setTimelineWindow()
 
 void Pebble::configurationClosed(const QString &uuid, const QString &url)
 {
-    m_iface->call("ConfigurationClosed", uuid, url.mid(17));
+    m_iface->call("ConfigurationClosed", uuid, url);
 }
 
 void Pebble::launchApp(const QString &uuid)
