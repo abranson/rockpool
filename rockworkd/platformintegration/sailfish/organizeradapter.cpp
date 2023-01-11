@@ -224,6 +224,13 @@ void OrganizerAdapter::storageModified(mKCal::ExtendedStorage *storage, const QS
     scheduleRefresh();
 }
 
+void OrganizerAdapter::storageProgress(mKCal::ExtendedStorage *storage, const QString &info)
+{
+    Q_UNUSED(storage);
+    Q_UNUSED(info);
+    // Nothing to do
+}
+
 void OrganizerAdapter::storageFinished(mKCal::ExtendedStorage *storage, bool error, const QString &info)
 {
     Q_UNUSED(storage);
