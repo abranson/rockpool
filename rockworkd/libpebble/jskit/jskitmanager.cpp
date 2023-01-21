@@ -238,6 +238,7 @@ void JSKitManager::startJsApp()
 
     // Polyfills...
     loadJsFile(":/typedarray.js");
+    loadJsFile(":/function.js");
 
     // Now the actual script
     QString jsApp = m_curApp.file(AppInfo::FileTypeJsApp, HardwarePlatformUnknown);
