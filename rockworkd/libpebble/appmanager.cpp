@@ -163,7 +163,7 @@ void AppManager::handleAppFetchMessage(const QByteArray &data)
 
         QString resourcesFile = appInfo.file(AppInfo::FileTypeResources, m_pebble->hardwarePlatform());
         quint32 crc = appInfo.crc(AppInfo::FileTypeResources, m_pebble->hardwarePlatform());
-        qDebug() << "uploadign resource file" << resourcesFile;
+        qDebug() << "uploading resource file" << resourcesFile;
         m_connection->uploadManager()->uploadAppResources(appFetchId, resourcesFile, crc, [this, appInfo, appFetchId]() {
             qDebug() << "resource file uploaded successfully";
 
