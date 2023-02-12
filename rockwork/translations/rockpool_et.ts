@@ -390,7 +390,7 @@
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="13"/>
         <source>Health settings</source>
-        <translation>Tervise sätted</translation>
+        <translation>Tervislikkuse sätted</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="14"/>
@@ -471,22 +471,22 @@
     <message>
         <location filename="../qml/pages/InfoPage.qml" line="29"/>
         <source>Version %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Versioon %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/InfoPage.qml" line="42"/>
         <source>Legal</source>
-        <translation type="unfinished"></translation>
+        <translation>Juriidika</translation>
     </message>
     <message>
         <location filename="../qml/pages/InfoPage.qml" line="80"/>
         <source>This application is neither affiliated with nor endorsed by Pebble Technology Corp.</source>
-        <translation type="unfinished"></translation>
+        <translation>See rakendus ei ole seotud Pebble Technology Corp&apos;ga või tema poolt heaks kiidetud.</translation>
     </message>
     <message>
         <location filename="../qml/pages/InfoPage.qml" line="90"/>
         <source>Pebble is a trademark of Pebble Technology Corp.</source>
-        <translation type="unfinished"></translation>
+        <translation>Pebble on Pebble Technology Corp&apos;i kaubamärk.</translation>
     </message>
 </context>
 <context>

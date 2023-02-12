@@ -473,22 +473,22 @@
     <message>
         <location filename="../qml/pages/InfoPage.qml" line="29"/>
         <source>Version %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Версия %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/InfoPage.qml" line="42"/>
         <source>Legal</source>
-        <translation type="unfinished"></translation>
+        <translation>Правовые вопросы</translation>
     </message>
     <message>
         <location filename="../qml/pages/InfoPage.qml" line="80"/>
         <source>This application is neither affiliated with nor endorsed by Pebble Technology Corp.</source>
-        <translation type="unfinished"></translation>
+        <translation>Это приложение не связано с компанией Pebble Technology Corp. и не поддерживается ею.</translation>
     </message>
     <message>
         <location filename="../qml/pages/InfoPage.qml" line="90"/>
         <source>Pebble is a trademark of Pebble Technology Corp.</source>
-        <translation type="unfinished"></translation>
+        <translation>Pebble торговая марка компании Pebble Technology Corp.</translation>
     </message>
 </context>
 <context>
