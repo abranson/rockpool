@@ -87,7 +87,6 @@ void OrganizerAdapter::refresh()
     QStringList todel = m_track.keys();
     QDateTime startDate = QDateTime::currentDateTime().addDays(m_windowStart);
     QDateTime endDate = QDateTime::currentDateTime().addDays(m_windowEnd);
-    _calendarStorage->loadRecurringIncidences();
     _calendarStorage->load(startDate.date(), endDate.date());
     qDebug() << "Refreshing organizer from" << startDate.toString() << "to" << endDate.toString();
 
