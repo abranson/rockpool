@@ -45,8 +45,10 @@ Page {
                     if(data.action === "close") {
                         pebble.configurationClosed(appSettings.uuid, data.uri);
                         pageStack.pop();
-                    } else if(data.action === "login") {
-                        var params = data.query.split("&");
+                    } else if(data.action === "custom-boot-config-url") {
+                        var newUrl = unescape(url);
+                        console.log(newUrl);
+                        var params = newUrl.split("?");
                         for(var i = 0;i<params.length; i++) {
                             if(params[i].substr(0,13) === "access_token=") {
                                 var kv = params[i].split("=");

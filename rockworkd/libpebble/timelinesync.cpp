@@ -39,7 +39,7 @@ TimelineSync::TimelineSync(Pebble *pebble, TimelineManager *manager):
     // OAuth2 token retreived from https://auth-client.getpebble.com/en_US/
     m_oauthToken = m_ini->value("oauthToken").toString();
     // Pebble Account ID retrievd from https://auth.getpebble.com/api/v1/me.json
-    m_accountId = m_ini->value("accountId").toString();
+    m_accountId = m_ini->value("accountId").toDouble();
     // Whether we install apps which are in the locker but missing locally
     m_syncFromCloud = m_ini->value("syncFromCloud").toBool();
 
@@ -54,9 +54,9 @@ TimelineSync::TimelineSync(Pebble *pebble, TimelineManager *manager):
         m_tmr_websync = startTimer(30000);
 }
 
-const QString TimelineSync::subscriptionsUrl = "https://timeline-api.getpebble.com/v1/user/subscriptions";
-const QString TimelineSync::s_internalApi = "https://timeline-sync.getpebble.com";
-const QString TimelineSync::s_lockerUrl = "https://api2.getpebble.com/v2/locker/";
+const QString TimelineSync::subscriptionsUrl = "https://timeline-api.rebble.io/v1/user/subscriptions";
+const QString TimelineSync::s_internalApi = "https://timeline-sync.rebble.io";
+const QString TimelineSync::s_lockerUrl = "https://appstore-api.rebble.io/api/v1/locker/";
 
 void TimelineSync::resyncUrl(const QString &url)
 {
@@ -179,7 +179,9 @@ void TimelineSync::webOpHandler(const QJsonObject &op)
 void TimelineSync::timelineApiQuery(const QByteArray &verb, const QString &url, void *ctx, void (*ack)(void *, const QJsonObject &), void (*nack)(void *, const QString &), const QString &token) const
 {
     qDebug() << "API call for" << verb << url << token;
-    QNetworkReply *rpl = m_nam->sendCustomRequest(authedRequest(url,token),verb);
+    QString newUrl = url + "?access_token=%1";
+    newUrl = newUrl.arg(token);
+    QNetworkReply *rpl = m_nam->sendCustomRequest(QNetworkRequest(newUrl),verb);
     connect(rpl,&QNetworkReply::finished,[this,rpl,ctx,ack,nack](){
         QString err;
         QJsonObject obj=processJsonReply(rpl,err);
@@ -207,7 +209,7 @@ void TimelineSync::setOAuthToken(const QString &token)
             m_tmr_websync = 0;
         }
         m_ini->remove("accountId");
-        m_accountId = "";
+        m_accountId = 0;
         m_syncUrl = "";
         m_ini->remove("syncUrl");
         emit wipePinKind("web");
@@ -216,21 +218,23 @@ void TimelineSync::setOAuthToken(const QString &token)
     } else {
         // Try to validate token by requesting accountId and comparing it to current
         qDebug() << "Validating OAuth token" << token;
-        QNetworkReply *rpl = m_nam->get(authedRequest("https://auth.getpebble.com/api/v1/me.json"));
+        QString url("https://auth.rebble.io/api/v1/me?access_token=%1");
+        url = url.arg(token);
+        QNetworkReply *rpl = m_nam->get(QNetworkRequest(url));
         connect(rpl,&QNetworkReply::finished,[this,rpl](){
             QString err;
             QJsonObject obj = processJsonReply(rpl,err);
             if(!obj.isEmpty()) {
-                if(obj.contains("id") && obj.value("id").isString()) {
-                    if(m_accountId == obj.value("id").toString())
+                if(obj.contains("uid")) {
+                    if(m_accountId == obj.value("uid").toDouble())
                         return; // it was token refresh
                     if(m_tmr_websync==0)
                         m_tmr_websync=startTimer(30000);
-                    qDebug() << "OAuth Token validated but points to different account" << m_accountId << obj.value("id").toString();
-                    m_accountId = obj.value("id").toString();
+                    qDebug() << "OAuth Token validated but points to different account" << m_accountId << obj.value("uid").toString();
+                    m_accountId = obj.value("uid").toDouble();
                     m_ini->setValue("accountId",m_accountId);
                     m_ini->setValue("accountName",obj.value("name").toString());
-                    m_ini->setValue("accountEmail",obj.value("email").toString());
+                    m_ini->setValue("accountEmail","");
 
                     // if token differs - invalidate timeline
                     emit wipePinKind("web");

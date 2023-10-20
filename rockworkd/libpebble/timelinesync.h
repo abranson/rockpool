@@ -31,7 +31,7 @@ public:
     bool syncFromCloud() const { return m_syncFromCloud; }
     void setSyncFromCloud(bool enabled);
     // Account info
-    const QString & accountId() const {return m_accountId;}
+    const double & accountId() const {return m_accountId;}
     const QString accountName() const;
     const QString accountEmail() const;
 
@@ -65,7 +65,7 @@ private:
     QString m_syncUrl;
 
     QString m_oauthToken;
-    QString m_accountId;
+    double m_accountId;
     bool m_syncFromCloud = false;
     void fetchLocker(bool force = false, void (*next)(void*) = 0, void *ctx = 0) const;
     mutable QHash<QUuid,QJsonObject> m_locker;
