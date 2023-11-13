@@ -67,10 +67,10 @@ void TimelineSync::resyncUrl(const QString &url)
 
 QNetworkRequest TimelineSync::authedRequest(const QString &url, const QString &token) const
 {
-    QNetworkRequest req=QNetworkRequest(QUrl(url));
-    req.setRawHeader("Authorization",QString("Bearer %1").arg(m_oauthToken).toLatin1());
-    if(!token.isEmpty())
-        req.setRawHeader("X-User-Token",token.toLatin1());
+    QString result(url);
+    if (result.endsWith("/")) result.chop(1);
+    result.append(result.contains("?") ? "&" : "?").append("access_token=").append(token == "" ? m_oauthToken : token);
+    QNetworkRequest req = QNetworkRequest(QUrl(result));
     return req;
 }
 

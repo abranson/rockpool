@@ -321,7 +321,8 @@ QList<TimelineAttribute> TimelinePin::handleAction(TimelineAction::Type atype, q
     QList<TimelineAttribute> attributes;
     if(a_type == "mute") {
         emit m_manager->muteSource(m_kind);
-        attributes.append(m_manager->parseAttribute("largeIcon",QString("system://images/RESULT_MUTED")));
+        attributes.append(m_manager->parseAttribute("largeIcon",QString("system://images/RESULT_MUTE")));
+        attributes.append({m_manager->getAttr("subtitle").id,QString("Muted!")});
     } else if(a_type.startsWith("dismiss")) {
         remove();
         attributes.append(m_manager->parseAttribute("largeIcon",QString("system://images/RESULT_DISMISSED")));
@@ -330,6 +331,10 @@ QList<TimelineAttribute> TimelinePin::handleAction(TimelineAction::Type atype, q
         remove();
         attributes.append(m_manager->parseAttribute("largeIcon",QString("system://images/RESULT_DELETED")));
         attributes.append({m_manager->getAttr("subtitle").id,QString("Removed!")});
+    } else if (a_type.startsWith("open")) {
+        emit m_manager->actionTriggered(m_uuid, a_type, param);
+        attributes.append(m_manager->parseAttribute("largeIcon",QString("system://images/RESULT_SENT")));
+        attributes.append({m_manager->getAttr("subtitle").id,QString("Opened!")});
     } else {
         emit m_manager->actionTriggered(m_uuid,a_type, param);
         attributes.append(m_manager->parseAttribute("largeIcon",QString("system://images/RESULT_SENT")));
