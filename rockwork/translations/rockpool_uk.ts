@@ -183,7 +183,7 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="11"/>
         <source>Developer Tools</source>
-        <translation>Інструменти Розробника</translation>
+        <translation>Інструменти розробника</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="60"/>
@@ -314,7 +314,7 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="268"/>
         <source>Debug</source>
-        <translation>Зневадження</translation>
+        <translation>Налагодження</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="269"/>
@@ -639,7 +639,7 @@
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="25"/>
         <source>Developer tools</source>
-        <translation>Інструменти Розробника</translation>
+        <translation>Інструменти розробника</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="120"/>
@@ -947,7 +947,7 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="34"/>
         <source>Distance Units</source>
-        <translation>Одиниці виміру</translation>
+        <translation>Одиниці виміру відстані</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="37"/>
@@ -1053,7 +1053,7 @@
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="23"/>
         <source>Weather Settings</source>
-        <translation>Налаштування</translation>
+        <translation>Налаштування погоди</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="24"/>
