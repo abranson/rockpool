@@ -302,6 +302,12 @@ void Pebble::setImperialUnits(bool imperialUnits)
     m_iface->call("SetImperialUnits", imperialUnits);
 }
 
+void Pebble::restartPebble() const
+{
+    qDebug() << "Restarting watch";
+    m_iface->call("Restart");
+}
+
 QString Pebble::profileWhenConnected()
 {
     return fetchProperty("ProfileWhenConnected").toString();

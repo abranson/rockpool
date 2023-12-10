@@ -149,6 +149,7 @@ public slots:
     void setSyncAppsFromCloud(bool enable);
     void setTimelineWindow();
     void resetTimeline();
+    void restartPebble() const;
 
     QVariantMap getCannedResponses(const QStringList &keys);
     void setCannedResponses(const QVariantMap &cans);

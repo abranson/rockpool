@@ -1573,6 +1573,12 @@ void Pebble::slotUpdateAvailableChanged()
     emit updateAvailableChanged();
 }
 
+void Pebble::reset(ResetMessage msg)
+{
+    QByteArray data;
+    data.append((char)msg);
+    m_connection->writeToPebble(WatchConnection::EndpointWatchReset, data);
+}
 
 TimeMessage::TimeMessage(TimeMessage::TimeOperation operation) :
     m_operation(operation)

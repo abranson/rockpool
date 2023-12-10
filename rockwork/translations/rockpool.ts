@@ -186,153 +186,158 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="60"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="61"/>
         <source>Disable Service</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="66"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="67"/>
         <source>Restart Service</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="72"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="73"/>
+        <source>Restart Watch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="79"/>
         <source>Screenshots</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="78"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="85"/>
         <source>Developer Connection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="84"/>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="195"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="91"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="202"/>
         <source>Report problem</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="90"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="97"/>
         <source>Install app or watchface from file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="113"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="120"/>
         <source>Developer Connection Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="118"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="125"/>
         <source>Enable Connection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="120"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="127"/>
         <source>Enable Developer Connection Service</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="130"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="137"/>
         <source>Listen Port</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="143"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="150"/>
         <source>Apply</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="153"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="160"/>
         <source>Enable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="154"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="161"/>
         <source>Enable DeveloperConnection over CloudPebble</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="160"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="167"/>
         <source>Runtime Status</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="165"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="172"/>
         <source>DeveloperConnection Status</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="166"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="173"/>
         <source>DeveloperConnection port listening state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="172"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="179"/>
         <source>CloudPebble Status</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="173"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="180"/>
         <source>Indicates CloudPebble connection state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="178"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="185"/>
         <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="208"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="215"/>
         <source>Preparing logs package...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="233"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="240"/>
         <source>Current log: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="239"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="246"/>
         <source>Disable service logs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="248"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="255"/>
         <source>Send service logs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="239"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="246"/>
         <source>Enable service logs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="266"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="273"/>
         <source>Syslog Verbosity</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="268"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="275"/>
         <source>Debug</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="269"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="276"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="270"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="277"/>
         <source>Critical</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="277"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="284"/>
         <source>Send watch logs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="287"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="294"/>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
@@ -965,85 +970,85 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="55"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="54"/>
         <source>Timeline</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="60"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="59"/>
         <source>Sync calendar to timeline</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="68"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="67"/>
         <source>Sync Apps from Cloud</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="76"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="75"/>
         <source>Reset Timeline</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="81"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="80"/>
         <source>Timeline Window Start (days ago)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="89"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="88"/>
         <source>Timeline Window End (days ahead)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="97"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="96"/>
         <source>Notification re-delivery expiration (seconds)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="105"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="104"/>
         <source>Set Timeline Window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="111"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="110"/>
         <source>Active Timeline WebSync account</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="125"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="124"/>
         <source>Logout</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="125"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="124"/>
         <source>Login</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="138"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="137"/>
         <source>Automatic Profile</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="142"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="141"/>
         <source>Connected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="145"/>
-        <location filename="../qml/pages/SettingsPage.qml" line="155"/>
-        <location filename="../qml/pages/SettingsPage.qml" line="166"/>
-        <location filename="../qml/pages/SettingsPage.qml" line="176"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="144"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="154"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="165"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="175"/>
         <source>no change</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="163"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="162"/>
         <source>Disconnected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="183"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="182"/>
         <source>Canned Messages</source>
         <translation type="unfinished"></translation>
     </message>

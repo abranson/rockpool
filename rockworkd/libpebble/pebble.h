@@ -4,6 +4,7 @@
 #include "musicmetadata.h"
 #include "appinfo.h"
 #include "healthparams.h"
+#include "resetmessage.h"
 
 #include <QObject>
 #include <QBluetoothAddress>
@@ -181,6 +182,8 @@ public slots:
     //void voiceSessionResponse(quint8 result, const QUuid &appUuid);
     void voiceAudioStop();
     void voiceSessionResult(const QString &fileName, const QVariantList &sentences);
+
+    void reset(ResetMessage msg);
 
 private slots:
     void onPebbleConnected();

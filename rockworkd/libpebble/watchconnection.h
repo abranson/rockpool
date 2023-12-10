@@ -53,7 +53,7 @@ public:
         EndpointWatchLogs = 2000,
 //        EndpointWatchPing = 2001,
         EndpointLogDump = 2002,
-//        EndpointWatchReset = 2003,
+        EndpointWatchReset = 2003,
 //        EndpointWatchApp = 2004,
         EndpointAppLogs = 2006,
         EndpointNotification = 3000,

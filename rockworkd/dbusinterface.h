@@ -5,6 +5,8 @@
 #include <QDBusAbstractAdaptor>
 #include <QDBusObjectPath>
 
+#include "libpebble/resetmessage.h"
+
 class Pebble;
 
 class DBusPebble: public QObject
@@ -150,6 +152,8 @@ public slots:
     bool CalendarSyncEnabled() const;
     void SetCalendarSyncEnabled(bool enabled);
 
+    void Restart();
+    void FactoryReset();
 private:
     Pebble *m_pebble;
 };

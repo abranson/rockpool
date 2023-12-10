@@ -50,7 +50,6 @@ Page {
                 text: qsTr("Language")
                 onClicked: pageStack.push(Qt.resolvedUrl("LanguagePage.qml"), {pebble: pebble})
             }
-
             SectionHeader {
                 text: qsTr("Timeline")
             }

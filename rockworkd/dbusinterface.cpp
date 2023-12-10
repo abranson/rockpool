@@ -560,6 +560,14 @@ void DBusPebble::SetCalendarSyncEnabled(bool enabled)
     m_pebble->setCalendarSyncEnabled(enabled);
 }
 
+void DBusPebble::Restart()
+{
+    m_pebble->reset(ResetMessageRestart);
+}
+void DBusPebble::FactoryReset()
+{
+    m_pebble->reset(ResetMessageFactoryReset);
+}
 
 DBusInterface::DBusInterface(QObject *parent) :
     QObject(parent)

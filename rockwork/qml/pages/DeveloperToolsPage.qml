@@ -39,6 +39,7 @@ Page {
     property var _menu_calls: {
         "stop": function(){rockPool.stopService()},
         "restart": function(){rockPool.restartService()},
+        "restartPebble": function(){pebble.restartPebble()},
         "logs": function(){if(devConnDocker.open){devConnDocker.hide()};sendLogsDocker.show()},
         "dcon": function(){if(sendLogsDocker.open){sendLogsDocker.hide()};devConnDocker.show()}
     }
@@ -66,6 +67,12 @@ Page {
             text: qsTr("Restart Service"),
             page: "",
             call: "restart"
+        });
+        devMenuModel.append({
+            icon: "sync",
+            text: qsTr("Restart Watch"),
+            page: "",
+            call: "restartPebble"
         });
         devMenuModel.append({
             icon: "time",
