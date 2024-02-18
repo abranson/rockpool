@@ -3,5 +3,6 @@
         <file>typedarray.js</file>
         <file>jskitsetup.js</file>
         <file>cacheLocalStorage.js</file>
+        <file>function.js</file>
     </qresource>
 </RCC>
