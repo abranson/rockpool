@@ -1,3 +1,10 @@
+* Sat Apr 6 2024 Andrew Branson <github@andrewbranson.net> 1.16-1
+- Critical old typo (Thanks Henk!)
+- More MkCal API changes
+- Fudged Function.prototype.toString JS (Thanks Dscheinah!)
+- Update translations. contributions to Ukrainian, Arabic & Swedish)
+- And a very old contrib for incoming caller display from vasvlad
+
 * Wed Jan 11 2023 Andrew Branson <github@andrewbranson.net> 1.15-1
 - Fix watchapp settings for Gecko ESR78 (Thanks Dscheinah!)
 - Quazip lib changes for SFOS 4.5.0
