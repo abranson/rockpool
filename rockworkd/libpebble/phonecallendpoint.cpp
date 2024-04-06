@@ -52,8 +52,15 @@ void PhoneCallEndpoint::phoneControl(char act, uint cookie, QStringList datas)
     case CallActionMissed:
     case CallActionIncoming:
         if (datas.length()>1) {
-            w.writePascalString(datas.at(0)); // name
-            w.writePascalString(datas.at(1)); // number
+            QByteArray message;
+            for (QString d : datas)
+            {
+                QByteArray tmp = d.left(0xEF).toUtf8();
+                message.append((tmp.length() + 1) & 0xFF);
+                message.append(tmp);
+                message.append('\0');
+            }
+            w.writeBytes(message.size(), message);
         } else {
             qWarning() << "Empty payload not expected, filling with dummy values";
             w.writePascalString("empty number"); // name
