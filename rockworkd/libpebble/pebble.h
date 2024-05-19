@@ -227,6 +227,7 @@ signals:
     void weatherLocationsChanged(const QVariantList &locations) const;
     void voiceSessionSetup(const QString &fileName, const QString &format, const QString &appUuid);
     void voiceSessionStream(const QString &fileName);
+    void voiceSessionFrame(const QString &fileName, const QByteArray &frame);
     void voiceSessionDumped(const QString &fileName);
     void voiceSessionClosed(const QString &fileName);
 
