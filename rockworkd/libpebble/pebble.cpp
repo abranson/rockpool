@@ -749,6 +749,7 @@ void Pebble::voiceAudioStream(quint16 sid, const AudioStream &frames)
             qDebug() << "Audio Stream has started dumping to" << m_voiceSessDump->fileName();
         }
         for(int i=0;i<frames.count;i++) {
+            emit voiceSessionFrame(m_voiceSessDump->fileName(), frames.frames.at(i).data);
             m_voiceSessDump->write(frames.frames.at(i).data);
         }
     } else {
