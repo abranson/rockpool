@@ -1,3 +1,6 @@
+* Thu Jun 27 2024 Andrew Branson <github@andrewbranson.net> 1.17-1
+- Migrate to Amber MPRIS
+
 * Sat Apr 6 2024 Andrew Branson <github@andrewbranson.net> 1.16-1
 - Critical old typo (Thanks Henk!)
 - More MkCal API changes
