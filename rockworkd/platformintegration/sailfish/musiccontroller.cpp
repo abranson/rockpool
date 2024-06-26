@@ -20,6 +20,7 @@
 #include <QtCore/QCryptographicHash>
 #include <QDBusMessage>
 #include <QDBusReply>
+#include <AmberMpris/mprismetadata.h>
 #include "musiccontroller.h"
 
 namespace watchfish
@@ -28,19 +29,19 @@ namespace watchfish
 Q_LOGGING_CATEGORY(musicControllerCat, "watchfish-MusicController")
 
 MusicControllerPrivate::MusicControllerPrivate(MusicController *q)
-	: manager(new MprisManager(this)), q_ptr(q)
+	: controller(new Amber::MprisController(this)), q_ptr(q)
 {
-	connect(manager, &MprisManager::currentServiceChanged,
+	connect(controller, &Amber::MprisController::currentServiceChanged,
 			this, &MusicControllerPrivate::handleCurrentServiceChanged);
-	connect(manager, &MprisManager::playbackStatusChanged,
+	connect(controller, &Amber::MprisController::playbackStatusChanged,
 			this, &MusicControllerPrivate::handlePlaybackStatusChanged);
-    connect(manager, &MprisManager::positionChanged, // doesn't seem to work :(
+    connect(controller, &Amber::MprisController::seeked,
             this, &MusicControllerPrivate::handlePositionChanged);
-	connect(manager, &MprisManager::metadataChanged,
+	connect(controller->metaData(), &Amber::MprisMetaData::metaDataChanged,
 			this, &MusicControllerPrivate::handleMetadataChanged);
-	connect(manager, &MprisManager::shuffleChanged,
+	connect(controller, &Amber::MprisController::shuffleChanged,
 			q, &MusicController::shuffleChanged);
-	connect(manager, &MprisManager::loopStatusChanged,
+	connect(controller, &Amber::MprisController::loopStatusChanged,
 			q, &MusicController::repeatChanged);
 }
 
@@ -51,17 +52,17 @@ MusicControllerPrivate::~MusicControllerPrivate()
 void MusicControllerPrivate::updateStatus()
 {
 	Q_Q(MusicController);
-	QString service = manager->currentService();
+	QString service = controller->currentService();
 	MusicController::Status newStatus;
 
 	if (service.isEmpty()) {
 		newStatus =  MusicController::StatusNoPlayer;
 	} else {
-		switch (manager->playbackStatus()) {
-		case Mpris::Playing:
+		switch (controller->playbackStatus()) {
+		case Amber::Mpris::Playing:
 			newStatus = MusicController::StatusPlaying;
 			break;
-		case Mpris::Paused:
+		case Amber::Mpris::Paused:
 			newStatus = MusicController::StatusPaused;
 			break;
 		default:
@@ -79,13 +80,10 @@ void MusicControllerPrivate::updateStatus()
 void MusicControllerPrivate::updateMetadata()
 {
 	Q_Q(MusicController);
-	QVariantMap metadata = manager->metadata();
 
-	qCDebug(musicControllerCat()) << metadata;
-
-	QString newArtist = metadata.value("xesam:artist").toString(),
-			newAlbum = metadata.value("xesam:album").toString(),
-			newTitle = metadata.value("xesam:title").toString();
+	QString newArtist = controller->metaData()->albumArtist().toString(),
+			newAlbum = controller->metaData()->albumTitle().toString(),
+			newTitle = controller->metaData()->title().toString();
 
 	if (newArtist != curArtist) {
 		curArtist = newArtist;
@@ -102,7 +100,7 @@ void MusicControllerPrivate::updateMetadata()
 		emit q->titleChanged();
 	}
 
-	int newDuration = metadata.value("mpris:length").toULongLong() / 1000UL;
+	int newDuration = controller->metaData()->duration().toULongLong();
 	if (newDuration != curDuration) {
 		curDuration = newDuration;
 		emit q->durationChanged();
@@ -114,14 +112,14 @@ void MusicControllerPrivate::updateMetadata()
 void MusicControllerPrivate::handleCurrentServiceChanged()
 {
 	Q_Q(MusicController);
-	qCDebug(musicControllerCat()) << manager->currentService();
+	qCDebug(musicControllerCat()) << controller->currentService();
 	updateStatus();
 	emit q->serviceChanged();
 }
 
 void MusicControllerPrivate::handlePlaybackStatusChanged()
 {
-	qCDebug(musicControllerCat()) << manager->playbackStatus();
+	qCDebug(musicControllerCat()) << controller->playbackStatus();
 	updateStatus();
 }
 
@@ -195,13 +193,7 @@ MusicController::Status MusicController::status() const
 QString MusicController::service() const
 {
 	Q_D(const MusicController);
-	return d->manager->currentService();
-}
-
-QVariantMap MusicController::metadata() const
-{
-	Q_D(const MusicController);
-	return d->manager->metadata();
+	return d->controller->currentService();
 }
 
 QString MusicController::title() const
@@ -231,19 +223,19 @@ int MusicController::duration() const
 qlonglong MusicController::position() const
 {
     Q_D(const MusicController);
-    return d->manager->position();
+    return d->controller->position();
 }
 
 MusicController::RepeatStatus MusicController::repeat() const
 {
 	Q_D(const MusicController);
-	switch (d->manager->loopStatus()) {
-	case Mpris::None:
+	switch (d->controller->loopStatus()) {
+	case Amber::Mpris::LoopNone:
 	default:
 		return RepeatNone;
-	case Mpris::Track:
+	case Amber::Mpris::LoopTrack:
 		return RepeatTrack;
-	case Mpris::Playlist:
+	case Amber::Mpris::LoopPlaylist:
 		return RepeatPlaylist;
 	}
 }
@@ -251,7 +243,7 @@ MusicController::RepeatStatus MusicController::repeat() const
 bool MusicController::shuffle() const
 {
 	Q_D(const MusicController);
-	return d->manager->shuffle();
+	return d->controller->shuffle();
 }
 
 int MusicController::volume() const
@@ -273,31 +265,31 @@ int MusicController::volume() const
 void MusicController::play()
 {
 	Q_D(MusicController);
-	d->manager->play();
+	d->controller->play();
 }
 
 void MusicController::pause()
 {
 	Q_D(MusicController);
-	d->manager->pause();
+	d->controller->pause();
 }
 
 void MusicController::playPause()
 {
 	Q_D(MusicController);
-	d->manager->playPause();
+	d->controller->playPause();
 }
 
 void MusicController::next()
 {
 	Q_D(MusicController);
-	d->manager->next();
+	d->controller->next();
 }
 
 void MusicController::previous()
 {
 	Q_D(MusicController);
-	d->manager->previous();
+	d->controller->previous();
 }
 
 void MusicController::setVolume(const uint newVolume)

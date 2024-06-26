@@ -22,7 +22,7 @@ BuildRequires:  pkgconfig(Qt5Network)
 BuildRequires:  pkgconfig(Qt5Location)
 BuildRequires:  pkgconfig(qt5-boostable)
 BuildRequires:  pkgconfig(Qt5WebSockets)
-BuildRequires:  pkgconfig(mpris-qt5)
+BuildRequires:  pkgconfig(ambermpris)
 BuildRequires:  pkgconfig(timed-qt5)
 BuildRequires:  pkgconfig(mlite5)
 BuildRequires:  pkgconfig(sailfishapp) >= 0.0.10

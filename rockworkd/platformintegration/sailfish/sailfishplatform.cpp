@@ -443,7 +443,7 @@ MusicPlayState SailfishPlatform::getMusicPlayState() const {
             playState.repeat = MusicPlayState::RepeatUnknown;
     }
 
-    playState.trackPosition = m_musicController->position()/1000;
+    playState.trackPosition = m_musicController->position();
     if (m_musicController->shuffle())
         playState.shuffle = MusicPlayState::ShuffleOn;
     else

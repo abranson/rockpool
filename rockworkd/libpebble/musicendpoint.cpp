@@ -46,7 +46,7 @@ void MusicEndpoint::writeMetadata()
 }
 
 void MusicEndpoint::writePlayState(const MusicPlayState &playState) {
-    qDebug() << "Writing playstate. Position: " << playState.trackPosition;
+    qDebug() << "Writing playstate" << playState.state << " Position: " << playState.trackPosition;
     if (!m_watchConnection->isConnected()) {
         return;
     }

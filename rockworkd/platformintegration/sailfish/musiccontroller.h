@@ -20,8 +20,8 @@
 #define WATCHFISH_MUSICCONTROLLER_H
 
 #include <QtCore/QLoggingCategory>
-#include <MprisQt/mpris.h>
-#include <MprisQt/mprismanager.h>
+#include <AmberMpris/mpris.h>
+#include <AmberMpris/mpriscontroller.h>
 
 namespace watchfish
 {
@@ -55,8 +55,6 @@ public:
 
 	Status status() const;
 	QString service() const;
-
-	QVariantMap metadata() const;
 
 	QString title() const;
 	QString album() const;
@@ -110,7 +108,7 @@ public:
     ~MusicControllerPrivate();
 
 public:
-    MprisManager *manager;
+    Amber::MprisController *controller;
     MusicController::Status curStatus;
     QString curTitle;
     QString curAlbum;
