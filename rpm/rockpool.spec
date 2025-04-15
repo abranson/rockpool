@@ -8,7 +8,7 @@ Summary:    Support for Pebble watches in SailfishOS
 Version:    1.17
 Release:    1
 Group:      Qt/Qt
-License:    GPL3
+License:    GPLv3
 URL:        http://getpebble.com/
 Source0:    %{name}-%{version}.tar.xz
 Requires:   systemd-user-session-targets
@@ -44,15 +44,18 @@ Support for Pebble watch on SailfishOS devices.
 %setup -q -n %{name}-%{version}
 
 %build
-
-%qtc_qmake5  \
-    DEFINES+=VERSION=\\\'\\\"%{version}-%{release}\\\"\\\'
+mkdir -p build
+cd build
+%qmake5  \
+    DEFINES+=VERSION=\\\'\\\"%{version}-%{release}\\\"\\\' \
+    INSTALL_DIR=%{install_dir} \
+    ../rockpool.pro
 
 %qtc_make %{?_smp_mflags}
 
-
 %install
 rm -rf %{buildroot}
+cd build
 %qmake5_install
 
 mkdir -p %{buildroot}%{_userunitdir}/user-session.target.wants

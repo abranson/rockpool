@@ -80,4 +80,4 @@ lupdate_only {
     SOURCES += QML_FILES
 }
 CONFIG += sailfishapp_i18n
-TRANSLATIONS += $$files(translations/*.ts,true)
+TRANSLATIONS += $$files(../../rockwork/translations/*.ts,true)
