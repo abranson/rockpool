@@ -119,7 +119,7 @@
         <location filename="../qml/pages/AppUpgradePage.qml" line="24"/>
         <location filename="../qml/pages/AppUpgradePage.qml" line="25"/>
         <source>Upgrading</source>
-        <translation>மேம்படுத்தல்</translation>
+        <translation>மேம்படுத்துகிறது</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="49"/>
@@ -494,7 +494,7 @@
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="29"/>
         <source>Upgrade</source>
-        <translation>மேம்படுத்தல்</translation>
+        <translation>மேம்படுத்து</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="29"/>
