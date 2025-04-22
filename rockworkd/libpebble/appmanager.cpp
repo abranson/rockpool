@@ -87,6 +87,11 @@ void AppManager::rescan()
         m_appList.append(sendsms.uuid());
         m_apps.insert(sendsms.uuid(), sendsms);
     }
+    if (m_pebble->capabilities().testFlag(CapabilityWorkouts)) {
+        AppInfo workouts(QUuid("fef82c82-7176-4e22-88de-35a3fc18d43f"), false, gettext("Workouts"), gettext("System app"));
+        m_appList.append(workouts.uuid());
+        m_apps.insert(workouts.uuid(), workouts);
+    }
     AppInfo notifications(QUuid("b2cae818-10f8-46df-ad2b-98ad2254a3c1"), false, gettext("Notifications"), gettext("System app"));
     m_appList.append(notifications.uuid());
     m_apps.insert(notifications.uuid(), notifications);

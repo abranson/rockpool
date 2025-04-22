@@ -101,19 +101,23 @@ enum CallStatus {
 };
 
 enum Capability {
-    CapabilityNone =                  0x0000000000000000,
-    CapabilityAppRunState =           0x0000000000000001,
-    CapabilityInfiniteLogDumping =    0x0000000000000002,
-    CapabilityUpdatedMusicProtocol =  0x0000000000000004,
-    CapabilityExtendedNotifications = 0x0000000000000008,
-    CapabilityLanguagePacks =         0x0000000000000010,
-    Capability8kAppMessages =         0x0000000000000020,
-    CapabilityHealth =                0x0000000000000040,
-    CapabilityVoice =                 0x0000000000000080,
-    CapabilityWeather =               0x0000000000000100,
-    //CapabilityXXX =                 0x0000000000000200,
-    //CapabilityYYY =                 0x0000000000000400,
-    CapabilitySendSMS =               0x0000000000000800
+    CapabilityNone                    = 0x0000000000000000,
+    CapabilityAppRunState             = 0x0000000000000001,
+    CapabilityInfiniteLogDumping      = 0x0000000000000002,
+    CapabilityUpdatedMusicProtocol    = 0x0000000000000004,
+    CapabilityExtendedNotifications   = 0x0000000000000008,
+    CapabilityLanguagePacks           = 0x0000000000000010,
+    Capability8kAppMessages           = 0x0000000000000020,
+    CapabilityHealth                  = 0x0000000000000040,
+    CapabilityVoice                   = 0x0000000000000080,
+    CapabilitySendSMS                 = 0x0000000000000100,
+    //CapabilityXXX                   = 0x0000000000000200,
+    CapabilityUnreadCoreDump          = 0x0000000000000400,
+    CapabilityWeather                 = 0x0000000000000800,
+    CapabilityReminders               = 0x0000000000001000,
+    CapabilityWorkouts                = 0x0000000000002000,
+    CapabilitySmoothFwInstallProgress = 0x0000000000004000,
+    CapabilityResumableFwInstall      = 0x0000000000200000,
 };
 Q_DECLARE_FLAGS(Capabilities, Capability)
 

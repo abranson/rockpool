@@ -748,9 +748,9 @@ void Pebble::voiceAudioStream(quint16 sid, const AudioStream &frames)
             emit voiceSessionStream(m_voiceSessDump->fileName());
             qDebug() << "Audio Stream has started dumping to" << m_voiceSessDump->fileName();
         }
-        for(int i=0;i<frames.count;i++) {
-            m_voiceSessDump->write(frames.frames.at(i).data);
-        }
+        FILE* fp = fopen(m_voiceSessDump->fileName().toStdString().c_str(), "wb");
+        fwrite(&frames, sizeof(struct AudioStream), 1, fp);
+        fclose(fp);
     } else {
         qDebug() << "Audio Stream has finished dumping to" << m_voiceSessDump->fileName();
         m_voiceSessDump->close();
@@ -1438,8 +1438,8 @@ void Pebble::phoneVersionAsked(const QByteArray &data)
     // android sends 09af
     Capabilities sessionCap(CapabilityAppRunState | CapabilityInfiniteLogDumping
                             | CapabilityUpdatedMusicProtocol | CapabilityExtendedNotifications
-                            | /*CapabilityLanguagePacks |*/ Capability8kAppMessages
-                            | /*CapabilityHealth |*/ CapabilityVoice
+                            | CapabilityLanguagePacks | Capability8kAppMessages
+                            | CapabilityHealth | CapabilityVoice
                             | CapabilityWeather /*| CapabilityXXX*/
                             | /*CapabilityYYY |*/ CapabilitySendSMS
                             );
@@ -1452,9 +1452,9 @@ void Pebble::phoneVersionAsked(const QByteArray &data)
     writer.writeLE<quint32>(0); // deprecated since 3.0
     writer.write<quint32>(platformFlags);
     writer.write<quint8>(2); // response version
-    writer.write<quint8>(3); // major version
-    writer.write<quint8>(13); // minor version
-    writer.write<quint8>(0); // bugfix version
+    writer.write<quint8>(4); // major version
+    writer.write<quint8>(4); // minor version
+    writer.write<quint8>(3); // bugfix version
     writer.writeLE<quint64>(sessionCap);
 
     qDebug() << "sending phone version" << res.toHex();
