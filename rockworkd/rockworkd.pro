@@ -3,7 +3,7 @@ QT -= gui
 
 TARGET = rockpoold
 
-CONFIG += c++11
+CONFIG += c++17
 CONFIG += console
 CONFIG += link_pkgconfig
 
@@ -57,6 +57,15 @@ SOURCES += main.cpp \
     libpebble/bluez/bluez_device1.cpp \
     libpebble/bluez/freedesktop_objectmanager.cpp \
     libpebble/bluez/freedesktop_properties.cpp \
+    libpebble/bluez/device/device.cpp \
+    libpebble/bluez/device/devicecharacteristic.cpp \
+    libpebble/bluez/device/deviceservice.cpp \
+    libpebble/watchsocket/le/connectivity.cpp \
+    libpebble/watchsocket/le/gattpacket.cpp \
+    libpebble/watchsocket/le/gattserver.cpp \
+    libpebble/watchsocket/le/packetreader.cpp \
+    libpebble/watchsocket/rfcommsocket.cpp \
+    libpebble/watchsocket/lesocket.cpp \
     core.cpp \
     pebblemanager.cpp \
     dbusinterface.cpp \
@@ -121,6 +130,16 @@ HEADERS += \
     libpebble/bluez/bluez_device1.h \
     libpebble/bluez/freedesktop_objectmanager.h \
     libpebble/bluez/freedesktop_properties.h \
+    libpebble/bluez/device/device.h \
+    libpebble/bluez/device/devicecharacteristic.h \
+    libpebble/bluez/device/deviceservice.h \
+    libpebble/watchsocket/le/connectivity.h \
+    libpebble/watchsocket/le/gattpacket.h \
+    libpebble/watchsocket/le/gattserver.h \
+    libpebble/watchsocket/le/packetreader.h \
+    libpebble/watchsocket/watchsocket.h \
+    libpebble/watchsocket/rfcommsocket.h \
+    libpebble/watchsocket/lesocket.h \
     core.h \
     pebblemanager.h \
     dbusinterface.h \

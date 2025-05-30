@@ -24,12 +24,7 @@ BluezClient::BluezClient(QObject *parent):
         auto objectList = m_bluezManager.GetManagedObjects().argumentAt<0>();
         for (QDBusObjectPath path : objectList.keys()) {
             InterfaceList ifaces = objectList.value(path);
-            if (ifaces.contains(BLUEZ_DEVICE_IFACE)) {
-                QString candidatePath = path.path();
-
-                auto properties = ifaces.value(BLUEZ_DEVICE_IFACE);
-                addDevice(path, properties);
-            }
+            slotInterfacesAdded(path, ifaces);
         }
 
         if (m_devices.isEmpty()) {
@@ -83,11 +78,21 @@ BluezClient::BluezClient(QObject *parent):
     }
 }
 
-QList<Device> BluezClient::pairedPebbles() const
+Device *BluezClient::getDevice(const QBluetoothAddress &address)
 {
-    QList<Device> ret;
+    foreach (Device *device, m_devices) {
+        if (device->address() == address)
+            return device;
+    }
+
+    return nullptr;
+}
+
+QList<Device*> BluezClient::pairedPebbles() const
+{
+    QList<Device*> ret;
     if (m_bluezManager.isValid()) {
-        foreach (const Device &dev, m_devices) {
+        foreach (Device *dev, m_devices) {
             ret << dev;
         }
     }
@@ -96,16 +101,11 @@ QList<Device> BluezClient::pairedPebbles() const
 
 void BluezClient::addDevice(const QDBusObjectPath &path, const QVariantMap &properties)
 {
-    QString address = properties.value("Address").toString();
     QString name = properties.value("Name").toString();
-    if (name.startsWith("Pebble") && !name.startsWith("Pebble Time LE") && !name.startsWith("Pebble-LE") && !m_devices.contains(address)) {
-        qDebug() << "Found new Pebble:" << address << name;
-        Device device;
-        device.address = QBluetoothAddress(address);
-        device.name = name;
-        device.path = path.path();
+    if (name.startsWith("Pebble") && !name.startsWith("Pebble Time LE") && !name.startsWith("Pebble-LE") && !m_devices.contains(path.path())) {
+        qDebug() << "Found new Pebble:" << name;
+        Device *device = new Device(path.path(), properties, this);
         m_devices.insert(path.path(), device);
-        qDebug() << "emitting added";
         emit devicesChanged();
     }
 }
@@ -117,16 +117,41 @@ void BluezClient::slotInterfacesAdded(const QDBusObjectPath &path, InterfaceList
         auto properties = ifaces.value(BLUEZ_DEVICE_IFACE);
         addDevice(path, properties);
     }
+
+    if (ifaces.contains(BLUEZ_SERVICE_IFACE)) {
+        auto properties = ifaces.value(BLUEZ_SERVICE_IFACE);
+        QString devicePath = qvariant_cast<QDBusObjectPath>(properties.value("Device")).path();
+		if (m_devices.contains(devicePath)) {
+            Device *device = m_devices.value(devicePath);
+			DeviceService *service = new DeviceService(path.path(), properties, device);
+			device->serviceDiscovered(service);
+			m_services.insert(path.path(), service);
+		}
+    }
+
+    if (ifaces.contains(BLUEZ_CHARACTERISTIC_IFACE)) {
+        auto properties = ifaces.value(BLUEZ_CHARACTERISTIC_IFACE);
+        QString servicePath = qvariant_cast<QDBusObjectPath>(properties.value("Service")).path();
+        if (m_services.contains(servicePath)) {
+            DeviceService *service = m_services.value(servicePath);
+            DeviceCharacteristic *characteristic = new DeviceCharacteristic(path.path(), properties, service);
+			service->addCharacteristic(characteristic);
+            m_characteristics.insert(path.path(), characteristic);
+        }
+    }
 }
 
 void BluezClient::slotInterfacesRemoved(const QDBusObjectPath &path, const QStringList &ifaces)
 {
+    // TODO: Maybe clean up individual services and characteristics too?
     qDebug() << "interfaces removed" << path.path() << ifaces;
     if (!ifaces.contains(BLUEZ_DEVICE_IFACE)) {
         return;
     }
+
     if (m_devices.contains(path.path())) {
-        m_devices.take(path.path());
+        Device *device = m_devices.take(path.path());
+        device->deleteLater();
         qDebug() << "removing dev";
         emit devicesChanged();
     }

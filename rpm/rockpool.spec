@@ -35,6 +35,7 @@ BuildRequires:  pkgconfig(qt5embedwidget)
 BuildRequires:  pkgconfig(quazip1-qt5)
 BuildRequires:  desktop-file-utils
 BuildRequires:  qt5-qttools-linguist
+Requires: qt5-qtconnectivity-qtsdpscanner
 
 %description
 Support for Pebble watch on SailfishOS devices.

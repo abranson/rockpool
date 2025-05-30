@@ -5,13 +5,17 @@
 #include <QBluetoothAddress>
 #include <QBluetoothSocket>
 #include <QBluetoothLocalDevice>
+#include <QBluetoothDeviceDiscoveryAgent>
 #include <QtEndian>
 #include <QPointer>
 #include <QTimer>
 #include <QFile>
 
+#include "watchsocket/watchsocket.h"
+
 class EndpointHandlerInterface;
 class UploadManager;
+class BluezClient;
 
 class PebblePacket {
 public:
@@ -83,7 +87,9 @@ public:
         SystemMessageFirmwareUpToDate = 4,
         SystemMessageFirmwareOutOfDate = 5,
         SystemMessageBluetoothStartDiscoverable = 6,
-        SystemMessageBluetoothEndDiscoverable = 7
+        SystemMessageBluetoothEndDiscoverable = 7,
+        SystemMessageFirmwareStatus = 0xB,
+        SystemMessageFirmwareStatusResponse = 0xC,
     };
 
     typedef QMap<int, QVariant> Dict;
@@ -109,18 +115,18 @@ public:
         UploadStatusSuccess
     };
 
-    explicit WatchConnection(QObject *parent = 0);
+    explicit WatchConnection(BluezClient *client, QObject *parent = 0);
     UploadManager *uploadManager() const;
 
     void connectPebble(const QBluetoothAddress &pebble);
     bool isConnected();
 
-    QByteArray buildData(QStringList data);
-    QByteArray buildMessageData(uint lead, QStringList data);
+    QByteArray encodeMessage(Endpoint endpoint, const QByteArray &data);
 
     void writeRawData(const QByteArray &data);
     void writeToPebble(Endpoint endpoint, const QByteArray &data);
     void systemMessage(SystemMessage msg);
+    void systemMessage(SystemMessage msg, const QByteArray &data);
 
     bool registerEndpointHandler(Endpoint endpoint, QObject *handler, const QString &method);
 
@@ -138,6 +144,7 @@ private:
 
 private slots:
     void hostModeStateChanged(QBluetoothLocalDevice::HostMode state);
+    void pebbleDiscovered(const QBluetoothDeviceInfo &device);
     void pebbleConnected();
     void pebbleDisconnected();
     void socketError(QBluetoothSocket::SocketError error);
@@ -146,9 +153,11 @@ private slots:
 
 
 private:
+    BluezClient *m_client;
     QBluetoothAddress m_pebbleAddress;
     QBluetoothLocalDevice *m_localDevice;
-    QBluetoothSocket *m_socket = nullptr;
+    WatchSocket *m_socket;
+    QBluetoothDeviceDiscoveryAgent *m_discoveryAgent;
     int m_connectionAttempts = 0;
     QTimer m_reconnectTimer;
 

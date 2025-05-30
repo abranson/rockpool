@@ -134,6 +134,11 @@ public:
 
         return d;
     }
+    int size()
+    {
+        return m_data.length() - m_offset;
+    }
+
     bool bad() const;
 
 
