@@ -10,6 +10,7 @@
 
 const {classes: Cc, interfaces: Ci, utils: Cu, results: Cr} = Components;
 
+Cu.import("resource://gre/modules/ComponentUtils.jsm");
 Cu.import('resource://gre/modules/XPCOMUtils.jsm');
 Cu.import("resource://gre/modules/Services.jsm");
 
@@ -72,4 +73,4 @@ PebbleJsProtoHandler.prototype.constructor = PebbleJsProtoHandler;
 PebbleJsProtoHandler.prototype.classID = Components.ID("{64D704B0-F5FF-11E5-8DDD-D05ABB8E7F8B}");
 PebbleJsProtoHandler.prototype.scheme = "pebblejs";
 
-this.NSGetFactory = XPCOMUtils.generateNSGetFactory([PebbleProtoHandler,PebbleJsProtoHandler]);
+this.NSGetFactory = ComponentUtils.generateNSGetFactory([PebbleProtoHandler,PebbleJsProtoHandler]);
