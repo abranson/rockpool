@@ -172,7 +172,7 @@
     <message>
         <location filename="../qml/cover/CoverPage.qml" line="27"/>
         <source>connected</source>
-        <translation>Подключен</translation>
+        <translation>подключён</translation>
     </message>
     <message>
         <location filename="../qml/cover/CoverPage.qml" line="27"/>
@@ -291,7 +291,7 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="233"/>
         <source>Current log: </source>
-        <translation>Текуший лог</translation>
+        <translation>Текущий журнал </translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="239"/>
@@ -465,7 +465,7 @@
     <message>
         <location filename="../qml/pages/ImportPackagePage.qml" line="161"/>
         <source>Sideloading file</source>
-        <translation type="unfinished"></translation>
+        <translation>Загрузка стороннего файла</translation>
     </message>
 </context>
 <context>
@@ -1029,7 +1029,7 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="142"/>
         <source>Connected</source>
-        <translation>Подключен</translation>
+        <translation>Подключён</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="145"/>
