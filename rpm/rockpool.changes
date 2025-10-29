@@ -1,3 +1,8 @@
+* Wed Oct 29 2025 Andrew Branson <github@andrewbranson.net> 1.18-1
+- Fix for app settings. Thanks to Johannes Bachmann!
+- Extra Rebble migration from RockWork/thevancedgamer
+- Translation contributions to Russian, Tamil, German and Norwegian Bokmål
+
 * Thu Jun 27 2024 Andrew Branson <github@andrewbranson.net> 1.17-1
 - Migrate to Amber MPRIS
 
