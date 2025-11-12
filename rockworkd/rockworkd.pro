@@ -3,13 +3,16 @@ QT -= gui
 
 TARGET = rockpoold
 
-CONFIG += c++11
+CONFIG += c++1z
 CONFIG += console
 CONFIG += link_pkgconfig
 
 PKGCONFIG += qt5-boostable libmkcal-qt5 KF5CalendarCore dbus-1 ambermpris timed-qt5 Qt5WebSockets quazip1-qt5
 
 SOURCES += main.cpp \
+    libpebble/bluez/device/device.cpp \
+    libpebble/bluez/device/devicecharacteristic.cpp \
+    libpebble/bluez/device/deviceservice.cpp \
     libpebble/watchconnection.cpp \
     libpebble/pebble.cpp \
     libpebble/watchdatareader.cpp \
@@ -72,6 +75,9 @@ SOURCES += main.cpp \
     platformintegration/sailfish/walltimemonitor.cpp
 
 HEADERS += \
+    libpebble/bluez/device/device.h \
+    libpebble/bluez/device/devicecharacteristic.h \
+    libpebble/bluez/device/deviceservice.h \
     libpebble/watchconnection.h \
     libpebble/pebble.h \
     libpebble/watchdatareader.h \
