@@ -66,8 +66,8 @@ desktop-file-install --delete-original       \
    %{buildroot}%{_datadir}/applications/*.desktop
 
 %post
-su nemo -c 'systemctl --user daemon-reload'
-su nemo -c 'systemctl --user try-restart rockpoold.service'
+systemctl-user daemon-reload
+systemctl-user try-restart rockpoold.service
 update-desktop-database
 
 %files
