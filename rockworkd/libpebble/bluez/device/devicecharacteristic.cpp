@@ -1,6 +1,7 @@
 #include "devicecharacteristic.h"
 #include <functional>
 #include <QDebug>
+#include <QTimer>
 
 DeviceCharacteristic::DeviceCharacteristic(const QString &path, const QVariantMap &properties, QObject *parent):
   QObject(parent),
@@ -31,16 +32,15 @@ void DeviceCharacteristic::writeCharacteristic(const QByteArray &data)
     m_iface->asyncCall("WriteValue", data, QVariantMap());
 }
 
-void DeviceCharacteristic::propertiesChanged(QString interface, QVariantMap properties, QStringList /*invalidated_properties*/)
+void DeviceCharacteristic::propertiesChanged(QString, QVariantMap properties, QStringList /*invalidated_properties*/)
 {
     if (m_notifyStarted) {
         for (int i = 0; i < m_callbacks.size(); i++) {
             PrvCallback cb = m_callbacks.value(i);
             QByteArray value = properties.value("Value").toByteArray();
-            // TODO: Ales
-            QMetaObject::invokeMethod(cb.obj.data(), [cb, value]() {
+            QTimer::singleShot(0, cb.obj.data(), [cb, value]() {
                 std::invoke(cb.functor, value);
-            }, Qt::QueuedConnection);
+            });
         }
     }
 }

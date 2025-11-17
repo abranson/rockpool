@@ -108,8 +108,8 @@ void Device::serviceDiscovered(DeviceService *service)
 
     if (m_callbacks.contains(service->serviceUuid())) {
         Callback cb = m_callbacks.take(service->serviceUuid());
-        QMetaObject::invokeMethod(cb.obj.data(), [cb, service]() {
+        QTimer::singleShot(0, cb.obj.data(), [cb, service]() {
             std::invoke(cb.functor, service);
-        }, Qt::QueuedConnection);
+        });
     }
 }

@@ -31,6 +31,12 @@ SOURCES += main.cpp \
     libpebble/firmwaredownloader.cpp \
     libpebble/bundle.cpp \
     libpebble/watchlogendpoint.cpp \
+    libpebble/watchsocket/le/connectivity.cpp \
+    libpebble/watchsocket/le/gattpacket.cpp \
+    libpebble/watchsocket/le/gattserver.cpp \
+    libpebble/watchsocket/le/packetreader.cpp \
+    libpebble/watchsocket/lesocket.cpp \
+    libpebble/watchsocket/rfcommsocket.cpp \
     libpebble/ziphelper.cpp \
     libpebble/healthparams.cpp \
     libpebble/dataloggingendpoint.cpp \
@@ -98,6 +104,13 @@ HEADERS += \
     libpebble/firmwaredownloader.h \
     libpebble/bundle.h \
     libpebble/watchlogendpoint.h \
+    libpebble/watchsocket/le/connectivity.h \
+    libpebble/watchsocket/le/gattpacket.h \
+    libpebble/watchsocket/le/gattserver.h \
+    libpebble/watchsocket/le/packetreader.h \
+    libpebble/watchsocket/lesocket.h \
+    libpebble/watchsocket/rfcommsocket.h \
+    libpebble/watchsocket/watchsocket.h \
     libpebble/ziphelper.h \
     libpebble/healthparams.h \
     libpebble/dataloggingendpoint.h \

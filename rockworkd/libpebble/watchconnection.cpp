@@ -2,6 +2,10 @@
 #include "watchdatareader.h"
 #include "watchdatawriter.h"
 #include "uploadmanager.h"
+#include "bluez/bluezclient.h"
+
+#include "watchsocket/rfcommsocket.h"
+#include "watchsocket/lesocket.h"
 
 #include <QDBusConnection>
 #include <QDBusReply>
@@ -12,8 +16,9 @@
 #include <QtEndian>
 #include <QDateTime>
 
-WatchConnection::WatchConnection(QObject *parent) :
+WatchConnection::WatchConnection(BluezClient *client, QObject *parent):
     QObject(parent),
+    m_client(client),
     m_socket(nullptr)
 {
     m_reconnectTimer.setSingleShot(true);
@@ -23,6 +28,13 @@ WatchConnection::WatchConnection(QObject *parent) :
     connect(m_localDevice, &QBluetoothLocalDevice::hostModeStateChanged, this, &WatchConnection::hostModeStateChanged);
 
     m_uploadManager = new UploadManager(this, this);
+    m_discoveryAgent = new QBluetoothDeviceDiscoveryAgent(this);
+
+    connect(m_discoveryAgent, &QBluetoothDeviceDiscoveryAgent::deviceDiscovered, this, &WatchConnection::pebbleDiscovered);
+    connect(m_discoveryAgent, &QBluetoothDeviceDiscoveryAgent::finished, [this]() {
+        qWarning() << "Discovery finished, reconnecting...";
+        scheduleReconnect();
+    });
 }
 
 UploadManager *WatchConnection::uploadManager() const
@@ -35,8 +47,8 @@ void WatchConnection::scheduleReconnect()
     if (m_connectionAttempts == 0) {
         reconnect();
     } else if (m_connectionAttempts < 25) {
-        qDebug() << "Attempting to reconnect in 10 seconds";
-        m_reconnectTimer.start(1000 * 10);
+        qDebug() << "Attempting to reconnect in 15 seconds";
+        m_reconnectTimer.start(1000 * 15);
     } else if (m_connectionAttempts < 35) {
         qDebug() << "Attempting to reconnect in 1 minute";
         m_reconnectTimer.start(1000 * 60);
@@ -54,32 +66,26 @@ void WatchConnection::reconnect()
         if (m_reconnectTimer.isActive()) m_reconnectTimer.stop();
         return;
     }
-    if (localBtDev.pairingStatus(m_pebbleAddress) == QBluetoothLocalDevice::Unpaired) {
-        // Try again in one 10 secs, give the user some time to pair it
-        m_connectionAttempts = 1;
-        scheduleReconnect();
-        return;
-    }
+//    if (localBtDev.pairingStatus(m_pebbleAddress) == QBluetoothLocalDevice::Unpaired) {
+//        // Try again in one 10 secs, give the user some time to pair it
+//        m_connectionAttempts = 1;
+//        scheduleReconnect();
+//        return;
+//    }
 
     if (m_socket) {
-        if (m_socket->state() == QBluetoothSocket::ConnectedState) {
+        if (m_socket->state() == WatchSocket::ConnectedState) {
             qDebug() << "Already connected.";
             return;
         }
-        delete m_socket;
     }
-
-    m_socket = new QBluetoothSocket(QBluetoothServiceInfo::RfcommProtocol, this);
-    connect(m_socket, &QBluetoothSocket::connected, this, &WatchConnection::pebbleConnected);
-    connect(m_socket, &QBluetoothSocket::readyRead, this, &WatchConnection::readyRead);
-    connect(m_socket, SIGNAL(error(QBluetoothSocket::SocketError)), this, SLOT(socketError(QBluetoothSocket::SocketError)));
-    connect(m_socket, &QBluetoothSocket::disconnected, this, &WatchConnection::pebbleDisconnected);
-    //connect(socket, SIGNAL(bytesWritten(qint64)), SLOT(onBytesWritten(qint64)));
 
     m_connectionAttempts++;
 
-    // FIXME: Assuming port 1 (with Pebble)
-    m_socket->connectToService(m_pebbleAddress, 1);
+    qWarning() << "Attempting to reconnect," << m_connectionAttempts << m_discoveryAgent->isActive();
+
+    if (!m_discoveryAgent->isActive())
+        m_discoveryAgent->start();
 }
 
 void WatchConnection::connectPebble(const QBluetoothAddress &pebble)
@@ -91,12 +97,12 @@ void WatchConnection::connectPebble(const QBluetoothAddress &pebble)
 
 bool WatchConnection::isConnected()
 {
-    return m_socket && m_socket->state() == QBluetoothSocket::ConnectedState;
+    return m_socket && m_socket->state() == WatchSocket::ConnectedState;
 }
 
 void WatchConnection::writeToPebble(Endpoint endpoint, const QByteArray &data)
 {
-    if (!m_socket || m_socket->state() != QBluetoothSocket::ConnectedState) {
+    if (!m_socket || m_socket->state() != WatchSocket::ConnectedState) {
         qWarning() << "Socket not open. Cannot send data to Pebble. (Endpoint:" << endpoint << ")";
         return;
     }
@@ -123,11 +129,21 @@ void WatchConnection::writeRawData(const QByteArray &msg)
 
 void WatchConnection::systemMessage(WatchConnection::SystemMessage msg)
 {
-    QByteArray data;
-    data.append((char)0);
-    data.append((char)msg);
-    writeToPebble(EndpointSystemMessage, data);
+    systemMessage(msg, QByteArray());
 }
+
+void WatchConnection::systemMessage(WatchConnection::SystemMessage msg, const QByteArray &data)
+{
+    QByteArray output;
+    output.append((char)0);
+    output.append((char)msg);
+
+    if (!data.isEmpty() && !data.isNull())
+        output.append(data);
+
+    writeToPebble(EndpointSystemMessage, output);
+}
+
 
 bool WatchConnection::registerEndpointHandler(WatchConnection::Endpoint endpoint, QObject *handler, const QString &method)
 {
@@ -145,6 +161,9 @@ bool WatchConnection::registerEndpointHandler(WatchConnection::Endpoint endpoint
 void WatchConnection::pebbleConnected()
 {
     m_connectionAttempts = 0;
+    if (m_reconnectTimer.isActive())
+        m_reconnectTimer.stop();
+
     emit watchConnected();
 }
 
@@ -160,8 +179,7 @@ void WatchConnection::pebbleDisconnected()
 void WatchConnection::socketError(QBluetoothSocket::SocketError error)
 {
     Q_UNUSED(error); // We seem to get UnknownError anyways all the time
-    qDebug() << "SocketError" << error;
-    m_socket->close();
+    qWarning() << "SocketError" << error;
     emit watchConnectionFailed();
     if (!m_reconnectTimer.isActive()) {
         scheduleReconnect();
@@ -216,6 +234,12 @@ void WatchConnection::hostModeStateChanged(QBluetoothLocalDevice::HostMode state
     if (state == QBluetoothLocalDevice::HostPoweredOff)
     {
         qDebug() << "Bluetooth turned off. Stopping any reconnect attempts.";
+        if (m_socket) {
+            m_socket->close();
+            m_socket->deleteLater();
+            m_socket = nullptr;
+        }
+
         m_reconnectTimer.stop();
     }
     else if (!isConnected() && !m_reconnectTimer.isActive())
@@ -226,23 +250,33 @@ void WatchConnection::hostModeStateChanged(QBluetoothLocalDevice::HostMode state
     }
 }
 
-QByteArray WatchConnection::buildData(QStringList data)
+
+void WatchConnection::pebbleDiscovered(const QBluetoothDeviceInfo &device)
 {
-    QByteArray res;
-    for (QString d : data)
-    {
-        QByteArray tmp = d.left(0xEF).toUtf8();
-        res.append((tmp.length() + 1) & 0xFF);
-        res.append(tmp);
-        res.append('\0');
+    if (device.address() == m_pebbleAddress) {
+        qWarning() << "Pebble discovered!" << device.serviceUuids() << device.rssi();
+        if (device.serviceUuids().isEmpty())
+            return;
+
+        if (m_socket) {
+            m_socket->close();
+            m_socket->deleteLater();
+            m_socket = nullptr;
+        }
+
+        // TODO: Stop destroying and creating the socket over and over again
+        if (device.coreConfigurations() & QBluetoothDeviceInfo::LowEnergyCoreConfiguration)
+            m_socket = new LESocket(device, m_client->getDevice(m_pebbleAddress));
+        else
+            m_socket = new RfcommSocket(m_pebbleAddress);
+
+        connect(m_socket, &WatchSocket::connected, this, &WatchConnection::pebbleConnected);
+        connect(m_socket, &WatchSocket::readyRead, this, &WatchConnection::readyRead);
+//        connect(m_socket, SIGNAL(error(QBluetoothSocket::SocketError)), this, SLOT(socketError(QBluetoothSocket::SocketError)));
+        connect(m_socket, &WatchSocket::disconnected, this, &WatchConnection::pebbleDisconnected);
+
+        m_socket->connect();
+        m_discoveryAgent->stop();
     }
-    return res;
 }
 
-QByteArray WatchConnection::buildMessageData(uint lead, QStringList data)
-{
-    QByteArray res;
-    res.append(lead & 0xFF);
-    res.append(buildData(data));
-    return res;
-}
