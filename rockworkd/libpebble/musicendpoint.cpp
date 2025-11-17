@@ -32,17 +32,21 @@ void MusicEndpoint::writeMetadata()
         return;
     }
 
-    QStringList tmp;
-    tmp.append(m_metaData.artist.left(30));
-    tmp.append(m_metaData.album.left(30));
-    tmp.append(m_metaData.title.left(30));
-    QByteArray res = m_watchConnection->buildMessageData(MusicControlUpdateCurrentTrack, tmp);
-    WatchDataWriter writer(&res); // Used to skip these if not present in the metadata, but the watch didn't clear duration data
-    writer.writeLE(m_metaData.duration);
-    writer.writeLE(m_metaData.trackCount);
-    writer.writeLE(m_metaData.currentTrack);
+
+    QByteArray res;
+    WatchDataWriter writer(&res);
+    writer.write<quint8>(MusicControlUpdateCurrentTrack);
+
+    writer.writePascalString(m_metaData.artist.left(30));
+    writer.writePascalString(m_metaData.album.left(30));
+    writer.writePascalString(m_metaData.title.left(30));
+
+    writer.writeLE<quint32>(m_metaData.duration);
+    writer.writeLE<quint16>(m_metaData.trackCount);
+    writer.writeLE<quint16>(m_metaData.currentTrack);
 
     m_watchConnection->writeToPebble(WatchConnection::EndpointMusicControl, res);
+
 }
 
 void MusicEndpoint::writePlayState(const MusicPlayState &playState) {

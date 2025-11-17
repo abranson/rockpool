@@ -28,6 +28,8 @@
 
 #define BLUEZ_ADAPTER_IFACE "org.bluez.Adapter1"
 #define BLUEZ_DEVICE_IFACE "org.bluez.Device1"
+#define BLUEZ_SERVICE_IFACE "org.bluez.GattService1"
+#define BLUEZ_CHARACTERISTIC_IFACE "org.bluez.GattCharacteristic1"
 
 #define watchCall(call, func) \
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(call, this); \

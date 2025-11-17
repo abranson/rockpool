@@ -10,6 +10,8 @@
 #include <QBluetoothLocalDevice>
 #include <QDateTime>
 
+class BluezClient;
+
 class WatchConnection;
 class MusicEndpoint;
 class PhoneCallEndpoint;
@@ -51,7 +53,7 @@ class Pebble : public QObject
     Q_PROPERTY(QString language MEMBER m_language)
 
 public:
-    explicit Pebble(const QBluetoothAddress &address, QObject *parent = 0);
+    explicit Pebble(const QBluetoothAddress &address, BluezClient *client, QObject *parent = 0);
 
     QBluetoothAddress address() const;
 

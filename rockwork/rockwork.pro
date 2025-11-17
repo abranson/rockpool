@@ -2,7 +2,7 @@ TARGET = rockpool
 
 QT += qml quick dbus
 
-CONFIG += c++11
+CONFIG += c++1z
 CONFIG += sailfishapp
 
 PKGCONFIG += sailfishwebengine qt5embedwidget

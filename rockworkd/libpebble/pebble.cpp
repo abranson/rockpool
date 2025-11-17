@@ -41,7 +41,7 @@
 #include <QNetworkReply>
 #include <QTemporaryFile>
 
-Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
+Pebble::Pebble(const QBluetoothAddress &address, BluezClient *bluez, QObject *parent):
     QObject(parent),
     m_address(address),
     m_nam(new QNetworkAccessManager(this))
@@ -50,7 +50,8 @@ Pebble::Pebble(const QBluetoothAddress &address, QObject *parent):
     m_storagePath = QStandardPaths::writableLocation(QStandardPaths::DataLocation) + "/" + watchPath + "/";
     m_imagePath = QStandardPaths::writableLocation(QStandardPaths::PicturesLocation) + "/Screenshots/Pebble/";
 
-    m_connection = new WatchConnection(this);
+    m_connection = new WatchConnection(bluez, this);
+
     QObject::connect(m_connection, &WatchConnection::watchConnected, this, &Pebble::onPebbleConnected);
     QObject::connect(m_connection, &WatchConnection::watchDisconnected, this, &Pebble::onPebbleDisconnected);
     QObject::connect(Core::instance()->platform(), &PlatformInterface::timeChanged, this, &Pebble::syncTime);

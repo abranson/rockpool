@@ -26,28 +26,32 @@ QList<Pebble *> PebbleManager::pebbles() const
 
 void PebbleManager::loadPebbles()
 {
-    QList<Device> pairedPebbles = m_bluezClient->pairedPebbles();
-    foreach (const Device &device, pairedPebbles) {
-        qDebug() << "loading pebble" << device.address.toString();
-        Pebble *pebble = get(device.address);
+    QList<Device*> pairedPebbles = m_bluezClient->pairedPebbles();
+    foreach (Device *device, pairedPebbles) {
+        qDebug() << "loading pebble" << device->address().toString();
+        Pebble *pebble = get(device->address());
         if (!pebble) {
             qDebug() << "creating new pebble";
-            pebble = new Pebble(device.address, this);
-            pebble->setName(device.name);
+            pebble = new Pebble(device->address(), m_bluezClient, this);
+            pebble->setName(device->name());
             setupPebble(pebble);
             m_pebbles.append(pebble);
             qDebug() << "have pebbles:" << m_pebbles.count() << this;
             emit pebbleAdded(pebble);
         }
-        if (!pebble->connected()) {
-            pebble->connect();
-        }
     }
+
+    // TODO: Allow connecting unlimited RFCOMM pebbles
+    // but only 1 LE pebble at a time
+    if (m_pebbles.count() == 1) {
+        m_pebbles.at(0)->connect();
+    }
+
     QList<Pebble*> pebblesToRemove;
     foreach (Pebble *pebble, m_pebbles) {
         bool found = false;
-        foreach (const Device &dev, pairedPebbles) {
-            if (dev.address == pebble->address()) {
+        foreach (Device *dev, pairedPebbles) {
+            if (dev->address() == pebble->address()) {
                 found = true;
                 break;
             }

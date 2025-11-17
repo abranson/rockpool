@@ -3,13 +3,16 @@ QT -= gui
 
 TARGET = rockpoold
 
-CONFIG += c++11
+CONFIG += c++1z
 CONFIG += console
 CONFIG += link_pkgconfig
 
 PKGCONFIG += qt5-boostable libmkcal-qt5 KF5CalendarCore dbus-1 ambermpris timed-qt5 Qt5WebSockets quazip1-qt5
 
 SOURCES += main.cpp \
+    libpebble/bluez/device/device.cpp \
+    libpebble/bluez/device/devicecharacteristic.cpp \
+    libpebble/bluez/device/deviceservice.cpp \
     libpebble/watchconnection.cpp \
     libpebble/pebble.cpp \
     libpebble/watchdatareader.cpp \
@@ -28,6 +31,12 @@ SOURCES += main.cpp \
     libpebble/firmwaredownloader.cpp \
     libpebble/bundle.cpp \
     libpebble/watchlogendpoint.cpp \
+    libpebble/watchsocket/le/connectivity.cpp \
+    libpebble/watchsocket/le/gattpacket.cpp \
+    libpebble/watchsocket/le/gattserver.cpp \
+    libpebble/watchsocket/le/packetreader.cpp \
+    libpebble/watchsocket/lesocket.cpp \
+    libpebble/watchsocket/rfcommsocket.cpp \
     libpebble/ziphelper.cpp \
     libpebble/healthparams.cpp \
     libpebble/dataloggingendpoint.cpp \
@@ -72,6 +81,9 @@ SOURCES += main.cpp \
     platformintegration/sailfish/walltimemonitor.cpp
 
 HEADERS += \
+    libpebble/bluez/device/device.h \
+    libpebble/bluez/device/devicecharacteristic.h \
+    libpebble/bluez/device/deviceservice.h \
     libpebble/watchconnection.h \
     libpebble/pebble.h \
     libpebble/watchdatareader.h \
@@ -92,6 +104,13 @@ HEADERS += \
     libpebble/firmwaredownloader.h \
     libpebble/bundle.h \
     libpebble/watchlogendpoint.h \
+    libpebble/watchsocket/le/connectivity.h \
+    libpebble/watchsocket/le/gattpacket.h \
+    libpebble/watchsocket/le/gattserver.h \
+    libpebble/watchsocket/le/packetreader.h \
+    libpebble/watchsocket/lesocket.h \
+    libpebble/watchsocket/rfcommsocket.h \
+    libpebble/watchsocket/watchsocket.h \
     libpebble/ziphelper.h \
     libpebble/healthparams.h \
     libpebble/dataloggingendpoint.h \
