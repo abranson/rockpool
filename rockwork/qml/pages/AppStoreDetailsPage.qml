@@ -7,6 +7,8 @@ Page {
 
     property var pebble: null
     property var app: null
+    property bool appMutationsAllowed: rockPool.knownPebbleCount === 1
+    property bool appInstallationAllowed: appMutationsAllowed && pebble && pebble.connected
 
     SilicaFlickable {
         anchors.fill: parent
@@ -20,6 +22,26 @@ Page {
 
             PageHeader {
                 title: " "
+            }
+            Label {
+                width: parent.width - 2 * Theme.horizontalPageMargin
+                anchors.horizontalCenter: parent.horizontalCenter
+                visible: !root.appMutationsAllowed
+                text: qsTr("App changes are available only when exactly one watch is paired.")
+                color: Theme.secondaryColor
+                font.pixelSize: Theme.fontSizeSmall
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.Wrap
+            }
+            Label {
+                width: parent.width - 2 * Theme.horizontalPageMargin
+                anchors.horizontalCenter: parent.horizontalCenter
+                visible: root.appMutationsAllowed && !root.appInstallationAllowed
+                text: qsTr("Connect the watch to install apps.")
+                color: Theme.secondaryColor
+                font.pixelSize: Theme.fontSizeSmall
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.Wrap
             }
             Label {
                 text: root.app.name //qsTr("App details")
@@ -97,24 +119,30 @@ Page {
                     width: parent.width
                     height: watchImage.height
 
-                    property bool isRound: modelModel.get(root.pebble.model).shape === "round"
+                    property var watchModel: modelModel.getOrFallback(root.pebble.model)
+                    property bool isRound: watchModel.shape === "round"
 
                     ListView {
                         id: screenshotsListView
                         anchors.centerIn: parent
                         width: parent.width
-                        height: screenshotsItem.isRound ? 180 : 168
+                        height: screenshotsItem.watchModel.screenHeight
                         orientation: ListView.Horizontal
                         spacing: Theme.paddingSmall
                         snapMode: ListView.SnapToItem
-                        preferredHighlightBegin: (screenshotsListView.width - height * .95) / 2
-                        preferredHighlightEnd: (screenshotsListView.width + height * .95) / 2
+                        preferredHighlightBegin: (width - screenshotWidth) / 2
+                        preferredHighlightEnd: (width + screenshotWidth) / 2
                         highlightRangeMode: ListView.StrictlyEnforceRange
+
+                        property real screenshotWidth: height
+                                                       * screenshotsItem.watchModel.screenWidth
+                                                       / screenshotsItem.watchModel.screenHeight
 
                         model: root.app.screenshotImages
                         delegate: AnimatedImage {
                             height: screenshotsListView.height
-                            width: screenshotsItem.isRound ? height : height * 0.86
+                            width: height * screenshotsItem.watchModel.screenWidth
+                                   / screenshotsItem.watchModel.screenHeight
                             fillMode: Image.PreserveAspectFit
                             source: modelData
                         }
@@ -126,8 +154,7 @@ Page {
                         width: (sourceSize.width ? sourceSize.width : 251)
                         fillMode: Image.PreserveAspectFit
                         anchors.centerIn: parent
-                        anchors.horizontalCenterOffset: Theme.paddingSmall
-                        source:  modelModel.get(root.pebble.model).image
+                        source: screenshotsItem.watchModel.image
                         Rectangle {
                             color: "black"
                             width: maskFace.width
@@ -155,9 +182,9 @@ Page {
                             id: maskFace
                             color: "blue"
                             anchors.centerIn: parent
-                            anchors.horizontalCenterOffset: Theme.paddingSmall/2
                             height: parent.height
-                            width: screenshotsItem.isRound ? height : height * 0.86
+                            width: height * screenshotsItem.watchModel.screenWidth
+                                   / screenshotsItem.watchModel.screenHeight
                             radius: screenshotsItem.isRound ? height / 2 : 0
                         }
                     }
@@ -242,8 +269,10 @@ Page {
             Button {
                 id: installButton
                 anchors { right: parent.right; top: parent.top; margins: Theme.paddingSmall }
-                enabled: !installed && !installing && !root.app.companion
-                text: enabled ? qsTr("Install") : (installing && !installed ? qsTr("Installing...") : (root.app.companion ? qsTr("Needs Companion") : qsTr("Installed")))
+                enabled: root.appInstallationAllowed && !installed && !installing && !root.app.companion
+                text: installing && !installed ? qsTr("Installing...")
+                                               : (root.app.companion ? qsTr("Needs Companion")
+                                                                     : (installed ? qsTr("Installed") : qsTr("Install")))
                 property bool installing: false
                 property bool installed: root.pebble.installedApps.contains(root.app.storeId) || root.pebble.installedWatchfaces.contains(root.app.storeId)
                 Connections {
@@ -261,6 +290,9 @@ Page {
                 }
 
                 onClicked: {
+                    if (!root.appInstallationAllowed)
+                        return
+
                     root.pebble.installApp(root.app.storeId)
                     installButton.installing = true
                 }

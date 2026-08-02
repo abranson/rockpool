@@ -40,7 +40,9 @@ Page {
                 width: parent.width
                 text: qsTr("Submit")
                 onClicked: pebble.loadLanguagePack(languages[langSel.currentIndex].file)
-                enabled: languages.length>0 && langVer != languages[langSel.currentIndex].ISOLocal+":"+languages[langSel.currentIndex].version
+                enabled: pebble && pebble.connected && languages.length > 0
+                         && langVer != languages[langSel.currentIndex].ISOLocal
+                                      + ":" + languages[langSel.currentIndex].version
             }
         }
     }
@@ -71,4 +73,3 @@ Page {
         xhr.send();
     }
 }
-

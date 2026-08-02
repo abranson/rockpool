@@ -44,6 +44,8 @@ public:
     // Update only the appearance override of an existing entry (no-op if unknown). Kept separate
     // from insert() because the NotificationFilterChanged signal path carries no colour/icon.
     void setAppearance(const QString &sourceId, const QString &colorName, const QString &iconCode);
+    void setColorName(const QString &sourceId, const QString &colorName);
+    void setIconCode(const QString &sourceId, const QString &iconCode);
 
 signals:
     void countChanged();

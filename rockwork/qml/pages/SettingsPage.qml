@@ -7,10 +7,39 @@ Page {
     property var pebble: null
     property string connectedProfile: pebble ? pebble.profileWhenConnected : ""
     property string disconnectedProfile: pebble ? pebble.profileWhenDisconnected : ""
-    property string oauth: (pebble) ? pebble.oauthToken : ""
+    property bool settingsReady: pebble && pebble.settingsPageReady
+    property bool accountAuthenticated: pebble ? pebble.accountAuthenticated : false
     property var cannedResponses: pebble ? pebble.cannedResponses : {}
+    property bool cannedResponsesReady: pebble && pebble.cannedResponsesReady
     property var notificationsMap: pebble ? pebble.notificationsFilter:{}
-    property bool timelineWindowChanged: false
+    property bool timelineWindowDirty
+    property bool loadingTimelineWindow
+
+    function loadTimelineWindow() {
+        if (!root.pebble || !root.pebble.timelineWindowReady
+                || root.timelineWindowDirty) {
+            return
+        }
+        root.loadingTimelineWindow = true
+        timelineWindowStartField.text = root.pebble.timelineWindowStart
+        timelineWindowFadeField.text = root.pebble.timelineWindowFade
+        timelineWindowEndField.text = root.pebble.timelineWindowEnd
+        root.loadingTimelineWindow = false
+    }
+
+    Component.onCompleted: {
+        if (root.pebble) {
+            root.pebble.refreshSettingsPage()
+            root.pebble.refreshCannedResponses()
+            root.pebble.refreshTimelineWindow()
+        }
+    }
+
+    Connections {
+        target: root.pebble
+        onTimelineWindowChanged: root.loadTimelineWindow()
+        onTimelineWindowReadyChanged: root.loadTimelineWindow()
+    }
 
     SilicaFlickable {
         anchors.fill: parent
@@ -32,18 +61,18 @@ Page {
             ComboBox {
                 width: parent.width
                 label: qsTr("Distance Units")
+                enabled: root.settingsReady
                 menu: ContextMenu {
                         MenuItem {
                             text: qsTr("Metric")
+                            onClicked: root.pebble.imperialUnits = false
                         }
                         MenuItem {
                             text: qsTr("Imperial")
+                            onClicked: root.pebble.imperialUnits = true
                         }
                     }
-                onCurrentIndexChanged: {
-                    root.pebble.imperialUnits = (currentIndex===1)
-                }
-                currentIndex: (root.pebble.imperialUnits) ? 1 : 0
+                currentIndex: root.pebble && root.pebble.imperialUnits ? 1 : 0
             }
             Button {
                 width: parent.width
@@ -58,53 +87,86 @@ Page {
             TextSwitch {
                 width: parent.width
                 text: qsTr("Sync calendar to timeline")
-                checked: root.pebble.calendarSyncEnabled
-                onClicked: {
-                    root.pebble.calendarSyncEnabled = checked
-                }
+                enabled: root.settingsReady
+                automaticCheck: false
+                checked: root.pebble ? root.pebble.calendarSyncEnabled : false
+                onClicked: root.pebble.calendarSyncEnabled =
+                           !root.pebble.calendarSyncEnabled
             }
             TextSwitch {
                 width: parent.width
                 text: qsTr("Sync Apps from Cloud")
-                checked: root.pebble.syncAppsFromCloud
-                onClicked: {
-                    root.pebble.syncAppsFromCloud = checked
-                }
+                enabled: root.settingsReady
+                automaticCheck: false
+                checked: root.pebble ? root.pebble.syncAppsFromCloud : false
+                onClicked: root.pebble.syncAppsFromCloud =
+                           !root.pebble.syncAppsFromCloud
             }
             Button {
                 width: parent.width
                 text: qsTr("Reset Timeline")
+                enabled: pebble && pebble.connected
                 onClicked: pebble.resetTimeline()
             }
             TextField {
+                id: timelineWindowStartField
+
                 width: parent.width
+                enabled: root.pebble && root.pebble.timelineWindowReady
                 label: qsTr("Timeline Window Start (days ago)")
                 placeholderText: label
-                inputMethodHints: Qt.ImhDigitsOnly
-                text: pebble.timelineWindowStart
-                onTextChanged: timelineWindowChanged=true
+                inputMethodHints: Qt.ImhFormattedNumbersOnly
+                validator: IntValidator { bottom: -365; top: -1 }
+                onTextChanged: if (activeFocus && !root.loadingTimelineWindow) {
+                    root.timelineWindowDirty = true
+                }
             }
             TextField {
+                id: timelineWindowEndField
+
                 width: parent.width
+                enabled: root.pebble && root.pebble.timelineWindowReady
                 label: qsTr("Timeline Window End (days ahead)")
                 placeholderText: label
-                inputMethodHints: Qt.ImhDigitsOnly
-                text: pebble.timelineWindowEnd
-                onTextChanged: timelineWindowChanged=true
+                inputMethodHints: Qt.ImhFormattedNumbersOnly
+                validator: IntValidator { bottom: -365; top: 365 }
+                onTextChanged: if (activeFocus && !root.loadingTimelineWindow) {
+                    root.timelineWindowDirty = true
+                }
             }
             TextField {
+                id: timelineWindowFadeField
+
                 width: parent.width
+                enabled: root.pebble && root.pebble.timelineWindowReady
                 label: qsTr("Notification re-delivery expiration (seconds)")
                 placeholderText: label
-                inputMethodHints: Qt.ImhDigitsOnly
-                text: pebble.timelineWindowFade
-                onTextChanged: timelineWindowChanged=true
+                inputMethodHints: Qt.ImhFormattedNumbersOnly
+                validator: IntValidator { bottom: -2592000; top: 2592000 }
+                onTextChanged: if (activeFocus && !root.loadingTimelineWindow) {
+                    root.timelineWindowDirty = true
+                }
             }
             Button {
                 width: parent.width
                 text: qsTr("Set Timeline Window")
-                onClicked: {pebble.setTimelineWindow();timelineWindowChanged=false}
-                enabled: timelineWindowChanged
+                onClicked: {
+                    root.pebble.setTimelineWindow(
+                                Number(timelineWindowStartField.text),
+                                Number(timelineWindowFadeField.text),
+                                Number(timelineWindowEndField.text))
+                    root.timelineWindowDirty = false
+                }
+                enabled: root.pebble && root.pebble.timelineWindowReady
+                         && root.timelineWindowDirty
+                         && timelineWindowStartField.acceptableInput
+                         && timelineWindowFadeField.acceptableInput
+                         && timelineWindowEndField.acceptableInput
+                         && Number(timelineWindowStartField.text)
+                            <= Number(timelineWindowEndField.text)
+                         && timelineWindowStartField.text.length > 0
+                         && timelineWindowFadeField.text.length > 0
+                         && timelineWindowEndField.text.length > 0
             }
 
             SectionHeader {
@@ -112,26 +174,40 @@ Page {
             }
             Label {
                 width: parent.width
-                visible: (pebble && oauth)
+                visible: pebble && accountAuthenticated
                 text: visible ? pebble.accountName : ""
             }
             Label {
                 width: parent.width
-                visible: (pebble && oauth)
+                visible: pebble && accountAuthenticated
                 text: visible ? pebble.accountEmail : ""
             }
             Button {
                 width: parent.width
-                text: oauth ? qsTr("Logout") : qsTr("Login")
-                onClicked: if(oauth) {
+                enabled: pebble && !pebble.accountTokenPending
+                text: accountAuthenticated ? qsTr("Logout") : qsTr("Login")
+                onClicked: if(accountAuthenticated) {
                                pebble.setOAuthToken("");
-                               oauth = "";
                            } else {
                                pageStack.push(Qt.resolvedUrl("AppSettingsPage.qml"), {
                                               url: "https://boot.rebble.io",
-                                              pebble: pebble
+                                              pebble: pebble,
+                                              oauthBootFlow: true
                                           })
                            }
+            }
+            BusyIndicator {
+                anchors.horizontalCenter: parent.horizontalCenter
+                running: pebble && pebble.accountTokenPending
+                size: BusyIndicatorSize.Small
+                visible: running
+            }
+            Label {
+                width: parent.width
+                visible: pebble && pebble.accountTokenError.length > 0
+                text: visible ? pebble.accountTokenError : ""
+                color: Theme.errorColor
+                wrapMode: Text.Wrap
             }
 
             SectionHeader {
@@ -140,50 +216,55 @@ Page {
             ComboBox {
                 width: parent.width
                 label: qsTr("Connected")
+                enabled: root.settingsReady
                 menu: ContextMenu {
                     MenuItem {
                         text: qsTr("no change")
+                        down: root.connectedProfile === ""
+                        onClicked: root.pebble.profileWhenConnected = ""
                     }
                     Repeater {
                         model: rockPool.sysProfiles
                         delegate: MenuItem {
                             text: modelData
-                            down: modelData === root.connectedProfile || (root.connectedProfile === "" && index === 0)
+                            down: modelData === root.connectedProfile
+                            onClicked: root.pebble.profileWhenConnected = modelData
                         }
                     }
                 }
                 value: root.connectedProfile === "" ? qsTr("no change") : root.connectedProfile
-                onCurrentIndexChanged: {
-                    root.connectedProfile = currentIndex == 0 ? "" : currentItem.text
-                    root.pebble.profileWhenConnected = root.connectedProfile
-                }
             }
             ComboBox {
                 width: parent.width
                 label: qsTr("Disconnected")
+                enabled: root.settingsReady
                 menu: ContextMenu {
                     MenuItem {
                         text: qsTr("no change")
+                        down: root.disconnectedProfile === ""
+                        onClicked: root.pebble.profileWhenDisconnected = ""
                     }
                     Repeater {
                         model: rockPool.sysProfiles
                         delegate: MenuItem {
                             text: modelData
-                            down: modelData === root.disconnectedProfile || (root.disconnectedProfile === "" && index == 0)
+                            down: modelData === root.disconnectedProfile
+                            onClicked: root.pebble.profileWhenDisconnected = modelData
                         }
                     }
                 }
                 value: root.disconnectedProfile === "" ? qsTr("no change") : root.disconnectedProfile
-                onCurrentIndexChanged: {
-                    root.disconnectedProfile = currentIndex == 0 ? "" : currentItem.text;
-                    root.pebble.profileWhenDisconnected = root.disconnectedProfile;
-                }
             }
             SectionHeader {
                 text: qsTr("Canned Messages")
             }
+            BusyIndicator {
+                anchors.horizontalCenter: parent.horizontalCenter
+                running: !root.cannedResponsesReady
+                visible: running
+            }
             Repeater {
-                model: Object.keys(cannedResponses)
+                model: root.cannedResponsesReady ? Object.keys(cannedResponses) : []
                 delegate: BackgroundItem {
                     Row {
                         height: Theme.itemSizeSmall
@@ -215,7 +296,7 @@ Page {
                                            pebble: root.pebble,
                                            source: modelData,
                                            title: (modelData in notificationsMap)?notificationsMap[modelData]["name"]:modelData,
-                                           list: cannedResponses[modelData]})
+                                           list: cannedResponses[modelData].slice(0)})
                     }
                 }
             }

@@ -1,6 +1,7 @@
-package io.rebble.libpebblecommon.rockwork
+package io.rebble.libpebblecommon.compat.rockwork
 
 import co.touchlab.kermit.Logger
+import io.rebble.libpebblecommon.LibPebbleConfig
 import io.rebble.libpebblecommon.connection.ActiveDevice
 import io.rebble.libpebblecommon.connection.BleDiscoveredPebbleDevice
 import io.rebble.libpebblecommon.connection.bt.ble.bluez.BluezManager
@@ -10,22 +11,59 @@ import io.rebble.libpebblecommon.connection.FirmwareUpdateCheckResult
 import io.rebble.libpebblecommon.connection.endpointmanager.FirmwareUpdater
 import io.rebble.libpebblecommon.connection.KnownPebbleDevice
 import io.rebble.libpebblecommon.connection.LibPebble
+import io.rebble.libpebblecommon.connection.PebbleBtClassicIdentifier
 import io.rebble.libpebblecommon.connection.PebbleDevice
-import io.rebble.libpebblecommon.linux.dbus.RawSessionConnection
+import io.rebble.libpebblecommon.database.dao.AppWithCount
+import io.rebble.libpebblecommon.rockpool.RockpoolSettings
+import io.rebble.libpebblecommon.rockpool.DevConnectionStateObserver
+import io.rebble.libpebblecommon.rockpool.AccountSettingsCoordinator
+import io.rebble.libpebblecommon.rockpool.BondedWatchForgetCoordinator
+import io.rebble.libpebblecommon.rockpool.BondedWatchForgetOutcome
+import io.rebble.libpebblecommon.rockpool.NotificationFilterCoordinator
+import io.rebble.libpebblecommon.rockpool.ProfileSettingsChange
+import io.rebble.libpebblecommon.rockpool.ProfileSettingsCoordinator
+import io.rebble.libpebblecommon.rockpool.HealthSettingsCoordinator
+import io.rebble.libpebblecommon.rockpool.HealthSettingsUpdate
+import io.rebble.libpebblecommon.rockpool.LibPebbleConfigMutationCoordinator
+import io.rebble.libpebblecommon.rockpool.LibPebbleConfigUpdate
+import io.rebble.libpebblecommon.rockpool.TimelineWindowCoordinator
+import io.rebble.libpebblecommon.rockpool.loadPlatformNotificationFilters
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import org.freedesktop.dbus.DBusPath
 import org.freedesktop.dbus.connections.impl.DBusConnection
 import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder
 import org.freedesktop.dbus.messages.DBusSignal
 import org.freedesktop.dbus.types.Variant
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.time.Duration.Companion.seconds
+
+internal data class RockworkFirmwareStatus(
+    val available: Boolean,
+    val candidateVersion: String,
+    val releaseNotes: String,
+) {
+    fun shouldSignalAfter(previous: RockworkFirmwareStatus): Boolean = this != previous
+}
+
+private fun rockworkFirmwareStatus(device: PebbleDevice?): RockworkFirmwareStatus {
+    val update = (device as? CommonConnectedDevice)?.firmwareUpdateAvailable?.result
+        as? FirmwareUpdateCheckResult.FoundUpdate
+    return RockworkFirmwareStatus(
+        available = update != null,
+        candidateVersion = update?.version?.stringVersion.orEmpty(),
+        releaseNotes = update?.notes.orEmpty(),
+    )
+}
 
 /**
  * Claims org.rockwork on the session bus and maintains the Manager object plus one Pebble object
@@ -33,22 +71,83 @@ import kotlin.time.Duration.Companion.seconds
  */
 internal class RockworkService(
     private val libPebble: LibPebble,
-    private val settings: RockworkSettings = RockworkSettings(),
+    private val bondedWatchForget: BondedWatchForgetCoordinator,
+    private val settings: RockpoolSettings,
+    private val notificationFilters: NotificationFilterCoordinator,
+    private val accountSettings: AccountSettingsCoordinator,
+    private val profileSettings: ProfileSettingsCoordinator,
+    private val healthSettings: HealthSettingsCoordinator,
+    private val timelineWindow: TimelineWindowCoordinator,
+    private val classicAvailable: Boolean,
+    private val configFitsStorage: (LibPebbleConfig) -> Boolean = { true },
 ) {
     private val logger = Logger.withTag("RockworkService")
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    private val reconnecting = AtomicBoolean(false)
+    private val observersStarted = AtomicBoolean(false)
+    private val connectionLock = Any()
+    private val weatherCoordinator = RockworkWeatherCoordinator(settings, libPebble)
+    private val notificationAppearance = RockworkNotificationAppearanceCoordinator(libPebble)
+    private val configMutations = LibPebbleConfigMutationCoordinator.forLibPebble(libPebble)
+    private val notificationFilterMutations = RockworkNotificationFilterMutations(
+        scope = scope,
+        notificationFilters = notificationFilters,
+        applicationName = { sourceId ->
+            libPebble.notificationApps().first()
+                .find { it.app.packageName == sourceId }
+                ?.app
+                ?.name
+        },
+    )
+
+    @Volatile
+    private var latestNotificationApps: List<AppWithCount> = emptyList()
 
     @Volatile
     private var connection: DBusConnection? = null
     private val exported = LinkedHashMap<String, ExportedWatch>() // address -> object
+    private val notificationSourcePublisher = RockworkNotificationSourcePublisher(
+        snapshot = {
+            rockworkNotificationSources(
+                latestNotificationApps,
+                loadPlatformNotificationFilters(settings),
+            )
+        },
+        emit = { source ->
+            broadcastSignal { targetPath ->
+                RockworkPebble.NotificationFilterChanged(
+                    targetPath,
+                    source.sourceId,
+                    source.name,
+                    source.icon,
+                    source.enabled,
+                )
+            }
+        },
+        onFailure = { error ->
+            logger.w { "notification source publication failed: ${error.message}" }
+        },
+    )
+
+    init {
+        profileSettings.addListener(::profileSettingsChanged)
+        healthSettings.addListener(::healthSettingsChanged)
+        configMutations.addListener(::libPebbleConfigChanged)
+        notificationFilters.addListener {
+            notificationSourcePublisher.invalidate()
+        }
+    }
 
     private data class ExportedWatch(
         val path: String,
         val obj: RockworkPebbleObject,
+        val devConnectionObserver: DevConnectionStateObserver,
         var connected: Boolean,
         var connectionState: Int,
+        var connectionError: String,
         var upgradingFirmware: Boolean = false,
-        var upgradeAvailable: Boolean = false,
+        var firmwareStatus: RockworkFirmwareStatus = RockworkFirmwareStatus(false, "", ""),
+        var languageStatus: RockworkLanguageStatus = RockworkLanguageStatus("", null),
     )
 
     @Volatile
@@ -57,10 +156,42 @@ internal class RockworkService(
     @Volatile
     private var scanResults: List<Variant<*>> = emptyList()
 
+    private val scanCandidatesLock = Any()
+    private val scanCandidates =
+        LinkedHashMap<String, RockworkScanCandidate<DiscoveredPebbleDevice>>()
+
     // Addresses BlueZ has bonded, refreshed when a scan starts. Discovered watches whose address
     // is in here are already paired and are hidden from the scan results (see updateScanResults).
     @Volatile
     private var bondedAddresses: Set<String> = emptySet()
+
+    private val mixedScanSession = RockworkMixedScanSession(
+        scope = scope,
+        startBle = { libPebble.startBleScan() },
+        stopBle = { libPebble.stopBleScan() },
+        startClassic = { libPebble.startClassicScan() },
+        stopClassic = { libPebble.stopClassicScan() },
+        classicAvailable = classicAvailable,
+        onStarted = {
+            synchronized(scanCandidatesLock) { scanCandidates.clear() }
+            publishScanResults(emptyList())
+        },
+        onActiveChanged = ::setScanning,
+        onFailure = { operation, error -> logger.e(operation, error) },
+    )
+
+    private val scanCoordinator = RockworkScanCoordinator(
+        scope = scope,
+        refreshBondedAddresses = { BluezManager.bondedAddresses() },
+        applyBondedAddresses = { bondedAddresses = it },
+        recomputeResults = { updateScanResults(libPebble.watches.value) },
+        startScan = { mixedScanSession.start() },
+        stopScan = { mixedScanSession.stop() },
+        onRefreshFailure = { logger.e("StartScan bonded-address refresh", it) },
+        onScanFailure = { operation, error -> logger.e(operation, error) },
+    )
+
+    private val connectCoordinator = RockworkConnectCoordinator(scope, ::connectCandidate)
 
     // Named class (not an anonymous object): dbus-java invokes exported objects reflectively,
     // so this needs a stable class name in the native-image reflection config.
@@ -74,12 +205,11 @@ internal class RockworkService(
         override fun StartScan() {
             // Refresh the bonded set first, so already-paired / dual-mode-misreporting watches
             // stay out of the fresh scan results (see updateScanResults).
-            scope.launch(Dispatchers.IO) { bondedAddresses = BluezManager.bondedAddresses() }
-            scope.launch { runCatching { libPebble.startBleScan() }.onFailure { logger.e("StartScan", it) } }
+            scanCoordinator.start()
         }
 
         override fun StopScan() {
-            scope.launch { runCatching { libPebble.stopBleScan() }.onFailure { logger.e("StopScan", it) } }
+            scanCoordinator.stop()
         }
 
         override fun IsScanning(): Boolean = scanning
@@ -88,18 +218,19 @@ internal class RockworkService(
             // Test hook: exercise the av/a{sv} marshalling + UI parsing without BT hardware.
             if (System.getenv("LIBPEBBLE3D_FAKE_SCAN") == "1") {
                 return listOf(
-                    scanResultVariant("Fake Pebble XYZW", "AA:BB:CC:DD:EE:FF", -42)
+                    scanResultVariant("Fake Pebble XYZW", "AA:BB:CC:DD:EE:FF", -42, "ble")
                 )
             }
             return scanResults
         }
 
         override fun ConnectWatch(address: String) {
-            val device = findWatch("ConnectWatch", address) ?: return
-            logger.i { "ConnectWatch: connecting to ${device.displayName()} ($address)" }
-            // Scanning while connecting starves LE connection attempts on many controllers.
-            scope.launch { runCatching { libPebble.stopBleScan() } }
-            device.connect()
+            if (!bondedWatchForget.connect(address)) {
+                logger.w { "ConnectWatch: Forget is committing for $address" }
+                return
+            }
+            scanCoordinator.stop()
+            connectCoordinator.start(address)
         }
 
         override fun DisconnectWatch(address: String) {
@@ -126,14 +257,21 @@ internal class RockworkService(
                 return
             }
             logger.i { "ForgetWatch: forgetting ${device.displayName()} ($address)" }
-            known.forget()
-            // forget() only clears libpebble3's own record — nothing in it removes the BlueZ bond.
-            // Left behind, the bond makes the next pairing attempt fail: BlueZ still holds keys for
-            // a device libpebble3 now treats as new, and the watch rejects the connection. Give
-            // forget()'s disconnect a moment first, since removing the device also forces one.
-            scope.launch(Dispatchers.IO) {
-                delay(FORGET_BOND_SETTLE)
-                BluezManager.removeBond(address)
+            scope.launch {
+                when (
+                    bondedWatchForget.forget(
+                        address = address,
+                        name = known.name,
+                        beginCommit = { true },
+                        disconnect = { (known as? ActiveDevice)?.disconnect() },
+                        forgetPortable = known::forget,
+                    )
+                ) {
+                    BondedWatchForgetOutcome.COMPLETED -> Unit
+                    BondedWatchForgetOutcome.SUPERSEDED ->
+                        logger.i { "ForgetWatch: reconnect superseded Forget for $address" }
+                    else -> logger.w { "ForgetWatch: could not fully forget $address" }
+                }
             }
         }
 
@@ -149,45 +287,93 @@ internal class RockworkService(
     private val manager = ManagerObject()
 
     fun start() {
+        startObservers()
+        ensureConnection()
+    }
+
+    private fun startObservers() {
+        if (!observersStarted.compareAndSet(false, true)) return
+        notificationSourcePublisher.start(scope)
+        watchWatches()
+        watchLocker()
+        watchNotificationApps()
+        watchScanning()
+    }
+
+    private fun ensureConnection() {
+        if (!reconnecting.compareAndSet(false, true)) return
         scope.launch {
-            while (connection == null) {
-                try {
-                    connectAndExport()
-                } catch (e: Exception) {
-                    logger.w { "org.rockwork unavailable (${e.message}); retrying in 30s" }
-                    delay(30.seconds)
+            try {
+                while (connection == null) {
+                    try {
+                        connectAndExport()
+                    } catch (e: Exception) {
+                        logger.w { "org.rockwork unavailable (${e.message}); retrying in 30s" }
+                        delay(30.seconds)
+                    }
                 }
+            } finally {
+                reconnecting.set(false)
+                // The connection can disappear between the loop condition and
+                // clearing this guard, so retain exactly one reconnect loop.
+                if (connection == null) ensureConnection()
             }
         }
     }
 
     private suspend fun connectAndExport() = withContext(Dispatchers.IO) {
-        val conn = DBusConnectionBuilder.forSessionBus().build()
+        // This adapter must not share the primary org.rockpool connection.  D-Bus exports
+        // belong to a connection rather than a well-known name, so a shared connection would
+        // accidentally expose new objects through org.rockwork (and vice versa).
+        val conn = DBusConnectionBuilder.forSessionBus().withShared(false).build()
         try {
             // Fails while rockpoold still owns the name: intentional, rockpoold keeps priority.
             conn.requestBusName(BUS_NAME)
+            conn.exportObject(MANAGER_PATH, manager)
+            synchronized(exported) {
+                exported.values.forEach { conn.exportObject(it.path, it.obj) }
+                synchronized(connectionLock) { connection = conn }
+            }
         } catch (e: Exception) {
             conn.disconnect()
             throw e
         }
-        conn.exportObject(MANAGER_PATH, manager)
-        connection = conn
         logger.i { "org.rockwork exported on the session bus" }
-        watchWatches()
-        watchLocker()
-        watchScanning()
+        watchBusConnection(conn)
     }
 
-    private fun watchScanning() {
-        scope.launch {
-            libPebble.isScanningBle.collect { isScanning ->
-                if (scanning != isScanning) {
-                    scanning = isScanning
-                    emitSignal(RockworkManager.ScanningChanged(MANAGER_PATH, isScanning))
+    /** dbus-java has no disconnect callback, so probe and re-export on loss. */
+    private fun watchBusConnection(conn: DBusConnection) {
+        scope.launch(Dispatchers.IO) {
+            while (connection === conn) {
+                delay(BUS_HEALTH_INTERVAL)
+                if (connection !== conn) break
+                val healthy = runCatching {
+                    conn.getNames()
+                    true
+                }.getOrDefault(false)
+                if (!healthy) {
+                    markConnectionLost(conn)
+                    break
                 }
             }
         }
     }
+
+    private fun markConnectionLost(conn: DBusConnection) {
+        val detached = synchronized(connectionLock) {
+            if (connection !== conn) false else {
+                connection = null
+                true
+            }
+        }
+        if (!detached) return
+        runCatching { conn.disconnect() }
+        logger.w { "org.rockwork session-bus connection lost; reconnecting" }
+        ensureConnection()
+    }
+
+    private fun watchScanning() = Unit
 
     private fun watchWatches() {
         scope.launch {
@@ -199,6 +385,7 @@ internal class RockworkService(
                 synchronized(exported) {
                     (exported.keys - known.keys).toList().forEach { address ->
                         exported.remove(address)?.let { watch ->
+                            watch.devConnectionObserver.close()
                             runCatching { connection?.unExportObject(watch.path) }
                             listChanged = true
                         }
@@ -209,6 +396,7 @@ internal class RockworkService(
                         // must see as connected (recovery/firmware UI lives there).
                         val isConnected = device is CommonConnectedDevice
                         val state = connectionStateOf(device)
+                        val error = device.connectionFailureInfo?.reason?.name ?: ""
                         if (existing == null) {
                             val path = "$PATH_PREFIX${address.replace(":", "_")}"
                             val obj = RockworkPebbleObject(
@@ -216,12 +404,34 @@ internal class RockworkService(
                                 path = path,
                                 libPebble = libPebble,
                                 settings = settings,
+                                notificationFilterMutations = notificationFilterMutations,
+                                accountSettings = accountSettings,
+                                profileSettings = profileSettings,
+                                timelineWindow = timelineWindow,
+                                healthCoordinator = healthSettings,
+                                weatherCoordinator = weatherCoordinator,
+                                notificationAppearance = notificationAppearance,
                                 scope = scope,
                                 emit = ::emitSignal,
+                                broadcast = ::broadcastSignal,
+                                configFitsStorage = configFitsStorage,
                             )
                             runCatching { connection?.exportObject(path, obj) }
                                 .onFailure { logger.e("export $path failed", it) }
-                            exported[address] = ExportedWatch(path, obj, isConnected, state)
+                            val devConnectionObserver = DevConnectionStateObserver(scope) {
+                                active -> emitSignal(
+                                    RockworkPebble.DevConnectionChanged(path, active)
+                                )
+                            }
+                            exported[address] = ExportedWatch(
+                                path,
+                                obj,
+                                devConnectionObserver,
+                                isConnected,
+                                state,
+                                error,
+                                languageStatus = rockworkLanguageStatus(device),
+                            )
                             listChanged = true
                             if (isConnected) emitSignal(RockworkPebble.Connected(path))
                             if (state != RockworkConnectionState.DISCONNECTED) {
@@ -234,32 +444,45 @@ internal class RockworkService(
                                     if (isConnected) RockworkPebble.Connected(existing.path)
                                     else RockworkPebble.Disconnected(existing.path)
                                 )
-                                applyProfile(address, isConnected)
                             }
                             // Emit the finer-grained state too (connecting/negotiating/failed),
                             // which the connected/disconnected pair can't express — this is what
                             // lets PairWatchPage show progress and stop spinning on a failed pair.
-                            if (existing.connectionState != state) {
+                            if (shouldEmitConnectionStateChanged(
+                                existing.connectionState,
+                                existing.connectionError,
+                                state,
+                                error,
+                            )) {
                                 existing.connectionState = state
+                                existing.connectionError = error
                                 emitSignal(RockworkPebble.ConnectionStateChanged(existing.path, state))
                             }
                         }
                         exported[address]?.let { watch ->
                             val common = device as? CommonConnectedDevice
+                            watch.devConnectionObserver.update(
+                                source = common,
+                                state = common?.devConnectionActive,
+                            )
                             val upgrading = (common?.firmwareUpdateState
                                 is FirmwareUpdater.FirmwareUpdateStatus.Active)
                             if (watch.upgradingFirmware != upgrading) {
                                 watch.upgradingFirmware = upgrading
                                 emitSignal(RockworkPebble.UpgradingFirmwareChanged(watch.path))
                             }
-                            val available = (common?.firmwareUpdateAvailable?.result
-                                is FirmwareUpdateCheckResult.FoundUpdate)
-                            if (watch.upgradeAvailable != available) {
-                                watch.upgradeAvailable = available
+                            val firmwareStatus = rockworkFirmwareStatus(device)
+                            if (firmwareStatus.shouldSignalAfter(watch.firmwareStatus)) {
+                                watch.firmwareStatus = firmwareStatus
                                 emitSignal(
                                     RockworkPebble.FirmwareUpgradeAvailableChanged(watch.path)
                                 )
                             }
+                            val languageStatus = rockworkLanguageStatus(device)
+                            if (languageStatus.shouldSignalAfter(watch.languageStatus)) {
+                                emitSignal(RockworkPebble.LanguageVersionChanged(watch.path))
+                            }
+                            watch.languageStatus = languageStatus
                         }
                     }
                 }
@@ -277,22 +500,99 @@ internal class RockworkService(
         val hidden = devices.filterIsInstance<KnownPebbleDevice>()
             .mapTo(HashSet()) { it.identifier.asString.uppercase() }
             .apply { addAll(bondedAddresses) }
-        // Every advertisement yields a fresh device instance; dedupe by address (last wins,
-        // which carries the freshest rssi).
-        val discovered = devices.filterIsInstance<DiscoveredPebbleDevice>()
-            .filter { it.identifier.asString.uppercase() !in hidden }
-            .associateBy { it.identifier.asString.uppercase() }
-            .values.map { device ->
+        val accumulating = mixedScanSession.isActive()
+        val results = synchronized(scanCandidatesLock) {
+            val discoveries = if (accumulating) {
+                devices.filterIsInstance<DiscoveredPebbleDevice>().map(::scanCandidateOf)
+            } else {
+                emptyList()
+            }
+            val updated = RockworkScanCandidatePolicy.merge(scanCandidates, hidden, discoveries)
+            scanCandidates.clear()
+            scanCandidates.putAll(updated)
+            scanCandidates.values.map { candidate ->
+                val device = candidate.device
                 scanResultVariant(
                     name = device.displayName(),
                     address = device.identifier.asString,
                     rssi = (device as? BleDiscoveredPebbleDevice)?.rssi ?: 0,
+                    transport = candidate.transport.dbusName,
                 )
             }
-        if (discovered != scanResults) {
-            scanResults = discovered
-            emitSignal(RockworkManager.ScanResultsChanged(MANAGER_PATH))
         }
+        publishScanResults(results)
+    }
+
+    private suspend fun connectCandidate(address: String) {
+        val key = address.uppercase()
+        val remembered = synchronized(scanCandidatesLock) { scanCandidates[key] }
+        val transport = remembered?.transport
+        val device = try {
+            var current = currentDiscoveredCandidate(key, transport)
+            if (current == null && remembered != null) {
+                if (transport == RockworkScanTransport.CLASSIC && !classicAvailable) {
+                    logger.w { "ConnectWatch: Classic transport is unavailable for $address" }
+                    return
+                }
+                if (transport == RockworkScanTransport.CLASSIC) {
+                    libPebble.startClassicScan()
+                } else {
+                    libPebble.startBleScan()
+                }
+                current = withTimeoutOrNull(CANDIDATE_REDISCOVERY_TIMEOUT) {
+                    libPebble.watches.mapNotNull { watches ->
+                        watches.filterIsInstance<DiscoveredPebbleDevice>()
+                            .map(::scanCandidateOf)
+                            .firstOrNull { RockworkScanCandidatePolicy.matches(it, key, transport) }
+                            ?.device
+                    }.first()
+                }
+            }
+            current
+        } finally {
+            libPebble.stopBleScan()
+            libPebble.stopClassicScan()
+        }
+        if (device == null) {
+            logger.w { "ConnectWatch: $address is no longer visible" }
+            return
+        }
+        logger.i { "ConnectWatch: connecting to ${device.displayName()} ($address)" }
+        device.connect()
+    }
+
+    private fun currentDiscoveredCandidate(
+        normalizedAddress: String,
+        transport: RockworkScanTransport?,
+    ): DiscoveredPebbleDevice? = libPebble.watches.value
+        .filterIsInstance<DiscoveredPebbleDevice>()
+        .map(::scanCandidateOf)
+        .firstOrNull { RockworkScanCandidatePolicy.matches(it, normalizedAddress, transport) }
+        ?.device
+
+    private fun scanCandidateOf(device: DiscoveredPebbleDevice) = RockworkScanCandidate(
+        normalizedAddress = device.identifier.asString.uppercase(),
+        device = device,
+        transport = transportOf(device),
+    )
+
+    private fun transportOf(device: PebbleDevice): RockworkScanTransport =
+        if (device.identifier is PebbleBtClassicIdentifier) {
+            RockworkScanTransport.CLASSIC
+        } else {
+            RockworkScanTransport.BLE
+        }
+
+    private fun setScanning(value: Boolean) {
+        if (scanning == value) return
+        scanning = value
+        emitSignal(RockworkManager.ScanningChanged(MANAGER_PATH, value))
+    }
+
+    private fun publishScanResults(results: List<Variant<*>>) {
+        if (scanResults == results) return
+        scanResults = results
+        emitSignal(RockworkManager.ScanResultsChanged(MANAGER_PATH))
     }
 
     private fun watchLocker() {
@@ -304,26 +604,54 @@ internal class RockworkService(
         }
     }
 
-    /** rockpool's "profile when connected/disconnected" via com.nokia.profiled. */
-    private fun applyProfile(address: String, connected: Boolean) {
-        val kind = if (connected) "connected" else "disconnected"
-        val profile = settings.get("${address.replace(":", "_")}.profile.$kind")
-        if (profile.isEmpty()) return
-        scope.launch(Dispatchers.IO) {
-            RawSessionConnection.connect()?.use { conn ->
-                runCatching {
-                    conn.call(
-                        "com.nokia.profiled", "/com/nokia/profiled", "com.nokia.profiled",
-                        "set_profile", "s", profile,
-                    )
-                }.onFailure { logger.w { "set_profile failed: ${it.message}" } }
+    private fun watchNotificationApps() {
+        scope.launch {
+            libPebble.notificationApps().collect { apps ->
+                latestNotificationApps = apps
+                notificationSourcePublisher.invalidate()
             }
         }
     }
 
+    private fun profileSettingsChanged(change: ProfileSettingsChange) {
+        val path = synchronized(exported) { exported[change.address]?.path } ?: return
+        if ("connected" in change.kinds) {
+            emitSignal(RockworkPebble.ProfileWhenConnectedChanged(path))
+        }
+        if ("disconnected" in change.kinds) {
+            emitSignal(RockworkPebble.ProfileWhenDisconnectedChanged(path))
+        }
+    }
+
+    private fun healthSettingsChanged(change: HealthSettingsUpdate) {
+        if (rockworkHealthParams(change.previous) != rockworkHealthParams(change.current)) {
+            broadcastSignal { targetPath -> RockworkPebble.HealthParamsChanged(targetPath) }
+        }
+        if (change.previous.imperialUnits != change.current.imperialUnits) {
+            broadcastSignal { targetPath -> RockworkPebble.ImperialUnitsChanged(targetPath) }
+        }
+    }
+
+    private fun libPebbleConfigChanged(change: LibPebbleConfigUpdate) {
+        if (change.previous.watchConfig.calendarPins != change.current.watchConfig.calendarPins) {
+            broadcastSignal { targetPath ->
+                RockworkPebble.CalendarSyncEnabledChanged(targetPath)
+            }
+        }
+    }
+
+    private fun broadcastSignal(signalForPath: (String) -> DBusSignal) {
+        synchronized(exported) { exported.values.map { it.path } }
+            .forEach { emitSignal(signalForPath(it)) }
+    }
+
     private fun emitSignal(signal: DBusSignal) {
-        runCatching { connection?.sendMessage(signal) }
-            .onFailure { logger.w { "signal emit failed: ${it.message}" } }
+        val conn = connection ?: return
+        runCatching { conn.sendMessage(signal) }
+            .onFailure {
+                logger.w { "signal emit failed: ${it.message}" }
+                markConnectionLost(conn)
+            }
     }
 
     companion object {
@@ -331,16 +659,30 @@ internal class RockworkService(
         private const val MANAGER_PATH = "/org/rockwork/Manager"
         private const val PATH_PREFIX = "/org/rockwork/"
         private const val VERSION = "2.0.0-libpebble3d"
-        private val FORGET_BOND_SETTLE = 2.seconds
+        private val CANDIDATE_REDISCOVERY_TIMEOUT = 15.seconds
+        private val BUS_HEALTH_INTERVAL = 10.seconds
 
-        private fun scanResultVariant(name: String, address: String, rssi: Int): Variant<*> =
+        private fun scanResultVariant(
+            name: String,
+            address: String,
+            rssi: Int,
+            transport: String,
+        ): Variant<*> =
             Variant(
                 mapOf(
                     "name" to Variant(name),
                     "address" to Variant(address),
                     "rssi" to Variant(rssi),
+                    "transport" to Variant(transport),
                 ),
                 "a{sv}",
             )
     }
 }
+
+internal fun shouldEmitConnectionStateChanged(
+    previousState: Int,
+    previousError: String,
+    state: Int,
+    error: String,
+): Boolean = previousState != state || previousError != error

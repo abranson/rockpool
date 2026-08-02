@@ -61,19 +61,40 @@ void NotificationSourceModel::insert(const QString &sourceId, const QString &nam
 
     if (idx >= 0) {
         if (enabled >= 0) {
-            m_sources[idx].m_enabled = enabled;
-            emit dataChanged(index(idx), index(idx), {RoleEnabled});
+            QVector<int> roles;
+            const QString displayName = name.isEmpty() ? sourceId : name;
+            const QString displayIcon = icon.isEmpty() ? "icon-lock-information" : icon;
+            if (m_sources[idx].m_displayName != displayName) {
+                m_sources[idx].m_displayName = displayName;
+                roles.append(RoleName);
+            }
+            if (m_sources[idx].m_icon != displayIcon) {
+                m_sources[idx].m_icon = displayIcon;
+                roles.append(RoleIcon);
+            }
+            if (m_sources[idx].m_enabled != enabled) {
+                m_sources[idx].m_enabled = enabled;
+                roles.append(RoleEnabled);
+            }
+            if (!roles.isEmpty()) {
+                emit dataChanged(index(idx), index(idx), roles);
+            }
         } else {
             beginRemoveRows(QModelIndex(), idx, idx);
             m_sources.removeAt(idx);
             endRemoveRows();
+            emit countChanged();
         }
     } else {
+        if (enabled < 0) {
+            return;
+        }
         beginInsertRows(QModelIndex(), m_sources.count(), m_sources.count());
         NotificationSourceItem item = createNotificationItem(sourceId, name, icon);
         item.m_enabled = enabled;
         m_sources.append(item);
         endInsertRows();
+        emit countChanged();
     }
 }
 
@@ -81,9 +102,40 @@ void NotificationSourceModel::setAppearance(const QString &sourceId, const QStri
 {
     for (int i = 0; i < m_sources.count(); i++) {
         if (m_sources.at(i).m_id == sourceId) {
+            QVector<int> roles;
+            if (m_sources[i].m_colorName != colorName) {
+                m_sources[i].m_colorName = colorName;
+                roles.append(RoleColorName);
+            }
+            if (m_sources[i].m_iconCode != iconCode) {
+                m_sources[i].m_iconCode = iconCode;
+                roles.append(RoleIconCode);
+            }
+            if (!roles.isEmpty()) {
+                emit dataChanged(index(i), index(i), roles);
+            }
+            return;
+        }
+    }
+}
+
+void NotificationSourceModel::setColorName(const QString &sourceId, const QString &colorName)
+{
+    for (int i = 0; i < m_sources.count(); i++) {
+        if (m_sources.at(i).m_id == sourceId && m_sources.at(i).m_colorName != colorName) {
             m_sources[i].m_colorName = colorName;
+            emit dataChanged(index(i), index(i), {RoleColorName});
+            return;
+        }
+    }
+}
+
+void NotificationSourceModel::setIconCode(const QString &sourceId, const QString &iconCode)
+{
+    for (int i = 0; i < m_sources.count(); i++) {
+        if (m_sources.at(i).m_id == sourceId && m_sources.at(i).m_iconCode != iconCode) {
             m_sources[i].m_iconCode = iconCode;
-            emit dataChanged(index(i), index(i), {RoleColorName, RoleIconCode});
+            emit dataChanged(index(i), index(i), {RoleIconCode});
             return;
         }
     }

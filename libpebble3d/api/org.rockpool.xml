@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SPDX-License-Identifier: Apache-2.0
+
+  Normative public org.rockpool API.  Every record collection is aa{sv};
+  public methods that mutate state or can take noticeable time return an
+  org.rockpool.Operation1 object path. The keys and value types inside public
+  records are specified by api/records.md.
+-->
+<node name="/org/rockpool">
+  <interface name="org.freedesktop.DBus.ObjectManager">
+    <method name="GetManagedObjects">
+      <arg name="objects" type="a{oa{sa{sv}}}" direction="out"/>
+    </method>
+    <signal name="InterfacesAdded">
+      <arg name="object" type="o"/>
+      <arg name="interfaces" type="a{sa{sv}}"/>
+    </signal>
+    <signal name="InterfacesRemoved">
+      <arg name="object" type="o"/>
+      <arg name="interfaces" type="as"/>
+    </signal>
+  </interface>
+
+  <node name="Manager">
+    <interface name="org.rockpool.Manager1">
+      <method name="Refresh"><arg name="operation" type="o" direction="out"/></method>
+      <property name="ApiVersion" type="s" access="read"/>
+      <property name="DaemonVersion" type="s" access="read"/>
+      <property name="State" type="s" access="read"/>
+      <property name="Watches" type="ao" access="read"/>
+      <property name="Capabilities" type="as" access="read"/>
+      <property name="LastError" type="s" access="read"/>
+    </interface>
+    <interface name="org.rockpool.Discovery1">
+      <method name="StartScan">
+        <arg name="options" type="a{sv}" direction="in"/>
+        <arg name="operation" type="o" direction="out"/>
+      </method>
+      <method name="StopScan"><arg name="operation" type="o" direction="out"/></method>
+      <method name="Pair">
+        <arg name="candidate" type="a{sv}" direction="in"/>
+        <arg name="operation" type="o" direction="out"/>
+      </method>
+      <method name="CancelPairing"><arg name="operation" type="o" direction="out"/></method>
+      <method name="ImportBondedWatches"><arg name="operation" type="o" direction="out"/></method>
+      <property name="Scanning" type="b" access="read"/>
+      <property name="ScanResults" type="aa{sv}" access="read"/>
+      <signal name="PairingPrompt">
+        <arg name="operation" type="o"/>
+        <arg name="prompt" type="a{sv}"/>
+      </signal>
+    </interface>
+    <interface name="org.rockpool.Account1">
+      <method name="SetOAuthToken">
+        <arg name="token" type="s" direction="in"/>
+        <arg name="operation" type="o" direction="out"/>
+      </method>
+      <method name="Sync"><arg name="operation" type="o" direction="out"/></method>
+      <property name="Authenticated" type="b" access="read"/>
+      <property name="Name" type="s" access="read"/>
+      <property name="Email" type="s" access="read"/>
+      <property name="SyncState" type="s" access="read"/>
+    </interface>
+  </node>
+
+  <node name="Platform">
+    <interface name="org.rockpool.Platform1">
+      <method name="Restart"><arg name="operation" type="o" direction="out"/></method>
+      <property name="Provider" type="s" access="read"/>
+      <property name="AbiVersion" type="s" access="read"/>
+      <property name="BuildId" type="s" access="read"/>
+      <property name="HelperPid" type="u" access="read"/>
+      <property name="Health" type="a{sv}" access="read"/>
+      <property name="Capabilities" type="as" access="read"/>
+      <property name="LastError" type="s" access="read"/>
+    </interface>
+  </node>
+
+  <node name="Watches">
+    <interface name="org.rockpool.Watch1">
+      <method name="Connect"><arg name="operation" type="o" direction="out"/></method>
+      <method name="Disconnect"><arg name="operation" type="o" direction="out"/></method>
+      <method name="Forget"><arg name="operation" type="o" direction="out"/></method>
+      <property name="Id" type="s" access="read"/>
+      <property name="Name" type="s" access="read"/>
+      <property name="Serial" type="s" access="read"/>
+      <property name="Transport" type="s" access="read"/>
+      <property name="ConnectionState" type="s" access="read"/>
+      <property name="LastError" type="s" access="read"/>
+      <property name="Capabilities" type="as" access="read"/>
+    </interface>
+    <interface name="org.rockpool.Firmware1">
+      <method name="InstallFirmware"><arg name="firmware" type="h" direction="in"/><arg name="operation" type="o" direction="out"/></method>
+      <method name="InstallLanguagePack"><arg name="language_pack" type="h" direction="in"/><arg name="operation" type="o" direction="out"/></method>
+      <property name="FirmwareVersion" type="s" access="read"/>
+      <property name="LanguageVersion" type="s" access="read"/>
+    </interface>
+    <interface name="org.rockpool.Applications1">
+      <method name="Install"><arg name="pbw" type="h" direction="in"/><arg name="operation" type="o" direction="out"/></method>
+      <method name="Remove"><arg name="uuid" type="s" direction="in"/><arg name="operation" type="o" direction="out"/></method>
+      <property name="Applications" type="aa{sv}" access="read"/>
+    </interface>
+    <interface name="org.rockpool.Timeline1">
+      <method name="Sync"><arg name="operation" type="o" direction="out"/></method>
+      <property name="CalendarEnabled" type="b" access="read"/>
+    </interface>
+    <interface name="org.rockpool.Notifications1">
+      <method name="SetFilters"><arg name="filters" type="aa{sv}" direction="in"/><arg name="operation" type="o" direction="out"/></method>
+      <property name="Filters" type="aa{sv}" access="read"/>
+    </interface>
+    <interface name="org.rockpool.Messaging1">
+      <method name="SetCannedResponses"><arg name="responses" type="aa{sv}" direction="in"/><arg name="operation" type="o" direction="out"/></method>
+      <property name="CannedResponses" type="aa{sv}" access="read"/>
+    </interface>
+    <interface name="org.rockpool.Health1">
+      <method name="SetSettings"><arg name="settings" type="a{sv}" direction="in"/><arg name="operation" type="o" direction="out"/></method>
+      <property name="Settings" type="a{sv}" access="read"/>
+    </interface>
+    <interface name="org.rockpool.Profiles1">
+      <method name="SetProfiles"><arg name="profiles" type="a{sv}" direction="in"/><arg name="operation" type="o" direction="out"/></method>
+      <property name="Profiles" type="a{sv}" access="read"/>
+    </interface>
+    <interface name="org.rockpool.Screenshots1">
+      <method name="Capture"><arg name="operation" type="o" direction="out"/></method>
+      <property name="Screenshots" type="aa{sv}" access="read"/>
+    </interface>
+    <interface name="org.rockpool.Logs1">
+      <method name="Dump"><arg name="operation" type="o" direction="out"/></method>
+      <property name="DumpPath" type="s" access="read"/>
+    </interface>
+    <interface name="org.rockpool.Developer1">
+      <method name="SetLocalEnabled"><arg name="enabled" type="b" direction="in"/><arg name="operation" type="o" direction="out"/></method>
+      <property name="LocalEnabled" type="b" access="read"/>
+    </interface>
+  </node>
+
+  <node name="Operations">
+    <interface name="org.rockpool.Operation1">
+      <method name="Cancel"/>
+      <property name="Kind" type="s" access="read"/>
+      <property name="State" type="s" access="read"/>
+      <property name="Progress" type="d" access="read"/>
+      <property name="Result" type="a{sv}" access="read"/>
+      <property name="Error" type="s" access="read"/>
+      <property name="ErrorDetail" type="s" access="read"/>
+      <signal name="Completed"><arg name="success" type="b"/></signal>
+    </interface>
+  </node>
+</node>

@@ -1,4 +1,6 @@
 out/
+.out.*
 RPMS/
 daemon/build/
 daemon/.gradle/
+/qemu_rfcomm-socket-test_*.core

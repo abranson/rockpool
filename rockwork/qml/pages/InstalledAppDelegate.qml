@@ -13,6 +13,9 @@ ListItem {
     property bool hasSettings: false
     property bool isSystemApp: false
     property bool isLastApp: true
+    property bool appMutationsAllowed: true
+    property bool watchConnected: true
+    property bool offlineSettingsAvailable: false
 
     signal launchApp
     signal deleteApp
@@ -34,16 +37,19 @@ ListItem {
 
         MenuItem {
             text: qsTr("Launch")
+            enabled: root.watchConnected
             onClicked: root.launchApp()
         }
         MenuItem {
             text: qsTr("Settings")
             visible: root.hasSettings
+            enabled: root.watchConnected || root.offlineSettingsAvailable
             onClicked: root.configureApp()
         }
         MenuItem {
             text: qsTr("Delete")
             visible: !root.isSystemApp
+            enabled: root.appMutationsAllowed
             onClicked: {
                 root.remorseAction(qsTr("Really Delete?"), function () {
                     root.deleteApp()
@@ -53,11 +59,13 @@ ListItem {
         MenuItem {
             text: qsTr("Move Up")
             visible: index > 1
+            enabled: root.appMutationsAllowed
             onClicked: root.moveApp(-1)
         }
         MenuItem {
             text: qsTr("Move Down")
             visible: index>0 && !root.isLastApp
+            enabled: root.appMutationsAllowed
             onClicked: root.moveApp(1)
         }
     }

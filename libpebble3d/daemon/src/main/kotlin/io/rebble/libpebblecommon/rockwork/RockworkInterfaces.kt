@@ -1,4 +1,4 @@
-package io.rebble.libpebblecommon.rockwork
+package io.rebble.libpebblecommon.compat.rockwork
 
 import org.freedesktop.dbus.DBusPath
 import org.freedesktop.dbus.annotations.DBusInterfaceName
@@ -8,8 +8,8 @@ import org.freedesktop.dbus.types.UInt16
 import org.freedesktop.dbus.types.Variant
 
 /**
- * The org.rockwork session-bus API rockpoold exposed (rockworkd/dbusinterface.h in the rockpool
- * repo). Implementing the same contract lets the existing Silica UI drive libpebble3d unchanged.
+ * The org.rockwork session-bus API exposed by the retired daemon.  Implementing
+ * the same contract lets the existing Silica UI drive libpebble3d unchanged.
  * Method names/casing must match exactly: QDBusInterface calls are name-based.
  */
 @DBusInterfaceName("org.rockwork.Manager")
@@ -80,7 +80,7 @@ interface RockworkPebble : DBusInterface {
     // Account / cloud sync
     fun accountName(): String
     fun accountEmail(): String
-    fun oauthToken(): String
+    fun HasOAuthToken(): Boolean
     fun setOAuthToken(token: String)
     fun syncAppsFromCloud(): Boolean
     fun setSyncAppsFromCloud(enable: Boolean)
@@ -143,7 +143,7 @@ interface RockworkPebble : DBusInterface {
     // 'av' like rockworkd's QVariantList, see RockworkManager.ScanResults.
     fun InstalledApps(): List<Variant<*>>
     fun RemoveApp(id: String)
-    fun ConfigurationURL(uuid: String): String
+    fun ConfigurationURL(uuid: String)
     fun ConfigurationClosed(uuid: String, result: String)
     fun SetAppOrder(newList: List<String>)
     fun SendAppData(uuid: String, data: Map<String, Variant<*>>)
@@ -184,8 +184,13 @@ interface RockworkPebble : DBusInterface {
     class ConnectionStateChanged(path: String, state: Int) : DBusSignal(path, state)
     class InstalledAppsChanged(path: String) : DBusSignal(path)
 
-    // The UI drives config pages off this signal, not ConfigurationURL's return value:
-    // it calls ConfigurationURL(uuid) fire-and-forget, then opens whatever OpenURL emits.
+    // Legacy QVariantList: av with each entry wrapping one as [name, latitude, longitude].
+    class WeatherLocationsChanged(
+        path: String,
+        locations: List<Variant<*>>,
+    ) : DBusSignal(path, locations)
+
+    // ConfigurationURL is the legacy void call; the UI opens whatever URL this signal emits.
     class OpenURL(path: String, uuid: String, url: String) : DBusSignal(path, uuid, url)
 
     class NotificationFilterChanged(
@@ -204,7 +209,6 @@ interface RockworkPebble : DBusInterface {
     class HealthParamsChanged(path: String) : DBusSignal(path)
     class DevConnectionChanged(path: String, state: Boolean) : DBusSignal(path, state)
     class DevConnCloudChanged(path: String, state: Boolean) : DBusSignal(path, state)
-    class oauthTokenChanged(path: String, token: String) : DBusSignal(path, token)
 }
 
 /**

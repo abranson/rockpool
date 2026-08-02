@@ -25,6 +25,7 @@ Page {
             PullDownMenu {
                 MenuItem {
                     text: qsTr("Take Screenshot")
+                    enabled: root.pebble && root.pebble.connected
                     onClicked: root.pebble.requestScreenshot()
                 }
             }
@@ -54,7 +55,7 @@ Page {
                 onClicked: pageStack.push(Qt.resolvedUrl("ContentPeerPickerPage.qml"), {
                     itemName: qsTr("Pebble screenshot"),
                     itemDescription: qsTr("Screen snapshot of Pebble Smartwatches"),
-                    contentType: "image/jpeg",
+                    contentType: "image/png",
                     filename: grid.model.get(grid.currentIndex)
                 });
             }
@@ -75,4 +76,3 @@ Page {
         }
     }
 }
-

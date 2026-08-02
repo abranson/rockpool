@@ -15,7 +15,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "libpebble3d-sailfish"
+rootProject.name = "libpebble3d-daemon"
 
 // libpebble3 (the generic-Linux library) — and its whole Kotlin Multiplatform build — lives in the
 // upstream mobileapp checkout, wired in here as a Gradle composite build. This is what lets the

@@ -5,6 +5,7 @@ Page {
     id: root
 
     property var pebble: null
+    property string watchLogFile: StandardPaths.home + "/Downloads/pebble.log"
 
     SilicaListView {
         header: PageHeader {
@@ -51,6 +52,9 @@ Page {
 
     Component.onCompleted: {
         populateDevMenu();
+        if (root.pebble) {
+            root.pebble.refreshDeveloperSettings()
+        }
     }
     function populateDevMenu() {
         devMenuModel.clear();
@@ -118,43 +122,16 @@ Page {
                 text: qsTr("Enable Connection")
                 icon.source: "image://theme/icon-s-high-importance"
                 description: qsTr("Enable Developer Connection Service")
-                onCheckedChanged: root.pebble.devConnEnabled=checked
-                checked: root.pebble.devConnEnabled
-            }
-            Row {
-                width: parent.width
-                TextField {
-                    id: devConPort
-                    property bool changed: false
-                    width: parent.width / 2 - Theme.paddingSmall
-                    label: qsTr("Listen Port")
-                    placeholderText: "9000"
-                    validator: IntValidator {bottom: 1025; top: 65535}
-                    inputMethodHints: Qt.ImhDigitsOnly
-                    onTextChanged: changed = true
-                    color: errorHighlight? "red" : Theme.primaryColor
-                    Component.onCompleted: {
-                        text = root.pebble.devConListenPort
-                        changed = false
+                enabled: root.pebble && root.pebble.connected
+                         && root.pebble.developerSettingsReady
+                automaticCheck: false
+                checked: root.pebble ? root.pebble.devConnEnabled : false
+                onClicked: {
+                    if (root.pebble && root.pebble.connected
+                            && root.pebble.developerSettingsReady) {
+                        root.pebble.devConnEnabled = !root.pebble.devConnEnabled
                     }
                 }
-                Button {
-                    width: parent.width / 2 - Theme.paddingSmall
-                    text: qsTr("Apply")
-                    enabled: devConPort.changed && !devConPort.acceptableInput
-                    onClicked: {
-                        root.pebble.devConListenPort=devConPort.text
-                        devConPort.changed = false
-                    }
-                }
-            }
-            IconTextSwitch {
-                width: parent.width
-                text: qsTr("Enable")+" CloudPebble"
-                description: qsTr("Enable DeveloperConnection over CloudPebble")
-                icon.source: "image://theme/icon-s-cloud-upload"
-                checked: root.pebble.devConnCloudEnabled
-                onCheckedChanged: root.pebble.devConnCloudEnabled=checked
             }
             SectionHeader {
                 text: qsTr("Runtime Status")
@@ -164,14 +141,9 @@ Page {
                 automaticCheck: false
                 text: qsTr("DeveloperConnection Status")
                 description: qsTr("DeveloperConnection port listening state")
-                checked: root.pebble.devConnServerRunning
-            }
-            TextSwitch {
-                width: parent.width
-                automaticCheck: false
-                text: qsTr("CloudPebble Status")
-                description: qsTr("Indicates CloudPebble connection state")
-                checked: root.pebble.devConCloudConnected
+                enabled: root.pebble && root.pebble.connected
+                         && root.pebble.developerSettingsReady
+                checked: root.pebble ? root.pebble.devConnServerRunning : false
             }
             Button {
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -215,71 +187,41 @@ Page {
             Connections {
                 target: root.pebble
                 onLogsDumped: {
+                    busyIndicator.visible = false
                     if (success) {
-                        var filename = "/tmp/pebble.log"
                         pageStack.push(Qt.resolvedUrl("ContentPeerPickerPage.qml"), {
                             itemName: "pebble.log",
                             itemDescription: "Platform "+pebble.name+" ("+pebble.hardwarePlatform+") "+pebble.softwareVersion,
                             contentType: "text/plain",
-                            filename: filename
+                            filename: root.watchLogFile
                         })
                     }
                     sendLogsDocker.hide()
                 }
             }
 
-            Label {
-                id: currentLog
-                text: qsTr("Current log: ") + pebble.dumpLogFile;
+            TextSwitch {
                 width: parent.width
-                visible: pebble.dumpLogFile !== ""
-            }
-
-            Button {
-                text: pebble.isLogDumping ? qsTr("Disable service logs") : qsTr("Enable service logs")
-                width: parent.width
+                text: qsTr("Debug logging")
+                description: qsTr("Write debug messages to the system journal")
+                enabled: root.pebble && root.pebble.developerSettingsReady
+                automaticCheck: false
+                checked: root.pebble ? root.pebble.logLevel === 0 : false
                 onClicked: {
-                    var file = pebble.isLogDumping ? pebble.stopLogDump() : pebble.startLogDump();
-                    console.log("Toggling log to",file);
-                    sendLogsDocker.hide()
+                    if (root.pebble && root.pebble.developerSettingsReady) {
+                        root.pebble.logLevel = root.pebble.logLevel === 0 ? 1 : 0
+                    }
                 }
-            }
-            Button {
-                text: qsTr("Send service logs")
-                width: parent.width
-                visible: pebble.dumpLogFile !== ""
-                onClicked: {
-                    if(pebble.isLogDumping) // stop and flush logs
-                        pebble.stopLogDump();
-                    pageStack.push(Qt.resolvedUrl("ContentPeerPickerPage.qml"), {
-                           itemName: "rockpoold.log",
-                           itemDescription: "RockPool Daemon "+version,
-                           contentType: "text/plain",
-                           filename: pebble.dumpLogFile
-                    })
-
-                    sendLogsDocker.hide()
-                }
-            }
-            ComboBox {
-                width: parent.width
-                label: qsTr("Syslog Verbosity")
-                menu: ContextMenu {
-                    MenuItem { text: qsTr("Debug") }
-                    MenuItem { text: qsTr("Warning") }
-                    MenuItem { text: qsTr("Critical") }
-                }
-                currentIndex: pebble.logLevel
-                onValueChanged: pebble.logLevel = currentIndex
             }
 
             Button {
                 text: qsTr("Send watch logs")
                 visible: !busyIndicator.visible
+                enabled: root.pebble && root.pebble.connected
                 width: parent.width
                 onClicked: {
                     busyIndicator.visible = true
-                    root.pebble.dumpLogs("/tmp/pebble.log")
+                    root.pebble.dumpLogs(root.watchLogFile)
                 }
             }
 
@@ -294,4 +236,3 @@ Page {
         }
     }
 }
-

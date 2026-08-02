@@ -1,4 +1,85 @@
 [
+  {
+    "name": "io.rebble.libpebblecommon.rockpool.PlatformProviderNative",
+    "methods": [
+      {
+        "name": "hardenProcess",
+        "parameterTypes": []
+      },
+      {
+        "name": "start",
+        "parameterTypes": []
+      },
+      {
+        "name": "stop",
+        "parameterTypes": []
+      },
+      {
+        "name": "status",
+        "parameterTypes": []
+      },
+      {
+        "name": "beginEventBatch",
+        "parameterTypes": []
+      },
+      {
+        "name": "endEventBatch",
+        "parameterTypes": []
+      },
+      {
+        "name": "drainEvents",
+        "parameterTypes": []
+      },
+      {
+        "name": "drainNotificationEvents",
+        "parameterTypes": []
+      },
+      {
+        "name": "drainCallEvents",
+        "parameterTypes": []
+      },
+      {
+        "name": "drainMediaEvents",
+        "parameterTypes": []
+      },
+      {
+        "name": "notificationCommand",
+        "parameterTypes": ["int", "java.lang.String"]
+      },
+      {
+        "name": "callCommand",
+        "parameterTypes": ["int", "java.lang.String"]
+      },
+      {
+        "name": "mediaCommand",
+        "parameterTypes": ["int"]
+      },
+      {
+        "name": "rfcommCreate",
+        "parameterTypes": ["java.lang.String", "int"]
+      },
+      {
+        "name": "rfcommConnect",
+        "parameterTypes": ["long", "int"]
+      },
+      {
+        "name": "rfcommRead",
+        "parameterTypes": ["long", "byte[]", "int", "int"]
+      },
+      {
+        "name": "rfcommWrite",
+        "parameterTypes": ["long", "byte[]", "int", "int"]
+      },
+      {
+        "name": "rfcommShutdown",
+        "parameterTypes": ["long"]
+      },
+      {
+        "name": "rfcommDestroy",
+        "parameterTypes": ["long"]
+      }
+    ]
+  },
   {"name": "androidx.sqlite.driver.bundled.BundledSQLiteDriverKt", "allDeclaredMethods": true, "allDeclaredFields": true, "allDeclaredConstructors": true},
   {"name": "androidx.sqlite.driver.bundled.BundledSQLiteConnectionKt", "allDeclaredMethods": true, "allDeclaredFields": true, "allDeclaredConstructors": true},
   {"name": "androidx.sqlite.driver.bundled.BundledSQLiteStatementKt", "allDeclaredMethods": true, "allDeclaredFields": true, "allDeclaredConstructors": true},

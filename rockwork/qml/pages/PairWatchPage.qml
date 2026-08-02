@@ -9,12 +9,28 @@ Page {
     property string failureMessage: ""
 
     Component.onCompleted: pebbles.startScan()
-    Component.onDestruction: pebbles.stopScan()
+    Component.onDestruction: {
+        if (pairPage.connectingTo !== "") {
+            pebbles.disconnectWatch(pairPage.connectingTo)
+        }
+        if (rockPool.pendingPairAddress === pairPage.connectingTo) {
+            rockPool.pendingPairAddress = ""
+        }
+        pebbles.stopScan()
+    }
 
-    // Pairing succeeded: the watch became known, loadStack() takes over.
+    // Pairing succeeded once the newly known watch reports its address. An
+    // unrelated watch-list change must not retire this pending connection.
     Connections {
         target: pebbles
-        onCountChanged: pairPage.connectingTo = ""
+        onPebbleIdentityAvailable: {
+            if (pairPage.connectingTo !== ""
+                    && address.toLowerCase()
+                       === pairPage.connectingTo.toLowerCase()) {
+                rockPool.pendingPairAddress = ""
+                pairPage.connectingTo = ""
+            }
+        }
     }
 
     // Backstop: a pairing that fails before the watch ever becomes known (e.g. createBond fails)
@@ -25,6 +41,8 @@ Page {
         running: pairPage.connectingTo !== ""
         onTriggered: {
             pairPage.failureMessage = qsTr("Pairing timed out. Put the watch in pairing mode and try again.")
+            pebbles.disconnectWatch(pairPage.connectingTo)
+            rockPool.pendingPairAddress = ""
             pairPage.connectingTo = ""
             pebbles.startScan()
         }
@@ -75,6 +93,7 @@ Page {
             onClicked: {
                 pairPage.failureMessage = ""
                 pairPage.connectingTo = modelData.address
+                rockPool.pendingPairAddress = modelData.address
                 // Keep the radio free for the connection attempt.
                 pebbles.stopScan()
                 pebbles.connectWatch(modelData.address)

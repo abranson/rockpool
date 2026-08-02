@@ -6,8 +6,26 @@ Page {
 
     property var pebble: null
     property var app_model: null
-    property int app_index: model.indexOf(app)
-    property var app: app_model.get(app_index)
+    property int app_index: -1
+    property var app: app_model && app_index >= 0 ? app_model.get(app_index) : null
+    property bool appMutationsAllowed: rockPool.knownPebbleCount === 1
+    property bool appInstallationAllowed: appMutationsAllowed && pebble && pebble.connected
+    property var compatibilityPlatforms: [
+        { label: "Classic", key: "aplite" },
+        { label: "Time", key: "basalt" },
+        { label: "Time Round", key: "chalk" },
+        { label: "Pebble 2", key: "diorite" },
+        { label: "Pebble 2 SE", key: "emery" },
+        { label: "Core Time 2", key: "flint" },
+        { label: "Core 2 Duo", key: "gabbro" }
+    ]
+
+    function compatibilityValue(key) {
+        if (!app || !app.compatibility || app.compatibility[key] === undefined)
+            return "-"
+
+        return app.compatibility[key]
+    }
 
     SilicaFlickable {
         anchors.fill: parent
@@ -23,6 +41,27 @@ Page {
             PageHeader {
                 title: app ? app.name : qsTr("Upgrading")
                 description: app ? app.vendor : qsTr("Upgrading")
+            }
+
+            Label {
+                width: parent.width - 2 * Theme.horizontalPageMargin
+                anchors.horizontalCenter: parent.horizontalCenter
+                visible: !root.appMutationsAllowed
+                text: qsTr("App changes are available only when exactly one watch is paired.")
+                color: Theme.secondaryColor
+                font.pixelSize: Theme.fontSizeSmall
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.Wrap
+            }
+            Label {
+                width: parent.width - 2 * Theme.horizontalPageMargin
+                anchors.horizontalCenter: parent.horizontalCenter
+                visible: root.appMutationsAllowed && !root.appInstallationAllowed
+                text: qsTr("Connect the watch to install apps.")
+                color: Theme.secondaryColor
+                font.pixelSize: Theme.fontSizeSmall
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.Wrap
             }
 
             Row {
@@ -72,9 +111,10 @@ Page {
             Button {
                 id: installButton
                 width: parent.width
-                enabled: !installing && !root.app.companion
+                enabled: root.appInstallationAllowed && root.app && !installing && !root.app.companion
                 property bool installing: false
-                text: enabled ? qsTr("Upgrade") : (installing ? qsTr("Upgrading...") : qsTr("Needs Companion"))
+                text: installing ? qsTr("Upgrading...")
+                                 : (root.app && root.app.companion ? qsTr("Needs Companion") : qsTr("Upgrade"))
                 Connections {
                     target: root.pebble.installedApps
                     onChanged: pageStack.pop()
@@ -84,6 +124,9 @@ Page {
                     onChanged: pageStack.pop()
                 }
                 onClicked: {
+                    if (!root.appInstallationAllowed || !root.app)
+                        return
+
                     root.pebble.installApp(root.app.storeId)
                     installButton.installing = true
                 }
@@ -122,52 +165,33 @@ Page {
                     }
                 }
             }
-            Row {
+            Flow {
                 width: parent.width
                 visible: root.app != null
-                Column {
-                    width: parent.width / 3
-                    Label {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        text: "Classic"
-                        font.pixelSize: Theme.fontSizeSmall
-                        font.bold: true
-                    }
-                    Label {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        text: app ? app.compatibility.aplite : "?"
-                        font.pixelSize: Theme.fontSizeSmall
-                        font.bold: true
-                    }
-                }
-                Column {
-                    width: parent.width / 3
-                    Label {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        text: "Time"
-                        font.pixelSize: Theme.fontSizeSmall
-                        font.bold: true
-                    }
-                    Label {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        text: app ? app.compatibility.basalt : "?"
-                        font.pixelSize: Theme.fontSizeSmall
-                        font.bold: true
-                    }
-                }
-                Column {
-                    width: parent.width / 3
-                    Label {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        text: "Time Round"
-                        font.pixelSize: Theme.fontSizeSmall
-                        font.bold: true
-                    }
-                    Label {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        text: app ? app.compatibility.chalk : "?"
-                        font.pixelSize: Theme.fontSizeSmall
-                        font.bold: true
+                spacing: Theme.paddingSmall
+
+                Repeater {
+                    model: root.compatibilityPlatforms
+
+                    delegate: Column {
+                        width: (contentColumn.width - Theme.paddingSmall) / 2
+
+                        Label {
+                            width: parent.width
+                            horizontalAlignment: Text.AlignHCenter
+                            text: modelData.label
+                            font.pixelSize: Theme.fontSizeSmall
+                            font.bold: true
+                            wrapMode: Text.Wrap
+                        }
+
+                        Label {
+                            width: parent.width
+                            horizontalAlignment: Text.AlignHCenter
+                            text: root.compatibilityValue(modelData.key)
+                            font.pixelSize: Theme.fontSizeSmall
+                            font.bold: true
+                        }
                     }
                 }
             }

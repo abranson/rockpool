@@ -1,0 +1,7 @@
+prefix=@prefix@
+includedir=${prefix}/include
+
+Name: libpebble3d-platform
+Description: libpebble3d platform-provider ABI
+Version: @version@
+Cflags: -I${includedir}

@@ -44,9 +44,13 @@ QString ScreenshotModel::latestScreenshot() const
 
 void ScreenshotModel::clear()
 {
+    const bool latestChanged = !m_files.isEmpty();
     beginResetModel();
     m_files.clear();
     endResetModel();
+    if (latestChanged) {
+        emit latestScreenshotChanged();
+    }
 }
 
 void ScreenshotModel::insert(const QString &filename)
@@ -64,8 +68,12 @@ void ScreenshotModel::remove(const QString &filename)
 {
     if (m_files.contains(filename)) {
         int idx = m_files.indexOf(filename);
+        const bool latestChanged = idx == 0;
         beginRemoveRows(QModelIndex(), idx, idx);
         m_files.removeOne(filename);
         endRemoveRows();
+        if (latestChanged) {
+            emit latestScreenshotChanged();
+        }
     }
 }

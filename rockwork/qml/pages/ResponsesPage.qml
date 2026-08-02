@@ -29,7 +29,7 @@ Page {
                 text: qsTr("Save changes")
                 onClicked: {
                     var cans = {};
-                    cans[source] = list;
+                    cans[source] = list.slice(0);
                     pebble.setCannedResponses(cans);
                     pageStack.pop();
                 }
@@ -86,26 +86,30 @@ Page {
         hint: qsTr("Pre-defined response message")
         onSubmit: {
             if(index >= 0 && list[index] !== text) {
-                root.list[index] = text;
-                rspList.model = root.list;
+                var updated = root.list.slice(0);
+                updated[index] = text;
+                root.list = updated;
                 root.changed = true;
             } else if(index < 0) {
-                root.list.splice(rspList.currentIndex,0,text)
-                rspList.model = root.list;
+                var inserted = root.list.slice(0);
+                inserted.splice(rspList.currentIndex, 0, text);
+                root.list = inserted;
                 root.changed = true;
             }
         }
     }
     function deleteItem(i) {
-        list.splice(i,1);
-        rspList.model = list;
+        var updated = list.slice(0);
+        updated.splice(i, 1);
+        list = updated;
         changed = true;
     }
     function move(i,d) {
-        var item = list[i];
-        list.splice(i,1);
-        list.splice(i+d,0,item);
-        rspList.model = list;
+        var updated = list.slice(0);
+        var item = updated[i];
+        updated.splice(i, 1);
+        updated.splice(i + d, 0, item);
+        list = updated;
         changed = true;
     }
 }

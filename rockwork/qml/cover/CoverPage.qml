@@ -30,7 +30,10 @@ CoverBackground {
 
     CoverActionList {
         id: coverAction
-        enabled: (pebble && pebble.connected)
+        enabled: pebble && (pebble.connected
+                            || ((pebble.connectionState === 0
+                                 || pebble.connectionState === 4)
+                                && pebble.address.length > 0))
 
         CoverAction {
             iconSource: "image://theme/icon-cover-"+((pebble && pebble.connected) ? "transfers" : "sync")
@@ -38,7 +41,7 @@ CoverBackground {
                 if (pebble.connected) {
                     pebble.requestScreenshot();
                 } else {
-                    pebble.reconnect();
+                    rockPool.connectWatch(pebble.address);
                 }
             }
         }

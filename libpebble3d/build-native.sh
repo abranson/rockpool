@@ -3,6 +3,35 @@
 set -e
 
 CP=$(find /dist/libs -name '*.jar' | sort | tr '\n' ':')
+PLATFORM_LIBDIR=${LP3_PLATFORM_LIBDIR:-/usr/lib64}
+PLATFORM_DIRECTORY="${PLATFORM_LIBDIR}/libpebble3d/platforms"
+
+# Exercise the two native bridges with the same compiler, headers and target architecture used
+# for the packaged loader. These are fast white-box tests and catch ABI-layout, queue and
+# cancellation regressions before the much more expensive Native Image build begins.
+${CC:-cc} -std=c11 -O2 -Wall -Wextra -Werror \
+  -I"$JAVA_HOME/include" -I"$JAVA_HOME/include/linux" -I/work/include \
+  -DLP3_PLATFORM_DIRECTORY=\""$PLATFORM_DIRECTORY"\" \
+  -o /tmp/platform-loader-event-test \
+  /work/tests/platform_loader_event_test.c -ldl -pthread
+/tmp/platform-loader-event-test
+${CC:-cc} -std=c11 -O2 -Wall -Wextra -Werror \
+  -I"$JAVA_HOME/include" -I"$JAVA_HOME/include/linux" -I/work/include \
+  -o /tmp/rfcomm-socket-test /work/tests/rfcomm_socket_test.c -pthread
+/tmp/rfcomm-socket-test
+
+# The provider loader stays outside the Native Image.  It is deliberately a
+# small C/JNI bridge so the image can validate and dlopen a package-owned ABI
+# provider without giving JVM code arbitrary shared-library loading powers.
+${CC:-cc} -std=c11 -O2 -fPIC -shared -Wall -Wextra -Werror \
+  -I"$JAVA_HOME/include" -I"$JAVA_HOME/include/linux" -I/work/include \
+  -DLP3_PLATFORM_DIRECTORY=\""$PLATFORM_DIRECTORY"\" \
+  -o /out/libpebble3d-platform-loader.so \
+  /work/native/platform_loader.c /work/native/rfcomm_socket.c -ldl -pthread
+# The tracing JVM uses the same fixed installation path as the final daemon.
+# It sees /out but RPM installation has not happened yet.
+install -D -m 0755 /out/libpebble3d-platform-loader.so \
+  /usr/libexec/libpebble3d/libpebble3d-platform-loader.so
 
 # Trace reachability metadata on the JVM against live system + session buses;
 # hardware-only paths are covered by the hand-written configs in /work.
@@ -11,7 +40,8 @@ mkdir -p /run/dbus
 dbus-daemon --system --fork
 (/usr/libexec/bluetooth/bluetoothd --nodetach 2>/dev/null \
     || /usr/sbin/bluetoothd --nodetach) &
-# Session bus: exercises the org.rockwork export + notification monitor paths.
+# Session bus: exercises the org.rockpool export plus the isolated compatibility
+# adapter and notification monitor paths.
 export DBUS_SESSION_BUS_ADDRESS=$(dbus-daemon --session --fork --print-address)
 sleep 1
 

@@ -6,10 +6,15 @@ Dialog {
 
     property var pebble: null
     property var locStash: []
-    property string apiKey: ""
     property string lang
     property string units
-    canAccept: false
+    property string initialLang
+    property string initialUnits
+    property bool settingsLoaded
+    property bool dirty
+    property bool settingsEditable: settingsLoaded && pebble && pebble.weatherSettingsReady
+
+    canAccept: settingsEditable && dirty
 
     SilicaFlickable {
         id: view
@@ -24,22 +29,6 @@ Dialog {
                 defaultAcceptText: qsTr("OK")
                 defaultCancelText: qsTr("Cancel")
             }
-            TextSwitch {
-                id: altProvider
-                text: qsTr("Alternate Provider")
-                width: parent.width
-                checked: apiKey.length>0
-            }
-            TextField {
-                id: altKeyField
-                text: apiKey
-                placeholderText: qsTr("Provider's Key, eg. API Key")
-                label: qsTr("Provider Key")
-                enabled: altProvider.checked
-                visible: enabled
-                width: parent.width
-            }
-
             SectionHeader {
                 text: qsTr("Locations")
             }
@@ -53,6 +42,7 @@ Dialog {
                 width: parent.width
                 height: contentItem.childrenRect.height
                 model: locations
+                enabled: root.settingsEditable
                 delegate: ListItem {
                     id: liLoc
                     width: locList.width - Theme.paddingSmall
@@ -68,6 +58,11 @@ Dialog {
                             label: qsTr("Location Name")
                             text: model.name
                             visible: !liLoc.enabled
+                            onTextChanged: {
+                                if (root.settingsLoaded && activeFocus) {
+                                    root.dirty = true
+                                }
+                            }
                         }
                         TextField {
                             id: leLat
@@ -75,6 +70,11 @@ Dialog {
                             label: qsTr("Latitude")
                             text: model.lat
                             visible: !liLoc.enabled
+                            onTextChanged: {
+                                if (root.settingsLoaded && activeFocus) {
+                                    root.dirty = true
+                                }
+                            }
                         }
                         TextField {
                             id: leLng
@@ -82,6 +82,11 @@ Dialog {
                             label: qsTr("Longitude")
                             text: model.lng
                             visible: !liLoc.enabled
+                            onTextChanged: {
+                                if (root.settingsLoaded && activeFocus) {
+                                    root.dirty = true
+                                }
+                            }
                         }
                         Row {
                             width: parent.width
@@ -101,6 +106,7 @@ Dialog {
                                     locations.setProperty(index,"lat",leLat.text);
                                     locations.setProperty(index,"lng",leLng.text);
                                     liLoc.enabled = true;
+                                    root.dirty = true;
                                 }
                             }
                         }
@@ -150,17 +156,17 @@ Dialog {
                         MenuItem {
                             text: qsTr("Move Up")
                             visible: index>1
-                            onClicked: {locations.move(index,index-1,1);root.canAccept=true}
+                            onClicked: {locations.move(index,index-1,1);root.dirty=true}
                         }
                         MenuItem {
                             text: qsTr("Move Down")
                             visible: index>0 && index<(locations.count-1)
-                            onClicked: {locations.move(index,index+1,1);root.canAccept=true}
+                            onClicked: {locations.move(index,index+1,1);root.dirty=true}
                         }
                         MenuItem {
                             text: qsTr("Delete")
                             visible: index>0 || locations.count==1
-                            onClicked: liLoc.remorseAction("Delete?",function(){locations.remove(index);root.canAccept=true})
+                            onClicked: liLoc.remorseAction("Delete?",function(){locations.remove(index);root.dirty=true})
                         }
                     }
                 }
@@ -168,15 +174,17 @@ Dialog {
             Button {
                 width: parent.width
                 text: qsTr("Add Location")
+                enabled: root.settingsEditable
                 onClicked: {
                     if(locations.count>0) {
                         var locpick = pageStack.push(Qt.resolvedUrl("LocationPicker.qml"));
                         locpick.accepted.connect(function(){
                             locations.append(locpick.selected);
-                            root.canAccept=true;
+                            root.dirty=true;
                         });
                     } else {
                         locations.append({"name":qsTr("Current Location"),"lat":"n/a","lng":"n/a"})
+                        root.dirty=true;
                     }
                 }
             }
@@ -188,6 +196,7 @@ Dialog {
             ComboBox {
                 id: boxUnits
                 label: qsTr("Units")
+                enabled: root.settingsEditable
                 menu: ContextMenu {
                     Repeater {
                         model: modUnits
@@ -196,7 +205,7 @@ Dialog {
                             onClicked: {
                                 if(model.val !== root.units) {
                                     root.units = model.val;
-                                    root.canAccept = true;
+                                    root.dirty = true;
                                 }
                             }
                         }
@@ -207,6 +216,7 @@ Dialog {
             ComboBox {
                 id: boxLang
                 label: qsTr("Language")
+                enabled: root.settingsEditable
                 menu: ContextMenu {
                     Repeater {
                         model: modLang
@@ -215,7 +225,7 @@ Dialog {
                             onClicked: {
                                 if(model.val !== root.lang) {
                                     root.lang = model.val;
-                                    root.canAccept = true;
+                                    root.dirty = true;
                                 }
                             }
                         }
@@ -314,8 +324,24 @@ Dialog {
       ListElement { val: "JI"; lbl: "Yiddish-transliterated" }
       ListElement { val: "YI"; lbl: "Yiddish-unicode" }
     }
-    Component.onCompleted: {
-        var list = pebble.weatherLocations;
+    Connections {
+        target: root.pebble
+        onWeatherSettingsReadyChanged: {
+            if (root.pebble.weatherSettingsReady && !root.dirty) {
+                root.loadFromPebble()
+            }
+        }
+        onWeatherUnitsChanged: root.loadFromPebble()
+        onWeatherLanguageChanged: root.loadFromPebble()
+        onWeatherLocationsChanged: root.loadFromPebble()
+    }
+
+    function loadFromPebble() {
+        if (!pebble || !pebble.weatherSettingsReady || dirty) {
+            return
+        }
+
+        var list = pebble.weatherLocations
         locations.clear();
         locStash = [];
         for(var i in list) {
@@ -324,34 +350,49 @@ Dialog {
             locations.append({"name":loc[0],"lat":loc[1],"lng":loc[2]});
             console.log("Location",i,loc);
         }
-        root.lang = pebble.weatherLanguage;
+        root.lang = pebble.weatherLanguage
+        initialLang = root.lang
+        boxLang.currentIndex = 0
         for(i = 0; i<modLang.count;i++) {
             if(root.lang === modLang.get(i).val) {
                 boxLang.currentIndex = i;
                 break;
             }
         }
-        modLang.insert(0,{ "val": "", "lbl": qsTr("Default (English)")});
-        root.units = pebble.weatherUnits;
+        root.units = pebble.weatherUnits
+        initialUnits = root.units
+        boxUnits.currentIndex = 0
+        for(i = 0; i<modUnits.count; i++) {
+            if(root.units === modUnits.get(i).val)
+                boxUnits.currentIndex = i;
+        }
+        settingsLoaded = true
+        dirty = false
+    }
+
+    Component.onCompleted: {
+        modLang.insert(0,{ "val": "", "lbl": qsTr("Default (English)")})
         var mUnits = [
             { "val": "m", "lbl": qsTr("Metric") },
             { "val": "e", "lbl": qsTr("Imperial") },
             { "val": "h", "lbl": qsTr("Hybrid") }
-        ];
-
-        for(i = 0; i< mUnits.length; i++) {
-            modUnits.append(mUnits[i]);
-            if(root.units === mUnits[i].val)
-                boxUnits.currentIndex = i;
-            console.log("Uni",mUnits[i],modUnits.get(i));
+        ]
+        for(var i = 0; i< mUnits.length; i++) {
+            modUnits.append(mUnits[i])
         }
-        apiKey = pebble.weatherApiKey
+        if (pebble) {
+            pebble.refreshWeatherSettings()
+        }
     }
 
     onDone: {
         if(result === DialogResult.Accepted) {
+            if(root.units !== initialUnits)
+                pebble.weatherUnits = root.units;
+            if(root.lang !== initialLang)
+                pebble.weatherLanguage = root.lang;
             var ret = [];
-            var locStore = false;
+            var locStore = locations.count !== locStash.length;
             for(var i=0;i<locations.count;i++) {
                 var loc = locations.get(i);
                 ret[i] = [loc.name,loc.lat,loc.lng];
@@ -362,13 +403,6 @@ Dialog {
             }
             if(locStore)
                 pebble.weatherLocations = ret;
-            if(altProvider.checked && altKeyField.text.length>0 && apiKey !== altKeyField.text) {
-                pebble.weatherApiKey = altKeyField.text;
-                console.log("Setting AltKey to",altKeyField.text);
-            } else if(apiKey.length>0 && !altProvider.checked) {
-                pebble.weatherApiKey = "";
-                console.log("Clearing AltKey");
-            }
         }
     }
 }

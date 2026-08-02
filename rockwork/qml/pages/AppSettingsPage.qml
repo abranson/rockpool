@@ -10,6 +10,9 @@ Page {
     property string uuid;
     property string url;
     property var pebble;
+    property bool oauthBootFlow
+    property bool oauthSubmissionActive
+    property string oauthError
     allowedOrientations: Orientation.All
 
     // boot.rebble.io serves a desktop layout to Sailfish's stock gecko UA and its login flow
@@ -22,7 +25,7 @@ Page {
     // again on close. It's also (re)applied once WebEngineSettings reports initialized: setting a
     // preference before the engine is up is silently dropped, which is the likely reason a plain
     // onCompleted set never took.
-    property bool isBootFlow: ("" + url).indexOf("boot.rebble.io") >= 0
+    property bool isBootFlow: oauthBootFlow && url === "https://boot.rebble.io"
     property string bootUserAgent: "Mozilla/5.0 (Android 12; Mobile; rv:91.0) Gecko/91.0 Firefox/91.0"
 
     // Runs in the web content process (see loadFrameScript below). Walks up from the click target
@@ -35,7 +38,7 @@ Page {
         "    if (n.localName === 'a' && n.href &&" +
         "        (n.href.indexOf('pebble://') === 0 || n.href.indexOf('pebblejs://') === 0)) {" +
         "      e.preventDefault();" +
-        "      dump('pebbleLinkCatcher: ' + n.href + '\\n');" +
+        "      dump('pebbleLinkCatcher navigation received\\n');" +
         "      sendAsyncMessage('embed:pebble', { url: n.href });" +
         "      return;" +
         "    }" +
@@ -65,6 +68,26 @@ Page {
         target: WebEngineSettings
         onInitializedChanged: applyBootUserAgent()
     }
+    Connections {
+        target: appSettings.pebble
+        onConnectedChanged: {
+            if (!appSettings.oauthBootFlow && !appSettings.pebble.connected) {
+                pageStack.pop()
+            }
+        }
+        onAccountTokenPendingChanged: {
+            if (!appSettings.oauthSubmissionActive
+                    || appSettings.pebble.accountTokenPending) {
+                return
+            }
+            appSettings.oauthError = appSettings.pebble.accountTokenError
+            if (appSettings.oauthError.length === 0) {
+                pageStack.pop()
+                return
+            }
+            appSettings.oauthSubmissionActive = false
+        }
+    }
 
     // Fill the whole page and let the flickable own the header, so its contentHeight spans
     // header + full web page — otherwise a config form taller than the screen can't be
@@ -79,20 +102,6 @@ Page {
             description: url.substring(0, 5) === "data:" ? "" : url
         }
 
-        // boot.rebble.io ends login by navigating to
-        //   pebble://custom-boot-config-url/<boot-url>
-        // where <boot-url> is percent-encoded and itself carries ?access_token=<TOK>&t=<ts> — so
-        // in the raw url the token param appears as %3Faccess_token%3D…%26t%3D…, not a real query.
-        // Decode first, then pull out just <TOK> (up to the next '&'). The old param.split("=")[1]
-        // was doubly wrong even after decoding: base64 tokens contain '=' padding (truncated) and
-        // it left the "&t" suffix glued on — every token handed to the daemon was corrupted.
-        function extractAccessToken(u) {
-            var s = "" + u;
-            try { s = decodeURIComponent(s); } catch (e) {}
-            var m = s.match(/[?&]access_token=([^&]*)/);
-            return m ? m[1] : "";
-        }
-
         // Clay closes the config page by navigating to pebblejs://close#<data>. Sailfish's
         // gecko (91) doesn't support the legacy chrome.manifest protocol handler that would
         // have intercepted it, so catch the navigation here instead: parse the action out of
@@ -100,7 +109,7 @@ Page {
         function handlePebbleUrl(u) {
             if (u.indexOf("pebblejs://") !== 0 && u.indexOf("pebble://") !== 0)
                 return false;
-            console.log("pebble config close url:", u);
+            console.log("pebble configuration navigation received");
             var hIdx = u.indexOf("://") + 3;
             var hashIdx = u.indexOf("#");
             var action = hashIdx >= 0 ? u.substring(hIdx, hashIdx) : u.substring(hIdx);
@@ -110,10 +119,14 @@ Page {
                 var response = hashIdx >= 0 ? u.substring(hashIdx + 1) : "";
                 pebble.configurationClosed(appSettings.uuid, response);
                 pageStack.pop();
-            } else if (action.indexOf("custom-boot-config-url") === 0) {
-                var token = extractAccessToken(u);
-                if (token) pebble.setOAuthToken(token);
-                pageStack.pop();
+            } else if (appSettings.isBootFlow
+                       && action.indexOf("custom-boot-config-url") === 0) {
+                if (!appSettings.oauthSubmissionActive
+                        && !pebble.accountTokenPending) {
+                    appSettings.oauthError = ""
+                    appSettings.oauthSubmissionActive =
+                        pebble.setOAuthTokenFromCallback(u)
+                }
             }
             return true;
         }
@@ -125,7 +138,9 @@ Page {
 
             // about:blank until the boot UA is applied (see bootUaReady); non-boot pages load
             // appSettings.url straight away.
-            url: bootUaReady ? appSettings.url : "about:blank"
+            url: appSettings.oauthSubmissionActive
+                 ? "about:blank"
+                 : (bootUaReady ? appSettings.url : "about:blank")
             // Fires for navigations gecko actually performs (e.g. Clay's pebblejs://close). It
             // does NOT fire for the boot flow's pebble://custom-boot-config-url link: gecko hands
             // unknown schemes to the external-protocol path without changing location, so that
@@ -142,10 +157,29 @@ Page {
             }
             onRecvAsyncMessage: {
                 if (message === "embed:pebble" && data && data.url) {
-                    console.log("embed:pebble caught:", data.url);
+                    console.log("embed:pebble navigation received");
                     handlePebbleUrl("" + data.url);
                 }
             }
         }
+    }
+
+    BusyIndicator {
+        anchors.centerIn: parent
+        running: appSettings.oauthSubmissionActive
+                 && pebble && pebble.accountTokenPending
+        visible: running
+    }
+    Label {
+        anchors {
+            left: parent.left
+            right: parent.right
+            bottom: parent.bottom
+            margins: Theme.horizontalPageMargin
+        }
+        visible: appSettings.oauthError.length > 0
+        text: appSettings.oauthError
+        color: Theme.errorColor
+        wrapMode: Text.Wrap
     }
 }

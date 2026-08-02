@@ -14,15 +14,14 @@ dependencies {
     // Gradle resolves its jvm variant automatically.
     implementation("io.rebble.libpebblecommon:libpebble3")
 
-    // rockwork's public D-Bus interfaces expose dbus-java types in their signatures.
+    // The primary API and temporary compatibility interfaces expose dbus-java types.
     implementation("com.github.hypfvieh:bluez-dbus:0.3.5")
-    // Direct sqlite for the mkcal/qtcontacts readers.
-    implementation("androidx.sqlite:sqlite-bundled:2.6.2")
     implementation("co.touchlab:kermit:2.0.8")
     implementation("io.insert-koin:koin-core:4.1.1")
     // compose ui-graphics as a plain library (desktop/JVM variant) for ImageBitmap + asSkiaBitmap;
     // pulls skiko transitively. No Compose compiler plugin — see the plugins block.
     implementation("org.jetbrains.compose.ui:ui-graphics-desktop:1.10.1")
+    testImplementation(kotlin("test"))
 }
 
 kotlin {

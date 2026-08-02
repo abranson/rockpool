@@ -4,51 +4,69 @@
 <context>
     <name></name>
     <message id="filemanager-la-file_details">
-        <location filename="../qml/pages/ImportPackagePage.qml" line="146"/>
+        <location filename="../qml/pages/ImportPackagePage.qml" line="175"/>
         <source>%1, %2</source>
         <extracomment>Shows size and modification date, e.g. &quot;15.5MB, 02/03/2016&quot;</extracomment>
         <translation>%1, %2</translation>
     </message>
     <message id="filemanager-la-no_files">
-        <location filename="../qml/pages/ImportPackagePage.qml" line="171"/>
+        <location filename="../qml/pages/ImportPackagePage.qml" line="203"/>
         <source>No files</source>
         <translation>கோப்புகள் இல்லை</translation>
     </message>
 </context>
 <context>
+    <name>AppSettingsPage</name>
+    <message>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="101"/>
+        <source>App settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>AppStoreDetailsPage</name>
     <message>
-        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="170"/>
+        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="197"/>
         <source>Description</source>
         <translation>விவரம்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="191"/>
+        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="218"/>
         <source>Developer</source>
         <translation>உருவாக்குநர்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="196"/>
+        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="223"/>
         <source>Version</source>
         <translation>பதிப்பு</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="246"/>
+        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="275"/>
         <source>Install</source>
         <translation>நிறுவவும்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="246"/>
+        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="273"/>
         <source>Installing...</source>
         <translation>நிறுவுதல் ...</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="246"/>
+        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="30"/>
+        <source>App changes are available only when exactly one watch is paired.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="40"/>
+        <source>Connect the watch to install apps.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="275"/>
         <source>Installed</source>
         <translation>நிறுவப்பட்டது</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="246"/>
+        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="274"/>
         <source>Needs Companion</source>
         <translation>தோழர் தேவை</translation>
     </message>
@@ -116,38 +134,48 @@
 <context>
     <name>AppUpgradePage</name>
     <message>
-        <location filename="../qml/pages/AppUpgradePage.qml" line="24"/>
-        <location filename="../qml/pages/AppUpgradePage.qml" line="25"/>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="42"/>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="43"/>
         <source>Upgrading</source>
         <translation>மேம்படுத்துகிறது</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppUpgradePage.qml" line="49"/>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="88"/>
         <source>Version</source>
         <translation>பதிப்பு</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppUpgradePage.qml" line="77"/>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="117"/>
         <source>Upgrade</source>
         <translation>மேம்படுத்தல்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppUpgradePage.qml" line="77"/>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="116"/>
         <source>Upgrading...</source>
         <translation>மேம்படுத்தல் ...</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppUpgradePage.qml" line="77"/>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="50"/>
+        <source>App changes are available only when exactly one watch is paired.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="60"/>
+        <source>Connect the watch to install apps.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="117"/>
         <source>Needs Companion</source>
         <translation>தோழர் தேவை</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppUpgradePage.qml" line="93"/>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="136"/>
         <source>Compatibility</source>
         <translation>பொருந்தக்கூடிய தன்மை</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppUpgradePage.qml" line="175"/>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="199"/>
         <source>Change Log</source>
         <translation>பதிவை மாற்றவும்</translation>
     </message>
@@ -181,158 +209,154 @@
 <context>
     <name>DeveloperToolsPage</name>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="11"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="12"/>
         <source>Developer Tools</source>
         <translation>உருவாக்குபவர் கருவிகள்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="60"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="64"/>
         <source>Disable Service</source>
         <translation>சேவையை முடக்கு</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="66"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="70"/>
         <source>Restart Service</source>
         <translation>சேவையை மறுதொடக்கம் செய்யுங்கள்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="72"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="76"/>
         <source>Screenshots</source>
         <translation>திரைக்காட்சிகள்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="78"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="82"/>
         <source>Developer Connection</source>
         <translation>உருவாக்குபவர் இணைப்பு</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="84"/>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="195"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="88"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="167"/>
         <source>Report problem</source>
         <translation>புகாரைப் புகாரளிக்கவும்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="90"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="94"/>
         <source>Install app or watchface from file</source>
         <translation>கோப்பிலிருந்து பயன்பாடு அல்லது வாட்ச்ஃபேசை நிறுவவும்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="113"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="117"/>
         <source>Developer Connection Settings</source>
         <translation>உருவாக்குபவர் இணைப்பு அமைப்புகள்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="118"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="122"/>
         <source>Enable Connection</source>
         <translation>இணைப்பை இயக்கவும்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="120"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="124"/>
         <source>Enable Developer Connection Service</source>
         <translation>உருவாக்குபவர் இணைப்பு சேவையை இயக்கவும்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="130"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="205"/>
+        <source>Debug logging</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="206"/>
+        <source>Write debug messages to the system journal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Listen Port</source>
-        <translation>துறைமுகம் கேளுங்கள்</translation>
+        <translation type="vanished">துறைமுகம் கேளுங்கள்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="143"/>
         <source>Apply</source>
-        <translation>இடு</translation>
+        <translation type="vanished">இடு</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="153"/>
         <source>Enable</source>
-        <translation>இயக்கு</translation>
+        <translation type="vanished">இயக்கு</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="154"/>
         <source>Enable DeveloperConnection over CloudPebble</source>
-        <translation>CloudPebble வழியாக டெவலப்பர்கானெக்சனை இயக்கவும்</translation>
+        <translation type="vanished">CloudPebble வழியாக டெவலப்பர்கானெக்சனை இயக்கவும்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="160"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="137"/>
         <source>Runtime Status</source>
         <translation>இயக்க நேர நிலை</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="165"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="142"/>
         <source>DeveloperConnection Status</source>
         <translation>டெவலப்பர்கனெக்சன் நிலை</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="166"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="143"/>
         <source>DeveloperConnection port listening state</source>
         <translation>டெவலப்பர்கனெக்சன் துறைமுகம் கேட்கும் நிலை</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="172"/>
         <source>CloudPebble Status</source>
-        <translation>CloudPebble நிலை</translation>
+        <translation type="vanished">CloudPebble நிலை</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="173"/>
         <source>Indicates CloudPebble connection state</source>
-        <translation>CloudPebble இணைப்பு நிலையைக் குறிக்கிறது</translation>
+        <translation type="vanished">CloudPebble இணைப்பு நிலையைக் குறிக்கிறது</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="178"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="150"/>
         <source>Close</source>
         <translation>மூடு</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="208"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="180"/>
         <source>Preparing logs package...</source>
         <translation>பதிவுகள் தொகுப்பைத் தயாரித்தல் ...</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="233"/>
         <source>Current log: </source>
-        <translation>தற்போதைய பதிவு: </translation>
+        <translation type="vanished">தற்போதைய பதிவு: </translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="239"/>
         <source>Disable service logs</source>
-        <translation>பணி பதிவுகளை முடக்கு</translation>
+        <translation type="vanished">பணி பதிவுகளை முடக்கு</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="248"/>
         <source>Send service logs</source>
-        <translation>பணி பதிவுகளை அனுப்பவும்</translation>
+        <translation type="vanished">பணி பதிவுகளை அனுப்பவும்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="239"/>
         <source>Enable service logs</source>
-        <translation>பணி பதிவுகளை இயக்கவும்</translation>
+        <translation type="vanished">பணி பதிவுகளை இயக்கவும்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="266"/>
         <source>Syslog Verbosity</source>
-        <translation>சிச்லாக் வெர்போசிட்டி</translation>
+        <translation type="vanished">சிச்லாக் வெர்போசிட்டி</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="268"/>
         <source>Debug</source>
-        <translation>பிழைத்திருத்தம்</translation>
+        <translation type="vanished">பிழைத்திருத்தம்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="269"/>
         <source>Warning</source>
-        <translation>எச்சரிக்கை</translation>
+        <translation type="vanished">எச்சரிக்கை</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="270"/>
         <source>Critical</source>
-        <translation>விமர்சன</translation>
+        <translation type="vanished">விமர்சன</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="277"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="218"/>
         <source>Send watch logs</source>
         <translation>வாட்ச் பதிவுகள் அனுப்பவும்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="287"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="229"/>
         <source>Cancel</source>
         <translation>ரத்துசெய்</translation>
     </message>
@@ -388,72 +412,72 @@
 <context>
     <name>HealthSettingsDialog</name>
     <message>
-        <location filename="../qml/pages/HealthSettingsDialog.qml" line="13"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="70"/>
         <source>Health settings</source>
         <translation>சுகாதார அமைப்புகள்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthSettingsDialog.qml" line="14"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="71"/>
         <source>OK</source>
         <translation>சரி</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthSettingsDialog.qml" line="16"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="72"/>
         <source>Cancel</source>
         <translation>ரத்துசெய்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthSettingsDialog.qml" line="20"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="84"/>
         <source>Health app enabled</source>
         <translation>சுகாதார பயன்பாடு இயக்கப்பட்டது</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthSettingsDialog.qml" line="26"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="93"/>
         <source>Age</source>
         <translation>அகவை</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthSettingsDialog.qml" line="37"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="106"/>
         <source>Height (cm)</source>
         <translation>உயரம் (முதல்வர்)</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthSettingsDialog.qml" line="47"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="119"/>
         <source>Weight (kg)</source>
         <translation>எடை (கிலோ)</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthSettingsDialog.qml" line="58"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="133"/>
         <source>Gender</source>
         <translation>பாலினம்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthSettingsDialog.qml" line="59"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="134"/>
         <source>Female</source>
         <translation>பெண்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthSettingsDialog.qml" line="59"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="134"/>
         <source>Male</source>
         <translation>ஆண்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthSettingsDialog.qml" line="67"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="145"/>
         <source>I want to be more active</source>
         <translation>நான் இன்னும் சுறுசுறுப்பாக இருக்க விரும்புகிறேன்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthSettingsDialog.qml" line="68"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="146"/>
         <source>More Active</source>
         <translation>மேலும் செயலில்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthSettingsDialog.qml" line="74"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="155"/>
         <source>I want to sleep more</source>
         <translation>நான் அதிகமாக தூங்க விரும்புகிறேன்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthSettingsDialog.qml" line="75"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="156"/>
         <source>Sleep More</source>
         <translation>மேலும் தூங்குங்கள்</translation>
     </message>
@@ -461,7 +485,17 @@
 <context>
     <name>ImportPackagePage</name>
     <message>
-        <location filename="../qml/pages/ImportPackagePage.qml" line="161"/>
+        <location filename="../qml/pages/ImportPackagePage.qml" line="57"/>
+        <source>App changes are available only when exactly one watch is paired.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ImportPackagePage.qml" line="67"/>
+        <source>Connect the watch to install apps.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ImportPackagePage.qml" line="193"/>
         <source>Sideloading file</source>
         <translation>பக்க ஏற்றுதல் கோப்பு</translation>
     </message>
@@ -492,42 +526,42 @@
 <context>
     <name>InstalledAppDelegate</name>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="29"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="32"/>
         <source>Upgrade</source>
         <translation>மேம்படுத்து</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="29"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="32"/>
         <source>Version</source>
         <translation>பதிப்பு</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="36"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="39"/>
         <source>Launch</source>
         <translation>ஏவுதல்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="40"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="44"/>
         <source>Settings</source>
         <translation>அமைப்புகள்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="45"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="50"/>
         <source>Delete</source>
         <translation>நீக்கு</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="48"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="54"/>
         <source>Really Delete?</source>
         <translation>உண்மையில் நீக்கவா?</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="54"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="60"/>
         <source>Move Up</source>
         <translation>மேலே செல்லுங்கள்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="59"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="66"/>
         <source>Move Down</source>
         <translation>கீழே செல்லுங்கள்</translation>
     </message>
@@ -535,27 +569,32 @@
 <context>
     <name>InstalledAppsPage</name>
     <message>
-        <location filename="../qml/pages/InstalledAppsPage.qml" line="23"/>
+        <location filename="../qml/pages/InstalledAppsPage.qml" line="24"/>
         <source>Add New</source>
         <translation>புதியதைச் சேர்க்கவும்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppsPage.qml" line="32"/>
+        <location filename="../qml/pages/InstalledAppsPage.qml" line="37"/>
         <source>Apps &amp; Watchfaces</source>
         <translation>பயன்பாடுகள் மற்றும் கண்காணிப்பகங்கள்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppsPage.qml" line="32"/>
+        <location filename="../qml/pages/InstalledAppsPage.qml" line="37"/>
         <source>Apps</source>
         <translation>பயன்பாடுகள்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppsPage.qml" line="32"/>
+        <location filename="../qml/pages/InstalledAppsPage.qml" line="37"/>
         <source>Watchfaces</source>
         <translation>வாட்ச்ஃபேச்கள்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppsPage.qml" line="101"/>
+        <location filename="../qml/pages/InstalledAppsPage.qml" line="44"/>
+        <source>App changes are available only when exactly one watch is paired.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/InstalledAppsPage.qml" line="135"/>
         <source>Save Apps Order</source>
         <translation>பயன்பாடுகளின் வரிசையை சேமிக்கவும்</translation>
     </message>
@@ -632,117 +671,239 @@
 <context>
     <name>MainMenuPage</name>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="19"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="39"/>
         <source>About</source>
         <translation>பற்றி</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="25"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="45"/>
         <source>Developer tools</source>
         <translation>உருவாக்குபவர் கருவிகள்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="120"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="15"/>
         <source>Connected</source>
         <translation>இணைக்கப்பட்டுள்ளது</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="120"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="13"/>
+        <source>Connecting…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/MainMenuPage.qml" line="14"/>
+        <source>Negotiating…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/MainMenuPage.qml" line="16"/>
+        <source>Connection failed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/MainMenuPage.qml" line="17"/>
         <source>Disconnected</source>
         <translation>துண்டிக்கப்பட்டது</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="128"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="33"/>
+        <source>Watch manager</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/MainMenuPage.qml" line="158"/>
+        <source>Firmware %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/MainMenuPage.qml" line="172"/>
         <source>Update Available</source>
         <translation>புதுப்பிப்பு கிடைக்கிறது</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="150"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="194"/>
         <source>Upgrading...</source>
         <translation>மேம்படுத்தல் ...</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="162"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="207"/>
         <source>Running</source>
         <translation>இயங்கும்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="172"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="219"/>
+        <source>Your Pebble smartwatch is disconnected. Please make sure it is powered on and within range.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Your Pebble smartwatch is disconnected. Please make sure it is powered on, within range and it is paired properly in the Bluetooth System Settings.</source>
-        <translation>உங்கள் பெப்பிள் ச்மார்ட்வாட்ச் துண்டிக்கப்பட்டது. தயவுசெய்து இது வரம்பிற்குள் இயங்குகிறது என்பதை உறுதிப்படுத்திக் கொள்ளுங்கள், மேலும் இது ஊடலை கணினி அமைப்புகளில் சரியாக இணைக்கப்பட்டுள்ளது.</translation>
+        <translation type="vanished">உங்கள் பெப்பிள் ச்மார்ட்வாட்ச் துண்டிக்கப்பட்டது. தயவுசெய்து இது வரம்பிற்குள் இயங்குகிறது என்பதை உறுதிப்படுத்திக் கொள்ளுங்கள், மேலும் இது ஊடலை கணினி அமைப்புகளில் சரியாக இணைக்கப்பட்டுள்ளது.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="182"/>
         <source>Open Bluetooth Settings</source>
-        <translation>ஊடலை அமைப்புகளைத் திறக்கவும்</translation>
+        <translation type="vanished">ஊடலை அமைப்புகளைத் திறக்கவும்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="189"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="230"/>
         <source>Your Pebble smartwatch is in factory mode and needs to be initialized.</source>
         <translation>உங்கள் பெப்பிள் ச்மார்ட்வாட்ச் தொழிற்சாலை பயன்முறையில் உள்ளது மற்றும் துவக்கப்பட வேண்டும்.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="198"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="239"/>
         <source>Initialize Pebble</source>
         <translation>பெப்பிள் துவக்கவும்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="267"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="328"/>
         <source>Notifications</source>
         <translation>அறிவிப்புகள்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="272"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="333"/>
         <source>Watch Apps</source>
         <translation>பயன்பாடுகளைப் பாருங்கள்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="278"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="339"/>
         <source>Watchfaces</source>
         <translation>வாட்ச்ஃபேச்கள்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="284"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="345"/>
         <source>Settings</source>
         <translation>அமைப்புகள்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="291"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="352"/>
         <source>Firmware</source>
         <translation>ஃபார்ம்வேர்</translation>
     </message>
 </context>
 <context>
+    <name>NotificationColorPage</name>
+    <message>
+        <location filename="../qml/pages/NotificationColorPage.qml" line="37"/>
+        <source>Colour</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/NotificationColorPage.qml" line="44"/>
+        <source>Use default colour</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>NotificationIconPage</name>
+    <message>
+        <location filename="../qml/pages/NotificationIconPage.qml" line="61"/>
+        <source>Icon</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/NotificationIconPage.qml" line="66"/>
+        <source>Search icons</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/NotificationIconPage.qml" line="73"/>
+        <source>Use default icon</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/NotificationIconPage.qml" line="111"/>
+        <source>No matching icons</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>NotificationsPage</name>
     <message>
-        <location filename="../qml/pages/NotificationsPage.qml" line="15"/>
+        <location filename="../qml/pages/NotificationsPage.qml" line="36"/>
         <source>Notifications</source>
         <translation>அறிவிப்புகள்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NotificationsPage.qml" line="18"/>
+        <location filename="../qml/pages/NotificationsPage.qml" line="39"/>
         <source>Entries here will be added as notifications appear on the phone. Selected notifications will be shown on your Pebble smartwatch.</source>
         <translation>தொலைபேசியில் அறிவிப்புகள் தோன்றுவதால் இங்கே உள்ளீடுகள் சேர்க்கப்படும். தேர்ந்தெடுக்கப்பட்ட அறிவிப்புகள் உங்கள் பெப்பிள் ச்மார்ட்வாட்சில் காண்பிக்கப்படும்.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NotificationsPage.qml" line="63"/>
+        <location filename="../qml/pages/NotificationsPage.qml" line="109"/>
         <source>Always Enabled</source>
         <translation>எப்போதும் இயக்கப்பட்டது</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NotificationsPage.qml" line="69"/>
+        <location filename="../qml/pages/NotificationsPage.qml" line="115"/>
         <source>Disabled When Active</source>
         <translation>செயலில் இருக்கும்போது முடக்கப்பட்டது</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NotificationsPage.qml" line="75"/>
+        <location filename="../qml/pages/NotificationsPage.qml" line="121"/>
         <source>Always Disabled</source>
         <translation>எப்போதும் முடக்கப்பட்டது</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NotificationsPage.qml" line="81"/>
+        <location filename="../qml/pages/NotificationsPage.qml" line="127"/>
+        <source>Colour…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/NotificationsPage.qml" line="136"/>
+        <source>Icon…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/NotificationsPage.qml" line="145"/>
         <source>Forget</source>
         <translation>மறந்துவிடு</translation>
+    </message>
+</context>
+<context>
+    <name>PairWatchPage</name>
+    <message>
+        <location filename="../qml/pages/PairWatchPage.qml" line="43"/>
+        <source>Pairing timed out. Put the watch in pairing mode and try again.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PairWatchPage.qml" line="57"/>
+        <source>Pair a Pebble</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PairWatchPage.qml" line="59"/>
+        <source>Scanning for watches…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PairWatchPage.qml" line="60"/>
+        <source>Scan stopped</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PairWatchPage.qml" line="66"/>
+        <source>Stop scanning</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PairWatchPage.qml" line="66"/>
+        <source>Scan again</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PairWatchPage.qml" line="86"/>
+        <source>Connecting…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PairWatchPage.qml" line="105"/>
+        <source>Searching for Pebble watches</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PairWatchPage.qml" line="106"/>
+        <source>Put the watch in pairing mode: Settings → Bluetooth on the watch.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -758,34 +919,77 @@
         <translation>பெப்பிள் கடிகாரங்களை நிர்வகிக்கவும்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PebblesPage.qml" line="14"/>
         <source>Bluetooth Settings</source>
-        <translation>ஊடலை அமைப்புகள்</translation>
+        <translation type="vanished">ஊடலை அமைப்புகள்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PebblesPage.qml" line="18"/>
+        <location filename="../qml/pages/PebblesPage.qml" line="14"/>
         <source>Restart service</source>
         <translation>சேவையை மறுதொடக்கம் செய்யுங்கள்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PebblesPage.qml" line="35"/>
+        <location filename="../qml/pages/PebblesPage.qml" line="18"/>
+        <location filename="../qml/pages/PebblesPage.qml" line="112"/>
+        <source>Pair new watch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PebblesPage.qml" line="33"/>
+        <source>Connect</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PebblesPage.qml" line="40"/>
+        <source>Disconnect</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PebblesPage.qml" line="47"/>
+        <source>Forget watch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PebblesPage.qml" line="48"/>
+        <source>Forgetting watch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PebblesPage.qml" line="75"/>
+        <source>Connecting…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PebblesPage.qml" line="76"/>
+        <source>Negotiating…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PebblesPage.qml" line="77"/>
         <source>Connected</source>
         <translation>இணைக்கப்பட்டுள்ளது</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PebblesPage.qml" line="35"/>
+        <location filename="../qml/pages/PebblesPage.qml" line="78"/>
+        <source>Connection failed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PebblesPage.qml" line="79"/>
         <source>Disconnected</source>
         <translation>துண்டிக்கப்பட்டது</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PebblesPage.qml" line="55"/>
-        <source>No Pebble smartwatches configured yet. Please connect your Pebble smartwatch using System Settings.</source>
-        <translation>பெப்பிள் ச்மார்ட்வாட்ச்கள் இதுவரை கட்டமைக்கப்படவில்லை. கணினி அமைப்புகளைப் பயன்படுத்தி உங்கள் பெப்பிள் ச்மார்ட்வாட்சை இணைக்கவும்.</translation>
+        <location filename="../qml/pages/PebblesPage.qml" line="103"/>
+        <source>No Pebble smartwatches configured yet. Put your watch in pairing mode and pair it from here.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/PebblesPage.qml" line="64"/>
+        <source>No Pebble smartwatches configured yet. Please connect your Pebble smartwatch using System Settings.</source>
+        <translation type="vanished">பெப்பிள் ச்மார்ட்வாட்ச்கள் இதுவரை கட்டமைக்கப்படவில்லை. கணினி அமைப்புகளைப் பயன்படுத்தி உங்கள் பெப்பிள் ச்மார்ட்வாட்சை இணைக்கவும்.</translation>
+    </message>
+    <message>
         <source>Open Bluetooth Settings</source>
-        <translation>ஊடலை அமைப்புகளைத் திறக்கவும்</translation>
+        <translation type="vanished">ஊடலை அமைப்புகளைத் திறக்கவும்</translation>
     </message>
 </context>
 <context>
@@ -842,6 +1046,24 @@
     </message>
 </context>
 <context>
+    <name>RockpoolAccount</name>
+    <message>
+        <location filename="../rockpoolaccount.cpp" line="246"/>
+        <source>Rockpool returned an invalid account operation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../rockpoolaccount.cpp" line="271"/>
+        <source>Rockpool rejected the account change</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../rockpoolaccount.cpp" line="322"/>
+        <source>Rockpool account service changed</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>ScreenshotsPage</name>
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="23"/>
@@ -854,32 +1076,32 @@
         <translation>திரைக்காட்சி எடுத்துக் கொள்ளுங்கள்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/ScreenshotsPage.qml" line="53"/>
+        <location filename="../qml/pages/ScreenshotsPage.qml" line="54"/>
         <source>Share</source>
         <translation>பங்கு</translation>
     </message>
     <message>
-        <location filename="../qml/pages/ScreenshotsPage.qml" line="55"/>
+        <location filename="../qml/pages/ScreenshotsPage.qml" line="56"/>
         <source>Pebble screenshot</source>
         <translation>கூழாங்கல் திரை காட்சி</translation>
     </message>
     <message>
-        <location filename="../qml/pages/ScreenshotsPage.qml" line="56"/>
+        <location filename="../qml/pages/ScreenshotsPage.qml" line="57"/>
         <source>Screen snapshot of Pebble Smartwatches</source>
         <translation>பெப்பிள் ச்மார்ட்வாட்ச்களின் திரை ச்னாப்சாட்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/ScreenshotsPage.qml" line="62"/>
+        <location filename="../qml/pages/ScreenshotsPage.qml" line="63"/>
         <source>Delete</source>
         <translation>நீக்கு</translation>
     </message>
     <message>
-        <location filename="../qml/pages/ScreenshotsPage.qml" line="65"/>
+        <location filename="../qml/pages/ScreenshotsPage.qml" line="66"/>
         <source>Really Delete?</source>
         <translation>உண்மையில் நீக்கவா?</translation>
     </message>
     <message>
-        <location filename="../qml/pages/ScreenshotsPage.qml" line="72"/>
+        <location filename="../qml/pages/ScreenshotsPage.qml" line="73"/>
         <source>Cancel</source>
         <translation>ரத்துசெய்</translation>
     </message>
@@ -887,47 +1109,47 @@
 <context>
     <name>SendTextSettingsDialog</name>
     <message>
-        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="26"/>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="67"/>
         <source>Messaging Settings</source>
         <translation>செய்தி அமைப்புகள்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="27"/>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="68"/>
         <source>OK</source>
         <translation>சரி</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="28"/>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="69"/>
         <source>Cancel</source>
         <translation>ரத்துசெய்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="32"/>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="73"/>
         <source>Contacts</source>
         <translation>தொடர்புகள்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="77"/>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="125"/>
         <source>Really Delete?</source>
         <translation>உண்மையில் நீக்கவா?</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="130"/>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="188"/>
         <source>Pick SIM for new contacts</source>
         <translation>புதிய தொடர்புகளுக்கு சிம் தேர்ந்தெடுங்கள்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="144"/>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="202"/>
         <source>Messages</source>
         <translation>செய்திகள்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="147"/>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="205"/>
         <source>Edit Messages</source>
         <translation>செய்திகளைத் திருத்தவும்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="153"/>
+        <location filename="../qml/pages/SendTextSettingsDialog.qml" line="213"/>
         <source>Send Text Messages</source>
         <translation>உரை செய்திகளை அனுப்பவும்</translation>
     </message>
@@ -935,115 +1157,115 @@
 <context>
     <name>SettingsPage</name>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="26"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="55"/>
         <source>Settings</source>
         <translation>அமைப்புகள்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="30"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="59"/>
         <source>General</source>
         <translation>பொது</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="34"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="63"/>
         <source>Distance Units</source>
         <translation>தூர அலகுகள்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="37"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="67"/>
         <source>Metric</source>
         <translation>மெட்ரிக்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="40"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="71"/>
         <source>Imperial</source>
         <translation>ஏகாதிபத்திய</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="50"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="79"/>
         <source>Language</source>
         <translation>மொழி</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="55"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="84"/>
         <source>Timeline</source>
         <translation>காலவரிசை</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="60"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="89"/>
         <source>Sync calendar to timeline</source>
         <translation>காலெண்டரை காலவரிசைக்கு ஒத்திசைக்கவும்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="68"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="98"/>
         <source>Sync Apps from Cloud</source>
         <translation>மேகத்திலிருந்து பயன்பாடுகளை ஒத்திசைக்கவும்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="76"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="107"/>
         <source>Reset Timeline</source>
         <translation>காலவரிசையை மீட்டமைக்கவும்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="81"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="116"/>
         <source>Timeline Window Start (days ago)</source>
         <translation>காலவரிசை சாளரம் தொடக்க (சில நாட்களுக்கு முன்பு)</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="89"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="129"/>
         <source>Timeline Window End (days ahead)</source>
         <translation>காலவரிசை சாளர முடிவு (நாட்கள் முன்னால்)</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="97"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="142"/>
         <source>Notification re-delivery expiration (seconds)</source>
         <translation>அறிவிப்பு மறு விநியோக காலாவதி (விநாடிகள்)</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="105"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="152"/>
         <source>Set Timeline Window</source>
         <translation>காலவரிசை சாளரத்தை அமைக்கவும்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="111"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="173"/>
         <source>Active Timeline WebSync account</source>
         <translation>செயலில் காலவரிசை வெப்சின்க் கணக்கு</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="125"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="188"/>
         <source>Logout</source>
         <translation>வெளியேற்றம்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="125"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="188"/>
         <source>Login</source>
         <translation>புகுபதிவு</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="138"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="214"/>
         <source>Automatic Profile</source>
         <translation>தானியங்கி சுயவிவரம்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="142"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="218"/>
         <source>Connected</source>
         <translation>இணைக்கப்பட்டுள்ளது</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="145"/>
-        <location filename="../qml/pages/SettingsPage.qml" line="155"/>
-        <location filename="../qml/pages/SettingsPage.qml" line="166"/>
-        <location filename="../qml/pages/SettingsPage.qml" line="176"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="222"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="235"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="243"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="256"/>
         <source>no change</source>
         <translation>எந்த மாற்றமும் இல்லை</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="163"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="239"/>
         <source>Disconnected</source>
         <translation>துண்டிக்கப்பட்டது</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="183"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="259"/>
         <source>Canned Messages</source>
         <translation>பதிவு செய்யப்பட்ட செய்திகள்</translation>
     </message>
@@ -1051,48 +1273,45 @@
 <context>
     <name>WeatherSettingsDialog</name>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="23"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="28"/>
         <source>Weather Settings</source>
         <translation>வானிலை அமைப்புகள்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="24"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="29"/>
         <source>OK</source>
         <translation>சரி</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="25"/>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="90"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="30"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="95"/>
         <source>Cancel</source>
         <translation>ரத்துசெய்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="29"/>
         <source>Alternate Provider</source>
-        <translation>மாற்று வழங்குநர்</translation>
+        <translation type="vanished">மாற்று வழங்குநர்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="36"/>
         <source>Provider&apos;s Key, eg. API Key</source>
-        <translation>வழங்குநரின் விசை, எ.கா. பநிஇ விசை</translation>
+        <translation type="vanished">வழங்குநரின் விசை, எ.கா. பநிஇ விசை</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="37"/>
         <source>Provider Key</source>
-        <translation>வழங்குநர் விசை</translation>
+        <translation type="vanished">வழங்குநர் விசை</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="44"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="33"/>
         <source>Locations</source>
         <translation>இருப்பிடங்கள்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="68"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="58"/>
         <source>Location Name</source>
         <translation>இருப்பிட பெயர்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="75"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="70"/>
         <source>Latitude</source>
         <translation>அகலாங்கு</translation>
     </message>
@@ -1102,72 +1321,72 @@
         <translation>நெட்டாங்கு</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="96"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="101"/>
         <source>Save Changes</source>
         <translation>மாற்றங்களைச் சேமிக்கவும்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="146"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="152"/>
         <source>Edit</source>
         <translation>தொகு</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="151"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="157"/>
         <source>Move Up</source>
         <translation>மேலே செல்லுங்கள்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="156"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="162"/>
         <source>Move Down</source>
         <translation>கீழே செல்லுங்கள்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="161"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="167"/>
         <source>Delete</source>
         <translation>நீக்கு</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="170"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="176"/>
         <source>Add Location</source>
         <translation>இருப்பிடத்தைச் சேர்க்கவும்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="179"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="186"/>
         <source>Current Location</source>
         <translation>தற்போதைய இடம்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="185"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="193"/>
         <source>Locales</source>
         <translation>இடங்கள்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="190"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="198"/>
         <source>Units</source>
         <translation>அலகுகள்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="209"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="218"/>
         <source>Language</source>
         <translation>மொழி</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="334"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="374"/>
         <source>Default (English)</source>
         <translation>இயல்புநிலை (ஆங்கிலம்)</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="337"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="376"/>
         <source>Metric</source>
         <translation>மெட்ரிக்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="338"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="377"/>
         <source>Imperial</source>
         <translation>ஏகாதிபத்திய</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="339"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="378"/>
         <source>Hybrid</source>
         <translation>கலப்பினம்</translation>
     </message>

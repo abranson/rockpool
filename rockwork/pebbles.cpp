@@ -1,10 +1,11 @@
 #include "pebbles.h"
 #include "pebble.h"
+#include "rockpoolaccount.h"
 
 #include <QDBusConnection>
-#include <QDBusInterface>
 #include <QDebug>
 #include <QDBusArgument>
+#include <QDBusPendingCallWatcher>
 #include <QDBusServiceWatcher>
 #include <algorithm>
 
@@ -12,33 +13,66 @@
 #define ROCKWORK_MANAGER_PATH QStringLiteral("/org/rockwork/Manager")
 #define ROCKWORK_MANAGER_INTERFACE QStringLiteral("org.rockwork.Manager")
 
+static QDBusPendingCall callManager(const QString &method,
+                                    const QVariantList &arguments = QVariantList())
+{
+    QDBusMessage message = QDBusMessage::createMethodCall(
+        ROCKWORK_SERVICE, ROCKWORK_MANAGER_PATH, ROCKWORK_MANAGER_INTERFACE, method);
+    message.setArguments(arguments);
+    return QDBusConnection::sessionBus().asyncCall(message);
+}
+
 Pebbles::Pebbles(QObject *parent):
     QAbstractListModel(parent)
 {
-    refresh();
+    m_account = new RockpoolAccount(this);
     m_watcher = new QDBusServiceWatcher(ROCKWORK_SERVICE, QDBusConnection::sessionBus(), QDBusServiceWatcher::WatchForOwnerChange, this);
     QDBusConnection::sessionBus().connect(ROCKWORK_SERVICE, ROCKWORK_MANAGER_PATH, ROCKWORK_MANAGER_INTERFACE, "PebblesChanged", this, SLOT(refresh()));
     QDBusConnection::sessionBus().connect(ROCKWORK_SERVICE, ROCKWORK_MANAGER_PATH, ROCKWORK_MANAGER_INTERFACE, "ScanningChanged", this, SLOT(onScanningChanged(bool)));
     QDBusConnection::sessionBus().connect(ROCKWORK_SERVICE, ROCKWORK_MANAGER_PATH, ROCKWORK_MANAGER_INTERFACE, "ScanResultsChanged", this, SLOT(refreshScanResults()));
-    connect(m_watcher, &QDBusServiceWatcher::serviceRegistered, [this]() {
-        qDebug() << "service Registered!";
-        refresh();
-        QDBusConnection::sessionBus().connect(ROCKWORK_SERVICE, ROCKWORK_MANAGER_PATH, ROCKWORK_MANAGER_INTERFACE, "PebblesChanged", this, SLOT(refresh()));
-        QDBusConnection::sessionBus().connect(ROCKWORK_SERVICE, ROCKWORK_MANAGER_PATH, ROCKWORK_MANAGER_INTERFACE, "ScanningChanged", this, SLOT(onScanningChanged(bool)));
-        QDBusConnection::sessionBus().connect(ROCKWORK_SERVICE, ROCKWORK_MANAGER_PATH, ROCKWORK_MANAGER_INTERFACE, "ScanResultsChanged", this, SLOT(refreshScanResults()));
+    connect(m_watcher, &QDBusServiceWatcher::serviceOwnerChanged,
+            [this](const QString &, const QString &oldOwner, const QString &newOwner) {
+        qDebug() << "service owner changed:" << oldOwner << "->" << newOwner;
+        ++m_serviceEpoch;
+        ++m_watchListEpoch;
+        ++m_versionEpoch;
+        ++m_scanningEpoch;
+        ++m_scanResultsEpoch;
+        if (!oldOwner.isEmpty()) {
+            const bool hadPebbles = !m_pebbles.isEmpty();
+            beginResetModel();
+            qDeleteAll(m_pebbles);
+            m_pebbles.clear();
+            m_pebblesWithIdentity.clear();
+            endResetModel();
+            if (hadPebbles) {
+                emit countChanged();
+            }
+            if (m_connectedToService) {
+                m_connectedToService = false;
+                emit connectedToServiceChanged();
+            }
+            if (!m_version.isEmpty()) {
+                m_version.clear();
+                emit versionChanged();
+            }
+            onScanningChanged(false);
+            if (!m_scanResults.isEmpty()) {
+                m_scanResults.clear();
+                emit scanResultsChanged();
+            }
+        }
+        if (!newOwner.isEmpty()) {
+            refresh();
+            refreshVersion();
+            refreshScanning();
+            refreshScanResults();
+        }
     });
-    connect(m_watcher, &QDBusServiceWatcher::serviceUnregistered, [this]() {
-        qDebug() << "service Unregistered!";
-        beginResetModel();
-        qDeleteAll(m_pebbles);
-        m_pebbles.clear();
-        endResetModel();
-        m_connectedToService = false;
-        emit connectedToServiceChanged();
-        onScanningChanged(false);
-        m_scanResults.clear();
-        emit scanResultsChanged();
-    });
+    refresh();
+    refreshVersion();
+    refreshScanning();
+    refreshScanResults();
 }
 
 int Pebbles::rowCount(const QModelIndex &parent) const
@@ -83,21 +117,42 @@ bool Pebbles::connectedToService()
 
 QString Pebbles::version() const
 {
-    QDBusInterface iface(ROCKWORK_SERVICE, ROCKWORK_MANAGER_PATH, ROCKWORK_MANAGER_INTERFACE);
-    if (!iface.isValid()) {
-        qWarning() << "Could not connect to rockworkd.";
-        return QString();
+    return m_version;
+}
+
+void Pebbles::refreshVersion()
+{
+    const quint64 requestEpoch = ++m_versionEpoch;
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+        callManager(QStringLiteral("Version")), this);
+    watcher->setProperty("serviceEpoch", QVariant::fromValue<qulonglong>(m_serviceEpoch));
+    watcher->setProperty("requestEpoch", QVariant::fromValue<qulonglong>(requestEpoch));
+    connect(watcher, &QDBusPendingCallWatcher::finished,
+            this, &Pebbles::versionReplyFinished);
+}
+
+void Pebbles::versionReplyFinished(QDBusPendingCallWatcher *watcher)
+{
+    const QDBusMessage reply = watcher->reply();
+    const quint64 serviceEpoch = watcher->property("serviceEpoch").toULongLong();
+    const quint64 requestEpoch = watcher->property("requestEpoch").toULongLong();
+    watcher->deleteLater();
+    if (serviceEpoch != m_serviceEpoch || requestEpoch != m_versionEpoch) {
+        return;
     }
-    QDBusMessage reply = iface.call("Version");
     if (reply.type() == QDBusMessage::ErrorMessage) {
-        qWarning() << "Error refreshing watches:" << reply.errorMessage();
-        return QString();
+        qWarning() << "Error refreshing compatibility service version:" << reply.errorMessage();
+        return;
     }
     if (reply.arguments().count() == 0) {
-        qWarning() << "No reply from service.";
-        return QString();
+        qWarning() << "No version reply from compatibility service.";
+        return;
     }
-    return reply.arguments().first().toString();
+    const QString version = reply.arguments().first().toString();
+    if (m_version != version) {
+        m_version = version;
+        emit versionChanged();
+    }
 }
 
 Pebble *Pebbles::get(int index) const
@@ -121,12 +176,24 @@ int Pebbles::find(const QString &address) const
 void Pebbles::refresh()
 {
     qDebug() << "pebbles changed";
-    QDBusInterface iface(ROCKWORK_SERVICE, ROCKWORK_MANAGER_PATH, ROCKWORK_MANAGER_INTERFACE);
-    if (!iface.isValid()) {
-        qWarning() << "Could not connect to rockworkd.";
+    const quint64 requestEpoch = ++m_watchListEpoch;
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+        callManager(QStringLiteral("ListWatches")), this);
+    watcher->setProperty("serviceEpoch", QVariant::fromValue<qulonglong>(m_serviceEpoch));
+    watcher->setProperty("requestEpoch", QVariant::fromValue<qulonglong>(requestEpoch));
+    connect(watcher, &QDBusPendingCallWatcher::finished,
+            this, &Pebbles::watchListReplyFinished);
+}
+
+void Pebbles::watchListReplyFinished(QDBusPendingCallWatcher *watcher)
+{
+    const QDBusMessage reply = watcher->reply();
+    const quint64 serviceEpoch = watcher->property("serviceEpoch").toULongLong();
+    const quint64 requestEpoch = watcher->property("requestEpoch").toULongLong();
+    watcher->deleteLater();
+    if (serviceEpoch != m_serviceEpoch || requestEpoch != m_watchListEpoch) {
         return;
     }
-    QDBusMessage reply = iface.call("ListWatches");
     if (reply.type() == QDBusMessage::ErrorMessage) {
         qWarning() << "Error refreshing watches:" << reply.errorMessage();
         return;
@@ -142,7 +209,8 @@ void Pebbles::refresh()
         QDBusObjectPath p;
         arg >> p;
         if (find(p) == -1) {
-            Pebble *pebble = new Pebble(p, this);
+            Pebble *pebble = new Pebble(p, this, m_account);
+            connect(pebble, &Pebble::identityChanged, this, &Pebbles::pebbleIdentityChanged);
             connect(pebble, &Pebble::connectedChanged, this, &Pebbles::pebbleConnectedChanged);
             connect(pebble, &Pebble::connectionStateChanged, this, &Pebbles::pebbleConnectedChanged);
             beginInsertRows(QModelIndex(), m_pebbles.count(), m_pebbles.count());
@@ -151,7 +219,6 @@ void Pebbles::refresh()
             emit countChanged();
         }
         availableList << p.path();
-        std::sort(m_pebbles.begin(), m_pebbles.end(), Pebbles::sortPebbles);
     }
     arg.endArray();
 
@@ -173,15 +240,34 @@ void Pebbles::refresh()
         Pebble *pebble = toRemove.takeFirst();
         int idx = m_pebbles.indexOf(pebble);
         beginRemoveRows(QModelIndex(), idx, idx);
+        m_pebblesWithIdentity.remove(pebble);
         m_pebbles.takeAt(idx)->deleteLater();
         endRemoveRows();
         emit countChanged();
     }
 
+    resortPebbles();
+
     if (!m_connectedToService) {
         m_connectedToService = true;
         emit connectedToServiceChanged();
     }
+}
+
+void Pebbles::resortPebbles()
+{
+    QList<Pebble*> sorted = m_pebbles;
+    std::sort(sorted.begin(), sorted.end(), Pebbles::sortPebbles);
+    if (sorted == m_pebbles) {
+        return;
+    }
+
+    // Changing the backing order without model signals leaves QML delegates attached to the
+    // wrong Pebble. Watch count is tiny and ordering changes infrequently, so a reset is clearer
+    // and safer than trying to maintain persistent indexes across a pointer sort.
+    beginResetModel();
+    m_pebbles = sorted;
+    endResetModel();
 }
 
 bool Pebbles::sortPebbles(Pebble *a, Pebble *b)
@@ -192,15 +278,36 @@ bool Pebbles::sortPebbles(Pebble *a, Pebble *b)
     else if (!a->connected() && b->connected()) {
         return false;
     }
-    else {
+    else if (a->name() != b->name()) {
         return a->name() < b->name();
     }
+    return a->address() < b->address();
 }
 
 void Pebbles::pebbleConnectedChanged()
 {
     Pebble *pebble = static_cast<Pebble*>(sender());
-    emit dataChanged(index(find(pebble->address())), index(find(pebble->address())), {RoleConnected, RoleConnectionState});
+    resortPebbles();
+    const int row = m_pebbles.indexOf(pebble);
+    if (row >= 0) {
+        emit dataChanged(index(row), index(row), {RoleConnected, RoleConnectionState});
+    }
+}
+
+void Pebbles::pebbleIdentityChanged()
+{
+    Pebble *pebble = static_cast<Pebble*>(sender());
+    resortPebbles();
+    const int row = m_pebbles.indexOf(pebble);
+    if (row >= 0) {
+        emit dataChanged(index(row), index(row),
+                         {RoleAddress, RoleName, RoleSerialNumber});
+        if (!pebble->address().isEmpty()
+                && !m_pebblesWithIdentity.contains(pebble)) {
+            m_pebblesWithIdentity.insert(pebble);
+            emit pebbleIdentityAvailable(pebble->address());
+        }
+    }
 }
 
 int Pebbles::find(const QDBusObjectPath &path) const
@@ -225,47 +332,110 @@ QVariantList Pebbles::scanResults() const
 
 void Pebbles::startScan()
 {
-    QDBusInterface iface(ROCKWORK_SERVICE, ROCKWORK_MANAGER_PATH, ROCKWORK_MANAGER_INTERFACE);
-    iface.call("StartScan");
+    sendManagerCommand(QStringLiteral("StartScan"));
 }
 
 void Pebbles::stopScan()
 {
-    QDBusInterface iface(ROCKWORK_SERVICE, ROCKWORK_MANAGER_PATH, ROCKWORK_MANAGER_INTERFACE);
-    iface.call("StopScan");
+    sendManagerCommand(QStringLiteral("StopScan"));
 }
 
 void Pebbles::connectWatch(const QString &address)
 {
-    QDBusInterface iface(ROCKWORK_SERVICE, ROCKWORK_MANAGER_PATH, ROCKWORK_MANAGER_INTERFACE);
-    iface.call("ConnectWatch", address);
+    sendManagerCommand(QStringLiteral("ConnectWatch"), QVariantList() << address);
 }
 
 void Pebbles::disconnectWatch(const QString &address)
 {
-    QDBusInterface iface(ROCKWORK_SERVICE, ROCKWORK_MANAGER_PATH, ROCKWORK_MANAGER_INTERFACE);
-    iface.call("DisconnectWatch", address);
+    sendManagerCommand(QStringLiteral("DisconnectWatch"), QVariantList() << address);
 }
 
 void Pebbles::forgetWatch(const QString &address)
 {
-    QDBusInterface iface(ROCKWORK_SERVICE, ROCKWORK_MANAGER_PATH, ROCKWORK_MANAGER_INTERFACE);
-    iface.call("ForgetWatch", address);
+    sendManagerCommand(QStringLiteral("ForgetWatch"), QVariantList() << address);
     // The daemon emits PebblesChanged once the watch is gone; the model refreshes from that.
+}
+
+void Pebbles::sendManagerCommand(const QString &method, const QVariantList &arguments)
+{
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+        callManager(method, arguments), this);
+    watcher->setProperty("method", method);
+    watcher->setProperty("serviceEpoch", QVariant::fromValue<qulonglong>(m_serviceEpoch));
+    connect(watcher, &QDBusPendingCallWatcher::finished,
+            this, &Pebbles::managerCommandReplyFinished);
+}
+
+void Pebbles::managerCommandReplyFinished(QDBusPendingCallWatcher *watcher)
+{
+    const QDBusMessage reply = watcher->reply();
+    const QString method = watcher->property("method").toString();
+    const quint64 serviceEpoch = watcher->property("serviceEpoch").toULongLong();
+    watcher->deleteLater();
+    if (serviceEpoch != m_serviceEpoch) {
+        return;
+    }
+    if (reply.type() == QDBusMessage::ErrorMessage) {
+        qWarning() << method << "failed:" << reply.errorMessage();
+    }
 }
 
 void Pebbles::onScanningChanged(bool scanning)
 {
+    ++m_scanningEpoch;
     if (m_scanning != scanning) {
         m_scanning = scanning;
         emit scanningChanged();
     }
 }
 
+void Pebbles::refreshScanning()
+{
+    const quint64 requestEpoch = ++m_scanningEpoch;
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+        callManager(QStringLiteral("IsScanning")), this);
+    watcher->setProperty("serviceEpoch", QVariant::fromValue<qulonglong>(m_serviceEpoch));
+    watcher->setProperty("requestEpoch", QVariant::fromValue<qulonglong>(requestEpoch));
+    connect(watcher, &QDBusPendingCallWatcher::finished,
+            this, &Pebbles::scanningReplyFinished);
+}
+
+void Pebbles::scanningReplyFinished(QDBusPendingCallWatcher *watcher)
+{
+    const QDBusMessage reply = watcher->reply();
+    const quint64 serviceEpoch = watcher->property("serviceEpoch").toULongLong();
+    const quint64 requestEpoch = watcher->property("requestEpoch").toULongLong();
+    watcher->deleteLater();
+    if (serviceEpoch != m_serviceEpoch || requestEpoch != m_scanningEpoch) {
+        return;
+    }
+    if (reply.type() == QDBusMessage::ErrorMessage || reply.arguments().count() == 0) {
+        qWarning() << "Error fetching scanning state:" << reply.errorMessage();
+        return;
+    }
+    onScanningChanged(reply.arguments().first().toBool());
+}
+
 void Pebbles::refreshScanResults()
 {
-    QDBusInterface iface(ROCKWORK_SERVICE, ROCKWORK_MANAGER_PATH, ROCKWORK_MANAGER_INTERFACE);
-    QDBusMessage reply = iface.call("ScanResults");
+    const quint64 requestEpoch = ++m_scanResultsEpoch;
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+        callManager(QStringLiteral("ScanResults")), this);
+    watcher->setProperty("serviceEpoch", QVariant::fromValue<qulonglong>(m_serviceEpoch));
+    watcher->setProperty("requestEpoch", QVariant::fromValue<qulonglong>(requestEpoch));
+    connect(watcher, &QDBusPendingCallWatcher::finished,
+            this, &Pebbles::scanResultsReplyFinished);
+}
+
+void Pebbles::scanResultsReplyFinished(QDBusPendingCallWatcher *watcher)
+{
+    const QDBusMessage reply = watcher->reply();
+    const quint64 serviceEpoch = watcher->property("serviceEpoch").toULongLong();
+    const quint64 requestEpoch = watcher->property("requestEpoch").toULongLong();
+    watcher->deleteLater();
+    if (serviceEpoch != m_serviceEpoch || requestEpoch != m_scanResultsEpoch) {
+        return;
+    }
     if (reply.type() == QDBusMessage::ErrorMessage || reply.arguments().count() == 0) {
         qWarning() << "Error fetching scan results:" << reply.errorMessage();
         return;
@@ -290,6 +460,8 @@ void Pebbles::refreshScanResults()
     }
     arg.endArray();
 
-    m_scanResults = results;
-    emit scanResultsChanged();
+    if (m_scanResults != results) {
+        m_scanResults = results;
+        emit scanResultsChanged();
+    }
 }

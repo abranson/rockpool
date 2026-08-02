@@ -13,7 +13,48 @@ Dialog {
     property string msgKey: "com.pebble.sendText"
     property string modem: "/ril_0"
     property string telePhone: "/org/freedesktop/Telepathy/Account/ring/tel"
-    canAccept: false
+    property bool cannedResponsesReady: pebble && pebble.cannedResponsesReady
+    property bool cannedContactsReady: pebble && pebble.cannedContactsReady
+    property bool contactsDirty
+
+    canAccept: cannedContactsReady && contactsDirty
+
+    function cloneContacts(source) {
+        var result = {};
+        for (var name in source) {
+            result[name] = (source[name] || []).slice(0);
+        }
+        return result;
+    }
+
+    function rebuildContacts() {
+        if (!cannedContactsReady || contactsDirty) {
+            return;
+        }
+        var snapshot = cloneContacts(pebble.getCannedContacts([]));
+        oldModel.clear();
+        oldModel.src = snapshot;
+        for (var name in snapshot) {
+            var values = snapshot[name];
+            for (var i = 0; i < values.length; ++i) {
+                var type = "SIM1";
+                var uri = values[i];
+                var elements = uri.split(':');
+                if (elements.length > 1) {
+                    uri = elements[1];
+                    var pathElements = elements[0].split("/");
+                    if (pathElements.length > 7
+                            && pathElements[7].substr(0, 4) === "ril_") {
+                        type = "SIM" + (parseInt(pathElements[7].split('_')[1]) + 1);
+                    } else {
+                        type = "IM";
+                    }
+                }
+                oldModel.append({"type": type, "name": name,
+                                 "uri": uri, "num": values[i]});
+            }
+        }
+    }
 
     SilicaFlickable {
         anchors.fill: parent
@@ -31,6 +72,11 @@ Dialog {
             SectionHeader {
                 text: qsTr("Contacts")
             }
+            BusyIndicator {
+                anchors.horizontalCenter: parent.horizontalCenter
+                running: !root.cannedContactsReady
+                visible: running
+            }
             ListModel {
                 id: oldModel
                 property var src: {}
@@ -41,6 +87,8 @@ Dialog {
                 model: oldModel
                 width: parent.width
                 height: contentItem.childrenRect.height
+                enabled: root.cannedContactsReady
+                opacity: enabled ? 1.0 : Theme.opacityLow
                 delegate: ListItem {
                     id: liCtx
                     width: oldContacts.width
@@ -75,13 +123,20 @@ Dialog {
                             anchors.verticalCenter: parent.verticalCenter
                             icon.source: "image://theme/icon-m-remove"
                             onClicked: liCtx.remorseAction(qsTr("Really Delete?"),function(){
-                                if(oldModel.src[model.name].length>1) {
-                                    oldModel.src[model.name].splice(oldModel.src[model.name].indexOf(model.num),1);
-                                } else {
-                                    delete oldModel.src[model.name];
+                                var updated = root.cloneContacts(oldModel.src);
+                                var values = updated[model.name] || [];
+                                var valueIndex = values.indexOf(model.num);
+                                if (valueIndex >= 0) {
+                                    values.splice(valueIndex, 1);
                                 }
+                                if (values.length > 0) {
+                                    updated[model.name] = values;
+                                } else {
+                                    delete updated[model.name];
+                                }
+                                oldModel.src = updated;
                                 oldModel.remove(model.index);
-                                root.canAccept=true;
+                                root.contactsDirty = true;
                             })
                         }
                     }
@@ -98,6 +153,7 @@ Dialog {
             RecipientField {
                 id: newContacts
                 width: parent.width
+                enabled: root.cannedContactsReady
                 //multipleAllowed: false
                 requiredProperty: (PeopleModel.AccountUriRequired | PeopleModel.PhoneNumberRequired )
                 showLabel: false
@@ -122,7 +178,9 @@ Dialog {
                         console.log("Contact",item.person.id,name,item.propertyType,newCtx[name]);
                     }
                     console.log("Updated",typeof root.newCtx,Object.keys(root.newCtx).length);
-                    root.canAccept = (root.canAccept || (typeof root.newCtx === 'object' && Object.keys(root.newCtx).length > 0));
+                    root.contactsDirty = (root.contactsDirty
+                                          || (typeof root.newCtx === 'object'
+                                              && Object.keys(root.newCtx).length > 0));
                 }
             }
 
@@ -146,12 +204,14 @@ Dialog {
             Button {
                 text: qsTr("Edit Messages")
                 width: parent.width
+                enabled: root.cannedResponsesReady
                 onClicked: {
+                    var responses = pebble.getCannedResponses([msgKey]);
                     pageStack.push(Qt.resolvedUrl("ResponsesPage.qml"), {
                                        pebble: pebble,
                                        source: msgKey,
                                        title: qsTr("Send Text Messages"),
-                                       list: pebble.getCannedResponses([msgKey])[msgKey] || []
+                                       list: (responses[msgKey] || []).slice(0)
                                    });
                 }
 
@@ -160,38 +220,26 @@ Dialog {
     }
 
     Component.onCompleted: {
-        oldModel.src = pebble.getCannedContacts([]);
+        pebble.refreshCannedResponses();
+        pebble.refreshCannedContacts();
         root.modem = simSelector.activeModem;
-        for(var i in oldModel.src) {
-            var can = oldModel.src[i];
-            console.log("Contact",i,can);
-            for(var j=0;j<can.length;j++) {
-                var type = "SIM1";
-                var uri = can[j];
-                var el = uri.split(':');
-                console.log("Number",type,uri,el);
-                if(el.length>1) {
-                    uri=el[1];
-                    var pe = el[0].split("/");
-                    if(pe.length > 7 && pe[7].substr(0,4) === "ril_") {
-                        type="SIM"+(parseInt(pe[7].split('_')[1])+1);
-                    } else {
-                        type="IM";
-                    }
-                }
-                oldModel.append({"type":type,"name":i,"uri":uri,"num":can[j]});
-            }
-        }
+        rebuildContacts();
+    }
+
+    Connections {
+        target: root.pebble
+        onCannedContactsChanged: root.rebuildContacts()
+        onCannedContactsReadyChanged: root.rebuildContacts()
     }
 
     onDone: {
         if(result === DialogResult.Accepted) {
-            contacts = oldModel.src;
+            contacts = cloneContacts(oldModel.src);
             for(var name in newCtx) {
                 if(name in contacts) {
-                    contacts[name] = contacts[name].concat(newCtx[name]);
+                    contacts[name] = contacts[name].concat(newCtx[name].slice(0));
                 } else {
-                    contacts[name] = newCtx[name];
+                    contacts[name] = newCtx[name].slice(0);
                 }
                 console.log("Adding",name,contacts[name]);
             }

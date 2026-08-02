@@ -9,6 +9,8 @@ Page {
     id: root
 
     property var pebble: null
+    property bool appMutationsAllowed: rockPool.knownPebbleCount === 1
+    property bool appInstallationAllowed: appMutationsAllowed && pebble && pebble.connected
     allowedOrientations: Orientation.Portrait
 
     property alias path: fileModel.path
@@ -39,9 +41,35 @@ Page {
         anchors.fill: parent
         model: fileModel
 
-        header: PageHeader {
-            title: path == homePath && root.title.length > 0 ? root.title
-                                                             : root.path.split("/").pop()
+        header: Column {
+            width: fileList.width
+
+            PageHeader {
+                width: parent.width
+                title: path == homePath && root.title.length > 0 ? root.title
+                                                                 : root.path.split("/").pop()
+            }
+
+            Label {
+                width: parent.width - 2 * Theme.horizontalPageMargin
+                anchors.horizontalCenter: parent.horizontalCenter
+                visible: !root.appMutationsAllowed
+                text: qsTr("App changes are available only when exactly one watch is paired.")
+                color: Theme.secondaryColor
+                font.pixelSize: Theme.fontSizeSmall
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.Wrap
+            }
+            Label {
+                width: parent.width - 2 * Theme.horizontalPageMargin
+                anchors.horizontalCenter: parent.horizontalCenter
+                visible: root.appMutationsAllowed && !root.appInstallationAllowed
+                text: qsTr("Connect the watch to install apps.")
+                color: Theme.secondaryColor
+                font.pixelSize: Theme.fontSizeSmall
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.Wrap
+            }
         }
 
         delegate: ListItem {
@@ -49,6 +77,7 @@ Page {
 
             width: ListView.view.width
             contentHeight: Theme.itemSizeMedium
+            enabled: model.isDir || root.appInstallationAllowed
             Row {
                 anchors.fill: parent
                 spacing: Theme.paddingLarge
@@ -157,6 +186,9 @@ Page {
                     pageStack.push(Qt.resolvedUrl("ImportPackagePage.qml"),
                                    { path: fileModel.appendPath(model.fileName), homePath: root.homePath, callback: root.callback, pebble: root.pebble })
                 } else {
+                    if (!root.appInstallationAllowed)
+                        return
+
                     var filePath = Qt.resolvedUrl(fileModel.path + "/" + model.fileName)
                     remorseAction(qsTr("Sideloading file"),function(){
                         console.log("Sideloading file", filePath);
@@ -173,4 +205,3 @@ Page {
         VerticalScrollDecorator {}
     }
 }
-

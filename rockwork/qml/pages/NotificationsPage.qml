@@ -7,14 +7,24 @@ Page {
     property var pebble: null
     // TimelineColor.name -> "#RRGGBB", so the list can show a swatch for an app's colour override
     // without each delegate re-querying the daemon. Filled once from the same palette the picker uses.
-    property var colorMap: ({})
+    property var colorMap: buildColorMap()
 
     Component.onCompleted: {
-        var colors = root.pebble.timelineColors();
-        var map = {};
-        for (var i = 0; i < colors.length; i++)
+        if (root.pebble) {
+            root.pebble.refreshTimelineColors()
+        }
+    }
+
+    function buildColorMap() {
+        var map = {}
+        if (!root.pebble || !root.pebble.timelineColorsReady) {
+            return map
+        }
+        var colors = root.pebble.timelineColors
+        for (var i = 0; i < colors.length; i++) {
             map[colors[i].name] = colors[i].rgb;
-        root.colorMap = map;
+        }
+        return map
     }
 
     SilicaListView {

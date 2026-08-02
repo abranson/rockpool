@@ -5,8 +5,19 @@ qrc_*.cpp
 *.qm
 /build
 /*.list
+/core.*
+/platform-helper-build/
+/platform-launcher-build/
+/platform-proxy-build/
 
 # Build outputs / debug artifacts
 /RPMS/
 *.log
 *.btsnoop
+
+# Keep project documentation in READMEs; working notes stay outside Git.
+*.md
+!README.md
+*.MD
+!README.MD
+*.markdown

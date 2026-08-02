@@ -9,6 +9,7 @@ Page {
     property bool showWatchApps: false
     property bool showWatchFaces: false
     property var model: showWatchApps ? pebble.installedApps : pebble.installedWatchfaces
+    property bool appMutationsAllowed: rockPool.knownPebbleCount === 1
 
     AppStoreClient {
         id: client
@@ -28,8 +29,24 @@ Page {
                                           })
             }
         }
-        header: PageHeader {
-            title: showWatchApps ? (showWatchFaces ? qsTr("Apps & Watchfaces") : qsTr("Apps")) : qsTr("Watchfaces")
+        header: Column {
+            width: listView.width
+
+            PageHeader {
+                width: parent.width
+                title: showWatchApps ? (showWatchFaces ? qsTr("Apps & Watchfaces") : qsTr("Apps")) : qsTr("Watchfaces")
+            }
+
+            Label {
+                width: parent.width - 2 * Theme.horizontalPageMargin
+                anchors.horizontalCenter: parent.horizontalCenter
+                visible: !root.appMutationsAllowed
+                text: qsTr("App changes are available only when exactly one watch is paired.")
+                color: Theme.secondaryColor
+                font.pixelSize: Theme.fontSizeSmall
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.Wrap
+            }
         }
 
         model: root.model
@@ -45,11 +62,25 @@ Page {
             isLastApp: !listView.model.get(index+1)
             isSystemApp: model.isSystemApp
             hasSettings: model.hasSettings
+            appMutationsAllowed: root.appMutationsAllowed
+            watchConnected: root.pebble && root.pebble.connected
+            offlineSettingsAvailable: model.uuid === "{36d8c6ed-4c83-4fa1-a9e2-8f12dc941f8c}"
+                                      || model.uuid === "{61b22bc8-1e29-460d-a236-3fe409a439ff}"
+                                      || model.uuid === "{0863fc6a-66c5-4f62-ab8a-82ed00a98b5d}"
 
-            onDeleteApp: pebble.removeApp(model.uuid)
-            onLaunchApp: pebble.launchApp(model.uuid)
+            onDeleteApp: {
+                if (root.appMutationsAllowed)
+                    pebble.removeApp(model.uuid)
+            }
+            onLaunchApp: {
+                if (root.pebble && root.pebble.connected)
+                    pebble.launchApp(model.uuid)
+            }
             onConfigureApp: root.configureApp(model.uuid)
-            onMoveApp: root.moveApp(index,dir)
+            onMoveApp: {
+                if (root.appMutationsAllowed)
+                    root.moveApp(index,dir)
+            }
             Component.onCompleted: if(!model.isSystemApp && !model.latest) { client.fetchAppDetails(model.storeId) }
             onUpgrade: pageStack.push(Qt.resolvedUrl("AppUpgradePage.qml"), {
                                            pebble: root.pebble,
@@ -64,11 +95,8 @@ Page {
         var cbacc = null;
         if (uuid === "{36d8c6ed-4c83-4fa1-a9e2-8f12dc941f8c}") {
             popup = pageStack.push(Qt.resolvedUrl("HealthSettingsDialog.qml"), {
-                                            healthParams: pebble.healthParams
+                                            pebble: pebble
                                         },PageStackAction.Immediate);
-            cbacc = function () {
-                pebble.healthParams = popup.healthParams
-            };
         } else if(uuid === "{61b22bc8-1e29-460d-a236-3fe409a439ff}") {
             popup = pageStack.push(Qt.resolvedUrl("WeatherSettingsDialog.qml"), {
                                             pebble: pebble
@@ -81,13 +109,19 @@ Page {
                 pebble.setCannedContacts(popup.contacts)
             };
         }
-        if(popup && cbacc) {
-            popup.accepted.connect(cbacc);
+        if(popup) {
+            if(cbacc) {
+                popup.accepted.connect(cbacc);
+            }
         } else {
-            pebble.requestConfigurationURL(uuid)
+            if (pebble && pebble.connected)
+                pebble.requestConfigurationURL(uuid)
         }
     }
     function moveApp(idx,dir) {
+        if (!root.appMutationsAllowed)
+            return;
+
         listView.model.move(idx,idx+dir);
         moveDock.show();
     }
@@ -99,8 +133,12 @@ Page {
         height: Theme.itemSizeSmall
         Button {
             text: qsTr("Save Apps Order")
+            enabled: root.appMutationsAllowed
             anchors.horizontalCenter: parent.horizontalCenter
             onClicked: {
+                if (!root.appMutationsAllowed)
+                    return;
+
                 moveDock.hide();
                 listView.model.commitMove();
             }

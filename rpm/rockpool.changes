@@ -1,3 +1,7 @@
+* Thu Aug 20 2026 Andrew Branson <github@andrewbranson.net> 2.0-1
+- Split the watch daemon into the separately packaged libpebble3d service.
+- Package the Rockpool UI with the Sailfish libpebble3d platform provider.
+
 * Wed Oct 29 2025 Andrew Branson <github@andrewbranson.net> 1.18-1
 - Fix for app settings. Thanks to Johannes Bachmann!
 - Extra Rebble migration from RockWork/thevancedgamer

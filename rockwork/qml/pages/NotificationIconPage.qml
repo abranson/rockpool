@@ -12,14 +12,19 @@ Page {
     property string appName: ""
     property string currentIcon: ""
 
-    property var icons: []
+    property var icons: root.pebble && root.pebble.timelineIconsReady
+                        ? root.pebble.timelineIcons : []
     property var shown: []
     property string query: ""
 
     Component.onCompleted: {
-        icons = pebble.timelineIcons();
+        if (root.pebble) {
+            root.pebble.refreshTimelineIcons()
+        }
         updateFilter();
     }
+
+    onIconsChanged: updateFilter()
 
     function pretty(name) {
         return name.replace(/([a-z0-9])([A-Z])/g, "$1 $2")
@@ -101,10 +106,17 @@ Page {
         }
 
         ViewPlaceholder {
-            enabled: root.shown.length === 0
+            enabled: root.pebble && root.pebble.timelineIconsReady
+                     && root.shown.length === 0
             text: qsTr("No matching icons")
         }
 
         VerticalScrollDecorator {}
+    }
+
+
+    BusyIndicator {
+        anchors.centerIn: parent
+        running: !root.pebble || !root.pebble.timelineIconsReady
     }
 }

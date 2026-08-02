@@ -2,50 +2,580 @@
 #include "notificationsourcemodel.h"
 #include "applicationsmodel.h"
 #include "screenshotmodel.h"
+#include "rockpoolaccount.h"
 
 #include <QDBusArgument>
+#include <QDBusMessage>
+#include <QDBusPendingCallWatcher>
+#include <QDBusPendingReply>
+#include <QDBusServiceWatcher>
+#include <QDBusVariant>
 #include <QDebug>
+#include <QTimer>
+
+namespace {
+const char ROCKWORK_SERVICE[] = "org.rockwork";
+const char WEATHER_UNITS[] = "WeatherUnits";
+const char WEATHER_LANGUAGE[] = "WeatherLanguage";
+const char WEATHER_ALT_KEY[] = "WeatherAltKey";
+const char WEATHER_LOCATIONS[] = "WeatherLocations";
+const char DEV_CONNECTION_ENABLED[] = "DevConnectionEnabled";
+const char DEV_CONNECTION_STATE[] = "DevConnectionState";
+const char LOG_LEVEL[] = "getLogLevel";
+const char TIMELINE_COLORS[] = "TimelineColors";
+const char TIMELINE_ICONS[] = "TimelineIcons";
+const char IMPERIAL_UNITS[] = "ImperialUnits";
+const char PROFILE_WHEN_CONNECTED[] = "ProfileWhenConnected";
+const char PROFILE_WHEN_DISCONNECTED[] = "ProfileWhenDisconnected";
+const char CALENDAR_SYNC_ENABLED[] = "CalendarSyncEnabled";
+const char SYNC_APPS_FROM_CLOUD[] = "syncAppsFromCloud";
+const char HEALTH_PARAMS[] = "HealthParams";
+const char CANNED_RESPONSES[] = "cannedResponses";
+const char FAVORITE_CONTACTS[] = "getFavoriteContacts";
+
+QStringList weatherProperties()
+{
+    return QStringList()
+        << QString::fromLatin1(WEATHER_UNITS)
+        << QString::fromLatin1(WEATHER_LANGUAGE)
+        << QString::fromLatin1(WEATHER_ALT_KEY)
+        << QString::fromLatin1(WEATHER_LOCATIONS);
+}
+
+QStringList developerProperties()
+{
+    return QStringList()
+        << QString::fromLatin1(DEV_CONNECTION_ENABLED)
+        << QString::fromLatin1(DEV_CONNECTION_STATE)
+        << QString::fromLatin1(LOG_LEVEL);
+}
+
+QStringList settingsPageProperties()
+{
+    return QStringList()
+        << QString::fromLatin1(IMPERIAL_UNITS)
+        << QString::fromLatin1(PROFILE_WHEN_CONNECTED)
+        << QString::fromLatin1(PROFILE_WHEN_DISCONNECTED)
+        << QString::fromLatin1(CALENDAR_SYNC_ENABLED)
+        << QString::fromLatin1(SYNC_APPS_FROM_CLOUD);
+}
+
+QStringList bootstrapProperties()
+{
+    return QStringList()
+        << QStringLiteral("Name")
+        << QStringLiteral("Address")
+        << QStringLiteral("SerialNumber")
+        << QStringLiteral("PlatformString")
+        << QStringLiteral("HardwarePlatform")
+        << QStringLiteral("SoftwareVersion")
+        << QStringLiteral("LanguageVersion")
+        << QStringLiteral("Model")
+        << QStringLiteral("Recovery")
+        << QStringLiteral("IsConnected");
+}
+
+QStringList timelineWindowProperties()
+{
+    return QStringList()
+        << QStringLiteral("timelineWindowStart")
+        << QStringLiteral("timelineWindowFade")
+        << QStringLiteral("timelineWindowEnd");
+}
+
+QStringList firmwareProperties()
+{
+    return QStringList()
+        << QStringLiteral("FirmwareUpgradeAvailable")
+        << QStringLiteral("FirmwareReleaseNotes")
+        << QStringLiteral("CandidateFirmwareVersion")
+        << QStringLiteral("UpgradingFirmware");
+}
+
+bool decodeVariantMap(const QVariant &value, QVariantMap *map)
+{
+    if (value.userType() == qMetaTypeId<QDBusVariant>()) {
+        return decodeVariantMap(value.value<QDBusVariant>().variant(), map);
+    }
+    if (value.userType() == qMetaTypeId<QDBusArgument>()) {
+        const QDBusArgument argument = value.value<QDBusArgument>();
+        argument >> *map;
+        return true;
+    }
+    if (value.type() == QVariant::Map) {
+        *map = value.toMap();
+        return true;
+    }
+    return false;
+}
+
+bool decodeVariantMapList(const QDBusMessage &message, QVariantList *list)
+{
+    if (message.type() == QDBusMessage::ErrorMessage || message.arguments().count() != 1) {
+        return false;
+    }
+
+    const QVariant value = message.arguments().first();
+    if (value.userType() != qMetaTypeId<QDBusArgument>()) {
+        const QVariantList values = value.toList();
+        foreach (const QVariant &entry, values) {
+            QVariantMap map;
+            if (!decodeVariantMap(entry, &map)) {
+                return false;
+            }
+            list->append(map);
+        }
+        return true;
+    }
+
+    const QDBusArgument argument = value.value<QDBusArgument>();
+    argument.beginArray();
+    while (!argument.atEnd()) {
+        QVariant entry;
+        argument >> entry;
+        QVariantMap map;
+        if (!decodeVariantMap(entry, &map)) {
+            argument.endArray();
+            return false;
+        }
+        list->append(map);
+    }
+    argument.endArray();
+    return true;
+}
+
+bool isNonEmptyString(const QVariantMap &map, const QString &key)
+{
+    const QVariant value = map.value(key);
+    return value.type() == QVariant::String && !value.toString().trimmed().isEmpty();
+}
+
+bool isRgbString(const QVariantMap &map)
+{
+    const QVariant value = map.value(QStringLiteral("rgb"));
+    if (value.type() != QVariant::String) {
+        return false;
+    }
+    const QString rgb = value.toString();
+    if (rgb.size() != 7 || rgb.at(0) != QLatin1Char('#')) {
+        return false;
+    }
+    for (int i = 1; i < rgb.size(); ++i) {
+        const QChar c = rgb.at(i);
+        if (!(c >= QLatin1Char('0') && c <= QLatin1Char('9'))
+                && !(c >= QLatin1Char('a') && c <= QLatin1Char('f'))
+                && !(c >= QLatin1Char('A') && c <= QLatin1Char('F'))) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool validateTimelinePalette(const QString &method, const QVariantList &values)
+{
+    foreach (const QVariant &value, values) {
+        if (value.type() != QVariant::Map) {
+            return false;
+        }
+        const QVariantMap map = value.toMap();
+        if (method == QString::fromLatin1(TIMELINE_COLORS)) {
+            if (!isNonEmptyString(map, QStringLiteral("name")) || !isRgbString(map)) {
+                return false;
+            }
+        } else if (method == QString::fromLatin1(TIMELINE_ICONS)) {
+            if (!isNonEmptyString(map, QStringLiteral("name"))
+                    || !isNonEmptyString(map, QStringLiteral("code"))) {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool decodeStringList(const QVariant &value, QStringList *list)
+{
+    if (value.userType() == qMetaTypeId<QDBusVariant>()) {
+        return decodeStringList(value.value<QDBusVariant>().variant(), list);
+    }
+    if (value.userType() != qMetaTypeId<QDBusArgument>()) {
+        *list = value.toStringList();
+        return value.canConvert(QVariant::StringList);
+    }
+
+    const QDBusArgument argument = value.value<QDBusArgument>();
+    argument.beginArray();
+    while (!argument.atEnd()) {
+        QString entry;
+        argument >> entry;
+        list->append(entry);
+    }
+    argument.endArray();
+    return true;
+}
+
+bool decodeStringMap(const QVariant &value, QVariantMap *map)
+{
+    QVariantMap encoded;
+    if (!decodeVariantMap(value, &encoded)) {
+        return false;
+    }
+
+    QVariantMap decoded;
+    for (QVariantMap::const_iterator it = encoded.constBegin();
+         it != encoded.constEnd(); ++it) {
+        QStringList strings;
+        if (!decodeStringList(it.value(), &strings)) {
+            return false;
+        }
+        decoded.insert(it.key(), strings);
+    }
+    *map = decoded;
+    return true;
+}
+
+QVariant unwrapDbusVariant(const QVariant &value)
+{
+    QVariant unwrapped = value;
+    while (unwrapped.userType() == qMetaTypeId<QDBusVariant>()) {
+        unwrapped = unwrapped.value<QDBusVariant>().variant();
+    }
+    return unwrapped;
+}
+
+bool healthParamsSnapshotValid(const QVariantMap &params)
+{
+    const QStringList booleanKeys = QStringList()
+        << QStringLiteral("enabled")
+        << QStringLiteral("moreActive")
+        << QStringLiteral("sleepMore");
+    foreach (const QString &key, booleanKeys) {
+        if (!params.contains(key) || params.value(key).type() != QVariant::Bool) {
+            return false;
+        }
+    }
+
+    const QStringList integerKeys = QStringList()
+        << QStringLiteral("age")
+        << QStringLiteral("height")
+        << QStringLiteral("weight");
+    foreach (const QString &key, integerKeys) {
+        bool valid = false;
+        params.value(key).toInt(&valid);
+        if (!params.contains(key) || !valid) {
+            return false;
+        }
+    }
+
+    const QString gender = params.value(QStringLiteral("gender")).toString();
+    return params.contains(QStringLiteral("gender"))
+        && (gender == QStringLiteral("female") || gender == QStringLiteral("male"));
+}
+
+bool decodeHealthParams(const QVariant &value, QVariantMap *params)
+{
+    QVariantMap encoded;
+    if (!decodeVariantMap(value, &encoded)) {
+        return false;
+    }
+
+    QVariantMap decoded;
+    for (QVariantMap::const_iterator it = encoded.constBegin();
+         it != encoded.constEnd(); ++it) {
+        decoded.insert(it.key(), unwrapDbusVariant(it.value()));
+    }
+    if (!healthParamsSnapshotValid(decoded)) {
+        return false;
+    }
+    *params = decoded;
+    return true;
+}
+
+bool normalizeStringMap(const QVariantMap &values, QVariantMap *map)
+{
+    QVariantMap normalized;
+    for (QVariantMap::const_iterator it = values.constBegin();
+         it != values.constEnd(); ++it) {
+        QStringList strings;
+        const QVariant value = it.value();
+        if (value.type() == QVariant::StringList) {
+            strings = value.toStringList();
+        } else if (value.type() == QVariant::Map) {
+            foreach (const QVariant &entry, value.toMap().values()) {
+                strings.append(entry.toString());
+            }
+        } else if (value.type() == QVariant::List) {
+            foreach (const QVariant &entry, value.toList()) {
+                strings.append(entry.toString());
+            }
+        } else {
+            return false;
+        }
+        normalized.insert(it.key(), strings);
+    }
+    *map = normalized;
+    return true;
+}
+
+bool decodeWeatherLocations(const QDBusMessage &message, QVariantList *locations)
+{
+    if (message.type() == QDBusMessage::ErrorMessage || message.arguments().count() != 1) {
+        return false;
+    }
+
+    const QVariant value = message.arguments().first();
+    QVariantList entries;
+    if (value.userType() == qMetaTypeId<QDBusArgument>()) {
+        const QDBusArgument argument = value.value<QDBusArgument>();
+        argument.beginArray();
+        while (!argument.atEnd()) {
+            QVariant entry;
+            argument >> entry;
+            entries.append(entry);
+        }
+        argument.endArray();
+    } else {
+        entries = value.toList();
+    }
+
+    foreach (const QVariant &entry, entries) {
+        QStringList fields;
+        if (!decodeStringList(entry, &fields) || fields.count() != 3) {
+            return false;
+        }
+        locations->append(fields);
+    }
+    return true;
+}
+}
+
+RockworkPebbleInterface::RockworkPebbleInterface(const QString &path, QObject *parent):
+    QDBusAbstractInterface(
+        QString::fromLatin1(ROCKWORK_SERVICE),
+        path,
+        "org.rockwork.Pebble",
+        QDBusConnection::sessionBus(),
+        parent)
+{
+}
 
 // TODO: Bootstrapping config from
 // https://boot.getpebble.com/api/config/android/v3/1055?locale=de_DE&app_version=3.13.0-1055-06644a6
-Pebble::Pebble(const QDBusObjectPath &path, QObject *parent):
+Pebble::Pebble(const QDBusObjectPath &path, QObject *parent,
+               RockpoolAccount *account):
     QObject(parent),
     m_path(path)
 {
-    m_iface = new QDBusInterface("org.rockwork", path.path(), "org.rockwork.Pebble", QDBusConnection::sessionBus(), this);
+    m_iface = new RockworkPebbleInterface(path.path(), this);
     m_notifications = new NotificationSourceModel(this);
     m_installedApps = new ApplicationsModel(this);
     connect(m_installedApps, &ApplicationsModel::appsSorted, this, &Pebble::appsSorted);
     m_installedWatchfaces = new ApplicationsModel(this);
     connect(m_installedWatchfaces, &ApplicationsModel::appsSorted, this, &Pebble::appsSorted);
     m_screenshotModel = new ScreenshotModel(this);
+    m_account = account ? account : new RockpoolAccount(this);
+    connect(m_account, &RockpoolAccount::authenticatedChanged,
+            this, &Pebble::accountAuthenticatedChanged);
+    connect(m_account, &RockpoolAccount::nameChanged,
+            this, &Pebble::accountNameChanged);
+    connect(m_account, &RockpoolAccount::emailChanged,
+            this, &Pebble::accountEmailChanged);
+    connect(m_account, &RockpoolAccount::tokenPendingChanged,
+            this, &Pebble::accountTokenPendingChanged);
+    connect(m_account, &RockpoolAccount::tokenErrorChanged,
+            this, &Pebble::accountTokenErrorChanged);
+    m_serviceWatcher = new QDBusServiceWatcher(
+        QString::fromLatin1(ROCKWORK_SERVICE), QDBusConnection::sessionBus(),
+        QDBusServiceWatcher::WatchForOwnerChange, this);
+    connect(m_serviceWatcher, &QDBusServiceWatcher::serviceOwnerChanged,
+            this, &Pebble::serviceOwnerChanged);
 
-    QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "Connected", this, SLOT(pebbleConnected()));
-    QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "Disconnected", this, SLOT(pebbleDisconnected()));
-    QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "ConnectionStateChanged", this, SLOT(pebbleConnectionStateChanged(int)));
-    QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "InstalledAppsChanged", this, SLOT(refreshApps()));
-    QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "OpenURL", this, SIGNAL(openURL(const QString&, const QString&)));
-    QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "NotificationFilterChanged", this, SLOT(notificationFilterChanged(const QString &, const QString &, const QString &, const int )));
-    QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "ScreenshotAdded", this, SLOT(screenshotAdded(const QString &)));
-    QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "ScreenshotRemoved", this, SLOT(screenshotRemoved(const QString &)));
-    QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "FirmwareUpgradeAvailableChanged", this, SLOT(refreshFirmwareUpdateInfo()));
-    QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "LanguageVersionChanged", this, SIGNAL(languageVersionChanged()));
-    QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "UpgradingFirmwareChanged", this, SIGNAL(refreshFirmwareUpdateInfo()));
-    QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "LogsDumped", this, SIGNAL(logsDumped(bool)));
-    QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "HealthParamsChanged", this, SIGNAL(healthParamsChanged()));
-    QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "ImperialUnitsChanged", this, SIGNAL(imperialUnitsChanged()));
-    QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "ProfileWhenConnectedChanged", this, SIGNAL(profileWhenConnectedChanged()));
-    QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "ProfileWhenDisconnectedChanged", this, SIGNAL(profileWhenDisconnectedChanged()));
-    QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "CalendarSyncEnabledChanged", this, SIGNAL(calendarSyncEnabledChanged()));
-    QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "DevConnectionChanged", this, SLOT(devConStateChanged(bool)));
-    QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "DevConnCloudChanged", this, SLOT(devConCloudChanged(bool)));
-    QDBusConnection::sessionBus().connect("org.rockwork", path.path(), "org.rockwork.Pebble", "oauthTokenChanged", this, SLOT(setOAuthToken(QString)));
+    connect(m_iface, &RockworkPebbleInterface::Connected, this, &Pebble::pebbleConnected);
+    connect(m_iface, &RockworkPebbleInterface::Disconnected, this, &Pebble::pebbleDisconnected);
+    connect(m_iface, &RockworkPebbleInterface::ConnectionStateChanged,
+            this, &Pebble::pebbleConnectionStateChanged);
+    connect(m_iface, &RockworkPebbleInterface::InstalledAppsChanged,
+            this, &Pebble::refreshApps);
+    connect(m_iface, &RockworkPebbleInterface::OpenURL, this, &Pebble::openURL);
+    connect(m_iface, &RockworkPebbleInterface::NotificationFilterChanged,
+            this, &Pebble::notificationFilterChanged);
+    connect(m_iface, &RockworkPebbleInterface::ScreenshotAdded,
+            this, &Pebble::screenshotAdded);
+    connect(m_iface, &RockworkPebbleInterface::ScreenshotRemoved,
+            this, &Pebble::screenshotRemoved);
+    connect(m_iface, &RockworkPebbleInterface::FirmwareUpgradeAvailableChanged,
+            this, &Pebble::refreshFirmwareUpdateInfo);
+    connect(m_iface, &RockworkPebbleInterface::LanguageVersionChanged,
+            this, &Pebble::refreshLanguageVersion);
+    connect(m_iface, &RockworkPebbleInterface::UpgradingFirmwareChanged,
+            this, &Pebble::refreshFirmwareUpdateInfo);
+    connect(m_iface, &RockworkPebbleInterface::LogsDumped,
+            this, &Pebble::logsDumpedFromService);
+    connect(m_iface, &RockworkPebbleInterface::HealthParamsChanged,
+            this, &Pebble::healthParamsChangedFromService);
+    connect(m_iface, &RockworkPebbleInterface::ImperialUnitsChanged,
+            this, [this]() {
+                settingsPropertyChangedFromService(QString::fromLatin1(IMPERIAL_UNITS));
+            });
+    connect(m_iface, &RockworkPebbleInterface::ProfileWhenConnectedChanged,
+            this, [this]() {
+                settingsPropertyChangedFromService(
+                    QString::fromLatin1(PROFILE_WHEN_CONNECTED));
+            });
+    connect(m_iface, &RockworkPebbleInterface::ProfileWhenDisconnectedChanged,
+            this, [this]() {
+                settingsPropertyChangedFromService(
+                    QString::fromLatin1(PROFILE_WHEN_DISCONNECTED));
+            });
+    connect(m_iface, &RockworkPebbleInterface::CalendarSyncEnabledChanged,
+            this, [this]() {
+                settingsPropertyChangedFromService(
+                    QString::fromLatin1(CALENDAR_SYNC_ENABLED));
+            });
+    connect(m_iface, &RockworkPebbleInterface::DevConnectionChanged,
+            this, &Pebble::devConStateChanged);
+    connect(m_iface, &RockworkPebbleInterface::WeatherLocationsChanged,
+            this, &Pebble::weatherLocationsChangedFromService);
 
     dataChanged();
     refreshApps();
     refreshNotifications();
     refreshScreenshots();
     refreshFirmwareUpdateInfo();
+}
+
+void Pebble::serviceOwnerChanged(const QString &service,
+                                 const QString &oldOwner,
+                                 const QString &newOwner)
+{
+    Q_UNUSED(service)
+    Q_UNUSED(oldOwner)
+
+    const bool logDumpWasPending = m_logDumpPending;
+    m_logDumpPending = false;
+    ++m_logDumpEpoch;
+    ++m_serviceEpoch;
+    ++m_connectionEpoch;
+    ++m_appsEpoch;
+    ++m_screenshotsEpoch;
+    ++m_firmwareEpoch;
+    ++m_notificationFiltersEpoch;
+    ++m_timelineColorsEpoch;
+    ++m_timelineIconsEpoch;
+    ++m_timelineWindowRequestEpoch;
+    ++m_timelineWindowWriteEpoch;
+    ++m_weatherLocationsEpoch;
+    foreach (const QString &propertyName, weatherProperties()) {
+        ++m_weatherWriteEpochs[propertyName];
+    }
+    foreach (const QString &propertyName, developerProperties()) {
+        ++m_developerWriteEpochs[propertyName];
+    }
+    foreach (const QString &propertyName, settingsPageProperties()) {
+        ++m_settingsWriteEpochs[propertyName];
+    }
+    ++m_healthParamsWriteEpoch;
+    ++m_healthParamsValueRevision;
+    ++m_cannedResponsesWriteEpoch;
+    ++m_cannedContactsRequestEpoch;
+    ++m_cannedContactsWriteEpoch;
+    ++m_cannedContactsValueRevision;
+    m_addressReadFailures = 0;
+    m_weatherLoadedProperties.clear();
+    setWeatherSettingsReady(false);
+    m_developerLoadedProperties.clear();
+    setDeveloperSettingsReady(false);
+    m_settingsLoadedProperties.clear();
+    m_settingsAuthoritativeProperties.clear();
+    m_settingsReadFailures.clear();
+    setSettingsPageReady(false);
+    m_healthParamsAuthoritative = false;
+    m_healthParamsValid = false;
+    m_healthParamsReadFailures = 0;
+    setHealthParamsReady(false);
+    if (!m_healthParams.isEmpty()) {
+        m_healthParams.clear();
+        emit healthParamsChanged();
+    }
+    m_cannedResponsesAuthoritative = false;
+    m_cannedResponsesReadFailures = 0;
+    setCannedResponsesReady(false);
+    if (!m_cannedResponses.isEmpty()) {
+        m_cannedResponses.clear();
+        emit cannedResponsesChanged();
+    }
+    m_cannedContactsAuthoritative = false;
+    m_cannedContactsReadFailures = 0;
+    setCannedContactsReady(false);
+    if (!m_cannedContacts.isEmpty()) {
+        m_cannedContacts.clear();
+        emit cannedContactsChanged();
+    }
+    m_timelineColorsInFlight = false;
+    m_timelineIconsInFlight = false;
+    m_timelineColorsFailures = 0;
+    m_timelineIconsFailures = 0;
+    if (!m_timelineColors.isEmpty()) {
+        m_timelineColors.clear();
+        emit timelineColorsChanged();
+    }
+    if (!m_timelineIcons.isEmpty()) {
+        m_timelineIcons.clear();
+        emit timelineIconsChanged();
+    }
+    setTimelinePaletteReady(QString::fromLatin1(TIMELINE_COLORS), false);
+    setTimelinePaletteReady(QString::fromLatin1(TIMELINE_ICONS), false);
+    m_pendingConnectionValues.clear();
+    m_pendingConnectionReplies.clear();
+    m_pendingFirmwareValues.clear();
+    m_pendingFirmwareReplies.clear();
+    m_pendingTimelineWindowValues.clear();
+    m_pendingTimelineWindowReplies.clear();
+    m_timelineWindowHasSnapshot = false;
+    m_timelineWindowRequestFailed = false;
+    m_timelineWindowReadFailures = 0;
+    m_timelineWindowWriteInFlight = false;
+    m_timelineWindowWriteQueued = false;
+    setTimelineWindowReady(false);
+
+    if (logDumpWasPending) {
+        emit logsDumped(false);
+    }
+
+    if (newOwner.isEmpty()) {
+        return;
+    }
+
+    dataChanged();
+    refreshApps();
+    refreshNotifications();
+    refreshScreenshots();
+    refreshFirmwareUpdateInfo();
+    if (m_weatherRequested) {
+        refreshWeatherSettings();
+    }
+    if (m_developerRequested) {
+        refreshDeveloperSettings();
+    }
+    if (m_settingsPageRequested) {
+        refreshSettingsPage();
+    }
+    if (m_healthParamsRequested) {
+        refreshHealthParams();
+    }
+    if (m_cannedResponsesRequested) {
+        refreshCannedResponses();
+    }
+    if (m_cannedContactsRequested) {
+        refreshCannedContacts();
+    }
+    if (m_timelineColorsRequested) {
+        refreshTimelineColors();
+    }
+    if (m_timelineIconsRequested) {
+        refreshTimelineIcons();
+    }
 }
 
 bool Pebble::connected() const
@@ -70,7 +600,7 @@ QString Pebble::name() const
 
 QString Pebble::platformString() const
 {
-    return fetchProperty("PlatformString").toString();
+    return m_platformString;
 }
 
 QString Pebble::hardwarePlatform() const
@@ -90,13 +620,13 @@ QString Pebble::softwareVersion() const
 
 QString Pebble::languageVersion() const
 {
-    return fetchProperty("LanguageVersion").toString();
+    return m_languageVersion;
 }
 
 void Pebble::loadLanguagePack(const QString &pblFile)
 {
     qDebug() << "Requesting to load language from" << pblFile;
-    m_iface->call("LoadLanguagePack", pblFile);
+    sendVoidCommand(QStringLiteral("LoadLanguagePack"), QVariantList() << pblFile);
 }
 
 int Pebble::model() const
@@ -150,399 +680,1728 @@ QString Pebble::candidateVersion() const
     return m_candidateVersion;
 }
 
-QVariantMap Pebble::fetchVarMap(const QString &propertyName, const QStringList *keys) const
-{
-    QDBusMessage m = ((keys) ? m_iface->call(propertyName, *keys) : m_iface->call(propertyName));
-    if (m.type() == QDBusMessage::ErrorMessage || m.arguments().count() == 0) {
-        qWarning() << "Could not fetch" << propertyName << m.errorMessage();
-        return QVariantMap();
-    }
-
-    const QDBusArgument &arg = m.arguments().first().value<QDBusArgument>();
-
-    QVariantMap mapEntryVariant;
-    arg >> mapEntryVariant;
-
-    qDebug() << "have" << propertyName << mapEntryVariant;
-    return mapEntryVariant;
-}
-
-void Pebble::sendVarMap(const QString &property, const QVariantMap &values)
-{
-    QVariantMap vals;
-    foreach(const QString &key, values.keys()) {
-        QStringList msgs;
-        if(values.value(key).type()==QVariant::StringList) {
-            msgs = values.value(key).toStringList();
-        } else if(values.value(key).type()==QVariant::Map) {
-            foreach(const QVariant &msg,values.value(key).toMap().values()) {
-                msgs.append(msg.toString());
-            }
-        } else if(values.value(key).type()==QVariant::List) {
-            msgs = values.value(key).toStringList();
-        }  else {
-            qWarning() << "Cannot convert to StringList" << values.value(key);
-        }
-        qDebug() << "Adding" << key << values.value(key) << msgs;
-        if(!msgs.isEmpty())
-            vals.insert(key,msgs);
-    }
-    qDebug() << "Setting Map of StringLists" << vals;
-    m_iface->call(property, vals);
-}
-
 QVariantMap Pebble::cannedResponses() const
 {
-    return fetchVarMap("cannedResponses");
+    return m_cannedResponses;
 }
+
+bool Pebble::cannedResponsesReady() const
+{
+    return m_cannedResponsesReady;
+}
+
+void Pebble::refreshCannedResponses()
+{
+    m_cannedResponsesRequested = true;
+    m_cannedResponsesAuthoritative = false;
+    m_cannedResponsesReadFailures = 0;
+    setCannedResponsesReady(false);
+    requestProperty(QString::fromLatin1(CANNED_RESPONSES));
+}
+
 void Pebble::setCannedResponses(const QVariantMap &cans)
 {
-    sendVarMap("setCannedResponses",cans);
-    emit cannedResponsesChanged();
+    m_cannedResponsesRequested = true;
+    QVariantMap normalized;
+    if (!normalizeStringMap(cans, &normalized) || normalized.isEmpty()) {
+        qWarning() << "Cannot encode canned responses" << cans;
+        return;
+    }
+
+    QVariantMap merged = m_cannedResponses;
+    for (QVariantMap::const_iterator it = normalized.constBegin();
+         it != normalized.constEnd(); ++it) {
+        merged.insert(it.key(), it.value());
+    }
+    if (merged == m_cannedResponses && m_cannedResponsesAuthoritative) {
+        return;
+    }
+
+    ++m_propertyEpochs[QString::fromLatin1(CANNED_RESPONSES)];
+    const quint64 writeEpoch = ++m_cannedResponsesWriteEpoch;
+    const QVariantMap previousResponses = m_cannedResponses;
+    m_cannedResponsesAuthoritative = false;
+    m_cannedResponsesReadFailures = 0;
+    setCannedResponsesReady(false);
+    ++m_cannedResponsesValueRevision;
+    const quint64 valueRevision = m_cannedResponsesValueRevision;
+    if (m_cannedResponses != merged) {
+        m_cannedResponses = merged;
+        emit cannedResponsesChanged();
+    }
+
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+        m_iface->asyncCallWithArgumentList(
+            QStringLiteral("setCannedResponses"), QVariantList() << normalized), this);
+    watcher->setProperty("previousResponses", previousResponses);
+    watcher->setProperty("serviceEpoch",
+                         QVariant::fromValue<qulonglong>(m_serviceEpoch));
+    watcher->setProperty("writeEpoch", QVariant::fromValue<qulonglong>(writeEpoch));
+    watcher->setProperty("valueRevision",
+                         QVariant::fromValue<qulonglong>(valueRevision));
+    connect(watcher, &QDBusPendingCallWatcher::finished,
+            this, &Pebble::cannedResponsesWriteReplyFinished);
 }
+
 QVariantMap Pebble::getCannedResponses(const QStringList &keys)
 {
-    return fetchVarMap("getCannedResponses",&keys);
+    if (keys.isEmpty()) {
+        return m_cannedResponses;
+    }
+    QVariantMap selected;
+    foreach (const QString &key, keys) {
+        if (m_cannedResponses.contains(key)) {
+            selected.insert(key, m_cannedResponses.value(key));
+        }
+    }
+    return selected;
 }
+
+void Pebble::applyCannedResponses(const QVariantMap &responses, bool authoritative)
+{
+    ++m_cannedResponsesValueRevision;
+    m_cannedResponsesReadFailures = 0;
+    m_cannedResponsesAuthoritative = authoritative;
+    if (m_cannedResponses != responses) {
+        m_cannedResponses = responses;
+        emit cannedResponsesChanged();
+    }
+    setCannedResponsesReady(true);
+}
+
+void Pebble::cannedResponsesReadFailed(quint64 requestEpoch)
+{
+    if (!m_cannedResponsesRequested) {
+        return;
+    }
+    ++m_cannedResponsesReadFailures;
+    if (m_cannedResponsesReadFailures == 1) {
+        const quint64 retryServiceEpoch = m_serviceEpoch;
+        QTimer::singleShot(250, this,
+                           [this, requestEpoch, retryServiceEpoch]() {
+            const QString propertyName = QString::fromLatin1(CANNED_RESPONSES);
+            if (retryServiceEpoch == m_serviceEpoch
+                    && requestEpoch == m_propertyEpochs.value(propertyName)
+                    && !m_cannedResponsesReady) {
+                requestProperty(propertyName);
+            }
+        });
+        return;
+    }
+
+    m_cannedResponsesAuthoritative = false;
+    setCannedResponsesReady(true);
+}
+
+void Pebble::setCannedResponsesReady(bool ready)
+{
+    if (m_cannedResponsesReady == ready) {
+        return;
+    }
+    m_cannedResponsesReady = ready;
+    emit cannedResponsesReadyChanged();
+}
+
+void Pebble::cannedResponsesWriteReplyFinished(QDBusPendingCallWatcher *watcher)
+{
+    const QDBusMessage reply = watcher->reply();
+    const QVariantMap previousResponses =
+        watcher->property("previousResponses").toMap();
+    const quint64 serviceEpoch = watcher->property("serviceEpoch").toULongLong();
+    const quint64 writeEpoch = watcher->property("writeEpoch").toULongLong();
+    const quint64 valueRevision = watcher->property("valueRevision").toULongLong();
+    watcher->deleteLater();
+    if (serviceEpoch != m_serviceEpoch || writeEpoch != m_cannedResponsesWriteEpoch) {
+        return;
+    }
+
+    if (reply.type() == QDBusMessage::ErrorMessage) {
+        qWarning() << "setCannedResponses failed:" << reply.errorMessage();
+        if (valueRevision == m_cannedResponsesValueRevision) {
+            ++m_cannedResponsesValueRevision;
+            if (m_cannedResponses != previousResponses) {
+                m_cannedResponses = previousResponses;
+                emit cannedResponsesChanged();
+            }
+        }
+    }
+    requestProperty(QString::fromLatin1(CANNED_RESPONSES));
+}
+
 void Pebble::setCannedContacts(const QVariantMap &cans)
 {
-    sendVarMap("setFavoriteContacts",cans);
+    m_cannedContactsRequested = true;
+    QVariantMap normalized;
+    if (!normalizeStringMap(cans, &normalized)) {
+        qWarning() << "Cannot encode favorite contacts" << cans;
+        return;
+    }
+    if (normalized == m_cannedContacts && m_cannedContactsAuthoritative) {
+        return;
+    }
+
+    ++m_cannedContactsRequestEpoch;
+    const quint64 writeEpoch = ++m_cannedContactsWriteEpoch;
+    const QVariantMap previousContacts = m_cannedContacts;
+    m_cannedContactsAuthoritative = false;
+    m_cannedContactsReadFailures = 0;
+    setCannedContactsReady(false);
+    ++m_cannedContactsValueRevision;
+    const quint64 valueRevision = m_cannedContactsValueRevision;
+    if (m_cannedContacts != normalized) {
+        m_cannedContacts = normalized;
+        emit cannedContactsChanged();
+    }
+
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+        m_iface->asyncCallWithArgumentList(
+            QStringLiteral("setFavoriteContacts"),
+            QVariantList() << normalized), this);
+    watcher->setProperty("previousContacts", previousContacts);
+    watcher->setProperty("serviceEpoch",
+                         QVariant::fromValue<qulonglong>(m_serviceEpoch));
+    watcher->setProperty("writeEpoch", QVariant::fromValue<qulonglong>(writeEpoch));
+    watcher->setProperty("valueRevision",
+                         QVariant::fromValue<qulonglong>(valueRevision));
+    connect(watcher, &QDBusPendingCallWatcher::finished,
+            this, &Pebble::cannedContactsWriteReplyFinished);
 }
+
 QVariantMap Pebble::getCannedContacts(const QStringList &keys)
 {
-    return fetchVarMap("getFavoriteContacts",&keys);
+    if (keys.isEmpty()) {
+        return m_cannedContacts;
+    }
+    QVariantMap selected;
+    foreach (const QString &key, keys) {
+        if (m_cannedContacts.contains(key)) {
+            selected.insert(key, m_cannedContacts.value(key));
+        }
+    }
+    return selected;
+}
+
+QVariantMap Pebble::cannedContacts() const
+{
+    return m_cannedContacts;
+}
+
+bool Pebble::cannedContactsReady() const
+{
+    return m_cannedContactsReady;
+}
+
+void Pebble::refreshCannedContacts()
+{
+    m_cannedContactsRequested = true;
+    m_cannedContactsAuthoritative = false;
+    m_cannedContactsReadFailures = 0;
+    setCannedContactsReady(false);
+    requestCannedContacts();
+}
+
+void Pebble::requestCannedContacts()
+{
+    const quint64 requestEpoch = ++m_cannedContactsRequestEpoch;
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+        m_iface->asyncCallWithArgumentList(
+            QString::fromLatin1(FAVORITE_CONTACTS),
+            QVariantList() << QStringList()), this);
+    watcher->setProperty("requestEpoch",
+                         QVariant::fromValue<qulonglong>(requestEpoch));
+    watcher->setProperty("serviceEpoch",
+                         QVariant::fromValue<qulonglong>(m_serviceEpoch));
+    connect(watcher, &QDBusPendingCallWatcher::finished,
+            this, &Pebble::cannedContactsReadReplyFinished);
+}
+
+void Pebble::applyCannedContacts(const QVariantMap &contacts, bool authoritative)
+{
+    ++m_cannedContactsValueRevision;
+    m_cannedContactsReadFailures = 0;
+    m_cannedContactsAuthoritative = authoritative;
+    if (m_cannedContacts != contacts) {
+        m_cannedContacts = contacts;
+        emit cannedContactsChanged();
+    }
+    setCannedContactsReady(true);
+}
+
+void Pebble::cannedContactsReadFailed(quint64 requestEpoch)
+{
+    if (!m_cannedContactsRequested) {
+        return;
+    }
+    ++m_cannedContactsReadFailures;
+    if (m_cannedContactsReadFailures == 1) {
+        const quint64 retryServiceEpoch = m_serviceEpoch;
+        QTimer::singleShot(250, this,
+                           [this, requestEpoch, retryServiceEpoch]() {
+            if (retryServiceEpoch == m_serviceEpoch
+                    && requestEpoch == m_cannedContactsRequestEpoch
+                    && !m_cannedContactsReady) {
+                requestCannedContacts();
+            }
+        });
+        return;
+    }
+
+    m_cannedContactsAuthoritative = false;
+    setCannedContactsReady(true);
+}
+
+void Pebble::setCannedContactsReady(bool ready)
+{
+    if (m_cannedContactsReady == ready) {
+        return;
+    }
+    m_cannedContactsReady = ready;
+    emit cannedContactsReadyChanged();
+}
+
+void Pebble::cannedContactsReadReplyFinished(QDBusPendingCallWatcher *watcher)
+{
+    const QDBusMessage reply = watcher->reply();
+    const quint64 requestEpoch = watcher->property("requestEpoch").toULongLong();
+    const quint64 serviceEpoch = watcher->property("serviceEpoch").toULongLong();
+    watcher->deleteLater();
+    if (serviceEpoch != m_serviceEpoch
+            || requestEpoch != m_cannedContactsRequestEpoch) {
+        return;
+    }
+    if (reply.type() == QDBusMessage::ErrorMessage
+            || reply.arguments().count() != 1) {
+        qWarning() << "Could not refresh favorite contacts" << reply.errorMessage();
+        cannedContactsReadFailed(requestEpoch);
+        return;
+    }
+
+    QVariantMap contacts;
+    if (decodeStringMap(reply.arguments().first(), &contacts)) {
+        applyCannedContacts(contacts, true);
+    } else {
+        qWarning() << "Invalid favorite contacts" << reply.arguments().first();
+        cannedContactsReadFailed(requestEpoch);
+    }
+}
+
+void Pebble::cannedContactsWriteReplyFinished(QDBusPendingCallWatcher *watcher)
+{
+    const QDBusMessage reply = watcher->reply();
+    const QVariantMap previousContacts =
+        watcher->property("previousContacts").toMap();
+    const quint64 serviceEpoch = watcher->property("serviceEpoch").toULongLong();
+    const quint64 writeEpoch = watcher->property("writeEpoch").toULongLong();
+    const quint64 valueRevision = watcher->property("valueRevision").toULongLong();
+    watcher->deleteLater();
+    if (serviceEpoch != m_serviceEpoch
+            || writeEpoch != m_cannedContactsWriteEpoch) {
+        return;
+    }
+
+    if (reply.type() == QDBusMessage::ErrorMessage) {
+        qWarning() << "setFavoriteContacts failed:" << reply.errorMessage();
+        if (valueRevision == m_cannedContactsValueRevision) {
+            ++m_cannedContactsValueRevision;
+            if (m_cannedContacts != previousContacts) {
+                m_cannedContacts = previousContacts;
+                emit cannedContactsChanged();
+            }
+        }
+    }
+    requestCannedContacts();
 }
 
 QVariantList Pebble::weatherLocations() const
 {
-    QVariantList retList;
-    QDBusMessage m = m_iface->call("WeatherLocations");
-    if (m.type() == QDBusMessage::ErrorMessage || m.arguments().count() == 0) {
-        qWarning() << "Could not fetch installed apps" << m.errorMessage();
-        return retList;
-    }
-    const QDBusArgument &arg = m.arguments().first().value<QDBusArgument>();
-    arg.beginArray();
-    while (!arg.atEnd()) {
-        QVariant entryVariant;
-        arg >> entryVariant;
-        retList.append(entryVariant);
-    }
-    arg.endArray();
-    qDebug() << retList;
-    return retList;
+    return m_weatherLocations;
 }
+
 void Pebble::setWeatherLocations(const QVariantList &in)
 {
-    qDebug() << in;
     QVariantList out;
-    foreach(const QVariant &v,in) {
-        if(v.canConvert(QVariant::StringList))
+    foreach (const QVariant &v, in) {
+        if (v.canConvert(QVariant::StringList)) {
             out.append(v.toStringList());
-        else if(v.canConvert(QVariant::List)) {
+        } else if (v.canConvert(QVariant::List)) {
             QStringList l;
-            foreach(const QVariant &sv,v.toList()) {
+            foreach (const QVariant &sv, v.toList()) {
                 l.append(sv.toString());
             }
             out.append(l);
         }
     }
-    qDebug() << out;
-    m_iface->call("SetWeatherLocations",out);
-    emit weatherLocationsChanged();
+    if (out == m_weatherLocations) {
+        return;
+    }
+    sendWeatherWrite(QString::fromLatin1(WEATHER_LOCATIONS),
+                     QStringLiteral("SetWeatherLocations"), out,
+                     m_weatherLocations);
 }
 
 QString Pebble::weatherUnits() const
 {
-    return fetchProperty("WeatherUnits").toString();
+    return m_weatherUnits;
 }
+
 void Pebble::setWeatherUnits(const QString &u)
 {
-    m_iface->call("setWeatherUnits",u);
-    emit weatherUnitsChanged();
+    if (u == m_weatherUnits) {
+        return;
+    }
+    sendWeatherWrite(QString::fromLatin1(WEATHER_UNITS),
+                     QStringLiteral("setWeatherUnits"), u, m_weatherUnits);
 }
 
 QString Pebble::weatherLanguage() const
 {
-    return fetchProperty("WeatherLanguage").toString();
+    return m_weatherLanguage;
 }
+
 void Pebble::setWeatherLanguage(const QString &l)
 {
-    m_iface->call("setWeatherLanguage",l);
-    emit weatherLanguageChanged();
+    if (l == m_weatherLanguage) {
+        return;
+    }
+    sendWeatherWrite(QString::fromLatin1(WEATHER_LANGUAGE),
+                     QStringLiteral("setWeatherLanguage"), l,
+                     m_weatherLanguage);
 }
 
 QString Pebble::weatherAltKey() const
 {
-    return fetchProperty("WeatherAltKey").toString();
+    return m_weatherAltKey;
 }
+
 void Pebble::setWeatherAltKey(const QString &key)
 {
-    m_iface->call("setWeatherAltKey",key);
-    emit weatherAltKeyChanged();
+    if (key == m_weatherAltKey) {
+        return;
+    }
+    sendWeatherWrite(QString::fromLatin1(WEATHER_ALT_KEY),
+                     QStringLiteral("setWeatherAltKey"), key,
+                     m_weatherAltKey);
+}
+
+bool Pebble::weatherSettingsReady() const
+{
+    return m_weatherSettingsReady;
+}
+
+void Pebble::refreshWeatherSettings()
+{
+    m_weatherRequested = true;
+    m_weatherLoadedProperties.clear();
+    setWeatherSettingsReady(false);
+    foreach (const QString &propertyName, weatherProperties()) {
+        requestWeatherProperty(propertyName);
+    }
+}
+
+void Pebble::requestWeatherProperty(const QString &propertyName)
+{
+    if (propertyName == QString::fromLatin1(WEATHER_LOCATIONS)) {
+        refreshWeatherLocations();
+    } else {
+        requestProperty(propertyName);
+    }
+}
+
+void Pebble::refreshWeatherLocations()
+{
+    const quint64 requestEpoch = ++m_weatherLocationsEpoch;
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+        m_iface->asyncCall(QString::fromLatin1(WEATHER_LOCATIONS)), this);
+    watcher->setProperty("serviceEpoch",
+                         QVariant::fromValue<qulonglong>(m_serviceEpoch));
+    watcher->setProperty("requestEpoch",
+                         QVariant::fromValue<qulonglong>(requestEpoch));
+    connect(watcher, &QDBusPendingCallWatcher::finished,
+            this, &Pebble::weatherLocationsReplyFinished);
+}
+
+void Pebble::weatherLocationsReplyFinished(QDBusPendingCallWatcher *watcher)
+{
+    const QDBusMessage reply = watcher->reply();
+    const quint64 serviceEpoch = watcher->property("serviceEpoch").toULongLong();
+    const quint64 requestEpoch = watcher->property("requestEpoch").toULongLong();
+    watcher->deleteLater();
+    if (serviceEpoch != m_serviceEpoch || requestEpoch != m_weatherLocationsEpoch) {
+        return;
+    }
+
+    QVariantList locations;
+    if (!decodeWeatherLocations(reply, &locations)) {
+        qWarning() << "Could not refresh weather locations:" << reply.errorMessage();
+        return;
+    }
+    applyWeatherProperty(QString::fromLatin1(WEATHER_LOCATIONS), locations);
+    markWeatherPropertyLoaded(QString::fromLatin1(WEATHER_LOCATIONS));
+}
+
+void Pebble::applyWeatherProperty(const QString &propertyName, const QVariant &value)
+{
+    ++m_weatherValueRevisions[propertyName];
+    if (propertyName == QString::fromLatin1(WEATHER_UNITS)) {
+        const QString units = value.toString();
+        if (m_weatherUnits != units) {
+            m_weatherUnits = units;
+            emit weatherUnitsChanged();
+        }
+    } else if (propertyName == QString::fromLatin1(WEATHER_LANGUAGE)) {
+        const QString language = value.toString();
+        if (m_weatherLanguage != language) {
+            m_weatherLanguage = language;
+            emit weatherLanguageChanged();
+        }
+    } else if (propertyName == QString::fromLatin1(WEATHER_ALT_KEY)) {
+        const QString altKey = value.toString();
+        if (m_weatherAltKey != altKey) {
+            m_weatherAltKey = altKey;
+            emit weatherAltKeyChanged();
+        }
+    } else if (propertyName == QString::fromLatin1(WEATHER_LOCATIONS)) {
+        const QVariantList locations = value.toList();
+        if (m_weatherLocations != locations) {
+            m_weatherLocations = locations;
+            emit weatherLocationsChanged();
+        }
+    }
+}
+
+void Pebble::markWeatherPropertyLoaded(const QString &propertyName)
+{
+    m_weatherLoadedProperties.insert(propertyName);
+    const QStringList properties = weatherProperties();
+    foreach (const QString &weatherProperty, properties) {
+        if (!m_weatherLoadedProperties.contains(weatherProperty)) {
+            return;
+        }
+    }
+    setWeatherSettingsReady(true);
+}
+
+void Pebble::setWeatherSettingsReady(bool ready)
+{
+    if (m_weatherSettingsReady == ready) {
+        return;
+    }
+    m_weatherSettingsReady = ready;
+    emit weatherSettingsReadyChanged();
+}
+
+void Pebble::sendWeatherWrite(const QString &propertyName, const QString &method,
+                              const QVariant &value, const QVariant &previousValue)
+{
+    if (propertyName == QString::fromLatin1(WEATHER_LOCATIONS)) {
+        ++m_weatherLocationsEpoch;
+    } else {
+        ++m_propertyEpochs[propertyName];
+    }
+    const quint64 writeEpoch = ++m_weatherWriteEpochs[propertyName];
+    applyWeatherProperty(propertyName, value);
+    const quint64 valueRevision = m_weatherValueRevisions.value(propertyName);
+
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+        m_iface->asyncCallWithArgumentList(method, QVariantList() << value), this);
+    watcher->setProperty("propertyName", propertyName);
+    watcher->setProperty("method", method);
+    watcher->setProperty("previousValue", previousValue);
+    watcher->setProperty("serviceEpoch",
+                         QVariant::fromValue<qulonglong>(m_serviceEpoch));
+    watcher->setProperty("writeEpoch", QVariant::fromValue<qulonglong>(writeEpoch));
+    watcher->setProperty("valueRevision",
+                         QVariant::fromValue<qulonglong>(valueRevision));
+    connect(watcher, &QDBusPendingCallWatcher::finished,
+            this, &Pebble::weatherWriteReplyFinished);
+}
+
+void Pebble::weatherWriteReplyFinished(QDBusPendingCallWatcher *watcher)
+{
+    const QDBusMessage reply = watcher->reply();
+    const QString propertyName = watcher->property("propertyName").toString();
+    const QString method = watcher->property("method").toString();
+    const QVariant previousValue = watcher->property("previousValue");
+    const quint64 serviceEpoch = watcher->property("serviceEpoch").toULongLong();
+    const quint64 writeEpoch = watcher->property("writeEpoch").toULongLong();
+    const quint64 valueRevision = watcher->property("valueRevision").toULongLong();
+    watcher->deleteLater();
+    if (serviceEpoch != m_serviceEpoch ||
+            writeEpoch != m_weatherWriteEpochs.value(propertyName)) {
+        return;
+    }
+
+    if (reply.type() == QDBusMessage::ErrorMessage) {
+        qWarning() << method << "failed:" << reply.errorMessage();
+        if (valueRevision == m_weatherValueRevisions.value(propertyName)) {
+            applyWeatherProperty(propertyName, previousValue);
+        }
+    }
+    requestWeatherProperty(propertyName);
+}
+
+void Pebble::weatherLocationsChangedFromService(const QVariantList &locations)
+{
+    Q_UNUSED(locations)
+    if (!m_weatherRequested) {
+        return;
+    }
+    ++m_weatherValueRevisions[QString::fromLatin1(WEATHER_LOCATIONS)];
+    refreshWeatherLocations();
 }
 
 QVariantMap Pebble::healthParams() const
 {
-    return fetchVarMap("HealthParams");
+    return m_healthParams;
+}
+
+bool Pebble::healthParamsReady() const
+{
+    return m_healthParamsReady;
+}
+
+void Pebble::refreshHealthParams()
+{
+    m_healthParamsRequested = true;
+    m_healthParamsAuthoritative = false;
+    m_healthParamsReadFailures = 0;
+    setHealthParamsReady(false);
+    requestProperty(QString::fromLatin1(HEALTH_PARAMS));
 }
 
 void Pebble::setHealthParams(const QVariantMap &healthParams)
 {
-    m_iface->call("SetHealthParams", healthParams);
+    if (healthParams.isEmpty()) {
+        qWarning() << "Refusing to save empty health settings";
+        return;
+    }
+
+    m_healthParamsRequested = true;
+    QVariantMap merged = m_healthParams;
+    for (QVariantMap::const_iterator it = healthParams.constBegin();
+         it != healthParams.constEnd(); ++it) {
+        merged.insert(it.key(), it.value());
+    }
+    if (merged == m_healthParams && m_healthParamsAuthoritative) {
+        return;
+    }
+
+    ++m_propertyEpochs[QString::fromLatin1(HEALTH_PARAMS)];
+    const quint64 writeEpoch = ++m_healthParamsWriteEpoch;
+    const QVariantMap previousParams = m_healthParams;
+    const bool previousValid = m_healthParamsValid;
+    m_healthParamsAuthoritative = false;
+    m_healthParamsReadFailures = 0;
+    setHealthParamsReady(false);
+    ++m_healthParamsValueRevision;
+    const quint64 valueRevision = m_healthParamsValueRevision;
+    m_healthParamsValid = healthParamsSnapshotValid(merged);
+    if (m_healthParams != merged) {
+        m_healthParams = merged;
+        emit healthParamsChanged();
+    }
+
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+        m_iface->asyncCallWithArgumentList(
+            QStringLiteral("SetHealthParams"),
+            QVariantList() << healthParams), this);
+    watcher->setProperty("previousParams", previousParams);
+    watcher->setProperty("previousValid", previousValid);
+    watcher->setProperty("serviceEpoch",
+                         QVariant::fromValue<qulonglong>(m_serviceEpoch));
+    watcher->setProperty("writeEpoch", QVariant::fromValue<qulonglong>(writeEpoch));
+    watcher->setProperty("valueRevision",
+                         QVariant::fromValue<qulonglong>(valueRevision));
+    connect(watcher, &QDBusPendingCallWatcher::finished,
+            this, &Pebble::healthParamsWriteReplyFinished);
+}
+
+void Pebble::applyHealthParams(const QVariantMap &params, bool authoritative)
+{
+    ++m_healthParamsValueRevision;
+    m_healthParamsReadFailures = 0;
+    m_healthParamsAuthoritative = authoritative;
+    m_healthParamsValid = true;
+    if (m_healthParams != params) {
+        m_healthParams = params;
+        emit healthParamsChanged();
+    }
+    setHealthParamsReady(true);
+}
+
+void Pebble::healthParamsReadFailed(quint64 requestEpoch)
+{
+    if (!m_healthParamsRequested) {
+        return;
+    }
+    ++m_healthParamsReadFailures;
+    if (m_healthParamsReadFailures == 1) {
+        const quint64 retryServiceEpoch = m_serviceEpoch;
+        QTimer::singleShot(250, this,
+                           [this, requestEpoch, retryServiceEpoch]() {
+            const QString propertyName = QString::fromLatin1(HEALTH_PARAMS);
+            if (retryServiceEpoch == m_serviceEpoch
+                    && requestEpoch == m_propertyEpochs.value(propertyName)
+                    && !m_healthParamsReady) {
+                requestProperty(propertyName);
+            }
+        });
+        return;
+    }
+
+    m_healthParamsAuthoritative = false;
+    if (m_healthParamsValid) {
+        setHealthParamsReady(true);
+    }
+}
+
+void Pebble::setHealthParamsReady(bool ready)
+{
+    if (m_healthParamsReady == ready) {
+        return;
+    }
+    m_healthParamsReady = ready;
+    emit healthParamsReadyChanged();
+}
+
+void Pebble::healthParamsWriteReplyFinished(QDBusPendingCallWatcher *watcher)
+{
+    const QDBusMessage reply = watcher->reply();
+    const QVariantMap previousParams = watcher->property("previousParams").toMap();
+    const bool previousValid = watcher->property("previousValid").toBool();
+    const quint64 serviceEpoch = watcher->property("serviceEpoch").toULongLong();
+    const quint64 writeEpoch = watcher->property("writeEpoch").toULongLong();
+    const quint64 valueRevision = watcher->property("valueRevision").toULongLong();
+    watcher->deleteLater();
+    if (serviceEpoch != m_serviceEpoch
+            || writeEpoch != m_healthParamsWriteEpoch) {
+        return;
+    }
+
+    if (reply.type() == QDBusMessage::ErrorMessage) {
+        qWarning() << "SetHealthParams failed:" << reply.errorMessage();
+        if (valueRevision == m_healthParamsValueRevision) {
+            ++m_healthParamsValueRevision;
+            m_healthParamsValid = previousValid;
+            if (m_healthParams != previousParams) {
+                m_healthParams = previousParams;
+                emit healthParamsChanged();
+            }
+        }
+    }
+    requestProperty(QString::fromLatin1(HEALTH_PARAMS));
+}
+
+void Pebble::healthParamsChangedFromService()
+{
+    if (!m_healthParamsRequested) {
+        return;
+    }
+    ++m_healthParamsValueRevision;
+    m_healthParamsAuthoritative = false;
+    m_healthParamsReadFailures = 0;
+    setHealthParamsReady(false);
+    requestProperty(QString::fromLatin1(HEALTH_PARAMS));
 }
 
 bool Pebble::imperialUnits() const
 {
-    return fetchProperty("ImperialUnits").toBool();
+    return m_imperialUnits;
 }
 
 void Pebble::setImperialUnits(bool imperialUnits)
 {
-    qDebug() << "setting im units" << imperialUnits;
-    m_iface->call("SetImperialUnits", imperialUnits);
+    const QString propertyName = QString::fromLatin1(IMPERIAL_UNITS);
+    if (imperialUnits == m_imperialUnits
+            && m_settingsAuthoritativeProperties.contains(propertyName)) {
+        return;
+    }
+    sendSettingsWrite(propertyName,
+                      QStringLiteral("SetImperialUnits"), imperialUnits,
+                      m_imperialUnits);
 }
 
-QString Pebble::profileWhenConnected()
+QString Pebble::profileWhenConnected() const
 {
-    return fetchProperty("ProfileWhenConnected").toString();
+    return m_profileWhenConnected;
 }
 
-QString Pebble::profileWhenDisconnected()
+QString Pebble::profileWhenDisconnected() const
 {
-    return fetchProperty("ProfileWhenDisconnected").toString();
+    return m_profileWhenDisconnected;
 }
 
 void Pebble::setProfileWhenConnected(const QString &profile)
 {
-    qDebug() << "setting profile when connected: " << profile;
-    m_iface->call("SetProfileWhenConnected", profile);
+    const QString propertyName = QString::fromLatin1(PROFILE_WHEN_CONNECTED);
+    if (profile == m_profileWhenConnected
+            && m_settingsAuthoritativeProperties.contains(propertyName)) {
+        return;
+    }
+    sendSettingsWrite(propertyName,
+                      QStringLiteral("SetProfileWhenConnected"), profile,
+                      m_profileWhenConnected);
 }
 
 void Pebble::setProfileWhenDisconnected(const QString &profile)
 {
-    qDebug() << "setting profile when disconnected: " << profile;
-    m_iface->call("SetProfileWhenDisconnected", profile);
+    const QString propertyName = QString::fromLatin1(PROFILE_WHEN_DISCONNECTED);
+    if (profile == m_profileWhenDisconnected
+            && m_settingsAuthoritativeProperties.contains(propertyName)) {
+        return;
+    }
+    sendSettingsWrite(propertyName,
+                      QStringLiteral("SetProfileWhenDisconnected"), profile,
+                      m_profileWhenDisconnected);
 }
 
 bool Pebble::calendarSyncEnabled() const
 {
-    return fetchProperty("CalendarSyncEnabled").toBool();
+    return m_calendarSyncEnabled;
 }
 
 void Pebble::setCalendarSyncEnabled(bool enabled)
 {
-    m_iface->call("SetCalendarSyncEnabled", enabled);
+    const QString propertyName = QString::fromLatin1(CALENDAR_SYNC_ENABLED);
+    if (enabled == m_calendarSyncEnabled
+            && m_settingsAuthoritativeProperties.contains(propertyName)) {
+        return;
+    }
+    sendSettingsWrite(propertyName,
+                      QStringLiteral("SetCalendarSyncEnabled"), enabled,
+                      m_calendarSyncEnabled);
+}
+
+bool Pebble::settingsPageReady() const
+{
+    return m_settingsPageReady;
+}
+
+void Pebble::refreshSettingsPage()
+{
+    m_settingsPageRequested = true;
+    m_settingsLoadedProperties.clear();
+    m_settingsAuthoritativeProperties.clear();
+    m_settingsReadFailures.clear();
+    setSettingsPageReady(false);
+    foreach (const QString &propertyName, settingsPageProperties()) {
+        requestProperty(propertyName);
+    }
+}
+
+bool Pebble::applySettingsProperty(const QString &propertyName, const QVariant &value)
+{
+    if ((propertyName == QString::fromLatin1(IMPERIAL_UNITS)
+            || propertyName == QString::fromLatin1(CALENDAR_SYNC_ENABLED)
+            || propertyName == QString::fromLatin1(SYNC_APPS_FROM_CLOUD))
+            && value.type() != QVariant::Bool) {
+        return false;
+    }
+    if ((propertyName == QString::fromLatin1(PROFILE_WHEN_CONNECTED)
+            || propertyName == QString::fromLatin1(PROFILE_WHEN_DISCONNECTED))
+            && value.type() != QVariant::String) {
+        return false;
+    }
+
+    ++m_settingsValueRevisions[propertyName];
+    if (propertyName == QString::fromLatin1(IMPERIAL_UNITS)) {
+        const bool imperial = value.toBool();
+        if (m_imperialUnits != imperial) {
+            m_imperialUnits = imperial;
+            emit imperialUnitsChanged();
+        }
+    } else if (propertyName == QString::fromLatin1(PROFILE_WHEN_CONNECTED)) {
+        const QString profile = value.toString();
+        if (m_profileWhenConnected != profile) {
+            m_profileWhenConnected = profile;
+            emit profileWhenConnectedChanged();
+        }
+    } else if (propertyName == QString::fromLatin1(PROFILE_WHEN_DISCONNECTED)) {
+        const QString profile = value.toString();
+        if (m_profileWhenDisconnected != profile) {
+            m_profileWhenDisconnected = profile;
+            emit profileWhenDisconnectedChanged();
+        }
+    } else if (propertyName == QString::fromLatin1(CALENDAR_SYNC_ENABLED)) {
+        const bool enabled = value.toBool();
+        if (m_calendarSyncEnabled != enabled) {
+            m_calendarSyncEnabled = enabled;
+            emit calendarSyncEnabledChanged();
+        }
+    } else if (propertyName == QString::fromLatin1(SYNC_APPS_FROM_CLOUD)) {
+        const bool enabled = value.toBool();
+        if (m_syncAppsFromCloud != enabled) {
+            m_syncAppsFromCloud = enabled;
+            emit syncAppsFromCloudChanged();
+        }
+    } else {
+        return false;
+    }
+    return true;
+}
+
+void Pebble::markSettingsPropertyLoaded(const QString &propertyName, bool authoritative)
+{
+    if (!m_settingsPageRequested) {
+        return;
+    }
+    m_settingsReadFailures.remove(propertyName);
+    m_settingsLoadedProperties.insert(propertyName);
+    if (authoritative) {
+        m_settingsAuthoritativeProperties.insert(propertyName);
+    } else {
+        m_settingsAuthoritativeProperties.remove(propertyName);
+    }
+    foreach (const QString &settingsProperty, settingsPageProperties()) {
+        if (!m_settingsLoadedProperties.contains(settingsProperty)) {
+            return;
+        }
+    }
+    setSettingsPageReady(true);
+}
+
+void Pebble::settingsPropertyReadFailed(const QString &propertyName,
+                                        quint64 requestEpoch)
+{
+    if (!m_settingsPageRequested) {
+        return;
+    }
+    const int failures = m_settingsReadFailures.value(propertyName) + 1;
+    m_settingsReadFailures[propertyName] = failures;
+    if (failures == 1) {
+        const quint64 retryServiceEpoch = m_serviceEpoch;
+        QTimer::singleShot(250, this,
+                           [this, propertyName, requestEpoch, retryServiceEpoch]() {
+            if (retryServiceEpoch == m_serviceEpoch
+                    && requestEpoch == m_propertyEpochs.value(propertyName)
+                    && !m_settingsLoadedProperties.contains(propertyName)) {
+                requestProperty(propertyName);
+            }
+        });
+        return;
+    }
+
+    // Keep the page usable after two failures. The cached value is explicitly
+    // non-authoritative, so choosing that same value will still send a write.
+    markSettingsPropertyLoaded(propertyName, false);
+}
+
+void Pebble::setSettingsPageReady(bool ready)
+{
+    if (m_settingsPageReady == ready) {
+        return;
+    }
+    m_settingsPageReady = ready;
+    emit settingsPageReadyChanged();
+}
+
+void Pebble::sendSettingsWrite(const QString &propertyName, const QString &method,
+                               const QVariant &value, const QVariant &previousValue)
+{
+    ++m_propertyEpochs[propertyName];
+    const quint64 writeEpoch = ++m_settingsWriteEpochs[propertyName];
+    m_settingsLoadedProperties.remove(propertyName);
+    m_settingsAuthoritativeProperties.remove(propertyName);
+    m_settingsReadFailures.remove(propertyName);
+    setSettingsPageReady(false);
+    if (!applySettingsProperty(propertyName, value)) {
+        return;
+    }
+    const quint64 valueRevision = m_settingsValueRevisions.value(propertyName);
+
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+        m_iface->asyncCallWithArgumentList(method, QVariantList() << value), this);
+    watcher->setProperty("propertyName", propertyName);
+    watcher->setProperty("method", method);
+    watcher->setProperty("previousValue", previousValue);
+    watcher->setProperty("serviceEpoch",
+                         QVariant::fromValue<qulonglong>(m_serviceEpoch));
+    watcher->setProperty("writeEpoch", QVariant::fromValue<qulonglong>(writeEpoch));
+    watcher->setProperty("valueRevision",
+                         QVariant::fromValue<qulonglong>(valueRevision));
+    connect(watcher, &QDBusPendingCallWatcher::finished,
+            this, &Pebble::settingsWriteReplyFinished);
+}
+
+void Pebble::settingsWriteReplyFinished(QDBusPendingCallWatcher *watcher)
+{
+    const QDBusMessage reply = watcher->reply();
+    const QString propertyName = watcher->property("propertyName").toString();
+    const QString method = watcher->property("method").toString();
+    const QVariant previousValue = watcher->property("previousValue");
+    const quint64 serviceEpoch = watcher->property("serviceEpoch").toULongLong();
+    const quint64 writeEpoch = watcher->property("writeEpoch").toULongLong();
+    const quint64 valueRevision = watcher->property("valueRevision").toULongLong();
+    watcher->deleteLater();
+    if (serviceEpoch != m_serviceEpoch
+            || writeEpoch != m_settingsWriteEpochs.value(propertyName)) {
+        return;
+    }
+
+    if (reply.type() == QDBusMessage::ErrorMessage) {
+        qWarning() << method << "failed:" << reply.errorMessage();
+        if (valueRevision == m_settingsValueRevisions.value(propertyName)) {
+            applySettingsProperty(propertyName, previousValue);
+        }
+    }
+    requestProperty(propertyName);
+}
+
+void Pebble::settingsPropertyChangedFromService(const QString &propertyName)
+{
+    if (!m_settingsPageRequested) {
+        return;
+    }
+    ++m_settingsValueRevisions[propertyName];
+    m_settingsLoadedProperties.remove(propertyName);
+    m_settingsAuthoritativeProperties.remove(propertyName);
+    m_settingsReadFailures.remove(propertyName);
+    setSettingsPageReady(false);
+    requestProperty(propertyName);
 }
 
 bool Pebble::devConnEnabled() const
 {
-    return fetchProperty("DevConnectionEnabled").toBool();
+    return m_devConnEnabled;
 }
+
 void Pebble::setDevConnEnabled(bool enabled)
 {
-    m_iface->call("SetDevConnEnabled", enabled);
-}
-
-bool Pebble::devConnCloudEnabled() const
-{
-    return fetchProperty("DevConnCloudEnabled").toBool();
-}
-void Pebble::setDevConnCloudEnabled(bool enabled)
-{
-    m_iface->call("SetDevConnCloudEnabled",enabled);
-}
-
-quint16 Pebble::devConListenPort() const
-{
-    return (quint16)fetchProperty("DevConnListenPort").toInt();
-}
-void Pebble::setDevConListenPort(quint16 port)
-{
-    m_iface->call("SetDevConnListenPort",port);
+    if (enabled == m_devConnEnabled) {
+        return;
+    }
+    sendDeveloperWrite(QString::fromLatin1(DEV_CONNECTION_ENABLED),
+                       QStringLiteral("SetDevConnEnabled"), enabled,
+                       m_devConnEnabled,
+                       QString::fromLatin1(DEV_CONNECTION_STATE));
 }
 
 bool Pebble::devConnServerRunning() const
 {
-    return fetchProperty("DevConnectionState").toBool();
+    return m_devConnServerRunning;
 }
 
-bool Pebble::devConCloudConnected() const
+bool Pebble::developerSettingsReady() const
 {
-    return fetchProperty("DevConnCloudState").toBool();
+    return m_developerSettingsReady;
+}
+
+void Pebble::refreshDeveloperSettings()
+{
+    m_developerRequested = true;
+    m_developerLoadedProperties.clear();
+    setDeveloperSettingsReady(false);
+    foreach (const QString &propertyName, developerProperties()) {
+        requestProperty(propertyName);
+    }
 }
 
 void Pebble::devConStateChanged(bool state)
 {
-    qDebug() << "DevCon state hase changed:" << (state?"running":"stopped");
-    emit devConnServerRunningChanged();
-}
-
-void Pebble::devConCloudChanged(bool state)
-{
-    qDebug() << "DevConCloud state changed:" << (state?"connected":"disconnected");
-    emit devConCloudConnectedChanged();
+    qDebug() << "Developer connection state changed:"
+             << (state ? "running" : "stopped");
+    if (!m_developerRequested) {
+        return;
+    }
+    requestProperty(QString::fromLatin1(DEV_CONNECTION_ENABLED));
+    requestProperty(QString::fromLatin1(DEV_CONNECTION_STATE));
 }
 
 void Pebble::setLogLevel(int level)
 {
-    m_iface->call("setLogLevel",level);
-    emit logLevelChanged();
+    if (level == m_logLevel) {
+        return;
+    }
+    sendDeveloperWrite(QString::fromLatin1(LOG_LEVEL),
+                       QStringLiteral("setLogLevel"), level, m_logLevel);
 }
+
 int Pebble::getLogLevel() const
 {
-    return fetchProperty("getLogLevel").toInt();
+    return m_logLevel;
 }
 
-QString Pebble::getLogDump()
+void Pebble::applyDeveloperProperty(const QString &propertyName, const QVariant &value)
 {
-    return fetchProperty("getLogDump").toString();
-}
-QString Pebble::startLogDump()
-{
-    QString ret = fetchProperty("startLogDump").toString();
-    emit logDumpChanged();
-    return ret;
-}
-QString Pebble::stopLogDump()
-{
-    QString ret = fetchProperty("stopLogDump").toString();
-    emit logDumpChanged();
-    return ret;
-}
-bool Pebble::isLogDumping()
-{
-    return fetchProperty("isLogDumping").toBool();
+    ++m_developerValueRevisions[propertyName];
+    if (propertyName == QString::fromLatin1(DEV_CONNECTION_ENABLED)) {
+        const bool enabled = value.toBool();
+        if (m_devConnEnabled != enabled) {
+            m_devConnEnabled = enabled;
+            emit devConnEnabledChanged();
+        }
+    } else if (propertyName == QString::fromLatin1(DEV_CONNECTION_STATE)) {
+        const bool running = value.toBool();
+        if (m_devConnServerRunning != running) {
+            m_devConnServerRunning = running;
+            emit devConnServerRunningChanged();
+        }
+    } else if (propertyName == QString::fromLatin1(LOG_LEVEL)) {
+        const int level = value.toInt();
+        if (m_logLevel != level) {
+            m_logLevel = level;
+            emit logLevelChanged();
+        }
+    }
 }
 
-QString Pebble::oauthToken() const
+void Pebble::markDeveloperPropertyLoaded(const QString &propertyName)
 {
-    return fetchProperty("oauthToken").toString();
+    m_developerLoadedProperties.insert(propertyName);
+    foreach (const QString &developerProperty, developerProperties()) {
+        if (!m_developerLoadedProperties.contains(developerProperty)) {
+            return;
+        }
+    }
+    setDeveloperSettingsReady(true);
+}
+
+void Pebble::setDeveloperSettingsReady(bool ready)
+{
+    if (m_developerSettingsReady == ready) {
+        return;
+    }
+    m_developerSettingsReady = ready;
+    emit developerSettingsReadyChanged();
+}
+
+void Pebble::sendDeveloperWrite(const QString &propertyName, const QString &method,
+                                const QVariant &value, const QVariant &previousValue,
+                                const QString &refreshProperty)
+{
+    ++m_propertyEpochs[propertyName];
+    const quint64 writeEpoch = ++m_developerWriteEpochs[propertyName];
+    applyDeveloperProperty(propertyName, value);
+    const quint64 valueRevision = m_developerValueRevisions.value(propertyName);
+
+    if (!refreshProperty.isEmpty()) {
+        ++m_propertyEpochs[refreshProperty];
+    }
+
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+        m_iface->asyncCallWithArgumentList(method, QVariantList() << value), this);
+    watcher->setProperty("propertyName", propertyName);
+    watcher->setProperty("method", method);
+    watcher->setProperty("previousValue", previousValue);
+    watcher->setProperty("refreshProperty", refreshProperty);
+    watcher->setProperty("serviceEpoch",
+                         QVariant::fromValue<qulonglong>(m_serviceEpoch));
+    watcher->setProperty("writeEpoch", QVariant::fromValue<qulonglong>(writeEpoch));
+    watcher->setProperty("valueRevision",
+                         QVariant::fromValue<qulonglong>(valueRevision));
+    connect(watcher, &QDBusPendingCallWatcher::finished,
+            this, &Pebble::developerWriteReplyFinished);
+}
+
+void Pebble::developerWriteReplyFinished(QDBusPendingCallWatcher *watcher)
+{
+    const QDBusMessage reply = watcher->reply();
+    const QString propertyName = watcher->property("propertyName").toString();
+    const QString method = watcher->property("method").toString();
+    const QVariant previousValue = watcher->property("previousValue");
+    const QString refreshProperty = watcher->property("refreshProperty").toString();
+    const quint64 serviceEpoch = watcher->property("serviceEpoch").toULongLong();
+    const quint64 writeEpoch = watcher->property("writeEpoch").toULongLong();
+    const quint64 valueRevision = watcher->property("valueRevision").toULongLong();
+    watcher->deleteLater();
+    if (serviceEpoch != m_serviceEpoch ||
+            writeEpoch != m_developerWriteEpochs.value(propertyName)) {
+        return;
+    }
+
+    if (reply.type() == QDBusMessage::ErrorMessage) {
+        qWarning() << method << "failed:" << reply.errorMessage();
+        if (valueRevision == m_developerValueRevisions.value(propertyName)) {
+            applyDeveloperProperty(propertyName, previousValue);
+        }
+    }
+
+    requestProperty(propertyName);
+    if (!refreshProperty.isEmpty()) {
+        requestProperty(refreshProperty);
+    }
+}
+
+bool Pebble::accountAuthenticated() const
+{
+    return m_account->authenticated();
 }
 
 void Pebble::setOAuthToken(const QString &token)
 {
-    m_iface->call("setOAuthToken",token);
-    emit oauthTokenChanged();
-    emit accountNameChanged();
-    emit accountEmailChanged();
+    m_account->setOAuthToken(token);
+}
+
+bool Pebble::setOAuthTokenFromCallback(const QString &callbackUrl)
+{
+    const QString token =
+        RockpoolAccount::oauthTokenFromCallback(callbackUrl);
+    if (token.isEmpty()) {
+        return false;
+    }
+    m_account->setOAuthToken(token);
+    return true;
 }
 
 QString Pebble::accountName() const
 {
-    return fetchProperty("accountName").toString();
+    return m_account->name();
 }
 
 QString Pebble::accountEmail() const
 {
-    return fetchProperty("accountEmail").toString();
+    return m_account->email();
+}
+
+bool Pebble::accountTokenPending() const
+{
+    return m_account->tokenPending();
+}
+
+QString Pebble::accountTokenError() const
+{
+    return m_account->tokenError();
 }
 
 bool Pebble::syncAppsFromCloud() const
 {
-    return fetchProperty("syncAppsFromCloud").toBool();
+    return m_syncAppsFromCloud;
 }
 void Pebble::setSyncAppsFromCloud(bool enable)
 {
-    m_iface->call("setSyncAppsFromCloud",enable);
-    emit syncAppsFromCloudChanged();
+    const QString propertyName = QString::fromLatin1(SYNC_APPS_FROM_CLOUD);
+    if (enable == m_syncAppsFromCloud
+            && m_settingsAuthoritativeProperties.contains(propertyName)) {
+        return;
+    }
+    sendSettingsWrite(propertyName,
+                      QStringLiteral("setSyncAppsFromCloud"), enable,
+                      m_syncAppsFromCloud);
 }
 
 void Pebble::resetTimeline()
 {
-    m_iface->call("resetTimeline");
+    // The compatibility method only queues the daemon-side reset.  Its void
+    // reply is transport acknowledgement, not confirmation that the watch
+    // databases were cleared, so do not synthesize a completed UI state.
+    sendVoidCommand(QStringLiteral("resetTimeline"));
 }
 
-void Pebble::setTimelineWindow()
+int Pebble::timelineWindowStart() const
 {
-    m_iface->call("setTimelineWindow",-m_timelienWindowStart,-m_timelienWindowFade,m_timelienWindowEnd);
+    return m_timelienWindowStart;
+}
+
+int Pebble::timelineWindowFade() const
+{
+    return m_timelienWindowFade;
+}
+
+int Pebble::timelineWindowEnd() const
+{
+    return m_timelienWindowEnd;
+}
+
+bool Pebble::timelineWindowReady() const
+{
+    return m_timelineWindowReady;
+}
+
+void Pebble::setTimelineWindowReady(bool ready)
+{
+    if (m_timelineWindowReady != ready) {
+        m_timelineWindowReady = ready;
+        emit timelineWindowReadyChanged();
+    }
+}
+
+void Pebble::refreshTimelineWindow()
+{
+    if (m_timelineWindowWriteInFlight) {
+        return;
+    }
+    m_timelineWindowReadFailures = 0;
+    requestTimelineWindowSnapshot();
+}
+
+void Pebble::requestTimelineWindowSnapshot()
+{
+    const quint64 requestEpoch = ++m_timelineWindowRequestEpoch;
+    m_pendingTimelineWindowValues.clear();
+    m_pendingTimelineWindowReplies.clear();
+    m_timelineWindowRequestFailed = false;
+    setTimelineWindowReady(false);
+
+    foreach (const QString &propertyName, timelineWindowProperties()) {
+        m_pendingTimelineWindowReplies.insert(propertyName);
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+            m_iface->asyncCall(propertyName), this);
+        watcher->setProperty("propertyName", propertyName);
+        watcher->setProperty("requestEpoch",
+                             QVariant::fromValue<qulonglong>(requestEpoch));
+        watcher->setProperty("serviceEpoch",
+                             QVariant::fromValue<qulonglong>(m_serviceEpoch));
+        connect(watcher, &QDBusPendingCallWatcher::finished,
+                this, &Pebble::timelineWindowPropertyReplyFinished);
+    }
+}
+
+void Pebble::timelineWindowPropertyReplyFinished(QDBusPendingCallWatcher *watcher)
+{
+    const QDBusMessage reply = watcher->reply();
+    const QString propertyName = watcher->property("propertyName").toString();
+    const quint64 requestEpoch = watcher->property("requestEpoch").toULongLong();
+    const quint64 serviceEpoch = watcher->property("serviceEpoch").toULongLong();
+    watcher->deleteLater();
+    if (serviceEpoch != m_serviceEpoch || requestEpoch != m_timelineWindowRequestEpoch) {
+        return;
+    }
+
+    m_pendingTimelineWindowReplies.remove(propertyName);
+    bool valid = reply.type() != QDBusMessage::ErrorMessage
+            && reply.arguments().count() == 1;
+    int value = 0;
+    if (valid) {
+        bool converted = false;
+        value = reply.arguments().first().toInt(&converted);
+        valid = converted;
+    }
+    if (valid) {
+        m_pendingTimelineWindowValues.insert(propertyName, value);
+    } else {
+        m_timelineWindowRequestFailed = true;
+        qWarning() << "Could not refresh timeline window property" << propertyName
+                   << reply.errorMessage();
+    }
+
+    if (!m_pendingTimelineWindowReplies.isEmpty()) {
+        return;
+    }
+    if (m_timelineWindowRequestFailed
+            || m_pendingTimelineWindowValues.count() != timelineWindowProperties().count()) {
+        timelineWindowSnapshotFailed(requestEpoch, serviceEpoch);
+        return;
+    }
+
+    const int rawStart = m_pendingTimelineWindowValues.value(
+        QStringLiteral("timelineWindowStart")).toInt();
+    const int rawFade = m_pendingTimelineWindowValues.value(
+        QStringLiteral("timelineWindowFade")).toInt();
+    const int end = m_pendingTimelineWindowValues.value(
+        QStringLiteral("timelineWindowEnd")).toInt();
+    if (rawStart > -1 || rawStart < -365 || rawFade > 0 || rawFade < -2592000
+            || end < -365 || end > 365 || rawStart > end) {
+        qWarning() << "Ignoring invalid timeline window snapshot"
+                   << rawStart << rawFade << end;
+        timelineWindowSnapshotFailed(requestEpoch, serviceEpoch);
+        return;
+    }
+
+    const int start = -rawStart;
+    const int fade = -rawFade;
+    const bool changed = m_timelienWindowStart != start
+            || m_timelienWindowFade != fade || m_timelienWindowEnd != end;
+    m_timelienWindowStart = start;
+    m_timelienWindowFade = fade;
+    m_timelienWindowEnd = end;
+    if (changed) {
+        emit timelineWindowChanged();
+    }
+    m_timelineWindowHasSnapshot = true;
+    m_timelineWindowReadFailures = 0;
+    setTimelineWindowReady(true);
+}
+
+void Pebble::timelineWindowSnapshotFailed(quint64 requestEpoch,
+                                          quint64 serviceEpoch)
+{
+    ++m_timelineWindowReadFailures;
+    if (m_timelineWindowReadFailures < 2) {
+        QTimer::singleShot(250, this, [this, requestEpoch, serviceEpoch]() {
+            if (requestEpoch == m_timelineWindowRequestEpoch
+                    && serviceEpoch == m_serviceEpoch
+                    && !m_timelineWindowWriteInFlight
+                    && !m_timelineWindowReady) {
+                requestTimelineWindowSnapshot();
+            }
+        });
+    } else if (m_timelineWindowHasSnapshot) {
+        // Keep a previously validated tuple usable after a bounded transient
+        // read failure.  A cold/default cache never becomes writable.
+        setTimelineWindowReady(true);
+    }
+}
+
+void Pebble::setTimelineWindow(int start, int fade, int end)
+{
+    if (start < 1 || start > 365 || fade < 0 || fade > 2592000
+            || end < -365 || end > 365 || -start > end) {
+        qWarning() << "Ignoring invalid timeline window" << start << fade << end;
+        refreshTimelineWindow();
+        return;
+    }
+
+    const quint64 writeEpoch = ++m_timelineWindowWriteEpoch;
+    ++m_timelineWindowRequestEpoch;
+    m_pendingTimelineWindowValues.clear();
+    m_pendingTimelineWindowReplies.clear();
+    m_timelineWindowRequestFailed = false;
+    m_timelineWindowReadFailures = 0;
+    setTimelineWindowReady(false);
+
+    if (m_timelineWindowWriteInFlight) {
+        m_timelineWindowWriteQueued = true;
+        m_queuedTimelineWindowStart = start;
+        m_queuedTimelineWindowFade = fade;
+        m_queuedTimelineWindowEnd = end;
+        m_queuedTimelineWindowWriteEpoch = writeEpoch;
+        return;
+    }
+    dispatchTimelineWindowWrite(start, fade, end, writeEpoch);
+}
+
+void Pebble::dispatchTimelineWindowWrite(int start, int fade, int end,
+                                         quint64 writeEpoch)
+{
+    m_timelineWindowWriteInFlight = true;
+    m_inFlightTimelineWindowWriteEpoch = writeEpoch;
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+        m_iface->asyncCallWithArgumentList(
+            QStringLiteral("setTimelineWindow"),
+            QVariantList() << -start << -fade << end), this);
+    watcher->setProperty("serviceEpoch",
+                         QVariant::fromValue<qulonglong>(m_serviceEpoch));
+    watcher->setProperty("writeEpoch", QVariant::fromValue<qulonglong>(writeEpoch));
+    connect(watcher, &QDBusPendingCallWatcher::finished,
+            this, &Pebble::timelineWindowWriteReplyFinished);
+}
+
+void Pebble::timelineWindowWriteReplyFinished(QDBusPendingCallWatcher *watcher)
+{
+    const QDBusMessage reply = watcher->reply();
+    const quint64 serviceEpoch = watcher->property("serviceEpoch").toULongLong();
+    const quint64 writeEpoch = watcher->property("writeEpoch").toULongLong();
+    watcher->deleteLater();
+    if (serviceEpoch != m_serviceEpoch || !m_timelineWindowWriteInFlight
+            || writeEpoch != m_inFlightTimelineWindowWriteEpoch) {
+        return;
+    }
+    if (reply.type() == QDBusMessage::ErrorMessage) {
+        qWarning() << "setTimelineWindow failed:" << reply.errorMessage();
+    }
+
+    if (m_timelineWindowWriteQueued) {
+        const int start = m_queuedTimelineWindowStart;
+        const int fade = m_queuedTimelineWindowFade;
+        const int end = m_queuedTimelineWindowEnd;
+        const quint64 queuedEpoch = m_queuedTimelineWindowWriteEpoch;
+        m_timelineWindowWriteQueued = false;
+        dispatchTimelineWindowWrite(start, fade, end, queuedEpoch);
+        return;
+    }
+
+    m_timelineWindowWriteInFlight = false;
+    m_timelineWindowReadFailures = 0;
+    requestTimelineWindowSnapshot();
 }
 
 void Pebble::configurationClosed(const QString &uuid, const QString &url)
 {
-    m_iface->call("ConfigurationClosed", uuid, url);
+    sendVoidCommand(QStringLiteral("ConfigurationClosed"),
+                    QVariantList() << uuid << url);
 }
 
 void Pebble::launchApp(const QString &uuid)
 {
-    m_iface->call("LaunchApp", uuid);
+    sendVoidCommand(QStringLiteral("LaunchApp"), QVariantList() << uuid);
 }
 
 void Pebble::requestConfigurationURL(const QString &uuid)
 {
-    m_iface->call("ConfigurationURL", uuid);
+    sendVoidCommand(QStringLiteral("ConfigurationURL"), QVariantList() << uuid);
 }
 
 void Pebble::removeApp(const QString &uuid)
 {
     qDebug() << "should remove app" << uuid;
-    m_iface->call("RemoveApp", uuid);
+    sendVoidCommand(QStringLiteral("RemoveApp"), QVariantList() << uuid);
 }
 
 void Pebble::installApp(const QString &storeId)
 {
     qDebug() << "should install app" << storeId;
-    m_iface->call("InstallApp", storeId);
+    sendVoidCommand(QStringLiteral("InstallApp"), QVariantList() << storeId);
 }
 
 void Pebble::sideloadApp(const QString &packageFile)
 {
-    m_iface->call("SideloadApp", packageFile);
+    sendVoidCommand(QStringLiteral("SideloadApp"), QVariantList() << packageFile);
 }
 
-QVariant Pebble::fetchProperty(const QString &propertyName) const
+void Pebble::sendVoidCommand(const QString &method, const QVariantList &arguments)
 {
-    QDBusMessage m = m_iface->call(propertyName);
-    if (m.type() != QDBusMessage::ErrorMessage && m.arguments().count() == 1) {
-        qDebug() << "property" << propertyName << m.arguments().first();
-        return m.arguments().first();
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+        m_iface->asyncCallWithArgumentList(method, arguments), this);
+    watcher->setProperty("method", method);
+    watcher->setProperty("serviceEpoch",
+                         QVariant::fromValue<qulonglong>(m_serviceEpoch));
+    connect(watcher, &QDBusPendingCallWatcher::finished,
+            this, &Pebble::voidCommandReplyFinished);
+}
 
+void Pebble::voidCommandReplyFinished(QDBusPendingCallWatcher *watcher)
+{
+    const QDBusMessage reply = watcher->reply();
+    const QString method = watcher->property("method").toString();
+    const quint64 serviceEpoch = watcher->property("serviceEpoch").toULongLong();
+    watcher->deleteLater();
+    if (serviceEpoch != m_serviceEpoch) {
+        return;
     }
-    qDebug() << "error getting property:" << propertyName << m.errorMessage();
-    return QVariant();
+    if (reply.type() == QDBusMessage::ErrorMessage) {
+        qWarning() << method << "failed:" << reply.errorMessage();
+    }
+}
+
+void Pebble::requestProperty(const QString &propertyName)
+{
+    const quint64 requestEpoch = ++m_propertyEpochs[propertyName];
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+        m_iface->asyncCall(propertyName), this);
+    watcher->setProperty("propertyName", propertyName);
+    watcher->setProperty("requestEpoch", QVariant::fromValue<qulonglong>(requestEpoch));
+    watcher->setProperty("serviceEpoch", QVariant::fromValue<qulonglong>(m_serviceEpoch));
+    connect(watcher, &QDBusPendingCallWatcher::finished,
+            this, &Pebble::propertyReplyFinished);
+}
+
+void Pebble::scheduleAddressRetry(quint64 requestEpoch, quint64 serviceEpoch)
+{
+    if (serviceEpoch != m_serviceEpoch ||
+            requestEpoch != m_propertyEpochs.value(QStringLiteral("Address")) ||
+            !m_address.isEmpty()) {
+        return;
+    }
+    const int shift = qMin(m_addressReadFailures, 7);
+    ++m_addressReadFailures;
+    const int delayMs = 250 * (1 << shift);
+    QTimer::singleShot(delayMs, this, [this, requestEpoch, serviceEpoch]() {
+        if (serviceEpoch == m_serviceEpoch &&
+                requestEpoch == m_propertyEpochs.value(QStringLiteral("Address")) &&
+                m_address.isEmpty()) {
+            requestProperty(QStringLiteral("Address"));
+        }
+    });
+}
+
+void Pebble::propertyReplyFinished(QDBusPendingCallWatcher *watcher)
+{
+    const QDBusMessage reply = watcher->reply();
+    const QString propertyName = watcher->property("propertyName").toString();
+    const quint64 requestEpoch = watcher->property("requestEpoch").toULongLong();
+    const quint64 serviceEpoch = watcher->property("serviceEpoch").toULongLong();
+    watcher->deleteLater();
+    if (serviceEpoch != m_serviceEpoch ||
+            requestEpoch != m_propertyEpochs.value(propertyName)) {
+        return;
+    }
+    if (reply.type() == QDBusMessage::ErrorMessage || reply.arguments().count() != 1) {
+        qWarning() << "Could not refresh" << propertyName << reply.errorMessage();
+        if (settingsPageProperties().contains(propertyName)) {
+            settingsPropertyReadFailed(propertyName, requestEpoch);
+        } else if (propertyName == QString::fromLatin1(HEALTH_PARAMS)) {
+            healthParamsReadFailed(requestEpoch);
+        } else if (propertyName == QString::fromLatin1(CANNED_RESPONSES)) {
+            cannedResponsesReadFailed(requestEpoch);
+        } else if (propertyName == QStringLiteral("Address")) {
+            scheduleAddressRetry(requestEpoch, serviceEpoch);
+        }
+        return;
+    }
+    applyProperty(propertyName, reply.arguments().first());
+}
+
+void Pebble::applyProperty(const QString &propertyName, const QVariant &value)
+{
+    if (propertyName == QString::fromLatin1(HEALTH_PARAMS)) {
+        QVariantMap params;
+        if (decodeHealthParams(value, &params)) {
+            applyHealthParams(params, true);
+        } else {
+            qWarning() << "Invalid health settings" << value;
+            healthParamsReadFailed(m_propertyEpochs.value(propertyName));
+        }
+    } else if (propertyName == QString::fromLatin1(CANNED_RESPONSES)) {
+        QVariantMap responses;
+        if (decodeStringMap(value, &responses)) {
+            applyCannedResponses(responses, true);
+        } else {
+            qWarning() << "Invalid canned responses" << value;
+            cannedResponsesReadFailed(m_propertyEpochs.value(propertyName));
+        }
+    } else if (propertyName == QString::fromLatin1(IMPERIAL_UNITS) ||
+            propertyName == QString::fromLatin1(PROFILE_WHEN_CONNECTED) ||
+            propertyName == QString::fromLatin1(PROFILE_WHEN_DISCONNECTED) ||
+            propertyName == QString::fromLatin1(CALENDAR_SYNC_ENABLED) ||
+            propertyName == QString::fromLatin1(SYNC_APPS_FROM_CLOUD)) {
+        if (applySettingsProperty(propertyName, value)) {
+            markSettingsPropertyLoaded(propertyName, true);
+        } else {
+            qWarning() << "Invalid settings value for" << propertyName << value;
+            settingsPropertyReadFailed(
+                propertyName, m_propertyEpochs.value(propertyName));
+        }
+    } else if (propertyName == QString::fromLatin1(WEATHER_UNITS) ||
+            propertyName == QString::fromLatin1(WEATHER_LANGUAGE) ||
+            propertyName == QString::fromLatin1(WEATHER_ALT_KEY)) {
+        applyWeatherProperty(propertyName, value);
+        markWeatherPropertyLoaded(propertyName);
+    } else if (propertyName == QString::fromLatin1(DEV_CONNECTION_ENABLED) ||
+            propertyName == QString::fromLatin1(DEV_CONNECTION_STATE) ||
+            propertyName == QString::fromLatin1(LOG_LEVEL)) {
+        applyDeveloperProperty(propertyName, value);
+        markDeveloperPropertyLoaded(propertyName);
+    } else if (propertyName == QStringLiteral("Name")) {
+        const QString name = value.toString();
+        if (m_name != name) {
+            m_name = name;
+            emit identityChanged();
+        }
+    } else if (propertyName == QStringLiteral("Address")) {
+        if (value.type() != QVariant::String || value.toString().isEmpty()) {
+            qWarning() << "Invalid watch address" << value;
+            scheduleAddressRetry(m_propertyEpochs.value(propertyName), m_serviceEpoch);
+            return;
+        }
+        const QString address = value.toString();
+        m_addressReadFailures = 0;
+        if (m_address != address) {
+            m_address = address;
+            emit identityChanged();
+        }
+    } else if (propertyName == QStringLiteral("SerialNumber")) {
+        const QString serialNumber = value.toString();
+        if (m_serialNumber != serialNumber) {
+            m_serialNumber = serialNumber;
+            emit identityChanged();
+        }
+    } else if (propertyName == QStringLiteral("PlatformString")) {
+        const QString platformString = value.toString();
+        if (m_platformString != platformString) {
+            m_platformString = platformString;
+            emit platformStringChanged();
+        }
+    } else if (propertyName == QStringLiteral("HardwarePlatform")) {
+        const QString hardwarePlatform = value.toString();
+        if (m_hardwarePlatform != hardwarePlatform) {
+            m_hardwarePlatform = hardwarePlatform;
+            emit hardwarePlatformChanged();
+        }
+    } else if (propertyName == QStringLiteral("SoftwareVersion")) {
+        const QString softwareVersion = value.toString();
+        if (m_softwareVersion != softwareVersion) {
+            m_softwareVersion = softwareVersion;
+            emit softwareVersionChanged();
+        }
+    } else if (propertyName == QStringLiteral("LanguageVersion")) {
+        const QString languageVersion = value.toString();
+        if (m_languageVersion != languageVersion) {
+            m_languageVersion = languageVersion;
+            emit languageVersionChanged();
+        }
+    } else if (propertyName == QStringLiteral("Model")) {
+        const int model = value.toInt();
+        if (m_model != model) {
+            m_model = model;
+            emit modelChanged();
+        }
+    } else if (propertyName == QStringLiteral("Recovery")) {
+        const bool recovery = value.toBool();
+        if (m_recovery != recovery) {
+            m_recovery = recovery;
+            emit recoveryChanged();
+        }
+    } else if (propertyName == QStringLiteral("IsConnected")) {
+        const bool connected = value.toBool();
+        if (m_connected != connected) {
+            m_connected = connected;
+            emit connectedChanged();
+        }
+    }
 }
 
 void Pebble::dataChanged()
 {
     qDebug() << "data changed";
-    m_name = fetchProperty("Name").toString();
-    m_address = fetchProperty("Address").toString();
-    m_serialNumber = fetchProperty("SerialNumber").toString();
-    m_serialNumber = fetchProperty("SerialNumber").toString();
-    QString hardwarePlatform = fetchProperty("HardwarePlatform").toString();
-    if (hardwarePlatform != m_hardwarePlatform) {
-        m_hardwarePlatform = hardwarePlatform;
-        emit hardwarePlatformChanged();
+    foreach (const QString &propertyName, bootstrapProperties()) {
+        requestProperty(propertyName);
     }
-    m_softwareVersion = fetchProperty("SoftwareVersion").toString();
-    m_model = fetchProperty("Model").toInt();
-    m_recovery = fetchProperty("Recovery").toBool();
-    qDebug() << "model is" << m_model;
-    emit modelChanged();
+    refreshTimelineWindow();
+    refreshConnectionState();
+}
 
-    bool connected = fetchProperty("IsConnected").toBool();
-    if (connected != m_connected) {
-        m_connected = connected;
-        emit connectedChanged();
+void Pebble::refreshLanguageVersion()
+{
+    requestProperty(QStringLiteral("LanguageVersion"));
+}
+
+void Pebble::refreshConnectionState()
+{
+    const quint64 epoch = ++m_connectionEpoch;
+    m_pendingConnectionValues.clear();
+    m_pendingConnectionReplies.clear();
+    const QStringList properties = QStringList()
+        << QStringLiteral("ConnectionState")
+        << QStringLiteral("LastError");
+    foreach (const QString &propertyName, properties) {
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+            m_iface->asyncCall(propertyName), this);
+        watcher->setProperty("propertyName", propertyName);
+        watcher->setProperty("connectionEpoch", QVariant::fromValue<qulonglong>(epoch));
+        watcher->setProperty("serviceEpoch", QVariant::fromValue<qulonglong>(m_serviceEpoch));
+        connect(watcher, &QDBusPendingCallWatcher::finished,
+                this, &Pebble::connectionPropertyReplyFinished);
     }
-    int state = fetchProperty("ConnectionState").toInt();
-    QString error = fetchProperty("LastError").toString();
-    if (state != m_connectionState || error != m_lastError) {
+}
+
+void Pebble::connectionPropertyReplyFinished(QDBusPendingCallWatcher *watcher)
+{
+    const QDBusMessage reply = watcher->reply();
+    const QString propertyName = watcher->property("propertyName").toString();
+    const quint64 epoch = watcher->property("connectionEpoch").toULongLong();
+    const quint64 serviceEpoch = watcher->property("serviceEpoch").toULongLong();
+    watcher->deleteLater();
+    if (serviceEpoch != m_serviceEpoch || epoch != m_connectionEpoch) {
+        return;
+    }
+    if (reply.type() == QDBusMessage::ErrorMessage || reply.arguments().count() != 1) {
+        qWarning() << "Could not refresh" << propertyName << reply.errorMessage();
+        return;
+    }
+
+    m_pendingConnectionValues.insert(propertyName, reply.arguments().first());
+    m_pendingConnectionReplies.insert(propertyName);
+    if (!m_pendingConnectionReplies.contains(QStringLiteral("ConnectionState")) ||
+            !m_pendingConnectionReplies.contains(QStringLiteral("LastError"))) {
+        return;
+    }
+
+    const int state = m_pendingConnectionValues.value(QStringLiteral("ConnectionState")).toInt();
+    const QString error = m_pendingConnectionValues.value(QStringLiteral("LastError")).toString();
+    if (m_connectionState != state || m_lastError != error) {
         m_connectionState = state;
         m_lastError = error;
         emit connectionStateChanged();
     }
-    m_timelienWindowStart = -fetchProperty("timelineWindowStart").toInt();
-    m_timelienWindowFade = -fetchProperty("timelineWindowFade").toInt();
-    m_timelienWindowEnd = fetchProperty("timelineWindowEnd").toInt();
 }
 
 void Pebble::pebbleConnected()
 {
-
     dataChanged();
-    m_connected = true;
-    emit connectedChanged();
+    if (!m_connected) {
+        m_connected = true;
+        emit connectedChanged();
+    }
 
     refreshApps();
     refreshNotifications();
@@ -551,8 +2410,15 @@ void Pebble::pebbleConnected()
 
 void Pebble::pebbleDisconnected()
 {
-    m_connected = false;
-    emit connectedChanged();
+    ++m_propertyEpochs[QStringLiteral("IsConnected")];
+    ++m_connectionEpoch;
+    m_pendingConnectionValues.clear();
+    m_pendingConnectionReplies.clear();
+    if (m_connected) {
+        m_connected = false;
+        emit connectedChanged();
+    }
+    refreshConnectionState();
 }
 
 int Pebble::connectionState() const
@@ -567,139 +2433,373 @@ QString Pebble::lastError() const
 
 void Pebble::pebbleConnectionStateChanged(int state)
 {
-    if (state == m_connectionState) {
-        return;
-    }
-    m_connectionState = state;
-    m_lastError = fetchProperty("LastError").toString();
-    emit connectionStateChanged();
+    const quint64 epoch = ++m_connectionEpoch;
+    m_pendingConnectionValues.clear();
+    m_pendingConnectionReplies.clear();
+    m_pendingConnectionValues.insert(QStringLiteral("ConnectionState"), state);
+    m_pendingConnectionReplies.insert(QStringLiteral("ConnectionState"));
+
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+        m_iface->asyncCall(QStringLiteral("LastError")), this);
+    watcher->setProperty("propertyName", QStringLiteral("LastError"));
+    watcher->setProperty("connectionEpoch", QVariant::fromValue<qulonglong>(epoch));
+    watcher->setProperty("serviceEpoch", QVariant::fromValue<qulonglong>(m_serviceEpoch));
+    connect(watcher, &QDBusPendingCallWatcher::finished,
+            this, &Pebble::connectionPropertyReplyFinished);
 }
 
 void Pebble::notificationFilterChanged(const QString &sourceId, const QString &name, const QString &icon, const int enabled)
 {
+    ++m_notificationFiltersEpoch;
     m_notifications->insert(sourceId, name, icon, enabled);
-    emit notificationsFilterChanged();
+
+    QVariantMap filters = m_notificationFilters;
+    if (enabled < 0) {
+        filters.remove(sourceId);
+    } else {
+        QVariantMap entry = filters.value(sourceId).toMap();
+        entry.insert(QStringLiteral("name"), name);
+        entry.insert(QStringLiteral("icon"), icon);
+        entry.insert(QStringLiteral("enabled"), enabled);
+        filters.insert(sourceId, entry);
+    }
+    if (m_notificationFilters != filters) {
+        m_notificationFilters = filters;
+        emit notificationsFilterChanged();
+    }
+    refreshNotificationsAsync();
 }
 
 QVariantMap Pebble::notificationsFilter() const
 {
-    QVariantMap mapEntryVariant = fetchVarMap("NotificationsFilter");
-    QVariantMap ret;
-
-    foreach (const QString &sourceId, mapEntryVariant.keys()) {
-        const QDBusArgument &arg2 = qvariant_cast<QDBusArgument>(mapEntryVariant.value(sourceId));
-        QVariantMap notifEntry;
-        arg2 >> notifEntry;
-        ret.insert(sourceId, notifEntry);
-    }
-    return ret;
+    return m_notificationFilters;
 }
 
 void Pebble::refreshNotifications()
 {
-    QVariantMap mapEntryVariant = fetchVarMap("NotificationsFilter");
+    refreshNotificationsAsync();
+}
 
-    foreach (const QString &sourceId, mapEntryVariant.keys()) {
-        const QDBusArgument &arg2 = qvariant_cast<QDBusArgument>(mapEntryVariant.value(sourceId));
+void Pebble::refreshNotificationsAsync()
+{
+    const quint64 epoch = ++m_notificationFiltersEpoch;
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+        m_iface->asyncCall(QStringLiteral("NotificationsFilter")), this);
+    watcher->setProperty("notificationFiltersEpoch", QVariant::fromValue<qulonglong>(epoch));
+    watcher->setProperty("serviceEpoch", QVariant::fromValue<qulonglong>(m_serviceEpoch));
+    connect(watcher, &QDBusPendingCallWatcher::finished,
+            this, &Pebble::notificationFiltersReplyFinished);
+}
+
+void Pebble::notificationFiltersReplyFinished(QDBusPendingCallWatcher *watcher)
+{
+    QDBusPendingReply<QVariantMap> reply = *watcher;
+    const quint64 epoch = watcher->property("notificationFiltersEpoch").toULongLong();
+    const quint64 serviceEpoch = watcher->property("serviceEpoch").toULongLong();
+    watcher->deleteLater();
+    if (serviceEpoch != m_serviceEpoch || epoch != m_notificationFiltersEpoch) {
+        return;
+    }
+    if (reply.isError()) {
+        qWarning() << "Could not refresh notification filters:" << reply.error().message();
+        return;
+    }
+    applyNotificationFilters(reply.value());
+}
+
+void Pebble::applyNotificationFilters(const QVariantMap &filters)
+{
+    QVariantMap parsedFilters;
+    foreach (const QString &sourceId, filters.keys()) {
         QVariantMap notifEntry;
-        arg2 >> notifEntry;
+        if (!decodeVariantMap(filters.value(sourceId), &notifEntry)) {
+            qWarning() << "Could not decode notification filter" << sourceId;
+            return;
+        }
+        parsedFilters.insert(sourceId, notifEntry);
+    }
+
+    foreach (const QString &sourceId, m_notificationFilters.keys()) {
+        if (!parsedFilters.contains(sourceId)) {
+            m_notifications->insert(sourceId, QString(), QString(), -1);
+        }
+    }
+    foreach (const QString &sourceId, parsedFilters.keys()) {
+        const QVariantMap notifEntry = parsedFilters.value(sourceId).toMap();
         m_notifications->insert(sourceId, notifEntry.value("name").toString(), notifEntry.value("icon").toString(), notifEntry.value("enabled").toInt());
         m_notifications->setAppearance(sourceId, notifEntry.value("colorName").toString(), notifEntry.value("iconCode").toString());
+    }
+
+    if (m_notificationFilters != parsedFilters) {
+        m_notificationFilters = parsedFilters;
+        emit notificationsFilterChanged();
     }
 }
 
 void Pebble::setNotificationFilter(const QString &sourceId, int enabled)
 {
-    m_iface->call("SetNotificationFilter", sourceId, enabled);
-    emit notificationsFilterChanged();
+    sendNotificationFilterCommand(
+        QStringLiteral("SetNotificationFilter"), sourceId,
+        QVariantList() << sourceId << enabled);
 }
 
 void Pebble::forgetNotificationFilter(const QString &sourceId)
 {
-    m_iface->call("ForgetNotificationFilter", sourceId);
-    emit notificationsFilterChanged();
+    sendNotificationFilterCommand(
+        QStringLiteral("ForgetNotificationFilter"), sourceId,
+        QVariantList() << sourceId);
+}
+
+void Pebble::sendNotificationFilterCommand(const QString &method,
+                                           const QString &sourceId,
+                                           const QVariantList &arguments)
+{
+    const quint64 commandEpoch = ++m_notificationFilterCommandEpochs[sourceId];
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+        m_iface->asyncCallWithArgumentList(method, arguments), this);
+    watcher->setProperty("method", method);
+    watcher->setProperty("sourceId", sourceId);
+    watcher->setProperty("serviceEpoch",
+                         QVariant::fromValue<qulonglong>(m_serviceEpoch));
+    watcher->setProperty("commandEpoch",
+                         QVariant::fromValue<qulonglong>(commandEpoch));
+    connect(watcher, &QDBusPendingCallWatcher::finished,
+            this, &Pebble::notificationFilterCommandReplyFinished);
+}
+
+void Pebble::notificationFilterCommandReplyFinished(
+    QDBusPendingCallWatcher *watcher)
+{
+    const QDBusMessage reply = watcher->reply();
+    const QString method = watcher->property("method").toString();
+    const QString sourceId = watcher->property("sourceId").toString();
+    const quint64 serviceEpoch = watcher->property("serviceEpoch").toULongLong();
+    const quint64 commandEpoch = watcher->property("commandEpoch").toULongLong();
+    watcher->deleteLater();
+    if (serviceEpoch != m_serviceEpoch
+            || commandEpoch != m_notificationFilterCommandEpochs.value(sourceId)) {
+        return;
+    }
+    if (reply.type() == QDBusMessage::ErrorMessage) {
+        qWarning() << method << "failed for" << sourceId << reply.errorMessage();
+        refreshNotificationsAsync();
+    }
 }
 
 void Pebble::setNotificationAppColor(const QString &sourceId, const QString &colorName)
 {
-    m_iface->call("SetNotificationAppColor", sourceId, colorName);
-    // Optimistic: the daemon applies async and emits no signal. Preserve the current icon.
-    const QVariantMap entry = notificationsFilter().value(sourceId).toMap();
-    m_notifications->setAppearance(sourceId, colorName, entry.value("iconCode").toString());
+    ++m_notificationFiltersEpoch;
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+        m_iface->asyncCall(QStringLiteral("SetNotificationAppColor"), sourceId, colorName), this);
+    watcher->setProperty("serviceEpoch", QVariant::fromValue<qulonglong>(m_serviceEpoch));
+    connect(watcher, &QDBusPendingCallWatcher::finished,
+            this, &Pebble::notificationAppearanceReplyFinished);
+    m_notifications->setColorName(sourceId, colorName);
 }
 
 void Pebble::setNotificationAppIcon(const QString &sourceId, const QString &iconCode)
 {
-    m_iface->call("SetNotificationAppIcon", sourceId, iconCode);
-    const QVariantMap entry = notificationsFilter().value(sourceId).toMap();
-    m_notifications->setAppearance(sourceId, entry.value("colorName").toString(), iconCode);
+    ++m_notificationFiltersEpoch;
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+        m_iface->asyncCall(QStringLiteral("SetNotificationAppIcon"), sourceId, iconCode), this);
+    watcher->setProperty("serviceEpoch", QVariant::fromValue<qulonglong>(m_serviceEpoch));
+    connect(watcher, &QDBusPendingCallWatcher::finished,
+            this, &Pebble::notificationAppearanceReplyFinished);
+    m_notifications->setIconCode(sourceId, iconCode);
 }
 
-// Demarshal an 'av' of a{sv} entries into a QVariantList of QVariantMap (see refreshApps).
-static QVariantList fetchVariantList(QDBusInterface *iface, const QString &method)
+void Pebble::notificationAppearanceReplyFinished(QDBusPendingCallWatcher *watcher)
 {
-    QVariantList out;
-    QDBusMessage m = iface->call(method);
-    if (m.type() == QDBusMessage::ErrorMessage || m.arguments().isEmpty()) {
-        qWarning() << "Could not fetch" << method << m.errorMessage();
-        return out;
+    QDBusPendingReply<> reply = *watcher;
+    const quint64 serviceEpoch = watcher->property("serviceEpoch").toULongLong();
+    watcher->deleteLater();
+    if (serviceEpoch != m_serviceEpoch) {
+        return;
     }
-    const QDBusArgument &arg = m.arguments().first().value<QDBusArgument>();
-    arg.beginArray();
-    while (!arg.atEnd()) {
-        QVariant entryVariant;
-        arg >> entryVariant;
-        QDBusArgument entry = entryVariant.value<QDBusArgument>();
-        QVariantMap map;
-        entry >> map;
-        out.append(map);
+    if (reply.isError()) {
+        qWarning() << "Could not update notification appearance:" << reply.error().message();
     }
-    arg.endArray();
-    return out;
+    // The compatibility method starts persistence asynchronously. Re-read even after a successful
+    // method reply so a rejected/unknown update rolls back the optimistic model value; a later
+    // NotificationFilterChanged signal converges a delayed successful write.
+    refreshNotificationsAsync();
 }
 
-QVariantList Pebble::timelineColors()
+QVariantList Pebble::timelineColors() const
 {
-    return fetchVariantList(m_iface, "TimelineColors");
+    return m_timelineColors;
 }
 
-QVariantList Pebble::timelineIcons()
+QVariantList Pebble::timelineIcons() const
 {
-    return fetchVariantList(m_iface, "TimelineIcons");
+    return m_timelineIcons;
+}
+
+bool Pebble::timelineColorsReady() const
+{
+    return m_timelineColorsReady;
+}
+
+bool Pebble::timelineIconsReady() const
+{
+    return m_timelineIconsReady;
+}
+
+void Pebble::refreshTimelineColors()
+{
+    m_timelineColorsRequested = true;
+    m_timelineColorsFailures = 0;
+    setTimelinePaletteReady(QString::fromLatin1(TIMELINE_COLORS), false);
+    refreshTimelinePalette(QString::fromLatin1(TIMELINE_COLORS));
+}
+
+void Pebble::refreshTimelineIcons()
+{
+    m_timelineIconsRequested = true;
+    m_timelineIconsFailures = 0;
+    setTimelinePaletteReady(QString::fromLatin1(TIMELINE_ICONS), false);
+    refreshTimelinePalette(QString::fromLatin1(TIMELINE_ICONS));
+}
+
+void Pebble::refreshTimelinePalette(const QString &method)
+{
+    bool *inFlight = 0;
+    quint64 *epoch = 0;
+    if (method == QString::fromLatin1(TIMELINE_COLORS)) {
+        inFlight = &m_timelineColorsInFlight;
+        epoch = &m_timelineColorsEpoch;
+    } else if (method == QString::fromLatin1(TIMELINE_ICONS)) {
+        inFlight = &m_timelineIconsInFlight;
+        epoch = &m_timelineIconsEpoch;
+    } else {
+        return;
+    }
+    if (*inFlight) {
+        return;
+    }
+
+    *inFlight = true;
+    const quint64 requestEpoch = ++(*epoch);
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+        m_iface->asyncCall(method), this);
+    watcher->setProperty("method", method);
+    watcher->setProperty("serviceEpoch",
+                         QVariant::fromValue<qulonglong>(m_serviceEpoch));
+    watcher->setProperty("requestEpoch",
+                         QVariant::fromValue<qulonglong>(requestEpoch));
+    connect(watcher, &QDBusPendingCallWatcher::finished,
+            this, &Pebble::timelinePaletteReplyFinished);
+}
+
+void Pebble::timelinePaletteReplyFinished(QDBusPendingCallWatcher *watcher)
+{
+    const QDBusMessage reply = watcher->reply();
+    const QString method = watcher->property("method").toString();
+    const quint64 serviceEpoch = watcher->property("serviceEpoch").toULongLong();
+    const quint64 requestEpoch = watcher->property("requestEpoch").toULongLong();
+    watcher->deleteLater();
+
+    bool *inFlight = 0;
+    int *failures = 0;
+    quint64 currentEpoch = 0;
+    if (method == QString::fromLatin1(TIMELINE_COLORS)) {
+        inFlight = &m_timelineColorsInFlight;
+        failures = &m_timelineColorsFailures;
+        currentEpoch = m_timelineColorsEpoch;
+    } else if (method == QString::fromLatin1(TIMELINE_ICONS)) {
+        inFlight = &m_timelineIconsInFlight;
+        failures = &m_timelineIconsFailures;
+        currentEpoch = m_timelineIconsEpoch;
+    } else {
+        return;
+    }
+    if (serviceEpoch != m_serviceEpoch || requestEpoch != currentEpoch) {
+        return;
+    }
+    *inFlight = false;
+
+    QVariantList values;
+    if (!decodeVariantMapList(reply, &values)
+            || !validateTimelinePalette(method, values)) {
+        qWarning() << "Could not refresh" << method << reply.errorMessage();
+        ++(*failures);
+        if (*failures == 1) {
+            const quint64 retryServiceEpoch = m_serviceEpoch;
+            QTimer::singleShot(250, this, [this, method, retryServiceEpoch]() {
+                if (retryServiceEpoch == m_serviceEpoch) {
+                    refreshTimelinePalette(method);
+                }
+            });
+        } else {
+            // A completed empty snapshot is preferable to an indefinitely spinning picker. A
+            // later page visit explicitly refreshes again, while any last-good cache is retained.
+            setTimelinePaletteReady(method, true);
+        }
+        return;
+    }
+
+    *failures = 0;
+
+    if (method == QString::fromLatin1(TIMELINE_COLORS)) {
+        if (m_timelineColors != values) {
+            m_timelineColors = values;
+            emit timelineColorsChanged();
+        }
+    } else if (m_timelineIcons != values) {
+        m_timelineIcons = values;
+        emit timelineIconsChanged();
+    }
+    setTimelinePaletteReady(method, true);
+}
+
+void Pebble::setTimelinePaletteReady(const QString &method, bool ready)
+{
+    if (method == QString::fromLatin1(TIMELINE_COLORS)) {
+        if (m_timelineColorsReady == ready) {
+            return;
+        }
+        m_timelineColorsReady = ready;
+        emit timelineColorsReadyChanged();
+    } else if (method == QString::fromLatin1(TIMELINE_ICONS)) {
+        if (m_timelineIconsReady == ready) {
+            return;
+        }
+        m_timelineIconsReady = ready;
+        emit timelineIconsReadyChanged();
+    }
 }
 
 void Pebble::refreshApps()
 {
-    QDBusMessage m = m_iface->call("InstalledApps");
-    if (m.type() == QDBusMessage::ErrorMessage || m.arguments().count() == 0) {
-        qWarning() << "Could not fetch installed apps" << m.errorMessage();
+    const quint64 epoch = ++m_appsEpoch;
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+        m_iface->asyncCall(QStringLiteral("InstalledApps")), this);
+    watcher->setProperty("appsEpoch", QVariant::fromValue<qulonglong>(epoch));
+    watcher->setProperty("serviceEpoch", QVariant::fromValue<qulonglong>(m_serviceEpoch));
+    connect(watcher, &QDBusPendingCallWatcher::finished,
+            this, &Pebble::appsReplyFinished);
+}
+
+void Pebble::appsReplyFinished(QDBusPendingCallWatcher *watcher)
+{
+    const QDBusMessage reply = watcher->reply();
+    const quint64 epoch = watcher->property("appsEpoch").toULongLong();
+    const quint64 serviceEpoch = watcher->property("serviceEpoch").toULongLong();
+    watcher->deleteLater();
+    if (serviceEpoch != m_serviceEpoch || epoch != m_appsEpoch) {
         return;
     }
 
-    m_installedApps->clear();
-    m_installedWatchfaces->clear();
-
-    const QDBusArgument &arg = m.arguments().first().value<QDBusArgument>();
-
     QVariantList appList;
-
-    arg.beginArray();
-    while (!arg.atEnd()) {
-        QVariant mapEntryVariant;
-        arg >> mapEntryVariant;
-
-        QDBusArgument mapEntry = mapEntryVariant.value<QDBusArgument>();
-        QVariantMap appMap;
-        mapEntry >> appMap;
-        appList.append(appMap);
-
+    if (!decodeVariantMapList(reply, &appList)) {
+        qWarning() << "Could not fetch installed apps" << reply.errorMessage();
+        return;
     }
-    arg.endArray();
 
-
-    qDebug() << "have apps" << appList;
+    QList<AppItem*> applications;
+    QList<AppItem*> watchfaces;
     foreach (const QVariant &v, appList) {
-        AppItem *app = new AppItem(this);
+        AppItem *app = new AppItem();
         app->setStoreId(v.toMap().value("storeId").toString());
         app->setUuid(v.toMap().value("uuid").toString());
         app->setName(v.toMap().value("name").toString());
@@ -711,15 +2811,26 @@ void Pebble::refreshApps()
         app->setIsSystemApp(v.toMap().value("systemApp").toBool());
 
         if (app->isWatchFace()) {
-            m_installedWatchfaces->insert(app);
+            watchfaces.append(app);
         } else {
-            m_installedApps->insert(app);
+            applications.append(app);
         }
+    }
+
+    qDebug() << "have apps" << appList;
+    m_installedApps->clear();
+    m_installedWatchfaces->clear();
+    foreach (AppItem *app, applications) {
+        m_installedApps->insert(app);
+    }
+    foreach (AppItem *watchface, watchfaces) {
+        m_installedWatchfaces->insert(watchface);
     }
 }
 
 void Pebble::appsSorted()
 {
+    ++m_appsEpoch;
     QStringList newList;
     for (int i = 0; i < m_installedApps->rowCount(); i++) {
         newList << m_installedApps->get(i)->uuid();
@@ -727,13 +2838,40 @@ void Pebble::appsSorted()
     for (int i = 0; i < m_installedWatchfaces->rowCount(); i++) {
         newList << m_installedWatchfaces->get(i)->uuid();
     }
-    m_iface->call("SetAppOrder", newList);
+    sendVoidCommand(QStringLiteral("SetAppOrder"), QVariantList() << newList);
 }
 
 void Pebble::refreshScreenshots()
 {
+    const quint64 epoch = ++m_screenshotsEpoch;
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+        m_iface->asyncCall(QStringLiteral("Screenshots")), this);
+    watcher->setProperty("screenshotsEpoch", QVariant::fromValue<qulonglong>(epoch));
+    watcher->setProperty("serviceEpoch", QVariant::fromValue<qulonglong>(m_serviceEpoch));
+    connect(watcher, &QDBusPendingCallWatcher::finished,
+            this, &Pebble::screenshotsReplyFinished);
+}
+
+void Pebble::screenshotsReplyFinished(QDBusPendingCallWatcher *watcher)
+{
+    const QDBusMessage reply = watcher->reply();
+    const quint64 epoch = watcher->property("screenshotsEpoch").toULongLong();
+    const quint64 serviceEpoch = watcher->property("serviceEpoch").toULongLong();
+    watcher->deleteLater();
+    if (serviceEpoch != m_serviceEpoch || epoch != m_screenshotsEpoch) {
+        return;
+    }
+    if (reply.type() == QDBusMessage::ErrorMessage || reply.arguments().count() != 1) {
+        qWarning() << "Could not refresh screenshots" << reply.errorMessage();
+        return;
+    }
+
+    QStringList screenshots;
+    if (!decodeStringList(reply.arguments().first(), &screenshots)) {
+        qWarning() << "Could not decode screenshots";
+        return;
+    }
     m_screenshotModel->clear();
-    QStringList screenshots = fetchProperty("Screenshots").toStringList();
     foreach (const QString &filename, screenshots) {
         m_screenshotModel->insert(filename);
     }
@@ -742,53 +2880,140 @@ void Pebble::refreshScreenshots()
 void Pebble::screenshotAdded(const QString &filename)
 {
     qDebug() << "screenshot added" << filename;
+    ++m_screenshotsEpoch;
     m_screenshotModel->insert(filename);
+    refreshScreenshots();
 }
 
 void Pebble::screenshotRemoved(const QString &filename)
 {
+    ++m_screenshotsEpoch;
     m_screenshotModel->remove(filename);
+    refreshScreenshots();
 }
 
 void Pebble::refreshFirmwareUpdateInfo()
 {
-    bool firmwareUpgradeAvailable = fetchProperty("FirmwareUpgradeAvailable").toBool();
-    if (firmwareUpgradeAvailable && !m_firmwareUpgradeAvailable) {
-        m_firmwareUpgradeAvailable = true;
-        m_firmwareReleaseNotes = fetchProperty("FirmwareReleaseNotes").toString();
-        m_candidateVersion = fetchProperty("CandidateFirmwareVersion").toString();
-        qDebug() << "firmare upgrade" << m_firmwareUpgradeAvailable << m_firmwareReleaseNotes << m_candidateVersion;
-        emit firmwareUpgradeAvailableChanged();
-    } else if (!firmwareUpgradeAvailable && m_firmwareUpgradeAvailable) {
-        m_firmwareUpgradeAvailable = false;
-        m_firmwareReleaseNotes.clear();;
-        m_candidateVersion.clear();
+    const quint64 epoch = ++m_firmwareEpoch;
+    m_pendingFirmwareValues.clear();
+    m_pendingFirmwareReplies.clear();
+    foreach (const QString &propertyName, firmwareProperties()) {
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+            m_iface->asyncCall(propertyName), this);
+        watcher->setProperty("propertyName", propertyName);
+        watcher->setProperty("firmwareEpoch", QVariant::fromValue<qulonglong>(epoch));
+        watcher->setProperty("serviceEpoch", QVariant::fromValue<qulonglong>(m_serviceEpoch));
+        connect(watcher, &QDBusPendingCallWatcher::finished,
+                this, &Pebble::firmwarePropertyReplyFinished);
+    }
+}
+
+void Pebble::firmwarePropertyReplyFinished(QDBusPendingCallWatcher *watcher)
+{
+    const QDBusMessage reply = watcher->reply();
+    const QString propertyName = watcher->property("propertyName").toString();
+    const quint64 epoch = watcher->property("firmwareEpoch").toULongLong();
+    const quint64 serviceEpoch = watcher->property("serviceEpoch").toULongLong();
+    watcher->deleteLater();
+    if (serviceEpoch != m_serviceEpoch || epoch != m_firmwareEpoch) {
+        return;
+    }
+    if (reply.type() == QDBusMessage::ErrorMessage || reply.arguments().count() != 1) {
+        qWarning() << "Could not refresh" << propertyName << reply.errorMessage();
+        return;
+    }
+
+    m_pendingFirmwareValues.insert(propertyName, reply.arguments().first());
+    m_pendingFirmwareReplies.insert(propertyName);
+    foreach (const QString &requiredProperty, firmwareProperties()) {
+        if (!m_pendingFirmwareReplies.contains(requiredProperty)) {
+            return;
+        }
+    }
+
+    const bool available = m_pendingFirmwareValues.value(
+        QStringLiteral("FirmwareUpgradeAvailable")).toBool();
+    const QString releaseNotes = available
+        ? m_pendingFirmwareValues.value(QStringLiteral("FirmwareReleaseNotes")).toString()
+        : QString();
+    const QString candidateVersion = available
+        ? m_pendingFirmwareValues.value(QStringLiteral("CandidateFirmwareVersion")).toString()
+        : QString();
+    const bool upgrading = m_pendingFirmwareValues.value(
+        QStringLiteral("UpgradingFirmware")).toBool();
+
+    if (m_firmwareUpgradeAvailable != available ||
+            m_firmwareReleaseNotes != releaseNotes ||
+            m_candidateVersion != candidateVersion) {
+        m_firmwareUpgradeAvailable = available;
+        m_firmwareReleaseNotes = releaseNotes;
+        m_candidateVersion = candidateVersion;
         emit firmwareUpgradeAvailableChanged();
     }
-    bool upgradingFirmware = fetchProperty("UpgradingFirmware").toBool();
-    if (m_upgradingFirmware != upgradingFirmware) {
-        m_upgradingFirmware = upgradingFirmware;
+    if (m_upgradingFirmware != upgrading) {
+        m_upgradingFirmware = upgrading;
         emit upgradingFirmwareChanged();
     }
 }
 
 void Pebble::requestScreenshot()
 {
-    m_iface->call("RequestScreenshot");
+    sendVoidCommand(QStringLiteral("RequestScreenshot"));
 }
 
 void Pebble::removeScreenshot(const QString &filename)
 {
     qDebug() << "removing screenshot" << filename;
-    m_iface->call("RemoveScreenshot", filename);
+    sendVoidCommand(QStringLiteral("RemoveScreenshot"), QVariantList() << filename);
 }
 
 void Pebble::performFirmwareUpgrade()
 {
-    m_iface->call("PerformFirmwareUpgrade");
+    sendVoidCommand(QStringLiteral("PerformFirmwareUpgrade"));
 }
 
 void Pebble::dumpLogs(const QString &filename)
 {
-    m_iface->call("DumpLogs", filename);
+    if (m_logDumpPending) {
+        return;
+    }
+    m_logDumpPending = true;
+    const quint64 logDumpEpoch = ++m_logDumpEpoch;
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+        m_iface->asyncCallWithArgumentList(QStringLiteral("DumpLogs"),
+                                           QVariantList() << filename), this);
+    watcher->setProperty("serviceEpoch",
+                         QVariant::fromValue<qulonglong>(m_serviceEpoch));
+    watcher->setProperty("logDumpEpoch",
+                         QVariant::fromValue<qulonglong>(logDumpEpoch));
+    connect(watcher, &QDBusPendingCallWatcher::finished,
+            this, &Pebble::dumpLogsReplyFinished);
+}
+
+void Pebble::dumpLogsReplyFinished(QDBusPendingCallWatcher *watcher)
+{
+    const QDBusMessage reply = watcher->reply();
+    const quint64 serviceEpoch = watcher->property("serviceEpoch").toULongLong();
+    const quint64 logDumpEpoch = watcher->property("logDumpEpoch").toULongLong();
+    watcher->deleteLater();
+    if (serviceEpoch != m_serviceEpoch || logDumpEpoch != m_logDumpEpoch ||
+            !m_logDumpPending) {
+        return;
+    }
+    if (reply.type() == QDBusMessage::ErrorMessage) {
+        qWarning() << "DumpLogs failed:" << reply.errorMessage();
+        m_logDumpPending = false;
+        ++m_logDumpEpoch;
+        emit logsDumped(false);
+    }
+}
+
+void Pebble::logsDumpedFromService(bool success)
+{
+    if (!m_logDumpPending) {
+        return;
+    }
+    m_logDumpPending = false;
+    ++m_logDumpEpoch;
+    emit logsDumped(success);
 }

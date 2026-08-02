@@ -4,8 +4,19 @@ import QtGraphicalEffects 1.0
 
 Page {
     id: root
+
     property var pebble: null
     allowedOrientations: Orientation.All
+
+    function connectionStatusText() {
+        switch (root.pebble ? root.pebble.connectionState : 0) {
+        case 1: return qsTr("Connecting…")
+        case 2: return qsTr("Negotiating…")
+        case 3: return qsTr("Connected")
+        case 4: return qsTr("Connection failed")
+        default: return qsTr("Disconnected")
+        }
+    }
 
     //Creating the menu list this way to allow the text field to be translatable (http://askubuntu.com/a/476331)
     ListModel {
@@ -45,28 +56,37 @@ Page {
             PageHeader {
                 id: hdr
                 title: pebble.name
+                description: modelModel.getOrFallback(root.pebble.model).modelName
             }
             Grid {
                 id: watchMenu
-                width: parent.width
+
+                property real cellWidth: (width - spacing * (columns - 1)) / columns
+
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: parent.width - 2 * Theme.horizontalPageMargin
                 columns: parent.width > parent.height ? 2 : 1
-                spacing: Theme.paddingSmall
+                spacing: Theme.paddingLarge
+
                 Row {
-                    anchors.margins: Theme.paddingSmall
-                    spacing: Theme.paddingSmall
+                    spacing: Theme.paddingLarge
                     height: watchImage.height
-                    width: parent.width/parent.columns - Theme.paddingSmall
+                    width: watchMenu.cellWidth
+
                     Item {
                         width: watchImage.width
                         height: watchImage.height
                         MouseArea {
                             width: watchImage.width
                             height: watchImage.height
+
+                            property var watchModel: modelModel.getOrFallback(root.pebble.model)
+
                             Image {
                                 id: watchImage
                                 fillMode: Image.PreserveAspectFit
                                 anchors.centerIn: parent
-                                source: modelModel.get(root.pebble.model).image
+                                source: parent.watchModel.image
                                 height: (sourceSize.height ? sourceSize.height : 350)
                                 width: (sourceSize.width ? sourceSize.width : 251)
                             }
@@ -76,10 +96,13 @@ Page {
                                 anchors.centerIn: parent
                                 source: "file://" + root.pebble.screenshots.latestScreenshot
                                 fillMode: Image.PreserveAspectFit
+                                width: parent.watchModel.screenWidth
+                                height: parent.watchModel.screenHeight
                                 visible: false
                             }
                             Component.onCompleted: {
-                                if (!root.pebble.screenshots.latestScreenshot) {
+                                if (root.pebble.connected
+                                        && !root.pebble.screenshots.latestScreenshot) {
                                     root.pebble.requestScreenshot()
                                 }
                             }
@@ -98,12 +121,12 @@ Page {
                                 anchors.centerIn: parent
                                 color: "transparent"
                                 visible: false
-                                property bool isRound: modelModel.get(root.pebble.model).shape === "round"
+                                property bool isRound: parent.watchModel.shape === "round"
                                 Rectangle {
                                     color: "blue"
                                     anchors.centerIn: parent
                                     height: image.height
-                                    width: parent.isRound ? height : height * 0.9
+                                    width: parent.isRound ? height : parent.width
                                     radius: parent.isRound ? height / 2 : 0
                                 }
                             }
@@ -116,7 +139,8 @@ Page {
                     Column {
                         spacing: Theme.paddingSmall
                         anchors.verticalCenter: parent.verticalCenter
-                        width: parent.width-watchImage.width
+                        width: parent.width - watchImage.width - parent.spacing
+
                         Image {
                             height: Theme.iconSizeSmall
                             width: height
@@ -126,7 +150,18 @@ Page {
                         }
                         Label {
                             anchors.horizontalCenter: parent.horizontalCenter
-                            text: root.pebble.connected ? qsTr("Connected") : qsTr("Disconnected")
+                            text: root.connectionStatusText()
+                        }
+                        Label {
+                            width: parent.width
+                            text: root.pebble.softwareVersion
+                                  ? qsTr("Firmware %1").arg(root.pebble.softwareVersion)
+                                  : ""
+                            visible: text.length > 0
+                            color: Theme.secondaryColor
+                            font.pixelSize: Theme.fontSizeSmall
+                            horizontalAlignment: Text.AlignHCenter
+                            wrapMode: Text.Wrap
                         }
                         Image {
                             source: "image://theme/icon-lock-application-update"
@@ -164,25 +199,29 @@ Page {
                         Image {
                             anchors.horizontalCenter: parent.horizontalCenter
                             source: "image://theme/icon-s-developer"
-                            visible: root.pebble.devConnServerRunning
+                            visible: root.pebble.developerSettingsReady
+                                     && root.pebble.devConnServerRunning
                         }
                         Label {
                             anchors.horizontalCenter: parent.horizontalCenter
                             text: qsTr("Running")
-                            visible: root.pebble.devConnServerRunning
+                            visible: root.pebble.developerSettingsReady
+                                     && root.pebble.devConnServerRunning
                         }
                     }
                 }
 
                 Column {
-                    width: parent.width / parent.columns - Theme.paddingSmall
+                    width: watchMenu.cellWidth
                     spacing: menuRepeater.count > 0 ? 0 : Theme.paddingSmall
+
                     Label {
                         text: qsTr("Your Pebble smartwatch is disconnected. Please make sure it is powered on and within range.")
                         width: parent.width
                         anchors.horizontalCenter: parent.horizontalCenter
                         wrapMode: Text.WordWrap
-                        visible: !root.pebble.connected
+                        visible: root.pebble && (root.pebble.connectionState === 0
+                                                 || root.pebble.connectionState === 4)
                         font.pixelSize: Theme.fontSizeLarge
                         horizontalAlignment: Text.AlignHCenter
                     }
@@ -209,17 +248,29 @@ Page {
                         model: root.pebble && root.pebble.connected && !root.pebble.recovery && !root.pebble.upgradingFirmware ? mainMenuModel : null
                         delegate: ListItem {
                             contentHeight: Theme.iconSizeMedium + Theme.paddingSmall*2
+
                             Row {
                                 height: Theme.iconSizeMedium
+                                anchors.left: parent.left
+                                anchors.right: parent.right
+                                anchors.leftMargin: Theme.paddingMedium
+                                anchors.rightMargin: Theme.paddingMedium
                                 anchors.verticalCenter: parent.verticalCenter
-                                spacing: Theme.paddingSmall
+                                spacing: Theme.paddingMedium
+
                                 Image {
+                                    id: menuIcon
+
+                                    width: Theme.iconSizeMedium
+                                    height: width
                                     source: "image://theme/" + model.icon
                                     anchors.verticalCenter: parent.verticalCenter
                                 }
                                 Label {
+                                    width: parent.width - menuIcon.width - parent.spacing
                                     text: model.text
                                     anchors.verticalCenter: parent.verticalCenter
+                                    truncationMode: TruncationMode.Fade
                                 }
                             }
 
@@ -252,6 +303,11 @@ Page {
     }
     Connections {
         target: root.pebble
+        onConnectedChanged: {
+            if (root.pebble.connected && !root.pebble.screenshots.latestScreenshot) {
+                root.pebble.requestScreenshot()
+            }
+        }
         onFirmwareUpgradeAvailableChanged: {
             populateMainMenu()
         }
@@ -259,6 +315,9 @@ Page {
 
     Component.onCompleted: {
         populateMainMenu();
+        if (root.pebble) {
+            root.pebble.refreshDeveloperSettings()
+        }
     }
 
     function populateMainMenu() {

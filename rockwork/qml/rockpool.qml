@@ -13,17 +13,64 @@ ApplicationWindow {
     initialPage: Qt.resolvedUrl("pages/LoadingPage.qml")
     cover: Qt.resolvedUrl("cover/CoverPage.qml")
     property int curPebble: -1
+    property int knownPebbleCount: 0
+    property bool waitingForPebbleIdentity: false
+    property string pendingPairAddress: ""
     property var sysProfiles: [ ]
 
     ServiceController {
         id: serviceController
-        Component.onCompleted: initService()
+
+        property bool initialStateHandled
+
+        onReadyChanged: {
+            if (ready) {
+                rockPool.initService()
+            } else {
+                initialStateHandled = false
+            }
+        }
+        Component.onCompleted: rockPool.initService()
+    }
+
+    Timer {
+        id: stackReloadTimer
+
+        interval: 0
+        repeat: false
+        onTriggered: rockPool.loadStack()
     }
 
     Pebbles {
         id: pebbles
-        onCountChanged: loadStack()
-        onConnectedToServiceChanged: loadStack();
+
+        // A newly inserted Pebble receives its identity asynchronously. Do
+        // not replace PairWatchPage until that identity is available, so it
+        // can retire only the matching pending connection.
+        onCountChanged: {
+            if (pebbles.count < rockPool.knownPebbleCount) {
+                stackReloadTimer.restart()
+            } else if (pebbles.count > rockPool.knownPebbleCount) {
+                rockPool.waitingForPebbleIdentity = true
+            }
+            rockPool.knownPebbleCount = pebbles.count
+        }
+        // The zero-delay timer lets the page-local signal handler clear its
+        // pending address before loadStack() destroys the active page.
+        onPebbleIdentityAvailable: {
+            if (rockPool.waitingForPebbleIdentity
+                    && (rockPool.pendingPairAddress === ""
+                        || address.toLowerCase()
+                           === rockPool.pendingPairAddress.toLowerCase())) {
+                rockPool.waitingForPebbleIdentity = false
+                stackReloadTimer.restart()
+            }
+        }
+        onConnectedToServiceChanged: {
+            if (!pebbles.connectedToService || pebbles.count === 0) {
+                stackReloadTimer.restart()
+            }
+        }
     }
     DBusInterface {
         id: profiled
@@ -39,6 +86,10 @@ ApplicationWindow {
         }
     }
     function initService() {
+        if (!serviceController.ready || serviceController.initialStateHandled) {
+            return
+        }
+        serviceController.initialStateHandled = true
         if (!pebbles.connectedToService && !serviceController.serviceRunning) {
             console.log("Service not running. Starting now.");
             serviceController.startService();
@@ -54,6 +105,9 @@ ApplicationWindow {
     function restartService() {
         console.log("Request to restart service");
         serviceController.restartService()
+    }
+    function connectWatch(address) {
+        pebbles.connectWatch(address)
     }
 
     function loadStack() {

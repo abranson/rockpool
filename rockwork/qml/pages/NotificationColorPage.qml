@@ -11,9 +11,14 @@ Page {
     property string appName: ""
     property string currentColor: ""
 
-    property var colors: []
+    property var colors: root.pebble && root.pebble.timelineColorsReady
+                         ? root.pebble.timelineColors : []
 
-    Component.onCompleted: colors = pebble.timelineColors()
+    Component.onCompleted: {
+        if (root.pebble) {
+            root.pebble.refreshTimelineColors()
+        }
+    }
 
     function apply(colorName) {
         root.pebble.setNotificationAppColor(root.sourceId, colorName);
@@ -64,5 +69,10 @@ Page {
         }
 
         VerticalScrollDecorator {}
+    }
+
+    BusyIndicator {
+        anchors.centerIn: parent
+        running: !root.pebble || !root.pebble.timelineColorsReady
     }
 }
