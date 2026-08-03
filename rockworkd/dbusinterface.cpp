@@ -28,6 +28,7 @@ DBusPebble::DBusPebble(Pebble *pebble, QObject *parent):
     connect(pebble, &Pebble::oauthTokenChanged, this, &DBusPebble::oauthTokenChanged);
     connect(pebble, &Pebble::voiceSessionSetup, this, &DBusPebble::voiceSessionSetup);
     connect(pebble, &Pebble::voiceSessionStream, this, &DBusPebble::voiceSessionStream);
+    connect(pebble, &Pebble::voiceSessionFrame, this, &DBusPebble::voiceSessionFrame);
     connect(pebble, &Pebble::voiceSessionDumped, this, &DBusPebble::voiceSessionDumped);
     connect(pebble, &Pebble::voiceSessionClosed, this, &DBusPebble::voiceSessionClosed);
     connect(pebble, &Pebble::appButtonPressed, this, &DBusPebble::AppButtonPressed);

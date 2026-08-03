@@ -41,6 +41,7 @@ signals:
 
     void voiceSessionSetup(const QString &dumpFile, const QString &contentType, const QString &appUuid);
     void voiceSessionStream(const QString &dumpFile);
+    void voiceSessionFrame(const QString &dumpFile, const QByteArray &frame);
     void voiceSessionDumped(const QString &dumpFile);
     void voiceSessionClosed(const QString &dumpFIle);
 
