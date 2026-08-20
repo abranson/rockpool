@@ -47,6 +47,7 @@
 #include "libpebble3d-launcher-wire.h"
 #include "libpebble3d-platform.h"
 #include "callmonitor.h"
+#include "locationmonitor.h"
 #include "mainvolumemonitor.h"
 #include "notificationmonitor.h"
 #include "wire.h"
@@ -273,7 +274,15 @@ public:
               },
               [this](bool ready) { updateMediaHealth(ready); },
               this),
-          m_mediaReady(false), m_mediaStatePending(false) {
+          m_mediaReady(false), m_mediaStatePending(false),
+          m_location(
+              [this](quint64 requestId, int32_t status,
+                     const LocationMonitor::Fix &fix) {
+                  completeLocation(requestId, status, fix);
+              },
+              [this](bool ready) { updateLocationHealth(ready); },
+              this),
+          m_locationReady(false) {
         const int flags = fcntl(fd, F_GETFL);
         if (flags < 0 || fcntl(fd, F_SETFL, flags | O_NONBLOCK) != 0) {
             QTimer::singleShot(0, QCoreApplication::instance(),
@@ -399,13 +408,14 @@ private:
             (m_notificationsReady ? lp3wire::DomainNotifications : 0) |
             (m_messagingReady ? lp3wire::DomainMessaging : 0) |
             (m_callsReady ? lp3wire::DomainCalls : 0) |
-            (m_mediaReady ? lp3wire::DomainMedia : 0);
+            (m_mediaReady ? lp3wire::DomainMedia : 0) |
+            (m_locationReady ? lp3wire::DomainLocation : 0);
         health.degradedDomains =
             (m_notificationsReady ? 0 : lp3wire::DomainNotifications) |
             (m_messagingReady ? 0 : lp3wire::DomainMessaging) |
             (m_callsReady ? 0 : lp3wire::DomainCalls) |
             (m_mediaReady ? 0 : lp3wire::DomainMedia) |
-            lp3wire::DomainLocation;
+            (m_locationReady ? 0 : lp3wire::DomainLocation);
         health.failedDomains = 0;
         std::vector<uint8_t> payload;
         return lp3wire::encodeHealth(health, &payload) &&
@@ -447,6 +457,16 @@ private:
             return;
         }
         m_mediaReady = ready;
+        if (m_phase == Active && !queueHealth()) {
+            failClosed();
+        }
+    }
+
+    void updateLocationHealth(bool ready) {
+        if (m_locationReady == ready) {
+            return;
+        }
+        m_locationReady = ready;
         if (m_phase == Active && !queueHealth()) {
             failClosed();
         }
@@ -652,14 +672,21 @@ private:
         }
     }
 
-    void completeLocationUnavailable(uint64_t requestId) {
+    void completeLocation(uint64_t requestId, int32_t status,
+                          const LocationMonitor::Fix &fix) {
         if (!m_pending.remove(requestId)) {
             return;
         }
         lp3wire::LocationData location = {};
+        if (status == LP3_PLATFORM_OK) {
+            location.latitudeE7 = fix.latitudeE7;
+            location.longitudeE7 = fix.longitudeE7;
+            location.accuracyM = fix.accuracyM;
+            location.timestampMs = fix.timestampMs;
+        }
         std::vector<uint8_t> payload;
         if (!lp3wire::encodeLocationReply(
-                LP3_PLATFORM_NOT_SUPPORTED, location, &payload) ||
+                static_cast<uint32_t>(status), location, &payload) ||
             !queueFrame(lp3wire::Complete, requestId,
                         &payload[0], payload.size())) {
             failClosed();
@@ -716,6 +743,7 @@ private:
             m_notificationsReady = m_notifications.start();
             m_callsReady = m_calls.start();
             m_mediaReady = m_media.start();
+            m_locationReady = m_location.start();
             m_phase = Active;
             emitMediaState();
             return queueHealth();
@@ -786,9 +814,10 @@ private:
                         completeMedia(frame.requestId, mediaCommand);
                     });
             } else {
-                QTimer::singleShot(0, this, [this, frame]() {
-                    completeLocationUnavailable(frame.requestId);
-                });
+                m_location.query(
+                    frame.requestId,
+                    locationQuery.accuracy == lp3wire::kLocationFine,
+                    locationQuery.timeoutMs);
             }
             return true;
         }
@@ -797,6 +826,7 @@ private:
                 return false;
             }
             if (m_pending.remove(frame.requestId)) {
+                m_location.cancel(frame.requestId);
                 return queueFrame(lp3wire::Cancelled, frame.requestId, NULL, 0);
             }
             return true;
@@ -866,6 +896,8 @@ private:
     bool m_mediaReady;
     MainVolumeMonitor::State m_mediaState;
     bool m_mediaStatePending;
+    LocationMonitor m_location;
+    bool m_locationReady;
     QTimer m_changeTimer;
     QElapsedTimer m_elapsed;
     qint64 m_lastWallMs;

@@ -471,9 +471,10 @@ It is deliberately not a list of obsolete endpoints to carry forward.
 | Firmware/recovery/language | `Firmware1` FD operations | libpebble3 |
 | Timeline/calendar | Account-global `Timeline1.CalendarEnabled`; internal phone-calendar reconciliation preserves the last complete local projection on unavailable, denied, or failed source reads and applies successful replacements atomically. `watch.timeline` and `platform.calendar` remain absent pending a typed calendar domain | libpebble3d |
 | Notifications/actions/replies | `Notifications1`/`Messaging1`; replies are available only for a live, trusted Sailfish SMS/IM/MMS notification with one narrowly validated input route, and are consumed after one attempt. A `default` action on the same authenticated target separately permits only the fixed `org.sailfishos.Messages.startConversation(ss)` conversation open; notification-provided open D-Bus tuples are never executed, and both actions require the current CommHistory owner. Canonical primary canned groups are account-global and replayed into libpebble3 (including an explicit empty collection), while compatibility groups remain source-scoped and are not reply actions | libpebble3 + provider |
-| Calls/media/contacts/location/profiles | Watch domains + provider | provider |
+| Calls/media/location/profile switching | Calls, media, and bounded one-shot/watch location use the independently healthy Sailfish provider; existing connection-driven profile switching remains daemon-owned | libpebble3 + provider |
+| Contacts/outgoing Send Text | Compatibility favourites remain configuration-only pending a bounded contacts provider and watch-originated send action; notification replies are covered above | pending |
 | Health and units | Account-global `Health1` settings projection on every watch; compatibility health strings round-trip only `female`/`male`. The compatibility UI exposes the bounded legacy health dashboard and addressed incremental sync, explicitly labelled as shared account history rather than per-watch provenance | libpebble3d |
-| Weather | Compatibility locations receive keyless automatic forecasts for saved coordinates and still accept validated external injection. Migration imports a single physical legacy saved-location collection, or a unanimous collection from eligible legacy watch directories; conflicting legacy collections are preserved without choosing one. The `n/a` current-location slot remains pending `platform.location` | libpebble3 + libpebble3d |
+| Weather | Compatibility locations receive keyless automatic forecasts for saved coordinates and still accept validated external injection. Migration imports a single physical legacy saved-location collection, or a unanimous collection from eligible legacy watch directories; conflicting legacy collections are preserved without choosing one. The canonical `n/a` slot resolves through the bounded Sailfish Location provider without persisting coordinates | libpebble3 + libpebble3d + provider |
 | Screenshots | `Screenshots1` | libpebble3 |
 | Developer mode | `Developer1` | libpebble3 |
 | Log export | `Logs1.Dump` to `~/Downloads/pebble.log` | libpebble3d |
@@ -585,7 +586,7 @@ single constant Sailfish `/sailfish/i18n/lc_timeformat24h` setting; no setting
 key or other selector crosses the protocol.
 
 After `Ready`, the helper sends an initial 24-byte `Health` payload and sends a
-new snapshot whenever a notification, volume, or call monitor changes
+new snapshot whenever a notification, volume, call, or location monitor changes
 availability. The three
 `u64` values are the ready, degraded, and failed domain masks. They are
 disjoint and together contain every domain implemented by this wire minor
@@ -597,6 +598,14 @@ each accepted request produces exactly one `Complete`, or is cancelled. The
 proxy validates the requested accuracy and timeout before it reaches the
 helper; the helper must independently apply the same bound and stop any
 underlying acquisition when it receives `Cancel`.
+
+The Sailfish helper implements this operation with one shared Qt Positioning
+source backed by the system GeoClue plugin. Coarse-only requests prefer
+non-satellite positioning; any fine request permits all available positioning
+methods so a useful fix can fall back when GPS is unavailable. Requests retain
+independent monotonic deadlines, and a valid fix completes only the requests
+that are still pending. Source errors retire the current Location generation
+and degrade only the Location health domain.
 
 ```text
 Request LocationQuery (request_id != 0, payload size 12)

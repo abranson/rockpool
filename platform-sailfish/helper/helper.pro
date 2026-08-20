@@ -1,7 +1,7 @@
 TEMPLATE = app
 TARGET = libpebble3d-platform-sailfish-host
 
-QT += core dbus
+QT += core dbus positioning
 QT -= gui
 PKGCONFIG += dbus-1 mlite5
 CONFIG += console c++11 link_pkgconfig
@@ -17,11 +17,13 @@ INCLUDEPATH += $$PWD/../common
 
 SOURCES += main.cpp \
     callmonitor.cpp \
+    locationmonitor.cpp \
     mainvolumemonitor.cpp \
     notificationmonitor.cpp
 HEADERS += ../common/wire.h \
     ../../libpebble3d/include/libpebble3d-launcher-wire.h \
     callmonitor.h \
+    locationmonitor.h \
     mainvolumemonitor.h \
     notificationmonitor.h
 

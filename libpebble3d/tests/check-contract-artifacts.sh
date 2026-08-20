@@ -216,6 +216,8 @@ helper_project=$libpebble3d_dir/../platform-sailfish/helper/helper.pro
 launcher_project=$libpebble3d_dir/../platform-sailfish/launcher/launcher.pro
 proxy_source=$libpebble3d_dir/../platform-sailfish/proxy/sailfish_proxy.cpp
 helper_source=$libpebble3d_dir/../platform-sailfish/helper/main.cpp
+location_monitor=$libpebble3d_dir/../platform-sailfish/helper/locationmonitor.cpp
+location_monitor_header=$libpebble3d_dir/../platform-sailfish/helper/locationmonitor.h
 wire_header=$libpebble3d_dir/../platform-sailfish/common/wire.h
 notification_monitor=$libpebble3d_dir/../platform-sailfish/helper/notificationmonitor.cpp
 notification_monitor_header=$libpebble3d_dir/../platform-sailfish/helper/notificationmonitor.h
@@ -229,6 +231,8 @@ call_monitor_test=$libpebble3d_dir/../platform-sailfish/tests/callmonitor_test.c
 call_monitor_test_project=$libpebble3d_dir/../platform-sailfish/tests/callmonitor_test.pro
 main_volume_monitor_test=$libpebble3d_dir/../platform-sailfish/tests/mainvolumemonitor_test.cpp
 main_volume_monitor_test_project=$libpebble3d_dir/../platform-sailfish/tests/mainvolumemonitor_test.pro
+location_monitor_test=$libpebble3d_dir/../platform-sailfish/tests/locationmonitor_test.cpp
+location_monitor_test_project=$libpebble3d_dir/../platform-sailfish/tests/locationmonitor_test.pro
 stop_handshake_test=$libpebble3d_dir/../platform-sailfish/tests/stop_handshake_test.cpp
 stop_handshake_test_project=$libpebble3d_dir/../platform-sailfish/tests/stop_handshake_test.pro
 wire_test=$libpebble3d_dir/../platform-sailfish/tests/wire_test.cpp
@@ -470,6 +474,8 @@ require_file "$helper_project" "Sailfish helper project"
 require_file "$launcher_project" "Sailfish launcher project"
 require_file "$proxy_source" "Sailfish proxy source"
 require_file "$helper_source" "Sailfish helper source"
+require_file "$location_monitor" "Sailfish Location monitor"
+require_file "$location_monitor_header" "Sailfish Location monitor header"
 require_file "$wire_header" "Sailfish provider wire header"
 require_file "$notification_monitor" "Sailfish notification monitor"
 require_file "$notification_monitor_header" "Sailfish notification monitor header"
@@ -483,6 +489,8 @@ require_file "$call_monitor_test" "Sailfish calls-monitor regression"
 require_file "$call_monitor_test_project" "Sailfish calls-monitor test project"
 require_file "$main_volume_monitor_test" "Sailfish system-volume regression"
 require_file "$main_volume_monitor_test_project" "Sailfish system-volume test project"
+require_file "$location_monitor_test" "Sailfish Location monitor regression"
+require_file "$location_monitor_test_project" "Sailfish Location test project"
 require_file "$stop_handshake_test" "Sailfish STOP_HOST regression"
 require_file "$stop_handshake_test_project" "Sailfish STOP_HOST test project"
 require_file "$wire_test" "Sailfish provider wire regression"
@@ -1646,6 +1654,14 @@ require_fixed 'Requires:   libpebble3d-platform-launcher-abi = 1' "$rockpool_spe
     'provider dependency on daemon launcher bootstrap'
 require_fixed 'Requires:   libpebble3d-platform-abi-minor >= 4' "$rockpool_spec" \
     'provider dependency on runtime platform ABI minor'
+require_fixed 'BuildRequires:  pkgconfig(Qt5Positioning)' "$rockpool_spec" \
+    'Sailfish Location build dependency'
+require_fixed 'Requires:   qt5-plugin-position-geoclue' "$rockpool_spec" \
+    'Sailfish GeoClue positioning plugin runtime dependency'
+require_fixed 'Requires:   geoclue' "$rockpool_spec" \
+    'Sailfish GeoClue runtime dependency'
+require_fixed 'QT += core dbus positioning' "$helper_project" \
+    'Qt Positioning linked only into the privileged Sailfish helper'
 require_fixed 'static const uint16_t kMinor = 5;' "$wire_header" \
     'private provider wire minor 1.5'
 require_fixed 'MessageReply = 5,' "$wire_header" \
@@ -1708,16 +1724,55 @@ require_fixed 'event.type = LP3_PLATFORM_EVENT_LOCATION;' "$proxy_source" \
     'proxy native location completion event'
 require_fixed 'event.location = locationStatus == LP3_PLATFORM_OK ? &abiLocation : NULL;' \
     "$proxy_source" 'proxy null location payload on failed completion'
-require_fixed 'lp3wire::DomainLocation;' "$helper_source" \
-    'helper Location health degradation before backend support'
+require_fixed '(m_locationReady ? lp3wire::DomainLocation : 0)' "$helper_source" \
+    'helper advertises only a ready Qt Positioning source'
 require_fixed '(m_notificationsReady ? 0 : lp3wire::DomainNotifications) |' \
     "$helper_source" 'helper preserves independently healthy existing domains'
 require_fixed '!lp3wire::decodeLocationQuery(frame.payload, &locationQuery)' \
     "$helper_source" 'helper decodes bounded location request'
-require_fixed 'completeLocationUnavailable(frame.requestId);' "$helper_source" \
-    'helper asynchronous safe location fallback'
-require_fixed 'LP3_PLATFORM_NOT_SUPPORTED, location' "$helper_source" \
-    'helper terminal not-supported location fallback'
+require_fixed 'm_location.query(' "$helper_source" \
+    'helper dispatches decoded Location requests to Qt Positioning'
+require_fixed 'm_location.cancel(frame.requestId);' "$helper_source" \
+    'helper cancels underlying Location acquisition before acknowledgement'
+reject_extended 'completeLocationUnavailable|LP3_PLATFORM_NOT_SUPPORTED,[[:space:]]*location' \
+    "$helper_source" 'obsolete not-supported Location fallback'
+require_fixed 'QGeoPositionInfoSource::createDefaultSource' "$location_monitor" \
+    'Qt Positioning source factory'
+require_fixed 'source->startUpdates();' "$location_monitor" \
+    'shared asynchronous Location acquisition'
+require_fixed 'source->stopUpdates();' "$location_monitor" \
+    'bounded Location acquisition lifetime'
+require_fixed 'request.deadlineMs = elapsed.elapsed() + timeoutMs;' \
+    "$location_monitor" 'independent monotonic Location deadline'
+require_fixed 'expireRequests();' "$location_monitor" \
+    'deadline retirement before accepting a Location fix'
+require_fixed 'position.hasAttribute(QGeoPositionInfo::HorizontalAccuracy)' \
+    "$location_monitor" 'strict horizontal-accuracy validation'
+require_fixed 'QGeoPositionInfoSource::NonSatellitePositioningMethods' \
+    "$location_monitor" 'coarse non-satellite preference'
+require_fixed 'QGeoPositionInfoSource::AllPositioningMethods' \
+    "$location_monitor" 'fine positioning preference with usable fallback'
+for location_monitor_regression in \
+    testFactoryHealthAndRetry \
+    testSharedFixAndMethods \
+    testIndividualDeadlinesAndCancellation \
+    testDeadlineWinsOverLateFix \
+    testMalformedFixes \
+    testSourceErrorAndGeneration \
+    testCallbackCanDestroyMonitor \
+    testCoarseMethodSelection
+do
+    require_fixed "void $location_monitor_regression()" \
+        "$location_monitor_test" \
+        "Sailfish Location regression $location_monitor_regression"
+    require_fixed "$location_monitor_regression();" \
+        "$location_monitor_test" \
+        "executed Sailfish Location regression $location_monitor_regression"
+done
+require_fixed '%qmake5 ../platform-sailfish/tests/locationmonitor_test.pro' \
+    "$rockpool_spec" 'Sailfish Location test release gate'
+require_fixed './locationmonitor_test' "$rockpool_spec" \
+    'executed Sailfish Location release regression'
 require_fixed 'Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_locationStart' \
     "$loader" 'native JNI location start'
 require_fixed 'Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_cancelLocation' \

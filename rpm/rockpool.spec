@@ -23,6 +23,7 @@ BuildRequires:  pkgconfig(Qt5Quick)
 BuildRequires:  pkgconfig(Qt5Qml)
 BuildRequires:  pkgconfig(Qt5Core)
 BuildRequires:  pkgconfig(Qt5Network)
+BuildRequires:  pkgconfig(Qt5Positioning)
 BuildRequires:  pkgconfig(dbus-1)
 BuildRequires:  pkgconfig(mlite5)
 BuildRequires:  pkgconfig(sailfishapp) >= 0.0.10
@@ -50,6 +51,8 @@ License:    Apache-2.0
 Requires:   libpebble3d-platform-abi = 1
 Requires:   libpebble3d-platform-abi-minor >= 4
 Requires:   libpebble3d-platform-launcher-abi = 1
+Requires:   qt5-plugin-position-geoclue
+Requires:   geoclue
 
 %description -n libpebble3d-platform-sailfish
 Unprivileged proxy, session launcher, and Sailfish platform host for
@@ -89,7 +92,12 @@ cd ../platform-helper-build
 %qtc_make %{?_smp_mflags}
 
 %check
-cd %{_builddir}/%{name}-%{version}
+if [ -d %{_builddir}/%{name}-%{version} ]; then
+    cd %{_builddir}/%{name}-%{version}
+else
+    # mb2 builds the checked-out source directly instead of running %setup.
+    cd %{_builddir}
+fi
 
 mkdir -p platform-callmonitor-test-build
 cd platform-callmonitor-test-build
@@ -123,6 +131,14 @@ cd platform-notificationmonitor-test-build
 ./notificationmonitor_test
 
 cd ..
+mkdir -p platform-locationmonitor-test-build
+cd platform-locationmonitor-test-build
+%qmake5 ../platform-sailfish/tests/locationmonitor_test.pro
+%qtc_make clean
+%qtc_make %{?_smp_mflags}
+./locationmonitor_test
+
+cd ..
 mkdir -p platform-wire-test-build
 cd platform-wire-test-build
 %qmake5 ../platform-sailfish/tests/wire_test.pro
@@ -131,7 +147,12 @@ cd platform-wire-test-build
 ./wire_test
 
 %install
-cd %{_builddir}/%{name}-%{version}
+if [ -d %{_builddir}/%{name}-%{version} ]; then
+    cd %{_builddir}/%{name}-%{version}
+else
+    # Keep SDK worktree builds equivalent to extracted release archives.
+    cd %{_builddir}
+fi
 rm -rf %{buildroot}
 install -D -m 0644 libpebble3d/include/libpebble3d-platform.h \
     %{buildroot}%{_includedir}/libpebble3d-platform.h
