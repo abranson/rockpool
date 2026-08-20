@@ -469,7 +469,7 @@ It is deliberately not a list of obsolete endpoints to carry forward.
 | Connect/disconnect/forget | `Watch1` operations; Forget removes all selected-adapter BlueZ aliases before portable state | libpebble3 + Rockpool integration |
 | Apps/watchfaces | `Applications1` FD operations | libpebble3 |
 | Firmware/recovery/language | `Firmware1` FD operations | libpebble3 |
-| Timeline/calendar | Account-global `Timeline1.CalendarEnabled`; `watch.timeline` and `platform.calendar` remain absent pending a typed calendar domain | libpebble3d |
+| Timeline/calendar | Account-global `Timeline1.CalendarEnabled`; internal phone-calendar reconciliation preserves the last complete local projection on unavailable, denied, or failed source reads and applies successful replacements atomically. `watch.timeline` and `platform.calendar` remain absent pending a typed calendar domain | libpebble3d |
 | Notifications/actions/replies | `Notifications1`/`Messaging1`; replies are available only for a live, trusted Sailfish SMS/IM/MMS notification with one narrowly validated input route, and are consumed after one attempt. Canonical primary canned groups are account-global and replayed into libpebble3 (including an explicit empty collection), while compatibility groups remain source-scoped and are not reply actions | libpebble3 + provider |
 | Calls/media/contacts/location/profiles | Watch domains + provider | provider |
 | Health and units | Account-global `Health1` settings projection on every watch; compatibility health strings round-trip only `female`/`male`. The compatibility UI exposes the bounded legacy health dashboard and addressed incremental sync, explicitly labelled as shared account history rather than per-watch provenance | libpebble3d |

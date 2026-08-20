@@ -138,6 +138,7 @@ contract_checker=$script_dir/check-contract-artifacts.sh
 source_archive_script=$project_dir/rpm/create-source-archive.sh
 gitmodules=$project_dir/.gitmodules
 xml=$libpebble3d_dir/api/org.rockpool.xml
+functional_parity=$libpebble3d_dir/README.md
 header=$libpebble3d_dir/include/libpebble3d-platform.h
 launcher_header=$libpebble3d_dir/include/libpebble3d-launcher-wire.h
 loader=$libpebble3d_dir/native/platform_loader.c
@@ -306,11 +307,16 @@ libpebble3_watch_manager=$libpebble3_common_source/io/rebble/libpebblecommon/con
 libpebble3_config=$libpebble3_common_source/io/rebble/libpebblecommon/LibPebbleConfig.kt
 libpebble3_notification_dao=$libpebble3_common_source/io/rebble/libpebblecommon/database/dao/NotificationAppDao.kt
 libpebble3_notification_api=$libpebble3_common_source/io/rebble/libpebblecommon/notification/PlatformNotificationListener.kt
+libpebble3_calendar_syncer=$libpebble3_common_source/io/rebble/libpebblecommon/calendar/PhoneCalendarSyncer.kt
+libpebble3_calendar_dao=$libpebble3_common_source/io/rebble/libpebblecommon/database/dao/CalendarDao.kt
+libpebble3_android_calendar=$libpebble3d_dir/mobileapp/libpebble3/src/androidMain/kotlin/io/rebble/libpebblecommon/calendar/AndroidSystemCalendar.kt
+libpebble3_ios_calendar=$libpebble3d_dir/mobileapp/libpebble3/src/iosMain/kotlin/io/rebble/libpebblecommon/calendar/IosSystemCalendar.kt
 libpebble3_health_init_test=$libpebble3d_dir/mobileapp/libpebble3/src/jvmTest/kotlin/io/rebble/libpebblecommon/database/dao/HealthSettingsInitializationJvmTest.kt
 libpebble3_config_test=$libpebble3d_dir/mobileapp/libpebble3/src/jvmTest/kotlin/io/rebble/libpebblecommon/LibPebbleConfigHolderJvmTest.kt
 libpebble3_notification_dao_test=$libpebble3d_dir/mobileapp/libpebble3/src/jvmTest/kotlin/io/rebble/libpebblecommon/database/dao/NotificationAppForgettingJvmTest.kt
 libpebble3_notification_api_test=$libpebble3d_dir/mobileapp/libpebble3/src/jvmTest/kotlin/io/rebble/libpebblecommon/notification/NotificationApiJvmTest.kt
 libpebble3_watch_manager_test=$libpebble3d_dir/mobileapp/libpebble3/src/jvmTest/kotlin/io/rebble/libpebblecommon/connection/WatchManagerTest.kt
+libpebble3_calendar_syncer_test=$libpebble3d_dir/mobileapp/libpebble3/src/jvmTest/kotlin/io/rebble/libpebblecommon/calendar/PhoneCalendarSyncerJvmTest.kt
 libpebble3_open_meteo=$libpebble3_jvm_source/io/rebble/libpebblecommon/linux/weather/OpenMeteoWeatherClient.kt
 libpebble3_open_meteo_test=$libpebble3d_dir/mobileapp/libpebble3/src/jvmTest/kotlin/io/rebble/libpebblecommon/linux/weather/OpenMeteoWeatherClientJvmTest.kt
 sailfish_linux_backend=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockpool/SailfishLinuxBackend.kt
@@ -431,6 +437,10 @@ require_file "$compat_mutation_signal_test" "compatibility mutation regressions"
 require_file "$compat_firmware_status_test" "compatibility firmware metadata regression"
 require_file "$libpebble3_health_dao" "libpebble3 health settings DAO"
 require_file "$libpebble3_health" "libpebble3 health service"
+require_file "$libpebble3_calendar_syncer" "libpebble3 phone-calendar reconciler"
+require_file "$libpebble3_calendar_dao" "libpebble3 calendar projection DAO"
+require_file "$libpebble3_android_calendar" "libpebble3 Android calendar source"
+require_file "$libpebble3_ios_calendar" "libpebble3 iOS calendar source"
 require_file "$libpebble3_connection" "libpebble3 concrete facade"
 require_file "$libpebble3_config" "libpebble3 config holder"
 require_file "$libpebble3_notification_dao" "libpebble3 notification application DAO"
@@ -439,6 +449,8 @@ require_file "$libpebble3_health_init_test" "libpebble3 health initialization re
 require_file "$libpebble3_config_test" "libpebble3 config-origin regressions"
 require_file "$libpebble3_notification_dao_test" "libpebble3 notification DAO regressions"
 require_file "$libpebble3_notification_api_test" "libpebble3 notification API regressions"
+require_file "$libpebble3_calendar_syncer_test" "libpebble3 calendar preservation regressions"
+require_file "$functional_parity" "functional parity matrix"
 require_file "$compat_service" "compatibility D-Bus service"
 require_file "$compat_notification_sources" "compatibility notification-source tracker"
 require_file "$compat_notification_sources_test" "compatibility notification-source regressions"
@@ -1142,6 +1154,61 @@ require_fixed 'timelinePropertiesChanged()' "$primary_service" \
     'cross-service primary calendar property fanout'
 reject_extended '\$settingPrefix\.(canned|calendar\.enabled)' "$primary_service" \
     'per-watch projection of account-global canned/calendar configuration'
+
+# A platform calendar read is authoritative only after a complete source
+# snapshot succeeds. Preserve the previous durable projection on denial,
+# malformed data, provider failure, or cancellation, and publish a successful
+# replacement as one Room transaction. This is an internal safety contract;
+# it does not advertise Timeline sync or a platform.calendar domain.
+require_fixed 'internal suspend fun syncDeviceCalendarsToDb() = reconciliationMutex.withLock {' \
+    "$libpebble3_calendar_syncer" 'serialized phone-calendar reconciliation'
+require_fixed 'if (!systemCalendar.hasPermission()) {' "$libpebble3_calendar_syncer" \
+    'permission-loss calendar projection preservation'
+require_fixed 'Calendar sync failed; retrying without treating it as empty' \
+    "$libpebble3_calendar_syncer" 'failed calendar source retry'
+require_fixed 'currentCoroutineContext().ensureActive()' "$libpebble3_calendar_syncer" \
+    'calendar cancellation before durable mutation'
+require_fixed 'withContext(NonCancellable) {' "$libpebble3_calendar_syncer" \
+    'calendar non-cancellable commit boundary'
+require_fixed 'calendarDao.applyProjection(' "$libpebble3_calendar_syncer" \
+    'atomic calendar projection application'
+require_fixed '@Transaction' "$libpebble3_calendar_dao" \
+    'transactional calendar projection'
+require_fixed 'suspend fun applyProjection(' "$libpebble3_calendar_dao" \
+    'complete calendar projection writer'
+require_fixed 'Calendar provider returned no calendar cursor' \
+    "$libpebble3_android_calendar" 'Android calendar fail-closed source'
+require_fixed 'Calendar provider returned no event cursor' \
+    "$libpebble3_android_calendar" 'Android event fail-closed source'
+require_fixed 'Calendar provider returned no attendee cursor' \
+    "$libpebble3_android_calendar" 'Android attendee fail-closed source'
+require_fixed 'Calendar provider returned no reminder cursor' \
+    "$libpebble3_android_calendar" 'Android reminder fail-closed source'
+require_fixed 'Calendar event store is unavailable while listing calendars' \
+    "$libpebble3_ios_calendar" 'iOS calendar fail-closed source'
+require_fixed 'Calendar event store is unavailable while querying events' \
+    "$libpebble3_ios_calendar" 'iOS event fail-closed source'
+require_fixed 'return events.map { event ->' "$libpebble3_ios_calendar" \
+    'iOS complete event snapshot'
+reject_extended 'return events\.mapNotNull' "$libpebble3_ios_calendar" \
+    'iOS partial event snapshot'
+for calendar_projection_regression in \
+    permissionDenialDoesNotReadEventsOrMutateTheExistingProjection \
+    eventFailurePreservesProjectionUntilASuccessfulReconciliation \
+    eventCancellationIsRethrownWithoutMutatingTheExistingProjection \
+    failedSyncAutomaticallyRetriesAndReconcilesAfterTheBackendRecovers \
+    projectionApplyRollsBackWhenALaterDaoWriteFails
+do
+    require_fixed "fun $calendar_projection_regression()" \
+        "$libpebble3_calendar_syncer_test" \
+        "phone-calendar projection regression $calendar_projection_regression"
+done
+require_fixed 'internal phone-calendar reconciliation preserves the last complete local projection' \
+    "$functional_parity" 'documented calendar preservation boundary'
+require_fixed '`watch.timeline` and `platform.calendar` remain absent' \
+    "$functional_parity" 'documented unavailable calendar domains'
+require_fixed 'unavailable("watch.timeline-sync", "timeline sync is not available yet")' \
+    "$primary_service" 'explicit unavailable Timeline1 sync contract'
 require_fixed 'fun `serialized mutations preserve fields changed by another caller`()' \
     "$config_mutation_coordinator_test" 'whole-config lost-update regression'
 require_fixed 'fun `global primary canned records ignore obsolete per-watch groups`()' \
