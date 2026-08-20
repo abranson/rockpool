@@ -27,6 +27,13 @@ Page {
     SilicaFlickable {
         PullDownMenu {
             MenuItem {
+                text: qsTr("Health history")
+                visible: root.pebble && !root.pebble.connected
+                onClicked: pageStack.push(
+                               Qt.resolvedUrl("HealthHistoryPage.qml"),
+                               { pebble: root.pebble })
+            }
+            MenuItem {
                 // With a single watch, rockpool.qml pushes this page straight onto a cleared
                 // stack, so the watch list is otherwise unreachable — and with it, pairing and
                 // forgetting.
@@ -327,6 +334,11 @@ Page {
                                  icon: "icon-m-alarm",
                                  text: qsTr("Notifications"),
                                  page: "NotificationsPage.qml"
+                             })
+        mainMenuModel.append({
+                                 icon: "icon-m-favorite",
+                                 text: qsTr("Health history"),
+                                 page: "HealthHistoryPage.qml"
                              })
         mainMenuModel.append({
                                  icon: "icon-m-toy",

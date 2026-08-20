@@ -36,6 +36,7 @@ signals:
     void UpgradingFirmwareChanged();
     void LogsDumped(bool success);
     void HealthParamsChanged();
+    void HealthDataChanged();
     void ImperialUnitsChanged();
     void ProfileWhenConnectedChanged();
     void ProfileWhenDisconnectedChanged();
@@ -71,6 +72,9 @@ class Pebble : public QObject
     Q_PROPERTY(ApplicationsModel* installedWatchfaces READ installedWatchfaces CONSTANT)
     Q_PROPERTY(QVariantMap healthParams READ healthParams WRITE setHealthParams NOTIFY healthParamsChanged)
     Q_PROPERTY(bool healthParamsReady READ healthParamsReady NOTIFY healthParamsReadyChanged)
+    Q_PROPERTY(QVariantMap healthOverview READ healthOverview NOTIFY healthOverviewChanged)
+    Q_PROPERTY(bool healthOverviewReady READ healthOverviewReady NOTIFY healthOverviewReadyChanged)
+    Q_PROPERTY(bool healthSyncing READ healthSyncing NOTIFY healthSyncingChanged)
     Q_PROPERTY(bool imperialUnits READ imperialUnits WRITE setImperialUnits NOTIFY imperialUnitsChanged)
     // platform features
     Q_PROPERTY(ScreenshotModel* screenshots READ screenshots CONSTANT)
@@ -138,6 +142,9 @@ public:
     QVariantMap healthParams() const;
     bool healthParamsReady() const;
     void setHealthParams(const QVariantMap &healthParams);
+    QVariantMap healthOverview() const;
+    bool healthOverviewReady() const;
+    bool healthSyncing() const;
 
     bool imperialUnits() const;
     void setImperialUnits(bool imperialUnits);
@@ -206,6 +213,8 @@ public slots:
     void refreshTimelineIcons();
     void refreshSettingsPage();
     void refreshHealthParams();
+    void refreshHealthOverview();
+    void fetchHealthData();
 
     void dumpLogs(const QString &filename);
     void setDevConnEnabled(bool enabled);
@@ -251,6 +260,11 @@ signals:
     void upgradingFirmwareChanged();
     void healthParamsChanged();
     void healthParamsReadyChanged();
+    void healthOverviewChanged();
+    void healthOverviewReadyChanged();
+    void healthDataChanged();
+    void healthSyncingChanged();
+    void healthSyncCompleted(bool success);
     void imperialUnitsChanged();
     void openURL(const QString &uuid, const QString &url);
 
@@ -329,6 +343,11 @@ private:
     void setHealthParamsReady(bool ready);
     void healthParamsWriteReplyFinished(QDBusPendingCallWatcher *watcher);
     void healthParamsChangedFromService();
+    void healthOverviewReplyFinished(QDBusPendingCallWatcher *watcher);
+    void healthDataChangedFromService();
+    void healthSyncReplyFinished(QDBusPendingCallWatcher *watcher);
+    void setHealthOverviewReady(bool ready);
+    void setHealthSyncing(bool syncing);
     void applyCannedResponses(const QVariantMap &responses, bool authoritative);
     void cannedResponsesReadFailed(quint64 requestEpoch);
     void setCannedResponsesReady(bool ready);
@@ -467,6 +486,13 @@ private:
     quint64 m_healthParamsWriteEpoch = 0;
     quint64 m_healthParamsValueRevision = 0;
     QVariantMap m_healthParams;
+
+    bool m_healthOverviewRequested = false;
+    bool m_healthOverviewReady = false;
+    bool m_healthSyncing = false;
+    quint64 m_healthOverviewEpoch = 0;
+    quint64 m_healthSyncEpoch = 0;
+    QVariantMap m_healthOverview;
 
     bool m_cannedResponsesRequested = false;
     bool m_cannedResponsesReady = false;

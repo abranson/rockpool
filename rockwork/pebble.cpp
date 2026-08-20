@@ -109,6 +109,24 @@ bool decodeVariantMap(const QVariant &value, QVariantMap *map)
     return false;
 }
 
+QVariant unwrapDBusVariant(const QVariant &value)
+{
+    QVariant decoded = value;
+    while (decoded.userType() == qMetaTypeId<QDBusVariant>()) {
+        decoded = decoded.value<QDBusVariant>().variant();
+    }
+    return decoded;
+}
+
+QVariantMap unwrapVariantMapValues(const QVariantMap &map)
+{
+    QVariantMap decoded;
+    for (QVariantMap::const_iterator it = map.constBegin(); it != map.constEnd(); ++it) {
+        decoded.insert(it.key(), unwrapDBusVariant(it.value()));
+    }
+    return decoded;
+}
+
 bool decodeVariantMapList(const QDBusMessage &message, QVariantList *list)
 {
     if (message.type() == QDBusMessage::ErrorMessage || message.arguments().count() != 1) {
@@ -123,7 +141,7 @@ bool decodeVariantMapList(const QDBusMessage &message, QVariantList *list)
             if (!decodeVariantMap(entry, &map)) {
                 return false;
             }
-            list->append(map);
+            list->append(unwrapVariantMapValues(map));
         }
         return true;
     }
@@ -138,9 +156,117 @@ bool decodeVariantMapList(const QDBusMessage &message, QVariantList *list)
             argument.endArray();
             return false;
         }
-        list->append(map);
+        list->append(unwrapVariantMapValues(map));
     }
     argument.endArray();
+    return true;
+}
+
+bool decodeVariantMapListValue(const QVariant &value, QVariantList *list)
+{
+    if (value.userType() == qMetaTypeId<QDBusVariant>()) {
+        return decodeVariantMapListValue(value.value<QDBusVariant>().variant(), list);
+    }
+    if (value.userType() != qMetaTypeId<QDBusArgument>()) {
+        const QVariantList values = value.toList();
+        foreach (const QVariant &entry, values) {
+            QVariantMap map;
+            if (!decodeVariantMap(entry, &map)) {
+                return false;
+            }
+            list->append(unwrapVariantMapValues(map));
+        }
+        return value.type() == QVariant::List || value.userType() == qMetaTypeId<QVariantList>();
+    }
+
+    const QDBusArgument argument = value.value<QDBusArgument>();
+    argument.beginArray();
+    while (!argument.atEnd()) {
+        QVariant entry;
+        argument >> entry;
+        QVariantMap map;
+        if (!decodeVariantMap(entry, &map)) {
+            argument.endArray();
+            return false;
+        }
+        list->append(unwrapVariantMapValues(map));
+    }
+    argument.endArray();
+    return true;
+}
+
+bool isIntegerValue(const QVariant &value)
+{
+    const QVariant decoded = unwrapDBusVariant(value);
+    return decoded.type() == QVariant::Int || decoded.type() == QVariant::UInt
+        || decoded.type() == QVariant::LongLong || decoded.type() == QVariant::ULongLong;
+}
+
+bool validHealthWeek(const QVariantList &week, const QStringList &integerKeys)
+{
+    if (week.size() != 7) {
+        return false;
+    }
+    foreach (const QVariant &entry, week) {
+        const QVariantMap record = entry.toMap();
+        if (record.value(QStringLiteral("label")).type() != QVariant::String
+                || record.value(QStringLiteral("date")).type() != QVariant::String) {
+            return false;
+        }
+        foreach (const QString &key, integerKeys) {
+            if (!record.contains(key) || !isIntegerValue(record.value(key))) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+bool decodeHealthOverview(const QDBusMessage &message, QVariantMap *overview)
+{
+    if (message.type() == QDBusMessage::ErrorMessage || message.arguments().count() != 1
+            || !decodeVariantMap(message.arguments().first(), overview)) {
+        return false;
+    }
+
+    const QStringList integerKeys = QStringList()
+        << QStringLiteral("todaySteps")
+        << QStringLiteral("averageStepsPerDay")
+        << QStringLiteral("lastNightSleepSeconds")
+        << QStringLiteral("lastNightDeepSleepSeconds")
+        << QStringLiteral("averageSleepSecondsPerDay")
+        << QStringLiteral("todayAverageHeartRate")
+        << QStringLiteral("todayMaxHeartRate")
+        << QStringLiteral("latestHeartRate")
+        << QStringLiteral("latestHeartRateTimestamp")
+        << QStringLiteral("averageHeartRate30Days")
+        << QStringLiteral("latestDataTimestamp")
+        << QStringLiteral("daysOfData");
+    foreach (const QString &key, integerKeys) {
+        if (!overview->contains(key) || !isIntegerValue(overview->value(key))) {
+            return false;
+        }
+        overview->insert(key, unwrapDBusVariant(overview->value(key)));
+    }
+
+    QVariantList stepsWeek;
+    QVariantList sleepWeek;
+    if (!decodeVariantMapListValue(overview->value(QStringLiteral("stepsWeek")), &stepsWeek)
+            || !decodeVariantMapListValue(
+                overview->value(QStringLiteral("sleepWeek")), &sleepWeek)
+            || !validHealthWeek(
+                stepsWeek,
+                QStringList() << QStringLiteral("steps")
+                              << QStringLiteral("averageHeartRate")
+                              << QStringLiteral("maxHeartRate"))
+            || !validHealthWeek(
+                sleepWeek,
+                QStringList() << QStringLiteral("sleepDuration")
+                              << QStringLiteral("deepSleepDuration"))) {
+        return false;
+    }
+    overview->insert(QStringLiteral("stepsWeek"), stepsWeek);
+    overview->insert(QStringLiteral("sleepWeek"), sleepWeek);
     return true;
 }
 
@@ -414,6 +540,8 @@ Pebble::Pebble(const QDBusObjectPath &path, QObject *parent,
             this, &Pebble::logsDumpedFromService);
     connect(m_iface, &RockworkPebbleInterface::HealthParamsChanged,
             this, &Pebble::healthParamsChangedFromService);
+    connect(m_iface, &RockworkPebbleInterface::HealthDataChanged,
+            this, &Pebble::healthDataChangedFromService);
     connect(m_iface, &RockworkPebbleInterface::ImperialUnitsChanged,
             this, [this]() {
                 settingsPropertyChangedFromService(QString::fromLatin1(IMPERIAL_UNITS));
@@ -477,6 +605,8 @@ void Pebble::serviceOwnerChanged(const QString &service,
     }
     ++m_healthParamsWriteEpoch;
     ++m_healthParamsValueRevision;
+    ++m_healthOverviewEpoch;
+    ++m_healthSyncEpoch;
     ++m_cannedResponsesWriteEpoch;
     ++m_cannedContactsRequestEpoch;
     ++m_cannedContactsWriteEpoch;
@@ -497,6 +627,15 @@ void Pebble::serviceOwnerChanged(const QString &service,
     if (!m_healthParams.isEmpty()) {
         m_healthParams.clear();
         emit healthParamsChanged();
+    }
+    setHealthOverviewReady(false);
+    if (!m_healthOverview.isEmpty()) {
+        m_healthOverview.clear();
+        emit healthOverviewChanged();
+    }
+    if (m_healthSyncing) {
+        setHealthSyncing(false);
+        emit healthSyncCompleted(false);
     }
     m_cannedResponsesAuthoritative = false;
     m_cannedResponsesReadFailures = 0;
@@ -563,6 +702,9 @@ void Pebble::serviceOwnerChanged(const QString &service,
     }
     if (m_healthParamsRequested) {
         refreshHealthParams();
+    }
+    if (m_healthOverviewRequested) {
+        refreshHealthOverview();
     }
     if (m_cannedResponsesRequested) {
         refreshCannedResponses();
@@ -1260,6 +1402,21 @@ bool Pebble::healthParamsReady() const
     return m_healthParamsReady;
 }
 
+QVariantMap Pebble::healthOverview() const
+{
+    return m_healthOverview;
+}
+
+bool Pebble::healthOverviewReady() const
+{
+    return m_healthOverviewReady;
+}
+
+bool Pebble::healthSyncing() const
+{
+    return m_healthSyncing;
+}
+
 void Pebble::refreshHealthParams()
 {
     m_healthParamsRequested = true;
@@ -1267,6 +1424,107 @@ void Pebble::refreshHealthParams()
     m_healthParamsReadFailures = 0;
     setHealthParamsReady(false);
     requestProperty(QString::fromLatin1(HEALTH_PARAMS));
+}
+
+void Pebble::refreshHealthOverview()
+{
+    m_healthOverviewRequested = true;
+    const quint64 requestEpoch = ++m_healthOverviewEpoch;
+    setHealthOverviewReady(false);
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+        m_iface->asyncCall(QStringLiteral("HealthOverview")), this);
+    watcher->setProperty("serviceEpoch",
+                         QVariant::fromValue<qulonglong>(m_serviceEpoch));
+    watcher->setProperty("requestEpoch",
+                         QVariant::fromValue<qulonglong>(requestEpoch));
+    connect(watcher, &QDBusPendingCallWatcher::finished,
+            this, &Pebble::healthOverviewReplyFinished);
+}
+
+void Pebble::healthOverviewReplyFinished(QDBusPendingCallWatcher *watcher)
+{
+    const QDBusMessage reply = watcher->reply();
+    const quint64 serviceEpoch = watcher->property("serviceEpoch").toULongLong();
+    const quint64 requestEpoch = watcher->property("requestEpoch").toULongLong();
+    watcher->deleteLater();
+    if (serviceEpoch != m_serviceEpoch || requestEpoch != m_healthOverviewEpoch) {
+        return;
+    }
+
+    QVariantMap overview;
+    if (!decodeHealthOverview(reply, &overview)) {
+        qWarning() << "HealthOverview failed or returned invalid data:"
+                   << reply.errorMessage();
+        setHealthOverviewReady(true);
+        return;
+    }
+    if (m_healthOverview != overview) {
+        m_healthOverview = overview;
+        emit healthOverviewChanged();
+    }
+    setHealthOverviewReady(true);
+}
+
+void Pebble::healthDataChangedFromService()
+{
+    emit healthDataChanged();
+    if (m_healthOverviewRequested) {
+        refreshHealthOverview();
+    }
+}
+
+void Pebble::fetchHealthData()
+{
+    if (m_healthSyncing) {
+        return;
+    }
+    const quint64 syncEpoch = ++m_healthSyncEpoch;
+    setHealthSyncing(true);
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+        m_iface->asyncCall(QStringLiteral("FetchHealthData")), this);
+    watcher->setProperty("serviceEpoch",
+                         QVariant::fromValue<qulonglong>(m_serviceEpoch));
+    watcher->setProperty("syncEpoch", QVariant::fromValue<qulonglong>(syncEpoch));
+    connect(watcher, &QDBusPendingCallWatcher::finished,
+            this, &Pebble::healthSyncReplyFinished);
+}
+
+void Pebble::healthSyncReplyFinished(QDBusPendingCallWatcher *watcher)
+{
+    const QDBusMessage reply = watcher->reply();
+    const quint64 serviceEpoch = watcher->property("serviceEpoch").toULongLong();
+    const quint64 syncEpoch = watcher->property("syncEpoch").toULongLong();
+    watcher->deleteLater();
+    if (serviceEpoch != m_serviceEpoch || syncEpoch != m_healthSyncEpoch) {
+        return;
+    }
+    const bool success = reply.type() != QDBusMessage::ErrorMessage;
+    if (!success) {
+        qWarning() << "FetchHealthData failed:" << reply.errorMessage();
+    }
+    setHealthSyncing(false);
+    emit healthSyncCompleted(success);
+    if (success && m_healthOverviewRequested) {
+        refreshHealthOverview();
+    }
+}
+
+void Pebble::setHealthOverviewReady(bool ready)
+{
+    if (m_healthOverviewReady == ready) {
+        return;
+    }
+    m_healthOverviewReady = ready;
+    emit healthOverviewReadyChanged();
+}
+
+void Pebble::setHealthSyncing(bool syncing)
+{
+    if (m_healthSyncing == syncing) {
+        return;
+    }
+    m_healthSyncing = syncing;
+    emit healthSyncingChanged();
 }
 
 void Pebble::setHealthParams(const QVariantMap &healthParams)

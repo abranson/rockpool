@@ -88,6 +88,9 @@ internal class RockworkService(
     private val observersStarted = AtomicBoolean(false)
     private val connectionLock = Any()
     private val weatherCoordinator = RockworkWeatherCoordinator(settings, libPebble)
+    // libpebble3 keeps health history per account, not per watch. Every exported legacy Pebble
+    // object therefore shares this read-only projection and receives the same update signal.
+    private val healthData = RockworkHealthDataCoordinator(libPebble)
     private val weatherClient = OpenMeteoWeatherClient()
     private val weatherAutoRefresh = RockworkWeatherAutoRefresh(
         scope = scope,
@@ -321,6 +324,7 @@ internal class RockworkService(
         watchWatches()
         watchLocker()
         watchNotificationApps()
+        watchHealthData()
         watchScanning()
         weatherAutoRefresh.start()
     }
@@ -434,6 +438,7 @@ internal class RockworkService(
                                 profileSettings = profileSettings,
                                 timelineWindow = timelineWindow,
                                 healthCoordinator = healthSettings,
+                                healthData = healthData,
                                 weatherCoordinator = weatherCoordinator,
                                 refreshWeather = weatherAutoRefresh::trigger,
                                 notificationAppearance = notificationAppearance,
@@ -655,6 +660,14 @@ internal class RockworkService(
         }
         if (change.previous.imperialUnits != change.current.imperialUnits) {
             broadcastSignal { targetPath -> RockworkPebble.ImperialUnitsChanged(targetPath) }
+        }
+    }
+
+    private fun watchHealthData() {
+        scope.launch {
+            libPebble.healthDataUpdated.collect {
+                broadcastSignal { targetPath -> RockworkPebble.HealthDataChanged(targetPath) }
+            }
         }
     }
 

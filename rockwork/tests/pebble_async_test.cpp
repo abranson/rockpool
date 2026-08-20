@@ -221,6 +221,11 @@ public:
         m_healthParams = params;
     }
 
+    void setHealthOverviewValue(const QVariantMap &overview)
+    {
+        m_healthOverview = overview;
+    }
+
     void setProfileWhenConnectedValue(const QString &profile)
     {
         m_profileWhenConnected = profile;
@@ -379,6 +384,41 @@ public:
         return QVariantList() << QVariant::fromValue(encoded);
     }
 
+    static QVariantList healthOverviewArguments(const QVariantMap &overview)
+    {
+        QDBusArgument encoded;
+        encoded.beginMap(QMetaType::QString, qMetaTypeId<QDBusVariant>());
+        for (QVariantMap::const_iterator it = overview.constBegin();
+             it != overview.constEnd(); ++it) {
+            encoded.beginMapEntry();
+            if (it.key() == QStringLiteral("stepsWeek")
+                    || it.key() == QStringLiteral("sleepWeek")) {
+                QDBusArgument week;
+                week.beginArray(qMetaTypeId<QDBusVariant>());
+                foreach (const QVariant &entry, it.value().toList()) {
+                    QDBusArgument record;
+                    record.beginMap(QMetaType::QString, qMetaTypeId<QDBusVariant>());
+                    const QVariantMap values = entry.toMap();
+                    for (QVariantMap::const_iterator value = values.constBegin();
+                         value != values.constEnd(); ++value) {
+                        record.beginMapEntry();
+                        record << value.key() << QDBusVariant(value.value());
+                        record.endMapEntry();
+                    }
+                    record.endMap();
+                    week << QDBusVariant(QVariant::fromValue(record));
+                }
+                week.endArray();
+                encoded << it.key() << QDBusVariant(QVariant::fromValue(week));
+            } else {
+                encoded << it.key() << QDBusVariant(it.value());
+            }
+            encoded.endMapEntry();
+        }
+        encoded.endMap();
+        return QVariantList() << QVariant::fromValue(encoded);
+    }
+
     static QVariantList favoriteContactsArguments(const QVariantMap &contacts)
     {
         QDBusArgument encoded;
@@ -449,6 +489,15 @@ public slots:
     void HealthParams()
     {
         replyOrDelay(QStringLiteral("HealthParams"), healthParamsArguments(m_healthParams));
+    }
+    void HealthOverview()
+    {
+        replyOrDelay(QStringLiteral("HealthOverview"),
+                     healthOverviewArguments(m_healthOverview));
+    }
+    void FetchHealthData()
+    {
+        replyOrDelay(QStringLiteral("FetchHealthData"), QVariantList());
     }
     void SetHealthParams(const QVariantMap &params)
     {
@@ -701,6 +750,7 @@ private:
     int m_logLevel = 1;
     bool m_imperialUnits = false;
     QVariantMap m_healthParams;
+    QVariantMap m_healthOverview;
     QList<QVariantMap> m_healthParamsWrites;
     QString m_profileWhenConnected;
     QString m_profileWhenDisconnected;
@@ -875,6 +925,12 @@ private slots:
     void coldHealthParamsReadFailureRemainsNotReady();
     void retainedHealthParamsFallbackRemainsWritable();
     void healthParamsAndImperialUnitsRemainIndependent();
+    void healthOverviewLoadsLazilyAndDecodesNestedDbusValues();
+    void healthDataChangedRefreshesNewestOverview();
+    void oldOwnerHealthOverviewReplyIsIgnored();
+    void fetchHealthDataDoesNotWaitAndRefreshesOverview();
+    void fetchHealthDataErrorCompletesOnce();
+    void failedHealthOverviewRetainsValidatedSnapshot();
     void cannedResponsesLoadLazilyAndUseCachedGetter();
     void newestCannedResponsesReplyWins();
     void oldOwnerCannedResponsesReplyIsIgnored();
@@ -1047,6 +1103,47 @@ static QVariantMap decodedHealthParams(const QVariant &encoded)
         decoded.insert(it.key(), value);
     }
     return decoded;
+}
+
+static QVariantMap healthOverview(int todaySteps, const QString &label)
+{
+    QVariantList stepsWeek;
+    QVariantList sleepWeek;
+    for (int day = 0; day < 7; ++day) {
+        QVariantMap steps;
+        steps.insert(QStringLiteral("label"), label + QString::number(day));
+        steps.insert(QStringLiteral("date"), QStringLiteral("2026-08-%1").arg(day + 1, 2, 10,
+                                                                        QLatin1Char('0')));
+        steps.insert(QStringLiteral("steps"), todaySteps + day);
+        steps.insert(QStringLiteral("averageHeartRate"), 60 + day);
+        steps.insert(QStringLiteral("maxHeartRate"), 100 + day);
+        stepsWeek.append(steps);
+
+        QVariantMap sleep;
+        sleep.insert(QStringLiteral("label"), label + QString::number(day));
+        sleep.insert(QStringLiteral("date"), QStringLiteral("2026-08-%1").arg(day + 1, 2, 10,
+                                                                        QLatin1Char('0')));
+        sleep.insert(QStringLiteral("sleepDuration"), 25000 + day);
+        sleep.insert(QStringLiteral("deepSleepDuration"), 5000 + day);
+        sleepWeek.append(sleep);
+    }
+
+    QVariantMap overview;
+    overview.insert(QStringLiteral("todaySteps"), todaySteps);
+    overview.insert(QStringLiteral("averageStepsPerDay"), 7000);
+    overview.insert(QStringLiteral("lastNightSleepSeconds"), 27000);
+    overview.insert(QStringLiteral("lastNightDeepSleepSeconds"), 5400);
+    overview.insert(QStringLiteral("averageSleepSecondsPerDay"), 26000);
+    overview.insert(QStringLiteral("todayAverageHeartRate"), 65);
+    overview.insert(QStringLiteral("todayMaxHeartRate"), 120);
+    overview.insert(QStringLiteral("latestHeartRate"), 72);
+    overview.insert(QStringLiteral("latestHeartRateTimestamp"), 1785600000);
+    overview.insert(QStringLiteral("averageHeartRate30Days"), 68);
+    overview.insert(QStringLiteral("latestDataTimestamp"), 1785600100);
+    overview.insert(QStringLiteral("daysOfData"), 9);
+    overview.insert(QStringLiteral("stepsWeek"), stepsWeek);
+    overview.insert(QStringLiteral("sleepWeek"), sleepWeek);
+    return overview;
 }
 
 static QVariantMap decodedCannedResponseMap(const QVariantMap &encoded)
@@ -3171,6 +3268,206 @@ void PebbleAsyncTest::healthParamsAndImperialUnitsRemainIndependent()
     QCOMPARE(watch.pendingCount(QStringLiteral("HealthParams")), 0);
     watch.replyNext(QStringLiteral("ImperialUnits"), QVariantList() << false);
     QTRY_VERIFY(!pebble.imperialUnits());
+    QVERIFY(connection.interface()->unregisterService(QString::fromLatin1(serviceName)).isValid());
+}
+
+void PebbleAsyncTest::healthOverviewLoadsLazilyAndDecodesNestedDbusValues()
+{
+    QDBusConnection connection = QDBusConnection::connectToBus(
+        QDBusConnection::SessionBus, QStringLiteral("pebble-async-health-overview-lazy"));
+    QVERIFY(connection.isConnected());
+    DelayedPebble watch(connection);
+    watch.defer(QStringLiteral("HealthOverview"));
+    registerWatch(&watch, connection);
+    registerService(connection);
+    Pebble pebble(QDBusObjectPath(QString::fromLatin1(watchPath)));
+    QTest::qWait(50);
+    QCOMPARE(watch.receivedCount(QStringLiteral("HealthOverview")), 0);
+    QVERIFY(pebble.healthOverview().isEmpty());
+    QVERIFY(!pebble.healthOverviewReady());
+
+    pebble.refreshHealthOverview();
+    pebble.refreshHealthOverview();
+    QTRY_COMPARE(watch.pendingCount(QStringLiteral("HealthOverview")), 2);
+    const QVariantMap newest = healthOverview(9000, QStringLiteral("new-"));
+    watch.replyPending(QStringLiteral("HealthOverview"), 1,
+                       DelayedPebble::healthOverviewArguments(newest));
+    QTRY_VERIFY(pebble.healthOverviewReady());
+    QCOMPARE(pebble.healthOverview(), newest);
+    QCOMPARE(pebble.healthOverview().value(QStringLiteral("todaySteps")).type(), QVariant::Int);
+    QCOMPARE(pebble.healthOverview().value(QStringLiteral("stepsWeek")).type(), QVariant::List);
+    const QVariantMap firstDay = pebble.healthOverview().value(
+        QStringLiteral("stepsWeek")).toList().first().toMap();
+    QCOMPARE(firstDay.value(QStringLiteral("steps")).type(), QVariant::Int);
+    QCOMPARE(firstDay.value(QStringLiteral("label")).type(), QVariant::String);
+    watch.replyNext(QStringLiteral("HealthOverview"),
+                    DelayedPebble::healthOverviewArguments(
+                        healthOverview(100, QStringLiteral("old-"))));
+    QTest::qWait(50);
+    QCOMPARE(pebble.healthOverview(), newest);
+    QVERIFY(connection.interface()->unregisterService(QString::fromLatin1(serviceName)).isValid());
+}
+
+void PebbleAsyncTest::healthDataChangedRefreshesNewestOverview()
+{
+    QDBusConnection connection = QDBusConnection::connectToBus(
+        QDBusConnection::SessionBus, QStringLiteral("pebble-async-health-overview-signal"));
+    QVERIFY(connection.isConnected());
+    DelayedPebble watch(connection);
+    const QVariantMap initial = healthOverview(1000, QStringLiteral("initial-"));
+    watch.setHealthOverviewValue(initial);
+    registerWatch(&watch, connection);
+    registerService(connection);
+    Pebble pebble(QDBusObjectPath(QString::fromLatin1(watchPath)));
+    pebble.refreshHealthOverview();
+    QTRY_VERIFY(pebble.healthOverviewReady());
+    QCOMPARE(pebble.healthOverview(), initial);
+
+    watch.defer(QStringLiteral("HealthOverview"));
+    watch.emitPebbleSignal(QStringLiteral("HealthDataChanged"));
+    watch.emitPebbleSignal(QStringLiteral("HealthDataChanged"));
+    QTRY_COMPARE(watch.pendingCount(QStringLiteral("HealthOverview")), 2);
+    QVERIFY(!pebble.healthOverviewReady());
+    const QVariantMap newest = healthOverview(8000, QStringLiteral("signal-"));
+    watch.replyPending(QStringLiteral("HealthOverview"), 1,
+                       DelayedPebble::healthOverviewArguments(newest));
+    QTRY_VERIFY(pebble.healthOverviewReady());
+    QCOMPARE(pebble.healthOverview(), newest);
+    watch.replyNext(QStringLiteral("HealthOverview"),
+                    DelayedPebble::healthOverviewArguments(initial));
+    QTest::qWait(50);
+    QCOMPARE(pebble.healthOverview(), newest);
+    QVERIFY(connection.interface()->unregisterService(QString::fromLatin1(serviceName)).isValid());
+}
+
+void PebbleAsyncTest::oldOwnerHealthOverviewReplyIsIgnored()
+{
+    QDBusConnection firstConnection = QDBusConnection::connectToBus(
+        QDBusConnection::SessionBus, QStringLiteral("pebble-async-health-overview-old-owner"));
+    QVERIFY(firstConnection.isConnected());
+    DelayedPebble firstWatch(firstConnection);
+    firstWatch.defer(QStringLiteral("HealthOverview"));
+    registerWatch(&firstWatch, firstConnection);
+    registerService(firstConnection, QDBusConnectionInterface::DontQueueService,
+                    QDBusConnectionInterface::AllowReplacement);
+    Pebble pebble(QDBusObjectPath(QString::fromLatin1(watchPath)));
+    pebble.refreshHealthOverview();
+    QTRY_COMPARE(firstWatch.pendingCount(QStringLiteral("HealthOverview")), 1);
+
+    QDBusConnection secondConnection = QDBusConnection::connectToBus(
+        QDBusConnection::SessionBus, QStringLiteral("pebble-async-health-overview-new-owner"));
+    QVERIFY(secondConnection.isConnected());
+    DelayedPebble secondWatch(secondConnection);
+    const QVariantMap replacement = healthOverview(6000, QStringLiteral("replacement-"));
+    secondWatch.defer(QStringLiteral("HealthOverview"));
+    registerWatch(&secondWatch, secondConnection);
+    registerService(secondConnection, QDBusConnectionInterface::ReplaceExistingService,
+                    QDBusConnectionInterface::DontAllowReplacement);
+    QTRY_COMPARE(secondWatch.pendingCount(QStringLiteral("HealthOverview")), 1);
+    secondWatch.replyNext(QStringLiteral("HealthOverview"),
+                          DelayedPebble::healthOverviewArguments(replacement));
+    QTRY_VERIFY(pebble.healthOverviewReady());
+    QCOMPARE(pebble.healthOverview(), replacement);
+
+    firstWatch.replyNext(QStringLiteral("HealthOverview"),
+                         DelayedPebble::healthOverviewArguments(
+                             healthOverview(20, QStringLiteral("old-"))));
+    QTest::qWait(50);
+    QCOMPARE(pebble.healthOverview(), replacement);
+    QVERIFY(secondConnection.interface()->unregisterService(QString::fromLatin1(serviceName)).isValid());
+}
+
+void PebbleAsyncTest::fetchHealthDataDoesNotWaitAndRefreshesOverview()
+{
+    QDBusConnection connection = QDBusConnection::connectToBus(
+        QDBusConnection::SessionBus, QStringLiteral("pebble-async-fetch-health-data"));
+    QVERIFY(connection.isConnected());
+    DelayedPebble watch(connection);
+    watch.setHealthOverviewValue(healthOverview(1000, QStringLiteral("before-")));
+    registerWatch(&watch, connection);
+    registerService(connection);
+    Pebble pebble(QDBusObjectPath(QString::fromLatin1(watchPath)));
+    pebble.refreshHealthOverview();
+    QTRY_VERIFY(pebble.healthOverviewReady());
+
+    watch.defer(QStringLiteral("FetchHealthData"));
+    watch.defer(QStringLiteral("HealthOverview"));
+    QElapsedTimer timer;
+    timer.start();
+    pebble.fetchHealthData();
+    QVERIFY2(timer.elapsed() < 1000, "FetchHealthData waited for its D-Bus reply");
+    QTRY_COMPARE(watch.pendingCount(QStringLiteral("FetchHealthData")), 1);
+    QVERIFY(pebble.healthSyncing());
+    pebble.fetchHealthData();
+    QCOMPARE(watch.pendingCount(QStringLiteral("FetchHealthData")), 1);
+
+    const QVariantMap refreshed = healthOverview(9000, QStringLiteral("after-"));
+    watch.replyNext(QStringLiteral("FetchHealthData"), QVariantList());
+    QTRY_COMPARE(watch.pendingCount(QStringLiteral("HealthOverview")), 1);
+    watch.replyNext(QStringLiteral("HealthOverview"),
+                    DelayedPebble::healthOverviewArguments(refreshed));
+    QTRY_VERIFY(!pebble.healthSyncing());
+    QTRY_VERIFY(pebble.healthOverviewReady());
+    QCOMPARE(pebble.healthOverview(), refreshed);
+    QVERIFY(connection.interface()->unregisterService(QString::fromLatin1(serviceName)).isValid());
+}
+
+void PebbleAsyncTest::fetchHealthDataErrorCompletesOnce()
+{
+    QDBusConnection connection = QDBusConnection::connectToBus(
+        QDBusConnection::SessionBus, QStringLiteral("pebble-async-fetch-health-data-error"));
+    QVERIFY(connection.isConnected());
+    DelayedPebble watch(connection);
+    registerWatch(&watch, connection);
+    registerService(connection);
+    Pebble pebble(QDBusObjectPath(QString::fromLatin1(watchPath)));
+    QSignalSpy completed(&pebble,
+                         QMetaMethod::fromSignal(&Pebble::healthSyncCompleted));
+    watch.defer(QStringLiteral("FetchHealthData"));
+
+    pebble.fetchHealthData();
+    QTRY_COMPARE(watch.pendingCount(QStringLiteral("FetchHealthData")), 1);
+    QVERIFY(pebble.healthSyncing());
+    watch.replyPendingError(QStringLiteral("FetchHealthData"), 0);
+    QTRY_VERIFY(!pebble.healthSyncing());
+    QTRY_COMPARE(completed.count(), 1);
+    QCOMPARE(completed.takeFirst().at(0).toBool(), false);
+    QTest::qWait(50);
+    QCOMPARE(completed.count(), 0);
+    QVERIFY(connection.interface()->unregisterService(QString::fromLatin1(serviceName)).isValid());
+}
+
+void PebbleAsyncTest::failedHealthOverviewRetainsValidatedSnapshot()
+{
+    QDBusConnection connection = QDBusConnection::connectToBus(
+        QDBusConnection::SessionBus, QStringLiteral("pebble-async-health-overview-failure"));
+    QVERIFY(connection.isConnected());
+    DelayedPebble watch(connection);
+    const QVariantMap snapshot = healthOverview(4000, QStringLiteral("valid-"));
+    watch.setHealthOverviewValue(snapshot);
+    registerWatch(&watch, connection);
+    registerService(connection);
+    Pebble pebble(QDBusObjectPath(QString::fromLatin1(watchPath)));
+    pebble.refreshHealthOverview();
+    QTRY_VERIFY(pebble.healthOverviewReady());
+    QCOMPARE(pebble.healthOverview(), snapshot);
+
+    watch.defer(QStringLiteral("HealthOverview"));
+    pebble.refreshHealthOverview();
+    QTRY_COMPARE(watch.pendingCount(QStringLiteral("HealthOverview")), 1);
+    QVERIFY(!pebble.healthOverviewReady());
+    watch.replyPendingError(QStringLiteral("HealthOverview"), 0);
+    QTRY_VERIFY(pebble.healthOverviewReady());
+    QCOMPARE(pebble.healthOverview(), snapshot);
+
+    pebble.refreshHealthOverview();
+    QTRY_COMPARE(watch.pendingCount(QStringLiteral("HealthOverview")), 1);
+    QVariantMap invalid;
+    invalid.insert(QStringLiteral("todaySteps"), 1);
+    watch.replyNext(QStringLiteral("HealthOverview"),
+                    DelayedPebble::healthOverviewArguments(invalid));
+    QTRY_VERIFY(pebble.healthOverviewReady());
+    QCOMPARE(pebble.healthOverview(), snapshot);
     QVERIFY(connection.interface()->unregisterService(QString::fromLatin1(serviceName)).isValid());
 }
 

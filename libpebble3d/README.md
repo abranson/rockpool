@@ -428,6 +428,15 @@ shape. Compatibility writes reject `other` and ordinal `2`, which that record
 cannot round-trip; the primary `Health1.Settings` record still supports ordinals
 `0..2`.
 
+Historical movement, sleep, and heart-rate rows do not contain a watch
+identifier. The compatibility `HealthOverview` dashboard therefore projects
+bounded account-global history and labels it as shared across the Rockpool
+account. `FetchHealthData` addresses the selected connected watch and waits for
+its incremental-sync acknowledgement; every completed database update emits
+`HealthDataChanged` on all compatibility watch objects. This compatibility view
+does not add historical records to the primary `org.rockpool` API or claim
+per-watch provenance.
+
 #### Legacy global-settings migration
 
 The one-time reconciliation waits until v1 per-watch import is complete. Config
@@ -463,7 +472,7 @@ It is deliberately not a list of obsolete endpoints to carry forward.
 | Timeline/calendar | Account-global `Timeline1.CalendarEnabled`; `watch.timeline` and `platform.calendar` remain absent pending a typed calendar domain | libpebble3d |
 | Notifications/actions/replies | `Notifications1`/`Messaging1`; replies are available only for a live, trusted Sailfish SMS/IM/MMS notification with one narrowly validated input route, and are consumed after one attempt. Canonical primary canned groups are account-global and replayed into libpebble3 (including an explicit empty collection), while compatibility groups remain source-scoped and are not reply actions | libpebble3 + provider |
 | Calls/media/contacts/location/profiles | Watch domains + provider | provider |
-| Health and units | Account-global `Health1` settings projection on every watch; compatibility health strings round-trip only `female`/`male`; historical health data remains unpublished | libpebble3d |
+| Health and units | Account-global `Health1` settings projection on every watch; compatibility health strings round-trip only `female`/`male`. The compatibility UI exposes the bounded legacy health dashboard and addressed incremental sync, explicitly labelled as shared account history rather than per-watch provenance | libpebble3d |
 | Weather | Compatibility locations receive keyless automatic forecasts for saved coordinates and still accept validated external injection. Migration imports a single physical legacy saved-location collection, or a unanimous collection from eligible legacy watch directories; conflicting legacy collections are preserved without choosing one. The `n/a` current-location slot remains pending `platform.location` | libpebble3 + libpebble3d |
 | Screenshots | `Screenshots1` | libpebble3 |
 | Developer mode | `Developer1` | libpebble3 |

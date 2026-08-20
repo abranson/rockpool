@@ -170,6 +170,10 @@ interface RockworkPebble : DBusInterface {
     // Health / units / profiles / calendar
     fun HealthParams(): Map<String, Variant<*>>
     fun SetHealthParams(params: Map<String, Variant<*>>)
+    // Historical account-global health history API. Keep this on org.rockwork only; the
+    // public org.rockpool XML intentionally has no legacy health-history surface.
+    fun HealthOverview(): Map<String, Variant<*>>
+    fun FetchHealthData()
     fun ImperialUnits(): Boolean
     fun SetImperialUnits(imperial: Boolean)
     fun ProfileWhenConnected(): String
@@ -207,6 +211,7 @@ interface RockworkPebble : DBusInterface {
     class ProfileWhenConnectedChanged(path: String) : DBusSignal(path)
     class ProfileWhenDisconnectedChanged(path: String) : DBusSignal(path)
     class HealthParamsChanged(path: String) : DBusSignal(path)
+    class HealthDataChanged(path: String) : DBusSignal(path)
     class DevConnectionChanged(path: String, state: Boolean) : DBusSignal(path, state)
     class DevConnCloudChanged(path: String, state: Boolean) : DBusSignal(path, state)
 }

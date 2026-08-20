@@ -3,8 +3,9 @@
  */
 package io.rebble.libpebblecommon.compat.rockwork
 
-import io.rebble.libpebblecommon.connection.FakeLibPebble
+import io.rebble.libpebblecommon.connection.ConnectedPebbleDevice
 import io.rebble.libpebblecommon.connection.FakeConnectedDevice
+import io.rebble.libpebblecommon.connection.FakeLibPebble
 import io.rebble.libpebblecommon.connection.KnownPebbleDevice
 import io.rebble.libpebblecommon.connection.LibPebble
 import io.rebble.libpebblecommon.connection.PebbleDevice
@@ -43,6 +44,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 import kotlin.uuid.Uuid
 
@@ -461,6 +463,62 @@ class RockworkMutationSignalTest {
     }
 
     @Test
+    fun `health history is account global and sync targets the addressed watch`() {
+        val first = fakeWatch(connected = true) as FakeConnectedDevice
+        val second = fakeWatch(connected = true) as FakeConnectedDevice
+        val base = FakeLibPebble()
+        val libPebble = object : LibPebble by base {
+            override val watches = MutableStateFlow<List<PebbleDevice>>(listOf(first, second))
+        }
+        var requested: ConnectedPebbleDevice? = null
+        val obj = rockworkObject(
+            libPebble = libPebble,
+            settings = temporarySettings(),
+            emit = {},
+            requestHealthData = { watch ->
+                requested = watch
+                true
+            },
+        )
+
+        val overview = obj.HealthOverview()
+        assertEquals("av", overview.getValue("stepsWeek").sig)
+        assertEquals("av", overview.getValue("sleepWeek").sig)
+
+        obj.FetchHealthData()
+
+        assertSame(first, requested)
+    }
+
+    @Test
+    fun `health sync rejects disconnected and unacknowledged requests`() {
+        val disconnected = fakeWatch(connected = false)
+        val disconnectedBase = FakeLibPebble()
+        val disconnectedLib = object : LibPebble by disconnectedBase {
+            override val watches = MutableStateFlow(listOf(disconnected))
+        }
+        val disconnectedObject = rockworkObject(
+            libPebble = disconnectedLib,
+            settings = temporarySettings(),
+            emit = {},
+        )
+        assertFailsWith<DBusExecutionException> { disconnectedObject.FetchHealthData() }
+
+        val connected = fakeWatch(connected = true) as FakeConnectedDevice
+        val connectedBase = FakeLibPebble()
+        val connectedLib = object : LibPebble by connectedBase {
+            override val watches = MutableStateFlow<List<PebbleDevice>>(listOf(connected))
+        }
+        val rejectedObject = rockworkObject(
+            libPebble = connectedLib,
+            settings = temporarySettings(),
+            emit = {},
+            requestHealthData = { false },
+        )
+        assertFailsWith<DBusExecutionException> { rejectedObject.FetchHealthData() }
+    }
+
+    @Test
     fun `timeline reset targets only the addressed connected watch`() = runBlocking {
         val first = fakeWatch(connected = true) as FakeConnectedDevice
         val second = fakeWatch(connected = true) as FakeConnectedDevice
@@ -517,6 +575,9 @@ class RockworkMutationSignalTest {
             emit(signalForPath(WATCH_PATH))
         },
         configFitsStorage: (io.rebble.libpebblecommon.LibPebbleConfig) -> Boolean = { true },
+        requestHealthData: suspend (ConnectedPebbleDevice) -> Boolean = { watch ->
+            watch.requestHealthData(fullSync = false)
+        },
         scope: kotlinx.coroutines.CoroutineScope = kotlinx.coroutines.CoroutineScope(
             kotlinx.coroutines.Dispatchers.Unconfined,
         ),
@@ -546,6 +607,7 @@ class RockworkMutationSignalTest {
         emit = emit,
         broadcast = broadcast,
         configFitsStorage = configFitsStorage,
+        requestHealthData = requestHealthData,
     )
 
     private companion object {

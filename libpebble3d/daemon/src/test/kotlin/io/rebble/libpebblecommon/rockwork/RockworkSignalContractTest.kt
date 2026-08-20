@@ -20,6 +20,26 @@ class RockworkSignalContractTest {
     }
 
     @Test
+    fun `health data change retains legacy empty payload`() {
+        val signal = RockworkPebble.HealthDataChanged(WATCH_PATH)
+
+        assertEquals(WATCH_PATH, signal.path)
+        assertEquals("HealthDataChanged", signal.name)
+        assertNull(signal.parameters)
+    }
+
+    @Test
+    fun `health history methods retain legacy D-Bus shapes`() {
+        val overview = RockworkPebble::class.java.getMethod("HealthOverview")
+        val fetch = RockworkPebble::class.java.getMethod("FetchHealthData")
+
+        assertEquals(Map::class.java, overview.returnType)
+        assertEquals(Void.TYPE, fetch.returnType)
+        assertEquals(0, overview.parameterCount)
+        assertEquals(0, fetch.parameterCount)
+    }
+
+    @Test
     fun `weather locations change retains legacy variant array payload`() {
         val locations = listOf(
             Variant(listOf("Current Location", "n/a", "n/a"), "as"),

@@ -196,9 +196,12 @@ rockpool_settings_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebb
 compat_mutation_signal_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebblecommon/rockwork/RockworkMutationSignalTest.kt
 compat_firmware_status_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebblecommon/rockwork/RockworkFirmwareStatusTest.kt
 compat_service=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockwork/RockworkService.kt
+compat_interfaces=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockwork/RockworkInterfaces.kt
 compat_pebble_object=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockwork/RockworkPebbleObject.kt
 compat_health=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockwork/RockworkHealth.kt
 compat_health_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebblecommon/rockwork/RockworkHealthTest.kt
+compat_health_data=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockwork/RockworkHealthData.kt
+compat_health_data_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebblecommon/rockwork/RockworkHealthDataTest.kt
 compat_notification_sources=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockwork/RockworkNotificationSources.kt
 compat_notification_sources_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebblecommon/rockwork/RockworkNotificationSourcesTest.kt
 compat_notification_appearance=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockwork/RockworkNotificationAppearance.kt
@@ -259,6 +262,7 @@ app_settings_page=$project_dir/rockwork/qml/pages/AppSettingsPage.qml
 responses_page=$project_dir/rockwork/qml/pages/ResponsesPage.qml
 send_text_settings_dialog=$project_dir/rockwork/qml/pages/SendTextSettingsDialog.qml
 health_settings_dialog=$project_dir/rockwork/qml/pages/HealthSettingsDialog.qml
+health_history_page=$project_dir/rockwork/qml/pages/HealthHistoryPage.qml
 weather_settings_dialog=$project_dir/rockwork/qml/pages/WeatherSettingsDialog.qml
 location_picker=$project_dir/rockwork/qml/pages/LocationPicker.qml
 language_page=$project_dir/rockwork/qml/pages/LanguagePage.qml
@@ -404,8 +408,11 @@ require_file "$primary_connection_attempt_test" "primary connection-attempt regr
 require_file "$connection_attempt_completion_test" "primary connection completion regressions"
 require_file "$bond_forget_coordinator_test" "bonded-watch Forget coordinator regressions"
 require_file "$compat_pebble_object" "compatibility watch object"
+require_file "$compat_interfaces" "compatibility D-Bus interfaces"
 require_file "$compat_health" "compatibility health record mapper"
 require_file "$compat_health_test" "compatibility health record regressions"
+require_file "$compat_health_data" "compatibility health-history projection"
+require_file "$compat_health_data_test" "compatibility health-history regressions"
 require_file "$primary_discovery_mappings" "primary discovery capability mappings"
 require_file "$primary_discovery_mappings_test" "primary discovery regressions"
 require_file "$bond_import_operation" "bond import operation mapper"
@@ -495,6 +502,7 @@ require_file "$app_settings_page" "Rockwork application/OAuth settings page"
 require_file "$responses_page" "Rockwork canned-response editor"
 require_file "$send_text_settings_dialog" "Rockwork Send Text settings dialog"
 require_file "$health_settings_dialog" "Rockwork Health settings dialog"
+require_file "$health_history_page" "Rockwork Health history page"
 require_file "$weather_settings_dialog" "Rockwork weather settings dialog"
 require_file "$location_picker" "Rockwork weather location picker"
 require_file "$language_page" "Rockwork language settings page"
@@ -2771,6 +2779,68 @@ reject_extended 'healthParams:[[:space:]]*pebble\.healthParams' "$installed_apps
 reject_extended 'fetchVarMap\("HealthParams"\)|m_iface->call\("(HealthParams|SetHealthParams)"\)' \
     "$rockwork_pebble" 'blocking compatibility health-settings call'
 
+# Historical health is account-wide in libpebble3. Restore the old dashboard and an
+# addressed-watch sync request without assigning those shared rows to the selected watch.
+require_fixed 'fun HealthOverview(): Map<String, Variant<*>>' "$compat_interfaces" \
+    'legacy health-overview D-Bus method'
+require_fixed 'fun FetchHealthData()' "$compat_interfaces" \
+    'legacy health-fetch D-Bus method'
+require_fixed 'class HealthDataChanged(path: String) : DBusSignal(path)' \
+    "$compat_interfaces" 'legacy health-data change signal'
+require_fixed 'private val healthData = RockworkHealthDataCoordinator(libPebble)' \
+    "$compat_service" 'shared account-global health-history projection'
+require_fixed 'libPebble.healthDataUpdated.collect {' "$compat_service" \
+    'health-history database observer'
+require_fixed 'RockworkPebble.HealthDataChanged(targetPath)' "$compat_service" \
+    'health-history global signal fanout'
+require_fixed 'withTimeout(HEALTH_OVERVIEW_TIMEOUT) { healthData.healthOverview() }' \
+    "$compat_pebble_object" 'bounded compatibility health overview'
+require_fixed 'val watch = connected() ?: throw failedCall(' "$compat_pebble_object" \
+    'addressed health-sync watch selection'
+require_fixed 'watch.requestHealthData(fullSync = false)' "$compat_pebble_object" \
+    'awaited addressed health-sync request'
+require_fixed 'private val HEALTH_FETCH_TIMEOUT = 12.seconds' "$compat_pebble_object" \
+    'bounded compatibility health sync'
+require_fixed 'fun `overview batches thirty days and matches legacy dashboard fields`()' \
+    "$compat_health_data_test" 'legacy dashboard projection regression'
+require_fixed 'fun `health history is account global and sync targets the addressed watch`()' \
+    "$compat_mutation_signal_test" 'addressed Health history sync regression'
+require_fixed 'fun `health sync rejects disconnected and unacknowledged requests`()' \
+    "$compat_mutation_signal_test" 'truthful Health sync failure regression'
+
+require_fixed 'Q_PROPERTY(QVariantMap healthOverview READ healthOverview NOTIFY healthOverviewChanged)' \
+    "$rockwork_pebble_header" 'cached health-overview property'
+require_fixed 'Q_PROPERTY(bool healthOverviewReady READ healthOverviewReady NOTIFY healthOverviewReadyChanged)' \
+    "$rockwork_pebble_header" 'asynchronous health-overview readiness'
+require_fixed 'Q_PROPERTY(bool healthSyncing READ healthSyncing NOTIFY healthSyncingChanged)' \
+    "$rockwork_pebble_header" 'asynchronous health-sync state'
+require_fixed 'm_iface->asyncCall(QStringLiteral("HealthOverview"))' "$rockwork_pebble" \
+    'nonblocking health-overview transport'
+require_fixed 'm_iface->asyncCall(QStringLiteral("FetchHealthData"))' "$rockwork_pebble" \
+    'nonblocking health-sync transport'
+require_fixed 'this, &Pebble::healthDataChangedFromService' "$rockwork_pebble" \
+    'health-data signal refresh handler'
+reject_extended 'm_iface->call\("(HealthOverview|FetchHealthData)"\)' "$rockwork_pebble" \
+    'blocking compatibility health-history call'
+
+require_fixed 'title: qsTr("Health history")' "$health_history_page" \
+    'Health history page title'
+require_fixed 'Health history is shared across this Rockpool account.' "$health_history_page" \
+    'truthful account-global health-history label'
+require_fixed 'pebble.refreshHealthOverview()' "$health_history_page" \
+    'lazy Health history refresh'
+reject_extended 'root\.pebble\.refreshHealthOverview\(\)' "$health_history_page" \
+    'duplicate Health overview refresh after sync completion'
+reject_extended 'Component\.onCompleted:[[:space:]]*refreshOverview\(\)' \
+    "$health_history_page" \
+    'duplicate Health overview refresh during initial page activation'
+require_fixed 'pebble.fetchHealthData()' "$health_history_page" \
+    'Health history sync action'
+require_fixed 'root.pebble.connected && root.healthEnabled' "$health_history_page" \
+    'connected-watch Health sync gate'
+require_fixed 'page: "HealthHistoryPage.qml"' "$main_menu_page" \
+    'Health history navigation'
+
 # Primary operations can finish before the method reply containing their path.
 # The reusable client must install signal listeners before its authoritative
 # GetAll, reject reordered snapshots and old service owners, and never infer a
@@ -3143,6 +3213,12 @@ for regression in \
     coldHealthParamsReadFailureRemainsNotReady \
     retainedHealthParamsFallbackRemainsWritable \
     healthParamsAndImperialUnitsRemainIndependent \
+    healthOverviewLoadsLazilyAndDecodesNestedDbusValues \
+    healthDataChangedRefreshesNewestOverview \
+    oldOwnerHealthOverviewReplyIsIgnored \
+    fetchHealthDataDoesNotWaitAndRefreshesOverview \
+    fetchHealthDataErrorCompletesOnce \
+    failedHealthOverviewRetainsValidatedSnapshot \
     cannedResponsesLoadLazilyAndUseCachedGetter \
     newestCannedResponsesReplyWins \
     oldOwnerCannedResponsesReplyIsIgnored \

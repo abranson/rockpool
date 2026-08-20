@@ -100,6 +100,7 @@ internal class RockworkPebbleObject(
     private val profileSettings: ProfileSettingsCoordinator,
     private val timelineWindow: TimelineWindowCoordinator,
     private val healthCoordinator: RockworkHealthCoordinator,
+    private val healthData: RockworkHealthDataCoordinator = RockworkHealthDataCoordinator(libPebble),
     private val weatherCoordinator: RockworkWeatherCoordinator,
     private val notificationAppearance: RockworkNotificationAppearanceCoordinator,
     private val scope: CoroutineScope,
@@ -107,6 +108,9 @@ internal class RockworkPebbleObject(
     private val broadcast: ((String) -> DBusSignal) -> Unit,
     private val configFitsStorage: (LibPebbleConfig) -> Boolean = { true },
     private val refreshWeather: () -> Unit = {},
+    private val requestHealthData: suspend (ConnectedPebbleDevice) -> Boolean = { watch ->
+        watch.requestHealthData(fullSync = false)
+    },
 ) : RockworkPebble {
     private val logger = Logger.withTag("RockworkPebble")
     private val keyPrefix = address.replace(":", "_")
@@ -1147,6 +1151,33 @@ internal class RockworkPebbleObject(
         }
     }
 
+    override fun HealthOverview(): Map<String, Variant<*>> = try {
+        runBlocking {
+            withTimeout(HEALTH_OVERVIEW_TIMEOUT) { healthData.healthOverview() }
+        }
+    } catch (e: Exception) {
+        logger.w(e) { "HealthOverview failed" }
+        throw failedCall("Health history is unavailable")
+    }
+
+    override fun FetchHealthData() {
+        val watch = connected() ?: throw failedCall("The addressed watch is not connected")
+        if (!healthSyncThrottle.tryAcquire()) {
+            throw failedCall("Health data was requested recently")
+        }
+        val accepted = try {
+            runBlocking {
+                withTimeout(HEALTH_FETCH_TIMEOUT) {
+                    requestHealthData(watch)
+                }
+            }
+        } catch (e: Exception) {
+            logger.w(e) { "FetchHealthData failed" }
+            false
+        }
+        if (!accepted) throw failedCall("The watch did not accept the health sync request")
+    }
+
     override fun ImperialUnits(): Boolean = try {
         healthCoordinator.current().imperialUnits
     } catch (e: Exception) {
@@ -1237,6 +1268,8 @@ internal class RockworkPebbleObject(
         private const val LOG_TIMEOUTS_ALLOWED = 2
         private const val MAX_STANDARD_APP_MESSAGE_PAYLOAD = 2_048
         private const val MAX_8K_APP_MESSAGE_PAYLOAD = 8_222
+        private val HEALTH_OVERVIEW_TIMEOUT = 5.seconds
+        private val HEALTH_FETCH_TIMEOUT = 12.seconds
         private val WEATHER_LANGUAGE = Regex("^[A-Z]{2}$")
         private val LOG_RECEIVE_TIMEOUT = 5.seconds
         private val LOG_DUMP_TIMEOUT = 2.minutes
