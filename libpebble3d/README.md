@@ -457,6 +457,7 @@ It is deliberately not a list of obsolete endpoints to carry forward.
 | Notifications/actions/replies | `Notifications1`/`Messaging1`; canonical primary canned groups are account-global and replayed into libpebble3 (including an explicit empty collection), while compatibility groups remain source-scoped and are not reply actions | libpebble3 + provider |
 | Calls/media/contacts/location/profiles | Watch domains + provider | provider |
 | Health and units | Account-global `Health1` settings projection on every watch; compatibility health strings round-trip only `female`/`male`; historical health data remains unpublished | libpebble3d |
+| Weather | Compatibility locations receive keyless automatic forecasts for saved coordinates and still accept validated external injection. Migration imports a single physical legacy saved-location collection, or a unanimous collection from eligible legacy watch directories; conflicting legacy collections are preserved without choosing one. The `n/a` current-location slot remains pending `platform.location` | libpebble3 + libpebble3d |
 | Screenshots | `Screenshots1` | libpebble3 |
 | Developer mode | `Developer1` | libpebble3 |
 | Log export | `Logs1.Dump` to `~/Downloads/pebble.log` | libpebble3d |

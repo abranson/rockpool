@@ -8,12 +8,20 @@ service; Rockpool communicates with it through the `org.rockpool` D-Bus API.
 
 ## Features
 
-* Forwards notifications to the watch, they can be opened or dismissed from there. New notification types in the pebble v3 are used: Hangouts for Hangish, Telegram for Sailorgram and the android client, Whatsapp for the android client. Different notification types can be silenced either completely or only when the phone is unlocked.
-* Calendar entries are added to the timeline on the watch, automatically refreshed when the phone's calendar is updated. If you have a reminder set on the entry before the event starts, you'll get one on your watch too.
-* Send music info to the watch, including track duration and progress so you get the progress bar. You can pause, play, skip tracks and change the volume from your pebble.
-* Show incoming call notifications, rejecting, starting and stopping calls. Ending calls currently crashes the daemon.
-* You can manage watch apps, and browse the pebble store for new ones. If you previously added apps manually, you should remove them and add them from the store so you get the nice icon.
-* Lots more: Profile switching when the watch is connected (e.g. silent). Take, manage and share watch screenshots. Update the time on your watch whenever the time or timezone changes on your phone.
+Rockpool provides watch discovery, pairing and connection management; app and
+watchface management; notifications; calls and media controls; screenshots;
+watch firmware and language workflows; health, profile and timeline settings;
+keyless forecasts for saved weather locations; developer tools; and Rebble
+account integration. Availability is reported at runtime because several
+workflows depend on the connected watch, the installed platform provider, or
+transport support.
+
+See the [capability registry](libpebble3d/README.md#capability-registry) for the runtime
+contract and the [functional parity matrix](libpebble3d/README.md#functional-parity-matrix)
+for implemented and intentionally pending replacement workflows. In
+particular, clients must not assume that calendar sync, contacts, location,
+message replies, or Unix-FD installation are available when their capability
+is absent.
 
 ## Building
 

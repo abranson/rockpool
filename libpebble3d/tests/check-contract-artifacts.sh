@@ -188,6 +188,7 @@ bond_forget_coordinator_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/l
 legacy_importer=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockpool/LegacyRockpooldImporter.kt
 legacy_importer_account_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebblecommon/rockpool/LegacyRockpooldImporterAccountTest.kt
 legacy_importer_timeline_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebblecommon/rockpool/LegacyRockpooldImporterTimelineTest.kt
+legacy_importer_weather_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebblecommon/rockpool/LegacyRockpooldImporterWeatherTest.kt
 legacy_global_settings=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockpool/LegacyGlobalSettingsReconciler.kt
 legacy_global_settings_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebblecommon/rockpool/LegacyGlobalSettingsReconcilerTest.kt
 rockpool_settings=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockpool/RockpoolSettings.kt
@@ -202,6 +203,10 @@ compat_notification_sources=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/li
 compat_notification_sources_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebblecommon/rockwork/RockworkNotificationSourcesTest.kt
 compat_notification_appearance=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockwork/RockworkNotificationAppearance.kt
 compat_notification_mutations=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockwork/RockworkNotificationFilterMutations.kt
+compat_weather=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockwork/RockworkWeather.kt
+compat_weather_refresh=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockwork/RockworkWeatherAutoRefresh.kt
+compat_weather_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebblecommon/rockwork/RockworkWeatherTest.kt
+compat_weather_refresh_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebblecommon/rockwork/RockworkWeatherAutoRefreshTest.kt
 proxy_project=$libpebble3d_dir/../platform-sailfish/proxy/proxy.pro
 helper_project=$libpebble3d_dir/../platform-sailfish/helper/helper.pro
 launcher_project=$libpebble3d_dir/../platform-sailfish/launcher/launcher.pro
@@ -253,6 +258,7 @@ responses_page=$project_dir/rockwork/qml/pages/ResponsesPage.qml
 send_text_settings_dialog=$project_dir/rockwork/qml/pages/SendTextSettingsDialog.qml
 health_settings_dialog=$project_dir/rockwork/qml/pages/HealthSettingsDialog.qml
 weather_settings_dialog=$project_dir/rockwork/qml/pages/WeatherSettingsDialog.qml
+location_picker=$project_dir/rockwork/qml/pages/LocationPicker.qml
 language_page=$project_dir/rockwork/qml/pages/LanguagePage.qml
 developer_tools_page=$project_dir/rockwork/qml/pages/DeveloperToolsPage.qml
 notifications_page=$project_dir/rockwork/qml/pages/NotificationsPage.qml
@@ -299,6 +305,8 @@ libpebble3_config_test=$libpebble3d_dir/mobileapp/libpebble3/src/jvmTest/kotlin/
 libpebble3_notification_dao_test=$libpebble3d_dir/mobileapp/libpebble3/src/jvmTest/kotlin/io/rebble/libpebblecommon/database/dao/NotificationAppForgettingJvmTest.kt
 libpebble3_notification_api_test=$libpebble3d_dir/mobileapp/libpebble3/src/jvmTest/kotlin/io/rebble/libpebblecommon/notification/NotificationApiJvmTest.kt
 libpebble3_watch_manager_test=$libpebble3d_dir/mobileapp/libpebble3/src/jvmTest/kotlin/io/rebble/libpebblecommon/connection/WatchManagerTest.kt
+libpebble3_open_meteo=$libpebble3_jvm_source/io/rebble/libpebblecommon/linux/weather/OpenMeteoWeatherClient.kt
+libpebble3_open_meteo_test=$libpebble3d_dir/mobileapp/libpebble3/src/jvmTest/kotlin/io/rebble/libpebblecommon/linux/weather/OpenMeteoWeatherClientJvmTest.kt
 sailfish_linux_backend=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockpool/SailfishLinuxBackend.kt
 sailfish_module_dir=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/sailfish
 reflect_config=$libpebble3d_dir/reflect-config.json
@@ -403,6 +411,7 @@ require_file "$bond_forget_coordinator" "bonded-watch Forget coordinator"
 require_file "$legacy_importer" "legacy-state importer"
 require_file "$legacy_importer_account_test" "legacy account-state importer regressions"
 require_file "$legacy_importer_timeline_test" "legacy-state importer retry regressions"
+require_file "$legacy_importer_weather_test" "legacy weather-location importer regressions"
 require_file "$legacy_global_settings" "legacy global-settings reconciler"
 require_file "$legacy_global_settings_test" "legacy global-settings regressions"
 require_file "$primary_canned_reconciler" "primary canned-response reconciler"
@@ -426,6 +435,12 @@ require_file "$compat_notification_sources" "compatibility notification-source t
 require_file "$compat_notification_sources_test" "compatibility notification-source regressions"
 require_file "$compat_notification_appearance" "compatibility notification-appearance coordinator"
 require_file "$compat_notification_mutations" "compatibility notification-filter mutation queue"
+require_file "$compat_weather" "compatibility weather coordinator"
+require_file "$compat_weather_refresh" "supported automatic weather refresh"
+require_file "$compat_weather_test" "compatibility weather regressions"
+require_file "$compat_weather_refresh_test" "automatic weather refresh regressions"
+require_file "$libpebble3_open_meteo" "native-Linux Open-Meteo client"
+require_file "$libpebble3_open_meteo_test" "native-Linux Open-Meteo regressions"
 require_file "$proxy_project" "Sailfish proxy project"
 require_file "$helper_project" "Sailfish helper project"
 require_file "$launcher_project" "Sailfish launcher project"
@@ -477,6 +492,7 @@ require_file "$responses_page" "Rockwork canned-response editor"
 require_file "$send_text_settings_dialog" "Rockwork Send Text settings dialog"
 require_file "$health_settings_dialog" "Rockwork Health settings dialog"
 require_file "$weather_settings_dialog" "Rockwork weather settings dialog"
+require_file "$location_picker" "Rockwork weather location picker"
 require_file "$language_page" "Rockwork language settings page"
 require_file "$developer_tools_page" "Rockwork developer-tools page"
 require_file "$notifications_page" "Rockwork notifications page"
@@ -1863,6 +1879,20 @@ require_fixed 'readIniChecked(directory.resolve("timeline/sync.ini"))' "$legacy_
     'retryable legacy account credential read'
 require_fixed 'Files.notExists(path, LinkOption.NOFOLLOW_LINKS)' "$legacy_importer" \
     'missing versus unreadable legacy credential distinction'
+require_fixed 'private const val WEATHER_MARKER = "migration.rockpoold.weather-locations.v1"' \
+    "$legacy_importer" 'dedicated legacy weather-location migration marker'
+require_fixed 'settings.updatePrefixChecked(ROCKWORK_WEATHER_SETTINGS_PREFIX)' \
+    "$legacy_importer" 'atomic current-state-preserving weather migration install'
+require_fixed 'count in 0..ROCKWORK_MAX_WEATHER_LOCATIONS' "$legacy_importer" \
+    'bounded legacy weather array before materialization'
+require_fixed 'legacyGlobalSettings.reconcileIfNeeded(legacyImporter.isOriginalImportComplete())' \
+    "$daemon_main" 'legacy global migration independent of weather completion'
+reject_extended 'legacyGlobalSettings\.reconcileIfNeeded\(legacyImporter\.isComplete\(\)\)' \
+    "$daemon_main" 'weather migration must not block unrelated global migration'
+require_fixed 'rockworkService.reloadWeatherSettings()' "$daemon_main" \
+    'late legacy weather migration reload wiring'
+require_fixed 'if (changed) weatherAutoRefresh.trigger()' "$compat_service" \
+    'weather refresh only after a changed persisted snapshot'
 if ! awk '
     /private fun readIni\(path: Path\)/ { in_method = 1 }
     in_method && /\.getOrElse/ && !failure { failure = NR }
@@ -1895,6 +1925,19 @@ do
     require_fixed "fun \`$importer_retry_regression\`()" "$legacy_importer_timeline_test" \
         "legacy-state importer retry regression $importer_retry_regression"
 done
+for weather_import_regression in \
+    'imports one physical weather fixture after the original migration completed' \
+    'conflicting physical weather locations complete without choosing either source' \
+    'an unmatched weather directory defers then imports after its watch is eligible' \
+    'an oversized physical weather array is rejected without allocation'
+do
+    require_fixed "fun \`$weather_import_regression\`()" "$legacy_importer_weather_test" \
+        "legacy weather-location importer regression $weather_import_regression"
+done
+require_fixed 'fun `late persisted migration reloads and publishes the complete snapshot`()' \
+    "$compat_weather_test" 'late weather migration reload publication regression'
+require_fixed 'fun `unchanged persisted settings do not publish another snapshot`()' \
+    "$compat_weather_test" 'unchanged weather reload suppression regression'
 reject_extended 'settings\.set\(' "$legacy_importer" \
     'unchecked migration settings write'
 
@@ -1904,7 +1947,7 @@ reject_extended 'settings\.set\(' "$legacy_importer" \
 # leave source-specific compatibility replies out of the generic global list.
 require_fixed 'val legacyGlobalSettings = LegacyGlobalSettingsReconciler(' "$daemon_main" \
     'legacy global-settings startup coordinator'
-require_fixed 'legacyGlobalSettings.reconcileIfNeeded(legacyImporter.isComplete())' \
+require_fixed 'legacyGlobalSettings.reconcileIfNeeded(legacyImporter.isOriginalImportComplete())' \
     "$daemon_main" 'legacy global-settings retry wiring'
 require_fixed 'if (!legacyImporter.isComplete() || !legacyGlobalSettings.isComplete())' \
     "$daemon_main" 'combined legacy migration retry gate'
@@ -2055,18 +2098,15 @@ require_fixed 'this, &Pebble::refreshFirmwareUpdateInfo' \
 reject_extended 'SIGNAL\(refreshFirmwareUpdateInfo\(\)\)' \
     "$rockwork_pebble" 'firmware-upgrade refresh routed to a nonexistent signal'
 
-# These compatibility settings already have durable backend implementations.
-# Keep the active QML from silently discarding edited values before invoking
-# them, and ensure the cover reconnects through the manager rather than an
-# undefined Pebble method.
+# Keep the supported weather units setting durable. The retired providers were
+# the only source of localized condition strings, so their now-ineffective
+# language selector must not remain in the active UI.
 for weather_setting in \
     'if(root.units !== initialUnits)' \
-    'pebble.weatherUnits = root.units;' \
-    'if(root.lang !== initialLang)' \
-    'pebble.weatherLanguage = root.lang;'
+    'pebble.weatherUnits = root.units;'
 do
     require_fixed "$weather_setting" "$weather_settings_dialog" \
-        "weather unit/language persistence $weather_setting"
+        "weather unit persistence $weather_setting"
 done
 require_fixed 'canAccept: settingsEditable && dirty' "$weather_settings_dialog" \
     'weather dialog readiness and dirty-state acceptance gate'
@@ -2074,13 +2114,43 @@ require_fixed 'pebble.refreshWeatherSettings()' "$weather_settings_dialog" \
     'lazy asynchronous weather settings refresh'
 require_fixed 'var locStore = locations.count !== locStash.length;' \
     "$weather_settings_dialog" 'weather location removal persistence'
-reject_extended 'Alternate Provider|Provider Key|weatherApiKey|WeatherAltKey' \
+reject_extended 'Alternate Provider|Provider Key|weatherApiKey|WeatherAltKey|weatherLanguage|boxLang|modLang' \
     "$weather_settings_dialog" \
-    'unsupported weather-provider credentials in the active compatibility UI'
+    'unsupported weather-provider controls in the active compatibility UI'
 require_fixed 'fun InjectWeatherData(locationName: String, conditions: Map<String, Variant<*>>)' \
     "$compat_pebble_object" 'external weather injection compatibility endpoint'
 reject_extended 'onTextEdited' "$weather_settings_dialog" \
     'unsupported Sailfish Silica TextField textEdited handler'
+reject_extended 'autocomplete\.wunderground\.com|http://' "$location_picker" \
+    'retired or insecure weather location search endpoint'
+require_fixed 'https://geocoding-api.open-meteo.com/v1/search' "$location_picker" \
+    'supported keyless weather location search endpoint'
+require_fixed 'encodeURIComponent(query)' "$location_picker" \
+    'weather location query escaping'
+require_fixed 'generation !== searchGeneration || request !== activeRequest' \
+    "$location_picker" 'stale weather location reply rejection'
+require_fixed 'Location search and forecasts by <a href=\"https://open-meteo.com/\">Open-Meteo</a>' \
+    "$location_picker" 'weather location provider attribution'
+require_fixed 'Location search and forecasts by <a href=\"https://open-meteo.com/\">Open-Meteo</a>' \
+    "$weather_settings_dialog" 'automatic weather provider attribution'
+require_fixed 'https://api.open-meteo.com/v1/forecast' "$libpebble3_open_meteo" \
+    'supported keyless weather forecast endpoint'
+require_fixed 'parameters.append("forecast_days", "2")' "$libpebble3_open_meteo" \
+    'bounded two-day weather forecast request'
+require_fixed 'source == RockworkWeatherObservationSource.EXTERNAL' "$compat_weather" \
+    'external weather injection precedence'
+require_fixed 'weatherAutoRefresh.start()' "$compat_service" \
+    'automatic weather refresh service lifecycle'
+require_fixed 'refreshWeather = weatherAutoRefresh::trigger' "$compat_service" \
+    'weather setting change refresh wiring'
+for weather_regression in \
+    'external injection wins over an in-flight automatic result' \
+    'automatic refresh failures preserve the last durable observation' \
+    'coordinate change removes a prior automatic observation'
+do
+    require_fixed "$weather_regression" "$compat_weather_refresh_test" \
+        "automatic weather regression $weather_regression"
+done
 
 require_fixed 'root.pebble.refreshSettingsPage()' "$settings_page" \
     'lazy asynchronous compatibility settings refresh'

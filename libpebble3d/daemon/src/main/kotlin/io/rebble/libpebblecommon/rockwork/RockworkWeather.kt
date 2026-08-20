@@ -37,14 +37,33 @@ internal data class RockworkWeatherObservation(
     val tomorrowHigh: Short,
     val tomorrowLow: Short,
     val tomorrowIcon: WeatherType,
+    val source: RockworkWeatherObservationSource = RockworkWeatherObservationSource.EXTERNAL,
+)
+
+internal enum class RockworkWeatherObservationSource {
+    EXTERNAL,
+    AUTOMATIC,
+}
+
+internal const val ROCKWORK_WEATHER_SETTINGS_PREFIX = "weather.locations."
+internal const val ROCKWORK_MAX_WEATHER_LOCATIONS = 6
+
+internal data class RockworkWeatherFetchTarget(
+    val key: Uuid,
+    val name: String,
+    val latitude: String,
+    val longitude: String,
+    val latitudeValue: Double,
+    val longitudeValue: Double,
 )
 
 /**
- * Restores the old external weather-injection API without restoring retired web providers.
+ * Owns compatibility weather locations, external injection and supported automatic forecasts.
  *
  * libpebble3's weather database is account-global, so this coordinator is deliberately shared by
  * every compatibility watch object. Calls are serialized and every update submits one complete
- * snapshot, preventing an injection for one location from deleting the others.
+ * snapshot, preventing an update for one location from deleting the others. An external injection
+ * remains authoritative for that location until its coordinates change.
  */
 internal class RockworkWeatherCoordinator(
     private val loadSettings: () -> Map<String, String>,
@@ -53,8 +72,10 @@ internal class RockworkWeatherCoordinator(
     private val nowEpochSeconds: () -> Long = { System.currentTimeMillis() / 1_000L },
 ) {
     constructor(settings: RockpoolSettings, libPebble: LibPebble) : this(
-        loadSettings = { settings.entries(SETTINGS_PREFIX) },
-        replaceSettings = { settings.replacePrefix(SETTINGS_PREFIX, it) },
+        loadSettings = { settings.entries(ROCKWORK_WEATHER_SETTINGS_PREFIX) },
+        replaceSettings = {
+            settings.replacePrefix(ROCKWORK_WEATHER_SETTINGS_PREFIX, it)
+        },
         updateWeatherData = libPebble::updateWeatherData,
     )
 
@@ -73,12 +94,77 @@ internal class RockworkWeatherCoordinator(
         Variant(listOf(location.name, location.latitude, location.longitude), "as")
     }
 
+    /** Reconciles a late legacy migration into the live coordinator without a restart. */
+    @Synchronized
+    fun reloadPersisted(): Result<Boolean> {
+        val persisted = decodeRockworkWeatherSettings(loadSettings()).getOrElse {
+            return Result.failure(it)
+        }
+        if (persisted == state) return Result.success(false)
+        state = persisted
+        updateWeatherData(state.toWeatherData())
+        return Result.success(true)
+    }
+
     @Synchronized
     fun setLocations(values: List<Variant<*>>): Boolean {
         val parsed = parseRockworkWeatherLocations(values)
-        val observations = state.associate { it.name to it.observation }
+        val previous = state.associateBy { it.name }
         val replacement = parsed.map { location ->
-            location.copy(observation = observations[location.name])
+            val existing = previous[location.name]
+            location.copy(
+                observation = existing?.observation?.takeIf {
+                    existing.latitude == location.latitude &&
+                        existing.longitude == location.longitude
+                },
+            )
+        }
+        if (!replaceSettings(encodeRockworkWeatherSettings(replacement))) return false
+        state = replacement
+        updateWeatherData(state.toWeatherData())
+        return true
+    }
+
+    /** Static locations whose observations may be populated by the supported weather fetcher. */
+    @Synchronized
+    fun automaticFetchTargets(): List<RockworkWeatherFetchTarget> = state.mapNotNull { location ->
+        if (location.observation?.source == RockworkWeatherObservationSource.EXTERNAL) {
+            return@mapNotNull null
+        }
+        val latitude = location.latitude.toDoubleOrNull()?.takeIf(Double::isFinite)
+            ?: return@mapNotNull null
+        val longitude = location.longitude.toDoubleOrNull()?.takeIf(Double::isFinite)
+            ?: return@mapNotNull null
+        RockworkWeatherFetchTarget(
+            key = location.key,
+            name = location.name,
+            latitude = location.latitude,
+            longitude = location.longitude,
+            latitudeValue = latitude,
+            longitudeValue = longitude,
+        )
+    }
+
+    /**
+     * Applies a fetched observation only while the exact location still exists and has not been
+     * superseded by the external injection API during the network request.
+     */
+    @Synchronized
+    fun applyAutomaticObservation(
+        target: RockworkWeatherFetchTarget,
+        observation: RockworkWeatherObservation,
+    ): Boolean {
+        val index = state.indexOfFirst {
+            it.key == target.key && it.name == target.name &&
+                it.latitude == target.latitude && it.longitude == target.longitude
+        }
+        if (index < 0 || state[index].observation?.source == RockworkWeatherObservationSource.EXTERNAL) {
+            return false
+        }
+        val replacement = state.toMutableList().also {
+            it[index] = it[index].copy(
+                observation = observation.copy(source = RockworkWeatherObservationSource.AUTOMATIC),
+            )
         }
         if (!replaceSettings(encodeRockworkWeatherSettings(replacement))) return false
         state = replacement
@@ -104,7 +190,7 @@ internal class RockworkWeatherCoordinator(
 internal fun parseRockworkWeatherLocations(
     values: List<Variant<*>>,
 ): List<RockworkWeatherLocation> {
-    require(values.size <= MAX_WEATHER_LOCATIONS) { "Too many weather locations" }
+    require(values.size <= ROCKWORK_MAX_WEATHER_LOCATIONS) { "Too many weather locations" }
     val seenNames = hashSetOf<String>()
     return values.mapIndexed { index, variant ->
         require(variant.sig == "as") { "Weather location must be an array of strings" }
@@ -185,9 +271,9 @@ internal fun parseRockworkWeatherObservation(
 internal fun encodeRockworkWeatherSettings(
     locations: List<RockworkWeatherLocation>,
 ): Map<String, String> = buildMap {
-    put("${SETTINGS_PREFIX}count", locations.size.toString())
+    put("${ROCKWORK_WEATHER_SETTINGS_PREFIX}count", locations.size.toString())
     locations.forEachIndexed { index, location ->
-        val prefix = "$SETTINGS_PREFIX$index."
+        val prefix = "$ROCKWORK_WEATHER_SETTINGS_PREFIX$index."
         put("${prefix}key", location.key.toString())
         put("${prefix}name", location.name)
         put("${prefix}latitude", location.latitude)
@@ -203,6 +289,7 @@ internal fun encodeRockworkWeatherSettings(
             put("${prefix}tomorrowHigh", observation.tomorrowHigh.toString())
             put("${prefix}tomorrowLow", observation.tomorrowLow.toString())
             put("${prefix}tomorrowIcon", observation.tomorrowIcon.code.toUByte().toString())
+            put("${prefix}source", observation.source.name.lowercase())
         }
     }
 }
@@ -210,10 +297,10 @@ internal fun encodeRockworkWeatherSettings(
 internal fun decodeRockworkWeatherSettings(
     values: Map<String, String>,
 ): Result<List<RockworkWeatherLocation>> = runCatching {
-    val count = values["${SETTINGS_PREFIX}count"]?.toIntOrNull() ?: 0
-    require(count in 0..MAX_WEATHER_LOCATIONS)
+    val count = values["${ROCKWORK_WEATHER_SETTINGS_PREFIX}count"]?.toIntOrNull() ?: 0
+    require(count in 0..ROCKWORK_MAX_WEATHER_LOCATIONS)
     (0 until count).map { index ->
-        val prefix = "$SETTINGS_PREFIX$index."
+        val prefix = "$ROCKWORK_WEATHER_SETTINGS_PREFIX$index."
         val location = RockworkWeatherLocation(
             key = Uuid.parse(checkNotNull(values["${prefix}key"])),
             name = checkNotNull(values["${prefix}name"]),
@@ -235,6 +322,10 @@ internal fun decodeRockworkWeatherSettings(
                 tomorrowHigh = checkNotNull(values["${prefix}tomorrowHigh"]?.toShortOrNull()),
                 tomorrowLow = checkNotNull(values["${prefix}tomorrowLow"]?.toShortOrNull()),
                 tomorrowIcon = weatherType(checkNotNull(values["${prefix}tomorrowIcon"]?.toIntOrNull())),
+                source = when (values["${prefix}source"]) {
+                    "automatic" -> RockworkWeatherObservationSource.AUTOMATIC
+                    else -> RockworkWeatherObservationSource.EXTERNAL
+                },
             )
         } else {
             null
@@ -341,8 +432,6 @@ private fun rockworkWeatherUuid(name: String): Uuid {
     return Uuid.parse(java.util.UUID(buffer.long, buffer.long).toString())
 }
 
-private const val SETTINGS_PREFIX = "weather.locations."
-private const val MAX_WEATHER_LOCATIONS = 6
 private const val MAX_LOCATION_NAME_BYTES = 128
 private const val MAX_COORDINATE_BYTES = 64
 private const val MAX_FORECAST_BYTES = 256

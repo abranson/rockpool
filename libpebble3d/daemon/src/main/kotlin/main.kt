@@ -223,7 +223,7 @@ fun main() {
         if (!notificationFilters.reconcilePersistedState()) {
             Logger.w { "notification filter reconciliation is still pending" }
         }
-        legacyGlobalSettings.reconcileIfNeeded(legacyImporter.isComplete())
+        legacyGlobalSettings.reconcileIfNeeded(legacyImporter.isOriginalImportComplete())
         cannedResponses.reconcile()
         timelineWindow.reloadPersisted()
     }
@@ -293,7 +293,7 @@ fun main() {
         cannedResponses,
         rfcommSocketFactory.available,
     ).start()
-    RockworkService(
+    val rockworkService = RockworkService(
         libPebble,
         bondedWatchForget,
         settings,
@@ -304,7 +304,8 @@ fun main() {
         timelineWindow,
         rfcommSocketFactory.available,
         configStoragePolicy::canPersist,
-    ).start()
+    )
+    rockworkService.start()
     accountIdentity.start()
 
     runBlocking {
@@ -318,8 +319,9 @@ fun main() {
                 if (!legacyImporter.isComplete() || !legacyGlobalSettings.isComplete()) {
                     legacyImporter.importIfNeeded(libPebble)
                     legacyRetryAttempted = true
-                    legacyGlobalSettings.reconcileIfNeeded(legacyImporter.isComplete())
+                    legacyGlobalSettings.reconcileIfNeeded(legacyImporter.isOriginalImportComplete())
                     timelineWindow.reloadPersisted()
+                    rockworkService.reloadWeatherSettings()
                 }
                 if (legacyRetryAttempted || notificationFilters.needsReconciliation()) {
                     notificationFilters.reconcilePersistedState()

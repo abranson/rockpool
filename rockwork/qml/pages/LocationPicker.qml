@@ -3,8 +3,29 @@ import Sailfish.Silica 1.0
 
 Dialog {
     id: pickerPage
+
     canAccept: false
     property var selected: null
+    property var activeRequest: null
+    property int searchGeneration
+    property string pendingQuery
+
+    Timer {
+        id: searchTimer
+
+        interval: 350
+        onTriggered: pickerPage.startLookup(pickerPage.pendingQuery,
+                                               pickerPage.searchGeneration)
+    }
+
+    Component.onDestruction: {
+        searchGeneration++
+        searchTimer.stop()
+        if (activeRequest) {
+            activeRequest.abort()
+            activeRequest = null
+        }
+    }
 
     Column {
         width: parent.width
@@ -17,7 +38,7 @@ Dialog {
             width: parent.width
             label: qsTr("Location Name")
             placeholderText: qsTr("Type in location name")
-            onTextChanged: getHints(text)
+            onTextChanged: pickerPage.scheduleLookup(text)
         }
 
         ListModel {
@@ -79,28 +100,83 @@ Dialog {
                 }
             }
         }
+
+        Label {
+            width: parent.width
+            horizontalAlignment: Text.AlignHCenter
+            font.pixelSize: Theme.fontSizeExtraSmall
+            textFormat: Text.RichText
+            text: qsTr("Location search and forecasts by <a href=\"https://open-meteo.com/\">Open-Meteo</a>")
+            onLinkActivated: Qt.openUrlExternally(link)
+        }
     }
-    function getHints(blah) {
-        if(blah && blah.length === 0) return;
-        var url = "http://autocomplete.wunderground.com/aq?query="+blah;
-        var xhr = new XMLHttpRequest();
-        xhr.open("GET",url);
-        xhr.onreadystatechange = function() {
-            if(xhr.readyState === xhr.DONE) {
-                if(xhr.status === 200) {
-                    var json = JSON.parse(xhr.responseText);
-                    if(json.hasOwnProperty("RESULTS") && json.RESULTS.length > 0) {
-                        locModel.clear();
-                        for(var i=0;i<json.RESULTS.length;i++) {
-                            var loc = json.RESULTS[i];
-                            if(loc.type !== "city") continue;
-                            locModel.append({"name":loc.name,"lat":loc.lat,"lng":loc.lon});
-                        }
-                    } else if(!json.hasOwnProperty("RESULTS"))
-                        console.log("WTF",json,xhr.responseText);
-                }
+
+    function scheduleLookup(text) {
+        searchGeneration++
+        pendingQuery = text.trim()
+        searchTimer.stop()
+        if (activeRequest) {
+            activeRequest.abort()
+            activeRequest = null
+        }
+        locModel.clear()
+        if (pendingQuery.length >= 2) {
+            searchTimer.restart()
+        }
+    }
+
+    function startLookup(query, generation) {
+        if (generation !== searchGeneration || query.length < 2) {
+            return
+        }
+
+        var request = new XMLHttpRequest()
+        activeRequest = request
+        var url = "https://geocoding-api.open-meteo.com/v1/search?count=10&format=json&name="
+                + encodeURIComponent(query)
+        request.open("GET", url)
+        request.onreadystatechange = function() {
+            if (request.readyState !== XMLHttpRequest.DONE) {
+                return
             }
-        };
-        xhr.send();
+            if (generation !== searchGeneration || request !== activeRequest) {
+                return
+            }
+
+            activeRequest = null
+            locModel.clear()
+            if (request.status !== 200) {
+                return
+            }
+
+            try {
+                var response = JSON.parse(request.responseText)
+                var results = response.results || []
+                for (var i = 0; i < results.length; i++) {
+                    var location = results[i]
+                    if (typeof location.name !== "string"
+                            || typeof location.latitude !== "number"
+                            || typeof location.longitude !== "number") {
+                        continue
+                    }
+
+                    var name = location.name
+                    if (location.admin1 && location.admin1 !== location.name) {
+                        name += ", " + location.admin1
+                    }
+                    if (location.country) {
+                        name += ", " + location.country
+                    }
+                    locModel.append({
+                        "name": name,
+                        "lat": String(location.latitude),
+                        "lng": String(location.longitude)
+                    })
+                }
+            } catch (error) {
+                locModel.clear()
+            }
+        }
+        request.send()
     }
 }

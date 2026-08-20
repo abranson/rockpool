@@ -645,29 +645,34 @@
 <context>
     <name>LocationPicker</name>
     <message>
-        <location filename="../qml/pages/LocationPicker.qml" line="12"/>
+        <location filename="../qml/pages/LocationPicker.qml" line="33"/>
         <source>Select Location</source>
         <translation>Выберите локацию</translation>
     </message>
     <message>
-        <location filename="../qml/pages/LocationPicker.qml" line="14"/>
+        <location filename="../qml/pages/LocationPicker.qml" line="35"/>
         <source>Cancel</source>
         <translation>Отмена</translation>
     </message>
     <message>
-        <location filename="../qml/pages/LocationPicker.qml" line="18"/>
+        <location filename="../qml/pages/LocationPicker.qml" line="39"/>
         <source>Location Name</source>
         <translation>Имя локации</translation>
     </message>
     <message>
-        <location filename="../qml/pages/LocationPicker.qml" line="19"/>
+        <location filename="../qml/pages/LocationPicker.qml" line="40"/>
         <source>Type in location name</source>
         <translation>Введите имя локации</translation>
     </message>
     <message>
-        <location filename="../qml/pages/LocationPicker.qml" line="34"/>
+        <location filename="../qml/pages/LocationPicker.qml" line="55"/>
         <source>Matching locations will be appearing as you type</source>
         <translation>Совпадающие локации появятся по мере ввода</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/LocationPicker.qml" line="109"/>
+        <source>Location search and forecasts by &lt;a href=&quot;https://open-meteo.com/&quot;&gt;Open-Meteo&lt;/a&gt;</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1275,18 +1280,18 @@
 <context>
     <name>WeatherSettingsDialog</name>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="28"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="26"/>
         <source>Weather Settings</source>
         <translation>Настройки</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="29"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="27"/>
         <source>OK</source>
         <translation>Принять</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="30"/>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="95"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="28"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="93"/>
         <source>Cancel</source>
         <translation>Отмена</translation>
     </message>
@@ -1303,92 +1308,94 @@
         <translation type="vanished">Ключ провайдера</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="33"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="31"/>
         <source>Locations</source>
         <translation>Локации</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="58"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="56"/>
         <source>Location Name</source>
         <translation>Имя локации</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="70"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="68"/>
         <source>Latitude</source>
         <translation>Широта</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="82"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="80"/>
         <source>Longitude</source>
         <translation>Долгота</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="101"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="99"/>
         <source>Save Changes</source>
         <translation>Сохранить изменения</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="152"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="150"/>
         <source>Edit</source>
         <translation>Править</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="157"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="155"/>
         <source>Move Up</source>
         <translation>Подвинуть Вверх</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="162"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="160"/>
         <source>Move Down</source>
         <translation>Подвинуть Вниз</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="167"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="165"/>
         <source>Delete</source>
         <translation>Удалить</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="176"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="174"/>
         <source>Add Location</source>
         <translation>Добавить локацию</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="186"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="184"/>
         <source>Current Location</source>
         <translation>Текущее Местоположение</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="193"/>
         <source>Locales</source>
-        <translation>Региональные Настройки</translation>
+        <translation type="vanished">Региональные Настройки</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="198"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="192"/>
         <source>Units</source>
         <translation>Единицы Измерения</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="218"/>
         <source>Language</source>
-        <translation>Язык</translation>
+        <translation type="vanished">Язык</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="374"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="215"/>
+        <source>Location search and forecasts by &lt;a href=&quot;https://open-meteo.com/&quot;&gt;Open-Meteo&lt;/a&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Default (English)</source>
-        <translation>По умолчанию (Английский)</translation>
+        <translation type="vanished">По умолчанию (Английский)</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="376"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="263"/>
         <source>Metric</source>
         <translation>Метрические</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="377"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="264"/>
         <source>Imperial</source>
         <translation>Британские</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="378"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="265"/>
         <source>Hybrid</source>
         <translation>Смешаные</translation>
     </message>

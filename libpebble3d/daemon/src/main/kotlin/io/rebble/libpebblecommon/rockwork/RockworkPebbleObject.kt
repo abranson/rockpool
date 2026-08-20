@@ -106,6 +106,7 @@ internal class RockworkPebbleObject(
     private val emit: (DBusSignal) -> Unit,
     private val broadcast: ((String) -> DBusSignal) -> Unit,
     private val configFitsStorage: (LibPebbleConfig) -> Boolean = { true },
+    private val refreshWeather: () -> Unit = {},
 ) : RockworkPebble {
     private val logger = Logger.withTag("RockworkPebble")
     private val keyPrefix = address.replace(":", "_")
@@ -1065,6 +1066,7 @@ internal class RockworkPebbleObject(
         if (!settings.setChecked("weather.units", units)) {
             throw failedCall("Weather units could not be saved")
         }
+        refreshWeather()
     }
 
     override fun WeatherLanguage(): String = settings.get("weather.language")
@@ -1089,6 +1091,7 @@ internal class RockworkPebbleObject(
         if (!saved) throw failedCall("Weather locations could not be saved")
         val current = weatherCoordinator.locations()
         broadcast { targetPath -> RockworkPebble.WeatherLocationsChanged(targetPath, current) }
+        refreshWeather()
     }
 
     override fun InjectWeatherData(locationName: String, conditions: Map<String, Variant<*>>) {

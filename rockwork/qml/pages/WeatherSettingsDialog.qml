@@ -6,9 +6,7 @@ Dialog {
 
     property var pebble: null
     property var locStash: []
-    property string lang
     property string units
-    property string initialLang
     property string initialUnits
     property bool settingsLoaded
     property bool dirty
@@ -189,10 +187,6 @@ Dialog {
                 }
             }
 
-            SectionHeader {
-                text: qsTr("Locales")
-            }
-
             ComboBox {
                 id: boxUnits
                 label: qsTr("Units")
@@ -213,24 +207,13 @@ Dialog {
                 }
             }
 
-            ComboBox {
-                id: boxLang
-                label: qsTr("Language")
-                enabled: root.settingsEditable
-                menu: ContextMenu {
-                    Repeater {
-                        model: modLang
-                        delegate: MenuItem {
-                            text: model.lbl
-                            onClicked: {
-                                if(model.val !== root.lang) {
-                                    root.lang = model.val;
-                                    root.dirty = true;
-                                }
-                            }
-                        }
-                    }
-                }
+            Label {
+                width: parent.width
+                horizontalAlignment: Text.AlignHCenter
+                font.pixelSize: Theme.fontSizeExtraSmall
+                textFormat: Text.RichText
+                text: qsTr("Location search and forecasts by <a href=\"https://open-meteo.com/\">Open-Meteo</a>")
+                onLinkActivated: Qt.openUrlExternally(link)
             }
         }
     }
@@ -239,91 +222,6 @@ Dialog {
         id: modUnits
     }
 
-    ListModel {
-      id: modLang
-      ListElement { val: "AF"; lbl: "Afrikaans" }
-      ListElement { val: "AL"; lbl: "Albanian" }
-      ListElement { val: "AR"; lbl: "Arabic" }
-      ListElement { val: "HY"; lbl: "Armenian" }
-      ListElement { val: "AZ"; lbl: "Azerbaijani" }
-      ListElement { val: "EU"; lbl: "Basque" }
-      ListElement { val: "BY"; lbl: "Belarusian" }
-      ListElement { val: "BU"; lbl: "Bulgarian" }
-      ListElement { val: "LI"; lbl: "BritishEnglish" }
-      ListElement { val: "MY"; lbl: "Burmese" }
-      ListElement { val: "CA"; lbl: "Catalan" }
-      ListElement { val: "CN"; lbl: "Chinese-Simplified" }
-      ListElement { val: "TW"; lbl: "Chinese-Traditional" }
-      ListElement { val: "CR"; lbl: "Croatian" }
-      ListElement { val: "CZ"; lbl: "Czech" }
-      ListElement { val: "DK"; lbl: "Danish" }
-      ListElement { val: "DV"; lbl: "Dhivehi" }
-      ListElement { val: "NL"; lbl: "Dutch" }
-      ListElement { val: "EN"; lbl: "English" }
-      ListElement { val: "EO"; lbl: "Esperanto" }
-      ListElement { val: "ET"; lbl: "Estonian" }
-      ListElement { val: "FA"; lbl: "Farsi" }
-      ListElement { val: "FI"; lbl: "Finnish" }
-      ListElement { val: "FR"; lbl: "French" }
-      ListElement { val: "FC"; lbl: "FrenchCanadian" }
-      ListElement { val: "GZ"; lbl: "Galician" }
-      ListElement { val: "DL"; lbl: "German" }
-      ListElement { val: "KA"; lbl: "Georgian" }
-      ListElement { val: "GR"; lbl: "Greek" }
-      ListElement { val: "GU"; lbl: "Gujarati" }
-      ListElement { val: "HT"; lbl: "HaitianCreole" }
-      ListElement { val: "IL"; lbl: "Hebrew" }
-      ListElement { val: "HI"; lbl: "Hindi" }
-      ListElement { val: "HU"; lbl: "Hungarian" }
-      ListElement { val: "IS"; lbl: "Icelandic" }
-      ListElement { val: "IO"; lbl: "Ido" }
-      ListElement { val: "ID"; lbl: "Indonesian" }
-      ListElement { val: "IR"; lbl: "IrishGaelic" }
-      ListElement { val: "IT"; lbl: "Italian" }
-      ListElement { val: "JP"; lbl: "Japanese" }
-      ListElement { val: "JW"; lbl: "Javanese" }
-      ListElement { val: "KM"; lbl: "Khmer" }
-      ListElement { val: "KR"; lbl: "Korean" }
-      ListElement { val: "KU"; lbl: "Kurdish" }
-      ListElement { val: "LA"; lbl: "Latin" }
-      ListElement { val: "LV"; lbl: "Latvian" }
-      ListElement { val: "LT"; lbl: "Lithuanian" }
-      ListElement { val: "ND"; lbl: "LowGerman" }
-      ListElement { val: "MK"; lbl: "Macedonian" }
-      ListElement { val: "MT"; lbl: "Maltese" }
-      ListElement { val: "GM"; lbl: "Mandinka" }
-      ListElement { val: "MI"; lbl: "Maori" }
-      ListElement { val: "MR"; lbl: "Marathi" }
-      ListElement { val: "MN"; lbl: "Mongolian" }
-      ListElement { val: "NO"; lbl: "Norwegian" }
-      ListElement { val: "OC"; lbl: "Occitan" }
-      ListElement { val: "PS"; lbl: "Pashto" }
-      ListElement { val: "GN"; lbl: "Plautdietsch" }
-      ListElement { val: "PL"; lbl: "Polish" }
-      ListElement { val: "BR"; lbl: "Portuguese" }
-      ListElement { val: "PA"; lbl: "Punjabi" }
-      ListElement { val: "RO"; lbl: "Romanian" }
-      ListElement { val: "RU"; lbl: "Russian" }
-      ListElement { val: "SR"; lbl: "Serbian" }
-      ListElement { val: "SK"; lbl: "Slovak" }
-      ListElement { val: "SL"; lbl: "Slovenian" }
-      ListElement { val: "SP"; lbl: "Spanish" }
-      ListElement { val: "SI"; lbl: "Swahili" }
-      ListElement { val: "SW"; lbl: "Swedish" }
-      ListElement { val: "CH"; lbl: "Swiss" }
-      ListElement { val: "TL"; lbl: "Tagalog" }
-      ListElement { val: "TT"; lbl: "Tatarish" }
-      ListElement { val: "TH"; lbl: "Thai" }
-      ListElement { val: "TR"; lbl: "Turkish" }
-      ListElement { val: "TK"; lbl: "Turkmen" }
-      ListElement { val: "UA"; lbl: "Ukrainian" }
-      ListElement { val: "UZ"; lbl: "Uzbek" }
-      ListElement { val: "VU"; lbl: "Vietnamese" }
-      ListElement { val: "CY"; lbl: "Welsh" }
-      ListElement { val: "SN"; lbl: "Wolof" }
-      ListElement { val: "JI"; lbl: "Yiddish-transliterated" }
-      ListElement { val: "YI"; lbl: "Yiddish-unicode" }
-    }
     Connections {
         target: root.pebble
         onWeatherSettingsReadyChanged: {
@@ -332,7 +230,6 @@ Dialog {
             }
         }
         onWeatherUnitsChanged: root.loadFromPebble()
-        onWeatherLanguageChanged: root.loadFromPebble()
         onWeatherLocationsChanged: root.loadFromPebble()
     }
 
@@ -350,15 +247,6 @@ Dialog {
             locations.append({"name":loc[0],"lat":loc[1],"lng":loc[2]});
             console.log("Location",i,loc);
         }
-        root.lang = pebble.weatherLanguage
-        initialLang = root.lang
-        boxLang.currentIndex = 0
-        for(i = 0; i<modLang.count;i++) {
-            if(root.lang === modLang.get(i).val) {
-                boxLang.currentIndex = i;
-                break;
-            }
-        }
         root.units = pebble.weatherUnits
         initialUnits = root.units
         boxUnits.currentIndex = 0
@@ -371,7 +259,6 @@ Dialog {
     }
 
     Component.onCompleted: {
-        modLang.insert(0,{ "val": "", "lbl": qsTr("Default (English)")})
         var mUnits = [
             { "val": "m", "lbl": qsTr("Metric") },
             { "val": "e", "lbl": qsTr("Imperial") },
@@ -389,8 +276,6 @@ Dialog {
         if(result === DialogResult.Accepted) {
             if(root.units !== initialUnits)
                 pebble.weatherUnits = root.units;
-            if(root.lang !== initialLang)
-                pebble.weatherLanguage = root.lang;
             var ret = [];
             var locStore = locations.count !== locStash.length;
             for(var i=0;i<locations.count;i++) {

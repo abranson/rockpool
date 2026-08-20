@@ -4,6 +4,11 @@
 package io.rebble.libpebblecommon.rockpool
 
 import co.touchlab.kermit.Logger
+import io.rebble.libpebblecommon.compat.rockwork.ROCKWORK_WEATHER_SETTINGS_PREFIX
+import io.rebble.libpebblecommon.compat.rockwork.ROCKWORK_MAX_WEATHER_LOCATIONS
+import io.rebble.libpebblecommon.compat.rockwork.RockworkWeatherLocation
+import io.rebble.libpebblecommon.compat.rockwork.encodeRockworkWeatherSettings
+import io.rebble.libpebblecommon.compat.rockwork.parseRockworkWeatherLocations
 import io.rebble.libpebblecommon.connection.KnownPebbleDevice
 import io.rebble.libpebblecommon.connection.LibPebble
 import io.rebble.libpebblecommon.connection.bt.ble.bluez.BluezManager
@@ -12,6 +17,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import org.freedesktop.dbus.types.Variant
 import java.io.IOException
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
@@ -43,19 +49,34 @@ internal class LegacyRockpooldImporter(
         }
     }
 
-    fun isComplete(): Boolean = settings.get(MARKER) == COMPLETE
+    fun isOriginalImportComplete(): Boolean = settings.get(MARKER) == COMPLETE
+
+    fun isWeatherMigrationComplete(): Boolean = settings.get(WEATHER_MARKER) == COMPLETE
+
+    fun isComplete(): Boolean = isOriginalImportComplete() && isWeatherMigrationComplete()
 
     private suspend fun importLocked(libPebble: LibPebble) {
-        if (settings.get(MARKER) == COMPLETE) return
+        if (isComplete()) return
         writeFailed = false
         try {
+            if (
+                settings.get(WEATHER_MARKER) != COMPLETE &&
+                settings.entries(ROCKWORK_WEATHER_SETTINGS_PREFIX).isNotEmpty()
+            ) {
+                completeWeatherMigration(PRESERVED_CURRENT)
+                if (isComplete()) return
+            }
             val root = legacyRoot ?: run {
                 val home = System.getProperty("user.home")?.takeIf { it.isNotBlank() } ?: return
                 Path.of(home, ".local", "share", "rockpoold")
             }
             if (!Files.isDirectory(root, LinkOption.NOFOLLOW_LINKS)) {
-                if (!settings.setChecked(MARKER, COMPLETE)) {
+                if (settings.get(MARKER) != COMPLETE && !settings.setChecked(MARKER, COMPLETE)) {
+                    writeFailed = true
                     logger.w { "legacy migration marker was not persisted; will retry" }
+                }
+                if (settings.get(WEATHER_MARKER) != COMPLETE) {
+                    completeWeatherMigration(NO_SOURCE)
                 }
                 return
             }
@@ -65,38 +86,56 @@ internal class LegacyRockpooldImporter(
             val bondedAddresses = withTimeoutOrNull(5.seconds) {
                 readBondedAddresses()
             }.orEmpty().mapTo(mutableSetOf()) { it.uppercase() }
+            val v1Pending = settings.get(MARKER) != COMPLETE
+            val legacyDirectories = Files.newDirectoryStream(root).use { directories ->
+                directories.asSequence()
+                    .filter { Files.isDirectory(it, LinkOption.NOFOLLOW_LINKS) }
+                    .mapNotNull { directory ->
+                        addressFromLegacyDirectory(directory.name)?.let { directory to it }
+                    }
+                    .sortedBy { it.second }
+                    .toList()
+            }
             var imported = 0
             var pending = false
-            val accountImported = importAccount(
-                root = root,
-                eligibleAddresses = knownByAddress.keys + bondedAddresses,
-            )
-            if (accountImported) imported++
+            val eligibleDirectories = mutableListOf<Path>()
+            if (v1Pending) {
+                val accountImported = importAccount(
+                    root = root,
+                    eligibleAddresses = knownByAddress.keys + bondedAddresses,
+                )
+                if (accountImported) imported++
+            }
 
-            Files.newDirectoryStream(root).use { directories ->
-                directories.filter { Files.isDirectory(it, LinkOption.NOFOLLOW_LINKS) }.forEach { directory ->
-                    val address = addressFromLegacyDirectory(directory.name)
-                    if (address == null) return@forEach
-                    val known = knownByAddress[address]
-                    if (known == null && address !in bondedAddresses) {
-                        pending = true
-                        return@forEach
-                    }
-                    val watchId = settings.watchObjectIdChecked(known?.serial, address)
-                    if (watchId == null) {
-                        writeFailed = true
-                        pending = true
-                        return@forEach
-                    }
-                    imported += importWatch(directory, watchId, address)
+            legacyDirectories.forEach { (directory, address) ->
+                val known = knownByAddress[address]
+                if (known == null && address !in bondedAddresses) {
+                    pending = true
+                    return@forEach
                 }
+                eligibleDirectories.add(directory)
+                if (!v1Pending) return@forEach
+                val watchId = settings.watchObjectIdChecked(known?.serial, address)
+                if (watchId == null) {
+                    writeFailed = true
+                    pending = true
+                    return@forEach
+                }
+                imported += importWatch(directory, watchId, address)
             }
 
-            val complete = !pending && !writeFailed && settings.setChecked(MARKER, COMPLETE)
-            if (!complete && !pending && !writeFailed) {
-                writeFailed = true
+            var v1Complete = !v1Pending
+            if (v1Pending && !pending && !writeFailed) {
+                v1Complete = settings.setChecked(MARKER, COMPLETE)
+                if (!v1Complete) writeFailed = true
             }
-            if (complete) {
+            if (
+                v1Complete && !pending && !writeFailed &&
+                settings.get(WEATHER_MARKER) != COMPLETE
+            ) {
+                importWeatherLocations(eligibleDirectories)?.let(::completeWeatherMigration)
+            }
+            if (isComplete()) {
                 logger.i { "legacy state migration complete; $imported values imported" }
             } else {
                 logger.i { "legacy state migration deferred; $imported values imported" }
@@ -105,6 +144,74 @@ internal class LegacyRockpooldImporter(
             throw e
         } catch (e: Exception) {
             logger.w { "legacy state migration could not read the source; will retry" }
+        }
+    }
+
+    /**
+     * Consolidates the old per-watch QSettings arrays into one account-global collection only
+     * when every present, valid collection is identical. Existing canonical state always wins.
+     */
+    private fun importWeatherLocations(directories: List<Path>): String? {
+        if (settings.entries(ROCKWORK_WEATHER_SETTINGS_PREFIX).isNotEmpty()) return PRESERVED_CURRENT
+        val candidates = mutableListOf<List<RockworkWeatherLocation>>()
+        var invalid = false
+        directories.forEach { directory ->
+            val values = readIni(directory.resolve("appsettings.conf"))
+            if (writeFailed) return null
+            if ("weatherApp/size" !in values) return@forEach
+            decodeLegacyWeatherLocations(values)
+                .onSuccess { candidates.add(it) }
+                .onFailure { invalid = true }
+        }
+        if (invalid) return INVALID_SOURCE
+        if (candidates.isEmpty()) return NO_SOURCE
+        val distinct = candidates.distinct()
+        if (distinct.size != 1) return CONFLICT
+        val encoded = encodeRockworkWeatherSettings(distinct.single())
+        var preservedCurrent = false
+        val persisted = settings.updatePrefixChecked(ROCKWORK_WEATHER_SETTINGS_PREFIX) { current ->
+            if (current.isEmpty()) {
+                encoded
+            } else {
+                preservedCurrent = true
+                current
+            }
+        }
+        if (!persisted) {
+            writeFailed = true
+            return null
+        }
+        if (preservedCurrent) return PRESERVED_CURRENT
+        return if (candidates.size == 1) IMPORTED_SINGLE else IMPORTED_IDENTICAL
+    }
+
+    private fun decodeLegacyWeatherLocations(
+        values: Map<String, String>,
+    ): Result<List<RockworkWeatherLocation>> = runCatching {
+        val count = requireNotNull(values["weatherApp/size"]?.toIntOrNull())
+        require(count in 0..ROCKWORK_MAX_WEATHER_LOCATIONS)
+        val variants = (1..count).map { index ->
+            Variant(
+                listOf(
+                    requireNotNull(values["weatherApp/$index/name"]),
+                    requireNotNull(values["weatherApp/$index/lat"]),
+                    requireNotNull(values["weatherApp/$index/lng"]),
+                ),
+                "as",
+            )
+        }
+        parseRockworkWeatherLocations(variants)
+    }
+
+    private fun completeWeatherMigration(outcome: String): Boolean = settings.setAllChecked(
+        mapOf(
+            WEATHER_OUTCOME to outcome,
+            WEATHER_MARKER to COMPLETE,
+        ),
+    ).also { persisted ->
+        if (!persisted) {
+            writeFailed = true
+            logger.w { "legacy weather-location migration marker was not persisted; will retry" }
         }
     }
 
@@ -390,7 +497,15 @@ internal class LegacyRockpooldImporter(
 
     companion object {
         private const val MARKER = "migration.rockpoold.v1"
+        private const val WEATHER_MARKER = "migration.rockpoold.weather-locations.v1"
+        private const val WEATHER_OUTCOME = "$WEATHER_MARKER.outcome"
         private const val COMPLETE = "complete"
+        private const val IMPORTED_SINGLE = "imported-single"
+        private const val IMPORTED_IDENTICAL = "imported-identical"
+        private const val PRESERVED_CURRENT = "preserved-current"
+        private const val CONFLICT = "conflict"
+        private const val INVALID_SOURCE = "invalid-source"
+        private const val NO_SOURCE = "no-source"
         private const val SEPARATOR = "\u001f"
         private val LEGACY_ADDRESS = Regex("[0-9a-fA-F]{2}(?:_[0-9a-fA-F]{2}){5}")
     }

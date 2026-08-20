@@ -192,6 +192,49 @@ class RockworkWeatherTest {
         assertEquals(15, replayed.currentTemp.toInt())
     }
 
+    @Test
+    fun `late persisted migration reloads and publishes the complete snapshot`() {
+        var settings = emptyMap<String, String>()
+        val updates = mutableListOf<List<WeatherLocationData>>()
+        val coordinator = RockworkWeatherCoordinator(
+            loadSettings = { settings },
+            replaceSettings = { true },
+            updateWeatherData = updates::add,
+        )
+        val locations = parseRockworkWeatherLocations(
+            listOf(
+                location("Current Location", "n/a", "n/a"),
+                location("London", "51.5", "-0.1"),
+            ),
+        )
+        settings = encodeRockworkWeatherSettings(locations)
+
+        assertTrue(coordinator.reloadPersisted().getOrThrow())
+
+        assertEquals(2, updates.size)
+        assertEquals(2, updates.last().size)
+        assertTrue(updates.last().all { it is WeatherLocationData.WeatherLocationDataFailed })
+        assertEquals("London", coordinator.automaticFetchTargets().single().name)
+    }
+
+    @Test
+    fun `unchanged persisted settings do not publish another snapshot`() {
+        val locations = parseRockworkWeatherLocations(
+            listOf(location("London", "51.5", "-0.1")),
+        )
+        val settings = encodeRockworkWeatherSettings(locations)
+        val updates = mutableListOf<List<WeatherLocationData>>()
+        val coordinator = RockworkWeatherCoordinator(
+            loadSettings = { settings },
+            replaceSettings = { true },
+            updateWeatherData = updates::add,
+        )
+
+        assertFalse(coordinator.reloadPersisted().getOrThrow())
+
+        assertEquals(1, updates.size)
+    }
+
     private fun location(name: String, latitude: String, longitude: String): Variant<*> =
         Variant(listOf(name, latitude, longitude), "as")
 

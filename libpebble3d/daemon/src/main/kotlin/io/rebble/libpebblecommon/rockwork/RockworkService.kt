@@ -14,6 +14,7 @@ import io.rebble.libpebblecommon.connection.LibPebble
 import io.rebble.libpebblecommon.connection.PebbleBtClassicIdentifier
 import io.rebble.libpebblecommon.connection.PebbleDevice
 import io.rebble.libpebblecommon.database.dao.AppWithCount
+import io.rebble.libpebblecommon.linux.weather.OpenMeteoWeatherClient
 import io.rebble.libpebblecommon.rockpool.RockpoolSettings
 import io.rebble.libpebblecommon.rockpool.DevConnectionStateObserver
 import io.rebble.libpebblecommon.rockpool.AccountSettingsCoordinator
@@ -87,6 +88,20 @@ internal class RockworkService(
     private val observersStarted = AtomicBoolean(false)
     private val connectionLock = Any()
     private val weatherCoordinator = RockworkWeatherCoordinator(settings, libPebble)
+    private val weatherClient = OpenMeteoWeatherClient()
+    private val weatherAutoRefresh = RockworkWeatherAutoRefresh(
+        scope = scope,
+        coordinator = weatherCoordinator,
+        units = { settings.get("weather.units", "m") },
+        fetch = { target, units ->
+            weatherClient.fetch(
+                latitude = target.latitudeValue,
+                longitude = target.longitudeValue,
+                imperial = units == "e",
+            )?.toRockworkWeatherObservation()
+        },
+        onFailure = { logger.w { "automatic weather refresh failed" } },
+    )
     private val notificationAppearance = RockworkNotificationAppearanceCoordinator(libPebble)
     private val configMutations = LibPebbleConfigMutationCoordinator.forLibPebble(libPebble)
     private val notificationFilterMutations = RockworkNotificationFilterMutations(
@@ -291,6 +306,15 @@ internal class RockworkService(
         ensureConnection()
     }
 
+    /** Makes a delayed legacy import visible without requiring a daemon restart. */
+    fun reloadWeatherSettings() {
+        val changed = weatherCoordinator.reloadPersisted().getOrElse {
+            logger.w { "persisted weather settings are invalid; keeping the live snapshot" }
+            return
+        }
+        if (changed) weatherAutoRefresh.trigger()
+    }
+
     private fun startObservers() {
         if (!observersStarted.compareAndSet(false, true)) return
         notificationSourcePublisher.start(scope)
@@ -298,6 +322,7 @@ internal class RockworkService(
         watchLocker()
         watchNotificationApps()
         watchScanning()
+        weatherAutoRefresh.start()
     }
 
     private fun ensureConnection() {
@@ -410,6 +435,7 @@ internal class RockworkService(
                                 timelineWindow = timelineWindow,
                                 healthCoordinator = healthSettings,
                                 weatherCoordinator = weatherCoordinator,
+                                refreshWeather = weatherAutoRefresh::trigger,
                                 notificationAppearance = notificationAppearance,
                                 scope = scope,
                                 emit = ::emitSignal,
