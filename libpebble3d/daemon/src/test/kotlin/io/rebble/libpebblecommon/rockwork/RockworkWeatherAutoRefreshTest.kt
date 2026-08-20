@@ -82,7 +82,7 @@ class RockworkWeatherAutoRefreshTest {
     }
 
     @Test
-    fun `automatic targets skip current placeholder and external observations`() {
+    fun `automatic targets include current placeholder and skip external observations`() {
         val coordinator = coordinator()
         assertTrue(
             coordinator.setLocations(
@@ -94,7 +94,11 @@ class RockworkWeatherAutoRefreshTest {
         )
         assertTrue(coordinator.inject("London", conditions(12, "External")))
 
-        assertTrue(coordinator.automaticFetchTargets().isEmpty())
+        val target = coordinator.automaticFetchTargets().single()
+        assertTrue(target.currentLocation)
+        assertNull(target.coordinates)
+        assertEquals("n/a", target.latitude)
+        assertEquals("n/a", target.longitude)
     }
 
     @Test
@@ -116,7 +120,7 @@ class RockworkWeatherAutoRefreshTest {
             scope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined),
             coordinator = coordinator,
             units = { "m" },
-            fetch = { _, _ -> error("network down") },
+            fetch = { _, _, _ -> error("network down") },
             onFailure = { failures++ },
         )
 
@@ -137,7 +141,7 @@ class RockworkWeatherAutoRefreshTest {
             scope = CoroutineScope(job + Dispatchers.Unconfined),
             coordinator = coordinator,
             units = { "h" },
-            fetch = { _, units ->
+            fetch = { _, _, units ->
                 assertEquals("h", units)
                 calls++
                 observation("Automatic $calls", calls)
@@ -151,6 +155,79 @@ class RockworkWeatherAutoRefreshTest {
         yield()
         assertEquals(2, calls)
         job.cancel()
+    }
+
+    @Test
+    fun `current location resolves only for fetch and retains canonical coordinates`() = runBlocking {
+        var settings = emptyMap<String, String>()
+        val coordinator = coordinator(settings = { settings }, replace = { settings = it })
+        assertTrue(coordinator.setLocations(listOf(location("Current", "n/a", "n/a"))))
+        var fetched: RockworkWeatherCoordinates? = null
+        val refresh = RockworkWeatherAutoRefresh(
+            scope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined),
+            coordinator = coordinator,
+            units = { "m" },
+            fetch = { target, coordinates, _ ->
+                assertTrue(target.currentLocation)
+                fetched = coordinates
+                observation("Automatic", 14)
+            },
+            resolveCurrentLocation = { RockworkWeatherCoordinates(51.5, -0.1) },
+        )
+
+        refresh.refreshOnce()
+
+        assertEquals(RockworkWeatherCoordinates(51.5, -0.1), fetched)
+        val stored = decodeRockworkWeatherSettings(settings).getOrThrow().single()
+        assertEquals("n/a", stored.latitude)
+        assertEquals("n/a", stored.longitude)
+        assertEquals(RockworkWeatherObservationSource.AUTOMATIC, stored.observation?.source)
+    }
+
+    @Test
+    fun `current location errors and invalid coordinates retain prior observation`() = runBlocking {
+        var settings = emptyMap<String, String>()
+        val coordinator = coordinator(settings = { settings }, replace = { settings = it })
+        assertTrue(coordinator.setLocations(listOf(location("Current", "n/a", "n/a"))))
+        val target = coordinator.automaticFetchTargets().single()
+        assertTrue(coordinator.applyAutomaticObservation(target, observation("Before", 11)))
+        val saved = settings
+        var fetches = 0
+        val refresh = RockworkWeatherAutoRefresh(
+            scope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined),
+            coordinator = coordinator,
+            units = { "m" },
+            fetch = { _, _, _ -> fetches++; observation("After", 20) },
+            resolveCurrentLocation = { RockworkWeatherCoordinates(Double.NaN, 0.0) },
+        )
+
+        refresh.refreshOnce()
+
+        assertEquals(0, fetches)
+        assertEquals(saved, settings)
+    }
+
+    @Test
+    fun `external current injection rejects in flight automatic result`() = runBlocking {
+        var settings = emptyMap<String, String>()
+        val coordinator = coordinator(settings = { settings }, replace = { settings = it })
+        assertTrue(coordinator.setLocations(listOf(location("Current", "n/a", "n/a"))))
+        val refresh = RockworkWeatherAutoRefresh(
+            scope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined),
+            coordinator = coordinator,
+            units = { "m" },
+            fetch = { _, _, _ ->
+                assertTrue(coordinator.inject("Current", conditions(9, "External")))
+                observation("Automatic", 20)
+            },
+            resolveCurrentLocation = { RockworkWeatherCoordinates(51.5, -0.1) },
+        )
+
+        refresh.refreshOnce()
+
+        val stored = decodeRockworkWeatherSettings(settings).getOrThrow().single().observation
+        assertEquals("External", stored?.text)
+        assertEquals(RockworkWeatherObservationSource.EXTERNAL, stored?.source)
     }
 
     private fun coordinator(

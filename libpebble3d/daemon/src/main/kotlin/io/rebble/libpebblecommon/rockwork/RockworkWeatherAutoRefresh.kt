@@ -24,8 +24,10 @@ internal class RockworkWeatherAutoRefresh(
     private val units: () -> String,
     private val fetch: suspend (
         RockworkWeatherFetchTarget,
+        RockworkWeatherCoordinates,
         String,
     ) -> RockworkWeatherObservation?,
+    private val resolveCurrentLocation: suspend () -> RockworkWeatherCoordinates? = { null },
     private val refreshIntervalMillis: Long = DEFAULT_REFRESH_INTERVAL.inWholeMilliseconds,
     private val onFailure: (Throwable) -> Unit = {},
 ) {
@@ -51,7 +53,12 @@ internal class RockworkWeatherAutoRefresh(
         val selectedUnits = units().takeIf { it in setOf("m", "e", "h") } ?: "m"
         coordinator.automaticFetchTargets().forEach { target ->
             try {
-                fetch(target, selectedUnits)?.let { observation ->
+                val coordinates = if (target.currentLocation) {
+                    resolveCurrentLocation()
+                } else {
+                    target.coordinates
+                }?.takeIf(::validCoordinates) ?: return@forEach
+                fetch(target, coordinates, selectedUnits)?.let { observation ->
                     coordinator.applyAutomaticObservation(target, observation)
                 }
             } catch (e: CancellationException) {
@@ -62,6 +69,10 @@ internal class RockworkWeatherAutoRefresh(
         }
     }
 }
+
+private fun validCoordinates(coordinates: RockworkWeatherCoordinates): Boolean =
+    coordinates.latitude.isFinite() && coordinates.longitude.isFinite() &&
+        coordinates.latitude in -90.0..90.0 && coordinates.longitude in -180.0..180.0
 
 internal fun OpenMeteoForecast.toRockworkWeatherObservation() = RockworkWeatherObservation(
     text = text,

@@ -289,6 +289,9 @@ platform_calls_backend_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/li
 platform_volume_control=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockpool/PlatformVolumeControl.kt
 platform_volume_control_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebblecommon/rockpool/PlatformVolumeControlTest.kt
 platform_provider_module=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockpool/PlatformTimeChanged.kt
+platform_system_geolocation=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockpool/PlatformSystemGeolocation.kt
+platform_system_geolocation_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebblecommon/rockpool/PlatformSystemGeolocationTest.kt
+platform_wire_doc=$libpebble3d_dir/README.md
 sailfish_rfcomm_socket=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockpool/SailfishRfcommSocket.kt
 linux_notification_backend=$libpebble3d_dir/mobileapp/libpebble3/src/jvmMain/kotlin/io/rebble/libpebblecommon/linux/notifications/LinuxNotificationBackend.kt
 linux_notification_listener=$libpebble3d_dir/mobileapp/libpebble3/src/jvmMain/kotlin/io/rebble/libpebblecommon/linux/notifications/LinuxNotificationListener.kt
@@ -540,6 +543,9 @@ require_file "$platform_calls_backend_test" "provider calls backend regressions"
 require_file "$platform_volume_control" "provider system-volume control"
 require_file "$platform_volume_control_test" "provider system-volume regressions"
 require_file "$platform_provider_module" "provider override module"
+require_file "$platform_system_geolocation" "provider-backed SystemGeolocation"
+require_file "$platform_system_geolocation_test" "provider-backed SystemGeolocation regressions"
+require_file "$platform_wire_doc" "private platform wire contract"
 require_file "$sailfish_rfcomm_socket" "Sailfish RFCOMM socket adapter"
 require_file "$linux_notification_backend" "native-Linux notification backend"
 require_file "$linux_notification_listener" "native-Linux notification listener"
@@ -1610,8 +1616,8 @@ require_fixed 'Requires:   libpebble3d-platform-launcher-abi = 1' "$rockpool_spe
     'provider dependency on daemon launcher bootstrap'
 require_fixed 'Requires:   libpebble3d-platform-abi-minor >= 4' "$rockpool_spec" \
     'provider dependency on runtime platform ABI minor'
-require_fixed 'static const uint16_t kMinor = 4;' "$wire_header" \
-    'private provider wire minor 1.4'
+require_fixed 'static const uint16_t kMinor = 5;' "$wire_header" \
+    'private provider wire minor 1.5'
 require_fixed 'MessageReply = 5,' "$wire_header" \
     'private typed message-reply operation'
 require_fixed 'NotificationHasReplyAction = 1u << 1,' "$wire_header" \
@@ -1626,6 +1632,109 @@ require_fixed 'validNotificationId(reply.notificationId)' "$wire_header" \
     'numeric notification ID message-reply bound'
 require_fixed 'validMessageReply' "$wire_header" \
     'typed message-reply codec validation'
+# Location is an independently classified private-wire domain.  Keep the
+# public provider ABI at 1.4 while making every request bounded and terminal.
+require_fixed 'LocationQuery = 6,' "$wire_header" \
+    'private typed location-query operation'
+require_fixed 'DomainLocation = 1u << 6,' "$wire_header" \
+    'private Location health domain'
+require_fixed 'DomainMedia | DomainCalls | DomainLocation |' "$wire_header" \
+    'Location included in complete health classification'
+require_fixed 'kLocationTimeoutMaxMs = 30000' "$wire_header" \
+    'bounded private location timeout'
+require_fixed 'encodeLocationQuery' "$wire_header" \
+    'private location-query request codec'
+require_fixed 'decodeLocationReply' "$wire_header" \
+    'private location completion codec'
+require_fixed 'status == 0 ? !validLocation(location) : !emptyLocation(location)' \
+    "$wire_header" 'non-OK private location completion has no payload'
+require_fixed 'void testLocationCodec()' "$wire_test" \
+    'private location wire codec regression'
+require_fixed 'testLocationCodec();' "$wire_test" \
+    'executed private location wire codec regression'
+require_fixed 'Request LocationQuery (request_id != 0, payload size 12)' \
+    "$platform_wire_doc" 'documented bounded private location request'
+require_fixed 'Complete LocationReply (matching request_id, payload size 28)' \
+    "$platform_wire_doc" 'documented correlated private location completion'
+require_fixed 'On a non-OK status every location value is zero.' \
+    "$platform_wire_doc" 'documented empty failed location completion'
+require_fixed 'int32_t locationQuery(' "$proxy_source" \
+    'asynchronous proxy location query'
+require_fixed 'pending->second->operation != lp3wire::LocationQuery' \
+    "$proxy_source" 'proxy location cancellation correlation'
+require_fixed 'tombstone.operation = lp3wire::LocationQuery;' "$proxy_source" \
+    'proxy late-location completion tombstone'
+require_fixed 'event.type = LP3_PLATFORM_EVENT_LOCATION;' "$proxy_source" \
+    'proxy native location completion event'
+require_fixed 'event.location = locationStatus == LP3_PLATFORM_OK ? &abiLocation : NULL;' \
+    "$proxy_source" 'proxy null location payload on failed completion'
+require_fixed 'lp3wire::DomainLocation;' "$helper_source" \
+    'helper Location health degradation before backend support'
+require_fixed '(m_notificationsReady ? 0 : lp3wire::DomainNotifications) |' \
+    "$helper_source" 'helper preserves independently healthy existing domains'
+require_fixed '!lp3wire::decodeLocationQuery(frame.payload, &locationQuery)' \
+    "$helper_source" 'helper decodes bounded location request'
+require_fixed 'completeLocationUnavailable(frame.requestId);' "$helper_source" \
+    'helper asynchronous safe location fallback'
+require_fixed 'LP3_PLATFORM_NOT_SUPPORTED, location' "$helper_source" \
+    'helper terminal not-supported location fallback'
+require_fixed 'Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_locationStart' \
+    "$loader" 'native JNI location start'
+require_fixed 'Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_cancelLocation' \
+    "$loader" 'native JNI location cancellation'
+require_fixed 'Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_drainLocationEvents' \
+    "$loader" 'native JNI location completion drain'
+require_fixed 'LP3_LOCATION_TIMEOUT_MAX_MS (30u * 1000u)' "$loader" \
+    'bounded native location timeout admission'
+require_fixed 'location->accuracy_m >= 0 && location->timestamp_ms > 0;' \
+    "$loader" 'strictly positive native location timestamp'
+require_fixed 'location_tombstones' "$loader" \
+    'bounded native location cancellation tombstones'
+require_fixed 'provider_reset_pending ? 0 : location_event_count' "$loader" \
+    'location drain held behind provider reset marker'
+require_fixed 'Location completions are correlated, bounded, and do not affect Media.' \
+    "$platform_loader_event_test" 'native location correlation regression'
+require_fixed 'Cancel records a bounded tombstone before provider cancellation.' \
+    "$platform_loader_event_test" 'native location cancellation regression'
+require_fixed 'index < LP3_MAX_QUEUED_EVENTS + 1' \
+    "$platform_loader_event_test" 'native location tombstone rollover regression'
+require_fixed 'Admission and cancellation retention are bounded by the event capacity.' \
+    "$platform_loader_event_test" 'native location admission-cap regression'
+require_fixed 'PlatformProviderNative::locationStart' "$platform_provider_controller" \
+    'controller JNI location-start injection'
+require_fixed 'PlatformProviderNative::cancelLocation' "$platform_provider_controller" \
+    'controller JNI location-cancellation injection'
+require_fixed 'PlatformProviderNative::drainLocationEvents' "$platform_provider_controller" \
+    'controller JNI location-drain injection'
+require_fixed 'suspend fun queryLocation(' "$platform_provider_controller" \
+    'controller correlated location query'
+require_fixed 'retirePendingLocations(STATUS_UNAVAILABLE)' "$platform_provider_controller" \
+    'controller location retirement at domain/generation loss'
+for location_controller_regression in \
+    decodesStrictLocationSuccessAndErrorRecords \
+    queryCorrelatesOnlyMatchingLocationCompletion \
+    queryRejectsMalformedStartAndCancelsOnTimeout \
+    domainLossAndGenerationRetirePendingLocations
+do
+    require_fixed "fun $location_controller_regression()" \
+        "$platform_provider_controller_test" \
+        "controller location regression $location_controller_regression"
+done
+require_fixed 'class PlatformSystemGeolocation' "$platform_system_geolocation" \
+    'provider-backed SystemGeolocation implementation'
+require_fixed 'single { PlatformSystemGeolocation(controller::queryLocation) } bind SystemGeolocation::class' \
+    "$platform_provider_module" 'provider-backed SystemGeolocation DI'
+for system_geolocation_regression in \
+    cacheUsesDefaultAndExplicitMaximumAge \
+    queryMapsAccuracyTimeoutAndNullableFields \
+    staleProviderFailureFallsBackToCacheThenMapsError \
+    cancellationPropagatesToCaller \
+    watchQueriesImmediatelyAtClampedCadenceAndCancels
+do
+    require_fixed "fun $system_geolocation_regression()" \
+        "$platform_system_geolocation_test" \
+        "provider SystemGeolocation regression $system_geolocation_regression"
+done
 
 # Only the tiny session launcher may acquire the privileged group.  It must be
 # launched by the real user manager, withhold the host until the daemon is
@@ -1863,7 +1972,8 @@ for stop_regression in \
     testRegularReplyWaitRemainsInterruptible \
     testExpectedStartSkipsLateStop \
     testExpectedStopClosesLateStartedDescriptor \
-    testHealthReadyLossPublishesAuthorityBarrier
+    testHealthReadyLossPublishesAuthorityBarrier \
+    testLocationCompletionUsesPayloadOnlyOnSuccess
 do
     require_fixed "void $stop_regression()" "$stop_handshake_test" \
         "launcher STOP_HOST regression $stop_regression"
@@ -2335,7 +2445,10 @@ require_fixed 'refreshWeather = weatherAutoRefresh::trigger' "$compat_service" \
 for weather_regression in \
     'external injection wins over an in-flight automatic result' \
     'automatic refresh failures preserve the last durable observation' \
-    'coordinate change removes a prior automatic observation'
+    'coordinate change removes a prior automatic observation' \
+    'current location resolves only for fetch and retains canonical coordinates' \
+    'current location errors and invalid coordinates retain prior observation' \
+    'external current injection rejects in flight automatic result'
 do
     require_fixed "$weather_regression" "$compat_weather_refresh_test" \
         "automatic weather regression $weather_regression"

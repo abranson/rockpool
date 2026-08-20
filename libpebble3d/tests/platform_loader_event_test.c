@@ -16,13 +16,19 @@
 
 static void enqueue_reset(void);
 static void enqueue_media(int32_t volume_percent);
+static void enqueue_location(uint64_t request_id, int32_t status,
+                             const struct lp3_platform_location_v1 *location);
 
 static unsigned int notification_command_count;
 static unsigned int reply_message_count;
 static unsigned int call_command_count;
 static unsigned int media_command_count;
+static unsigned int location_query_count;
+static unsigned int location_cancel_count;
+static int location_query_synchronous;
 static struct JNINativeInterface_ test_jni_functions;
 static JNIEnv test_env = &test_jni_functions;
+static jlong test_long_array[LP3_MAX_QUEUED_EVENTS * 6];
 static struct lp3_platform_api_v1 command_api;
 static pthread_mutex_t reset_thread_lock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t reset_thread_condition = PTHREAD_COND_INITIALIZER;
@@ -96,6 +102,25 @@ static jboolean test_exception_check(JNIEnv *env) {
     return JNI_FALSE;
 }
 
+static jlongArray test_new_long_array(JNIEnv *env, jsize length) {
+    (void)env;
+    assert(length >= 0 && (size_t)length <=
+           sizeof(test_long_array) / sizeof(test_long_array[0]));
+    memset(test_long_array, 0, sizeof(test_long_array));
+    return (jlongArray)test_long_array;
+}
+
+static void test_set_long_array_region(JNIEnv *env, jlongArray array,
+                                       jsize start, jsize length,
+                                       const jlong *values) {
+    (void)env;
+    assert(array == (jlongArray)test_long_array);
+    assert(start >= 0 && length >= 0 &&
+           (size_t)(start + length) <=
+               sizeof(test_long_array) / sizeof(test_long_array[0]));
+    memcpy(test_long_array + start, values, (size_t)length * sizeof(*values));
+}
+
 static int32_t test_notification_command(
     struct lp3_platform_instance *instance, uint64_t request_id,
     const struct lp3_platform_notification_command_v1 *command) {
@@ -160,16 +185,48 @@ static int32_t test_media_command(struct lp3_platform_instance *instance,
     return LP3_PLATFORM_OK;
 }
 
+static int32_t test_location_query(
+    struct lp3_platform_instance *instance, uint64_t request_id,
+    const struct lp3_platform_location_request_v1 *request) {
+    (void)instance;
+    assert(request_id != 0);
+    assert(request->struct_size == sizeof(*request));
+    assert(request->accuracy == LP3_PLATFORM_LOCATION_FINE);
+    assert(request->timeout_ms == 1000);
+    ++location_query_count;
+    if (location_query_synchronous) {
+        struct lp3_platform_location_v1 location;
+        memset(&location, 0, sizeof(location));
+        location.struct_size = sizeof(location);
+        location.latitude_e7 = 488566000;
+        location.longitude_e7 = 23522000;
+        location.accuracy_m = 12;
+        location.timestamp_ms = 1234;
+        enqueue_location(request_id, LP3_PLATFORM_OK, &location);
+    }
+    return LP3_PLATFORM_OK;
+}
+
+static int32_t test_location_cancel(struct lp3_platform_instance *instance,
+                                    uint64_t request_id) {
+    (void)instance;
+    assert(request_id != 0);
+    ++location_cancel_count;
+    return LP3_PLATFORM_OK;
+}
+
 static void set_up_command_provider(void) {
     memset(&command_api, 0, sizeof(command_api));
     command_api.struct_size = sizeof(command_api);
     command_api.info.domains = LP3_PLATFORM_DOMAIN_NOTIFICATIONS |
         LP3_PLATFORM_DOMAIN_MESSAGING | LP3_PLATFORM_DOMAIN_CALLS |
-        LP3_PLATFORM_DOMAIN_MEDIA;
+        LP3_PLATFORM_DOMAIN_MEDIA | LP3_PLATFORM_DOMAIN_LOCATION;
     command_api.notification_command = test_notification_command;
     command_api.reply_message = test_reply_message;
     command_api.call_command = test_call_command;
     command_api.media_command = test_media_command;
+    command_api.location_query = test_location_query;
+    command_api.cancel = test_location_cancel;
     memset(&loader, 0, sizeof(loader));
     loader.api = &command_api;
     loader.instance = (struct lp3_platform_instance *)&command_api;
@@ -178,6 +235,9 @@ static void set_up_command_provider(void) {
     reply_message_count = 0;
     call_command_count = 0;
     media_command_count = 0;
+    location_query_count = 0;
+    location_cancel_count = 0;
+    location_query_synchronous = 0;
     memset(&test_jni_functions, 0, sizeof(test_jni_functions));
     test_jni_functions.GetStringUTFLength = test_get_string_utf_length;
     test_jni_functions.GetStringUTFChars = test_get_string_utf_chars;
@@ -186,6 +246,8 @@ static void set_up_command_provider(void) {
     test_jni_functions.GetStringChars = test_get_string_chars;
     test_jni_functions.ReleaseStringChars = test_release_string_chars;
     test_jni_functions.ExceptionCheck = test_exception_check;
+    test_jni_functions.NewLongArray = test_new_long_array;
+    test_jni_functions.SetLongArrayRegion = test_set_long_array_region;
 }
 
 static struct lp3_platform_string string(const char *value) {
@@ -230,6 +292,29 @@ static void enqueue_media(int32_t volume_percent) {
     provider_event(NULL, &event);
 }
 
+static void enqueue_location(uint64_t request_id, int32_t status,
+                             const struct lp3_platform_location_v1 *location) {
+    struct lp3_platform_event_v1 event;
+    memset(&event, 0, sizeof(event));
+    event.struct_size = sizeof(event);
+    event.type = LP3_PLATFORM_EVENT_LOCATION;
+    event.request_id = request_id;
+    event.status = status;
+    event.location = location;
+    provider_event(NULL, &event);
+}
+
+static struct lp3_platform_location_v1 test_valid_location(void) {
+    struct lp3_platform_location_v1 location;
+    memset(&location, 0, sizeof(location));
+    location.struct_size = sizeof(location);
+    location.latitude_e7 = 488566000;
+    location.longitude_e7 = 23522000;
+    location.accuracy_m = 12;
+    location.timestamp_ms = 1234;
+    return location;
+}
+
 static void enqueue_reset(void) {
     struct lp3_platform_provider_status_v1 status;
     struct lp3_platform_event_v1 event;
@@ -249,6 +334,8 @@ static void enqueue_reset(void) {
 
 int main(void) {
     unsigned int index;
+    uint64_t evicted_location_request_id = 0;
+    uint64_t location_request_id;
     pthread_t reset_thread;
     jchar maximum_reply_text[LP3_PLATFORM_MESSAGE_TEXT_MAX + 1];
     jchar oversized_reply_text[LP3_PLATFORM_MESSAGE_TEXT_MAX + 2];
@@ -378,6 +465,153 @@ int main(void) {
     assert(media_command_count == 1);
     assert(media_event_count == 1);
     assert(media_event_queue[media_event_head].volume_percent == 55);
+
+    /* Location completions are correlated, bounded, and do not affect Media. */
+    reset_events();
+    location_query_synchronous = 1;
+    assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_locationStart(
+        &test_env, NULL, LP3_PLATFORM_LOCATION_FINE, 1000));
+    assert(test_long_array[0] == LP3_PLATFORM_OK && location_event_count == 1 &&
+           location_outstanding_count == 0);
+    Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_drainLocationEvents(
+        &test_env, NULL);
+    location_query_synchronous = 0;
+    assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_locationStart(
+        &test_env, NULL, LP3_PLATFORM_LOCATION_FINE, 1000) ==
+        (jlongArray)test_long_array);
+    assert(test_long_array[0] == LP3_PLATFORM_OK && test_long_array[1] > 0);
+    location_request_id = (uint64_t)test_long_array[1];
+    assert(location_query_count == 2 && location_outstanding_count == 1);
+    {
+        struct lp3_platform_location_v1 location = test_valid_location();
+        enqueue_location(location_request_id, LP3_PLATFORM_OK, &location);
+    }
+    assert(location_outstanding_count == 0 && location_event_count == 1);
+    assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_drainLocationEvents(
+        &test_env, NULL) == (jlongArray)test_long_array);
+    assert(test_long_array[0] == (jlong)location_request_id &&
+           test_long_array[1] == LP3_PLATFORM_OK &&
+           test_long_array[2] == 488566000 && test_long_array[3] == 23522000 &&
+           test_long_array[4] == 12 && test_long_array[5] == 1234);
+    assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_locationStart(
+        &test_env, NULL, LP3_PLATFORM_LOCATION_FINE, 1000));
+    location_request_id = (uint64_t)test_long_array[1];
+    enqueue_location(location_request_id, LP3_PLATFORM_UNAVAILABLE, NULL);
+    Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_drainLocationEvents(
+        &test_env, NULL);
+    assert(test_long_array[0] == (jlong)location_request_id &&
+           test_long_array[1] == LP3_PLATFORM_UNAVAILABLE &&
+           test_long_array[2] == 0 && test_long_array[3] == 0 &&
+           test_long_array[4] == 0 && test_long_array[5] == 0);
+
+    /* Unknown and malformed completion data retire Location only. */
+    reset_events();
+    enqueue_location(99, LP3_PLATFORM_UNAVAILABLE, NULL);
+    assert((event_failed_domains & LP3_PLATFORM_DOMAIN_LOCATION) == 0);
+    assert(media_event_count == 0);
+    {
+        struct lp3_platform_location_v1 location = test_valid_location();
+        location.latitude_e7 = 900000001;
+        enqueue_location(100, LP3_PLATFORM_OK, &location);
+    }
+    assert((event_failed_domains & LP3_PLATFORM_DOMAIN_LOCATION) == 0);
+    assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_locationStart(
+        &test_env, NULL, LP3_PLATFORM_LOCATION_FINE, 1000));
+    location_request_id = (uint64_t)test_long_array[1];
+    {
+        struct lp3_platform_location_v1 location = test_valid_location();
+        location.latitude_e7 = 900000001;
+        enqueue_location(location_request_id, LP3_PLATFORM_OK, &location);
+    }
+    assert((event_failed_domains & LP3_PLATFORM_DOMAIN_LOCATION) != 0);
+    assert((event_failed_domains & LP3_PLATFORM_DOMAIN_MEDIA) == 0);
+    reset_events();
+    assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_locationStart(
+        &test_env, NULL, LP3_PLATFORM_LOCATION_FINE, 1000));
+    location_request_id = (uint64_t)test_long_array[1];
+    {
+        struct lp3_platform_location_v1 location = test_valid_location();
+        location.timestamp_ms = 0;
+        enqueue_location(location_request_id, LP3_PLATFORM_OK, &location);
+    }
+    assert((event_failed_domains & LP3_PLATFORM_DOMAIN_LOCATION) != 0);
+
+    /* Cancel records a bounded tombstone before provider cancellation. */
+    reset_events();
+    assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_locationStart(
+        &test_env, NULL, LP3_PLATFORM_LOCATION_FINE, 1000));
+    location_request_id = (uint64_t)test_long_array[1];
+    assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_cancelLocation(
+        &test_env, NULL, (jlong)location_request_id) == LP3_PLATFORM_OK);
+    assert(location_cancel_count == 1 && location_outstanding_count == 0 &&
+           location_tombstone_count == 1);
+    {
+        struct lp3_platform_location_v1 location = test_valid_location();
+        enqueue_location(location_request_id, LP3_PLATFORM_OK, &location);
+    }
+    assert(location_tombstone_count == 0 && location_event_count == 0);
+    assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_cancelLocation(
+        &test_env, NULL, (jlong)location_request_id) == LP3_PLATFORM_INVALID_ARGUMENT);
+
+    reset_events();
+    for (index = 0; index < LP3_MAX_QUEUED_EVENTS + 1; ++index) {
+        assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_locationStart(
+            &test_env, NULL, LP3_PLATFORM_LOCATION_FINE, 1000));
+        location_request_id = (uint64_t)test_long_array[1];
+        if (index == 0) {
+            evicted_location_request_id = location_request_id;
+        }
+        assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_cancelLocation(
+            &test_env, NULL, (jlong)location_request_id) == LP3_PLATFORM_OK);
+    }
+    assert(location_tombstone_count == LP3_MAX_QUEUED_EVENTS);
+    {
+        struct lp3_platform_location_v1 location = test_valid_location();
+        location.timestamp_ms = 0;
+        enqueue_location(evicted_location_request_id, LP3_PLATFORM_OK, &location);
+    }
+    assert(location_event_count == 0 &&
+           location_tombstone_count == LP3_MAX_QUEUED_EVENTS &&
+           (event_failed_domains & LP3_PLATFORM_DOMAIN_LOCATION) == 0);
+    assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_locationStart(
+        &test_env, NULL, LP3_PLATFORM_LOCATION_FINE, 1000));
+    assert(test_long_array[0] == LP3_PLATFORM_OK);
+
+    /* Admission and cancellation retention are bounded by the event capacity. */
+    reset_events();
+    for (index = 0; index < LP3_MAX_QUEUED_EVENTS; ++index) {
+        assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_locationStart(
+            &test_env, NULL, LP3_PLATFORM_LOCATION_FINE, 1000));
+        assert(test_long_array[0] == LP3_PLATFORM_OK);
+    }
+    assert(location_outstanding_count == LP3_MAX_QUEUED_EVENTS);
+    assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_locationStart(
+        &test_env, NULL, LP3_PLATFORM_LOCATION_FINE, 1000));
+    assert(test_long_array[0] == LP3_PLATFORM_BUSY);
+    reset_events();
+
+    /* Reset clears Location correlation and blocks replacement events to its marker. */
+    reset_events();
+    assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_locationStart(
+        &test_env, NULL, LP3_PLATFORM_LOCATION_FINE, 1000));
+    enqueue_reset();
+    assert(provider_reset_pending && location_outstanding_count == 0 &&
+           location_tombstone_count == 0 && location_event_count == 0);
+    assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_drainLocationEvents(
+        &test_env, NULL));
+    assert(test_long_array[0] == 0);
+    Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_drainEvents(
+        &test_env, NULL);
+    assert(!provider_reset_pending);
+    assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_locationStart(
+        &test_env, NULL, LP3_PLATFORM_LOCATION_COARSE, 0));
+    assert(test_long_array[0] == LP3_PLATFORM_INVALID_ARGUMENT);
+    assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_locationStart(
+        &test_env, NULL, 0, 1000));
+    assert(test_long_array[0] == LP3_PLATFORM_INVALID_ARGUMENT);
+    assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_locationStart(
+        &test_env, NULL, LP3_PLATFORM_LOCATION_FINE, 30001));
+    assert(test_long_array[0] == LP3_PLATFORM_INVALID_ARGUMENT);
 
     /* A retired domain rejects only its corresponding command. */
     pthread_mutex_lock(&event_lock);

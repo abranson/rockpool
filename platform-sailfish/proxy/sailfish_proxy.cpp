@@ -57,7 +57,7 @@ const std::chrono::seconds kCancellationGrace(2);
 const uint64_t kSupportedDomains = LP3_PLATFORM_DOMAIN_TIME |
     LP3_PLATFORM_DOMAIN_NOTIFICATIONS | LP3_PLATFORM_DOMAIN_MESSAGING |
     LP3_PLATFORM_DOMAIN_MEDIA |
-    LP3_PLATFORM_DOMAIN_CALLS;
+    LP3_PLATFORM_DOMAIN_CALLS | LP3_PLATFORM_DOMAIN_LOCATION;
 
 struct Pending {
     std::condition_variable condition;
@@ -65,11 +65,13 @@ struct Pending {
     bool complete;
     int32_t status;
     lp3wire::TimeState time;
+    lp3wire::LocationData location;
 
     explicit Pending(uint16_t requestOperation)
         : operation(requestOperation), complete(false),
           status(LP3_PLATFORM_UNAVAILABLE) {
         memset(&time, 0, sizeof(time));
+        memset(&location, 0, sizeof(location));
     }
 };
 
@@ -472,15 +474,22 @@ lp3_platform_string abiString(const std::string &value) {
 }
 
 bool decodeCompletion(uint16_t operation, const std::vector<uint8_t> &payload,
-                      int32_t *status, lp3wire::TimeState *time) {
+                      int32_t *status, lp3wire::TimeState *time,
+                      lp3wire::LocationData *location) {
     uint32_t decodedStatus;
-    if (status == NULL || time == NULL) {
+    if (status == NULL || time == NULL || location == NULL) {
         return false;
     }
     if (operation == lp3wire::TimeGet) {
         if (!lp3wire::decodeTimeReply(payload, &decodedStatus, time)) {
             return false;
         }
+        memset(location, 0, sizeof(*location));
+    } else if (operation == lp3wire::LocationQuery) {
+        if (!lp3wire::decodeLocationReply(payload, &decodedStatus, location)) {
+            return false;
+        }
+        memset(time, 0, sizeof(*time));
     } else if (operation == lp3wire::NotificationCommand ||
                operation == lp3wire::MessageReply ||
                operation == lp3wire::CallCommand ||
@@ -489,6 +498,7 @@ bool decodeCompletion(uint16_t operation, const std::vector<uint8_t> &payload,
             return false;
         }
         memset(time, 0, sizeof(*time));
+        memset(location, 0, sizeof(*location));
     } else {
         return false;
     }
@@ -502,6 +512,7 @@ bool dispatchFrame(SailfishInstance *instance, const lp3wire::Frame &frame) {
         lp3_platform_event_callback callback;
         void *context;
         uint64_t lostDomains;
+        bool wake = false;
         if (frame.requestId != 0 || !lp3wire::decodeHealth(frame.payload, &health)) {
             return false;
         }
@@ -509,9 +520,36 @@ bool dispatchFrame(SailfishInstance *instance, const lp3wire::Frame &frame) {
             std::lock_guard<std::mutex> lock(instance->mutex);
             const uint64_t commandDomains =
                 lp3wire::DomainNotifications | lp3wire::DomainMessaging |
-                lp3wire::DomainCalls | lp3wire::DomainMedia;
+                lp3wire::DomainCalls | lp3wire::DomainMedia |
+                lp3wire::DomainLocation;
             lostDomains = instance->readyDomains & ~health.readyDomains &
                 commandDomains;
+            if ((lostDomains & lp3wire::DomainLocation) != 0) {
+                for (std::map<uint64_t, std::shared_ptr<Pending> >::iterator
+                         pending = instance->pending.begin();
+                     pending != instance->pending.end();) {
+                    if (pending->second->operation != lp3wire::LocationQuery) {
+                        ++pending;
+                        continue;
+                    }
+                    std::vector<uint8_t> cancelFrame;
+                    if (instance->tombstones.size() >= kMaximumOutstanding ||
+                        instance->outgoing.size() >= kMaximumOutgoing ||
+                        !lp3wire::encodeFrame(lp3wire::Cancel, pending->first,
+                                              NULL, 0, &cancelFrame)) {
+                        instance->forceReset = true;
+                        break;
+                    }
+                    Tombstone tombstone;
+                    tombstone.operation = lp3wire::LocationQuery;
+                    tombstone.expires = std::chrono::steady_clock::now() +
+                        kCancellationGrace;
+                    instance->tombstones[pending->first] = tombstone;
+                    instance->outgoing.push_back(cancelFrame);
+                    pending = instance->pending.erase(pending);
+                    wake = true;
+                }
+            }
             instance->readyDomains = health.readyDomains;
             instance->degradedDomains = health.degradedDomains;
             instance->failedDomains = health.failedDomains;
@@ -524,6 +562,9 @@ bool dispatchFrame(SailfishInstance *instance, const lp3wire::Frame &frame) {
          * retires notification, reply, call, or media command authority.
          */
         publishDomainLoss(lostDomains, callback, context);
+        if (wake) {
+            wakeWorker(instance);
+        }
         return true;
     }
 
@@ -660,42 +701,76 @@ bool dispatchFrame(SailfishInstance *instance, const lp3wire::Frame &frame) {
         return false;
     }
 
-    std::lock_guard<std::mutex> lock(instance->mutex);
-    std::map<uint64_t, Tombstone>::iterator tombstone =
-        instance->tombstones.find(frame.requestId);
-    if (tombstone != instance->tombstones.end()) {
-        if (frame.type == lp3wire::Complete) {
-            int32_t ignoredStatus;
-            lp3wire::TimeState ignoredTime;
-            if (!decodeCompletion(tombstone->second.operation, frame.payload,
-                                  &ignoredStatus, &ignoredTime)) {
-                return false;
+    bool publishLocation = false;
+    int32_t locationStatus = LP3_PLATFORM_CANCELLED;
+    lp3wire::LocationData location = {};
+    lp3_platform_event_callback callback = NULL;
+    void *context = NULL;
+    {
+        std::lock_guard<std::mutex> lock(instance->mutex);
+        std::map<uint64_t, Tombstone>::iterator tombstone =
+            instance->tombstones.find(frame.requestId);
+        if (tombstone != instance->tombstones.end()) {
+            if (frame.type == lp3wire::Complete) {
+                int32_t ignoredStatus;
+                lp3wire::TimeState ignoredTime;
+                lp3wire::LocationData ignoredLocation;
+                if (!decodeCompletion(tombstone->second.operation, frame.payload,
+                                      &ignoredStatus, &ignoredTime,
+                                      &ignoredLocation)) {
+                    return false;
+                }
             }
+            instance->tombstones.erase(tombstone);
+            return true;
         }
-        instance->tombstones.erase(tombstone);
-        return true;
-    }
 
-    std::map<uint64_t, std::shared_ptr<Pending> >::iterator pending =
-        instance->pending.find(frame.requestId);
-    if (pending == instance->pending.end()) {
-        return false;
-    }
-    if (frame.type == lp3wire::Complete) {
-        int32_t status;
-        lp3wire::TimeState time;
-        if (!decodeCompletion(pending->second->operation, frame.payload,
-                              &status, &time)) {
+        std::map<uint64_t, std::shared_ptr<Pending> >::iterator pending =
+            instance->pending.find(frame.requestId);
+        if (pending == instance->pending.end()) {
             return false;
         }
-        pending->second->status = status;
-        pending->second->time = time;
-    } else {
-        pending->second->status = LP3_PLATFORM_CANCELLED;
+        if (frame.type == lp3wire::Complete) {
+            lp3wire::TimeState time;
+            if (!decodeCompletion(pending->second->operation, frame.payload,
+                                  &locationStatus, &time, &location)) {
+                return false;
+            }
+            pending->second->status = locationStatus;
+            pending->second->time = time;
+            pending->second->location = location;
+        } else {
+            pending->second->status = LP3_PLATFORM_CANCELLED;
+            locationStatus = LP3_PLATFORM_CANCELLED;
+        }
+        pending->second->complete = true;
+        pending->second->condition.notify_all();
+        publishLocation = pending->second->operation == lp3wire::LocationQuery;
+        if (publishLocation) {
+            locationStatus = pending->second->status;
+            location = pending->second->location;
+            callback = instance->event;
+            context = instance->eventContext;
+        }
+        instance->pending.erase(pending);
     }
-    pending->second->complete = true;
-    pending->second->condition.notify_all();
-    instance->pending.erase(pending);
+    if (publishLocation && callback != NULL) {
+        lp3_platform_location_v1 abiLocation;
+        lp3_platform_event_v1 event;
+        memset(&abiLocation, 0, sizeof(abiLocation));
+        abiLocation.struct_size = sizeof(abiLocation);
+        abiLocation.latitude_e7 = location.latitudeE7;
+        abiLocation.longitude_e7 = location.longitudeE7;
+        abiLocation.accuracy_m = location.accuracyM;
+        abiLocation.timestamp_ms = location.timestampMs;
+        memset(&event, 0, sizeof(event));
+        event.struct_size = sizeof(event);
+        event.type = LP3_PLATFORM_EVENT_LOCATION;
+        event.request_id = frame.requestId;
+        event.status = locationStatus;
+        event.location = locationStatus == LP3_PLATFORM_OK ? &abiLocation : NULL;
+        callback(context, &event);
+    }
     return true;
 }
 
@@ -907,9 +982,38 @@ int32_t start(lp3_platform_instance *raw) {
 }
 
 int32_t cancel(lp3_platform_instance *raw, uint64_t requestId) {
-    (void)raw;
-    (void)requestId;
-    return LP3_PLATFORM_NOT_SUPPORTED;
+    SailfishInstance *instance = static_cast<SailfishInstance *>(raw);
+    Tombstone tombstone;
+    std::vector<uint8_t> frame;
+
+    if (instance == NULL || requestId == 0 ||
+        (requestId & (UINT64_C(1) << 63)) != 0) {
+        return LP3_PLATFORM_INVALID_ARGUMENT;
+    }
+    std::lock_guard<std::mutex> lock(instance->mutex);
+    std::map<uint64_t, std::shared_ptr<Pending> >::iterator pending =
+        instance->pending.find(requestId);
+    if (pending == instance->pending.end() ||
+        pending->second->operation != lp3wire::LocationQuery) {
+        return LP3_PLATFORM_NOT_SUPPORTED;
+    }
+    if (instance->stopping.load() || instance->socket < 0 || instance->latched) {
+        return LP3_PLATFORM_UNAVAILABLE;
+    }
+    if (instance->tombstones.size() >= kMaximumOutstanding ||
+        instance->outgoing.size() >= kMaximumOutgoing ||
+        !lp3wire::encodeFrame(lp3wire::Cancel, requestId, NULL, 0, &frame)) {
+        instance->forceReset = true;
+        wakeWorker(instance);
+        return LP3_PLATFORM_UNAVAILABLE;
+    }
+    tombstone.operation = lp3wire::LocationQuery;
+    tombstone.expires = std::chrono::steady_clock::now() + kCancellationGrace;
+    instance->pending.erase(pending);
+    instance->tombstones[requestId] = tombstone;
+    instance->outgoing.push_back(frame);
+    wakeWorker(instance);
+    return LP3_PLATFORM_OK;
 }
 
 int32_t requestStop(lp3_platform_instance *raw) {
@@ -958,9 +1062,43 @@ int32_t notSupportedContact(lp3_platform_instance *, uint64_t,
     return LP3_PLATFORM_NOT_SUPPORTED;
 }
 
-int32_t notSupportedLocation(lp3_platform_instance *, uint64_t,
-                             const lp3_platform_location_request_v1 *) {
-    return LP3_PLATFORM_NOT_SUPPORTED;
+int32_t locationQuery(lp3_platform_instance *raw, uint64_t requestId,
+                      const lp3_platform_location_request_v1 *request) {
+    SailfishInstance *instance = static_cast<SailfishInstance *>(raw);
+    lp3wire::LocationQueryData query;
+    std::vector<uint8_t> payload;
+    std::vector<uint8_t> frame;
+    std::shared_ptr<Pending> pending(new Pending(lp3wire::LocationQuery));
+
+    if (instance == NULL || requestId == 0 ||
+        (requestId & (UINT64_C(1) << 63)) != 0 || request == NULL ||
+        request->struct_size < sizeof(*request)) {
+        return LP3_PLATFORM_INVALID_ARGUMENT;
+    }
+    query.accuracy = request->accuracy;
+    query.timeoutMs = request->timeout_ms;
+    if (!lp3wire::encodeLocationQuery(query, &payload) ||
+        !lp3wire::encodeFrame(lp3wire::Request, requestId,
+                              &payload[0], payload.size(), &frame)) {
+        return LP3_PLATFORM_INVALID_ARGUMENT;
+    }
+
+    std::lock_guard<std::mutex> lock(instance->mutex);
+    if (instance->stopping.load() || instance->socket < 0 || instance->latched ||
+        (instance->readyDomains & lp3wire::DomainLocation) == 0) {
+        return LP3_PLATFORM_UNAVAILABLE;
+    }
+    if (instance->pending.size() + instance->tombstones.size() >=
+            kMaximumOutstanding ||
+        instance->outgoing.size() >= kMaximumOutgoing ||
+        instance->pending.count(requestId) != 0 ||
+        instance->tombstones.count(requestId) != 0) {
+        return LP3_PLATFORM_BUSY;
+    }
+    instance->pending[requestId] = pending;
+    instance->outgoing.push_back(frame);
+    wakeWorker(instance);
+    return LP3_PLATFORM_OK;
 }
 
 int32_t notSupportedProfile(lp3_platform_instance *, uint64_t,
@@ -1424,7 +1562,8 @@ const lp3_platform_api_v1 kApi = {
         LP3_PLATFORM_ABI_MINOR,
         LP3_PLATFORM_DOMAIN_TIME | LP3_PLATFORM_DOMAIN_NOTIFICATIONS |
             LP3_PLATFORM_DOMAIN_MESSAGING |
-            LP3_PLATFORM_DOMAIN_MEDIA | LP3_PLATFORM_DOMAIN_CALLS,
+            LP3_PLATFORM_DOMAIN_MEDIA | LP3_PLATFORM_DOMAIN_CALLS |
+            LP3_PLATFORM_DOMAIN_LOCATION,
         { kProviderName, sizeof(kProviderName) - 1 },
         { kBuildId, sizeof(kBuildId) - 1 },
     },
@@ -1440,7 +1579,7 @@ const lp3_platform_api_v1 kApi = {
     callCommand,
     notSupportedCalendar,
     notSupportedContact,
-    notSupportedLocation,
+    locationQuery,
     notSupportedProfile,
     getTimeState,
     notSupportedDeviceState,

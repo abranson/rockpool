@@ -116,6 +116,76 @@ void testTimeChangedCodec() {
     assert(!lp3wire::decodeTimeChanged(payload, &decoded));
 }
 
+void testLocationCodec() {
+    const lp3wire::LocationQueryData query = {
+        lp3wire::kLocationFine,
+        15000,
+    };
+    const lp3wire::LocationData location = {
+        515074000,
+        -1278000,
+        12,
+        INT64_C(1785678901234),
+    };
+    lp3wire::LocationQueryData decodedQuery;
+    lp3wire::LocationData decodedLocation;
+    uint32_t status = UINT32_MAX;
+    std::vector<uint8_t> payload;
+
+    assert(lp3wire::encodeLocationQuery(query, &payload));
+    assert(payload.size() == 12);
+    assert(lp3wire::decodeLocationQuery(payload, &decodedQuery));
+    assert(decodedQuery.accuracy == query.accuracy);
+    assert(decodedQuery.timeoutMs == query.timeoutMs);
+    lp3wire::put32(&payload[4], 0);
+    assert(!lp3wire::decodeLocationQuery(payload, &decodedQuery));
+    lp3wire::put32(&payload[4], lp3wire::kLocationCoarse);
+    lp3wire::put32(&payload[8], 0);
+    assert(!lp3wire::decodeLocationQuery(payload, &decodedQuery));
+    lp3wire::put32(&payload[8], lp3wire::kLocationTimeoutMaxMs + 1);
+    assert(!lp3wire::decodeLocationQuery(payload, &decodedQuery));
+    lp3wire::put32(&payload[8], query.timeoutMs);
+    payload[2] = 1;
+    assert(!lp3wire::decodeLocationQuery(payload, &decodedQuery));
+    payload[2] = 0;
+    payload.resize(11);
+    assert(!lp3wire::decodeLocationQuery(payload, &decodedQuery));
+
+    assert(lp3wire::encodeLocationReply(0, location, &payload));
+    assert(payload.size() == 28);
+    assert(lp3wire::decodeLocationReply(payload, &status, &decodedLocation));
+    assert(status == 0);
+    assert(decodedLocation.latitudeE7 == location.latitudeE7);
+    assert(decodedLocation.longitudeE7 == location.longitudeE7);
+    assert(decodedLocation.accuracyM == location.accuracyM);
+    assert(decodedLocation.timestampMs == location.timestampMs);
+    lp3wire::put32(&payload[8], 900000001);
+    assert(!lp3wire::decodeLocationReply(payload, &status, &decodedLocation));
+    lp3wire::put32(&payload[8], static_cast<uint32_t>(location.latitudeE7));
+    lp3wire::put32(&payload[12], 1800000001u);
+    assert(!lp3wire::decodeLocationReply(payload, &status, &decodedLocation));
+    lp3wire::put32(&payload[12], static_cast<uint32_t>(location.longitudeE7));
+    lp3wire::put32(&payload[16], UINT32_MAX);
+    assert(!lp3wire::decodeLocationReply(payload, &status, &decodedLocation));
+    lp3wire::put32(&payload[16], static_cast<uint32_t>(location.accuracyM));
+    lp3wire::put64(&payload[20], 0);
+    assert(!lp3wire::decodeLocationReply(payload, &status, &decodedLocation));
+    lp3wire::put64(&payload[20], static_cast<uint64_t>(location.timestampMs));
+    payload[2] = 1;
+    assert(!lp3wire::decodeLocationReply(payload, &status, &decodedLocation));
+    payload[2] = 0;
+    payload.resize(27);
+    assert(!lp3wire::decodeLocationReply(payload, &status, &decodedLocation));
+
+    lp3wire::LocationData empty = {};
+    assert(lp3wire::encodeLocationReply(5, empty, &payload));
+    assert(lp3wire::decodeLocationReply(payload, &status, &decodedLocation));
+    assert(status == 5);
+    assert(lp3wire::emptyLocation(decodedLocation));
+    assert(!lp3wire::encodeLocationReply(5, location, &payload));
+    assert(!lp3wire::encodeLocationReply(9, empty, &payload));
+}
+
 void testNotificationCodec() {
     lp3wire::NotificationData original;
     lp3wire::NotificationData decoded;
@@ -567,7 +637,7 @@ void testHealthCodec() {
     const lp3wire::HealthState original = {
         lp3wire::DomainCalls | lp3wire::DomainMessaging,
         lp3wire::DomainNotifications | lp3wire::DomainMedia,
-        lp3wire::DomainTime,
+        lp3wire::DomainTime | lp3wire::DomainLocation,
     };
     lp3wire::HealthState decoded;
     std::vector<uint8_t> payload;
@@ -665,6 +735,7 @@ int main() {
     testTimeReplyCodec();
     testErrorReplyMustHaveZeroValues();
     testTimeChangedCodec();
+    testLocationCodec();
     testNotificationCodec();
     testNotificationClosedCodec();
     testNotificationRejectsInvalidTextAndLengths();

@@ -4,6 +4,8 @@
 package io.rebble.libpebblecommon.rockpool
 
 import co.touchlab.kermit.Logger
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
@@ -104,12 +106,36 @@ internal data class PlatformCallEvent(
     val number: String,
 )
 
+internal data class PlatformLocation(
+    val latitudeE7: Int,
+    val longitudeE7: Int,
+    val accuracyM: Int,
+    val timestampMs: Long,
+)
+
+internal sealed interface PlatformLocationQueryResult {
+    data class Success(val location: PlatformLocation) : PlatformLocationQueryResult
+    data class Error(val status: Int) : PlatformLocationQueryResult
+}
+
 /**
  * Generic host-side lifecycle for a native platform provider.  The native
  * library scans only the fixed installation directory and validates ownership,
  * modes, ABI and uniqueness before it invokes a provider lifecycle method.
  */
-internal class PlatformProviderController {
+internal class PlatformProviderController(
+    initialSnapshot: PlatformProviderSnapshot = PlatformProviderSnapshot(
+        state = "starting",
+        error = "org.rockpool.Error.ProviderUnavailable",
+    ),
+    private val locationNativeAvailable: () -> Boolean = { nativeLibraryLoaded },
+    private val locationStartNative: (Int, Int) -> LongArray =
+        PlatformProviderNative::locationStart,
+    private val locationCancelNative: (Long) -> Int =
+        PlatformProviderNative::cancelLocation,
+    private val locationDrainNative: () -> LongArray =
+        PlatformProviderNative::drainLocationEvents,
+) {
     private val logger = Logger.withTag("PlatformProvider")
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val lifecycleLock = Mutex()
@@ -122,14 +148,12 @@ internal class PlatformProviderController {
     private val callListeners = CopyOnWriteArrayList<(PlatformCallEvent) -> Unit>()
     private val mediaListeners = CopyOnWriteArrayList<(Int?) -> Unit>()
     private val mediaLock = Any()
+    private val pendingLocations = mutableMapOf<Long, CompletableDeferred<PlatformLocationQueryResult>>()
 
     private var latestMediaVolume: Int? = null
 
     @Volatile
-    private var current = PlatformProviderSnapshot(
-        state = "starting",
-        error = "org.rockpool.Error.ProviderUnavailable",
-    )
+    private var current = initialSnapshot
 
     fun snapshot(): PlatformProviderSnapshot = current
 
@@ -313,6 +337,75 @@ internal class PlatformProviderController {
                 }
             }
         }
+        if (snapshot.domains and LOCATION_DOMAIN == 0L) {
+            retirePendingLocations(STATUS_UNAVAILABLE)
+        }
+    }
+
+    suspend fun queryLocation(
+        highAccuracy: Boolean,
+        timeout: Duration,
+    ): PlatformLocationQueryResult = withContext(Dispatchers.IO) {
+        val timeoutMs = timeout.inWholeMilliseconds.coerceIn(1, LOCATION_TIMEOUT_MAX_MS.toLong())
+            .toInt()
+        val completion = CompletableDeferred<PlatformLocationQueryResult>()
+        val requestId = lifecycleLock.withLock {
+            if (!locationNativeAvailable() || current.domains and LOCATION_DOMAIN == 0L) {
+                return@withContext PlatformLocationQueryResult.Error(STATUS_UNAVAILABLE)
+            }
+            val started = runCatching {
+                locationStartNative(
+                    if (highAccuracy) LOCATION_FINE else LOCATION_COARSE,
+                    timeoutMs,
+                )
+            }.getOrElse {
+                logger.w { "platform location query failed to start: ${it.message}" }
+                return@withContext PlatformLocationQueryResult.Error(STATUS_UNAVAILABLE)
+            }
+            if (started.size != LOCATION_START_FIELD_COUNT ||
+                started[0] !in STATUS_OK.toLong()..STATUS_INTERNAL_ERROR.toLong()) {
+                return@withContext PlatformLocationQueryResult.Error(STATUS_PROTOCOL_ERROR)
+            }
+            val status = started[0].toInt()
+            val id = started[1]
+            if (status != STATUS_OK) {
+                if (id != 0L) {
+                    return@withContext PlatformLocationQueryResult.Error(STATUS_PROTOCOL_ERROR)
+                }
+                return@withContext PlatformLocationQueryResult.Error(status)
+            }
+            if (id <= 0L || pendingLocations.containsKey(id)) {
+                return@withContext PlatformLocationQueryResult.Error(STATUS_PROTOCOL_ERROR)
+            }
+            pendingLocations[id] = completion
+            id
+        }
+
+        try {
+            withTimeoutOrNull(timeoutMs.milliseconds + LOCATION_COMPLETION_GRACE) {
+                completion.await()
+            } ?: PlatformLocationQueryResult.Error(STATUS_UNAVAILABLE)
+        } catch (e: CancellationException) {
+            throw e
+        } finally {
+            withContext(NonCancellable) {
+                lifecycleLock.withLock {
+                    if (pendingLocations.remove(requestId) === completion) {
+                        runCatching { locationCancelNative(requestId) }
+                            .onFailure {
+                                logger.w { "platform location cancellation failed: ${it.message}" }
+                            }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun retirePendingLocations(status: Int) {
+        if (pendingLocations.isEmpty()) return
+        val pending = pendingLocations.values.toList()
+        pendingLocations.clear()
+        pending.forEach { it.complete(PlatformLocationQueryResult.Error(status)) }
     }
 
     /** Publish a helper-generation boundary before any fallible per-domain drain. */
@@ -403,18 +496,29 @@ internal class PlatformProviderController {
                 logger.w { "platform media drain failed: ${it.message}" }
                 return
             }
+            val locations = runCatching { locationDrainNative() }.getOrElse {
+                logger.w { "platform location drain failed: ${it.message}" }
+                retirePendingLocations(STATUS_UNAVAILABLE)
+                return
+            }
             if (media.size % MEDIA_FIELD_COUNT != 0) {
                 logger.w { "platform media drain returned malformed data" }
                 return
             }
+            if (locations.size % LOCATION_EVENT_FIELD_COUNT != 0) {
+                logger.w { "platform location drain returned malformed data" }
+                retirePendingLocations(STATUS_PROTOCOL_ERROR)
+                return
+            }
             if (fieldEvents.isNotEmpty() || notifications.isNotEmpty() ||
-                calls.isNotEmpty() || media.isNotEmpty()) {
+                calls.isNotEmpty() || media.isNotEmpty() || locations.isNotEmpty()) {
                 // Provider callbacks cannot mutate the queues during this
                 // batch. Refresh the authoritative domain mask before
                 // dispatch; a concurrent disconnect has already cleared the
                 // proxy's ready bits even if its reset callback is waiting.
                 update(statusNative())
             }
+            providerLocationEvents(locations)
             fieldEvents.forEach { event ->
                 if (event[0] == PROVIDER_STATUS_EVENT.toLong()) return@forEach
                 if (event[0] != TIME_CHANGED_EVENT.toLong() ||
@@ -582,6 +686,50 @@ internal class PlatformProviderController {
         return fields[1].toInt()
     }
 
+    internal fun providerLocationEvents(fields: LongArray) {
+        if (fields.size % LOCATION_EVENT_FIELD_COUNT != 0) {
+            retirePendingLocations(STATUS_PROTOCOL_ERROR)
+            return
+        }
+        fields.asList().chunked(LOCATION_EVENT_FIELD_COUNT).forEach { record ->
+            val requestId = record[0]
+            val completion = pendingLocations.remove(requestId) ?: return@forEach
+            completion.complete(
+                decodeLocation(record)
+                    ?: PlatformLocationQueryResult.Error(STATUS_PROTOCOL_ERROR),
+            )
+        }
+    }
+
+    internal fun decodeLocation(fields: List<Long>): PlatformLocationQueryResult? {
+        if (fields.size != LOCATION_EVENT_FIELD_COUNT || fields[0] <= 0L ||
+            fields[1] !in STATUS_OK.toLong()..STATUS_INTERNAL_ERROR.toLong()) {
+            return null
+        }
+        val status = fields[1].toInt()
+        if (status != STATUS_OK) {
+            if (fields.drop(2).any { it != 0L }) return null
+            return PlatformLocationQueryResult.Error(status)
+        }
+        val latitudeE7 = fields[2]
+        val longitudeE7 = fields[3]
+        val accuracyM = fields[4]
+        val timestampMs = fields[5]
+        if (latitudeE7 !in MIN_LATITUDE_E7.toLong()..MAX_LATITUDE_E7.toLong() ||
+            longitudeE7 !in MIN_LONGITUDE_E7.toLong()..MAX_LONGITUDE_E7.toLong() ||
+            accuracyM !in 0L..Int.MAX_VALUE.toLong() || timestampMs <= 0L) {
+            return null
+        }
+        return PlatformLocationQueryResult.Success(
+            PlatformLocation(
+                latitudeE7 = latitudeE7.toInt(),
+                longitudeE7 = longitudeE7.toInt(),
+                accuracyM = accuracyM.toInt(),
+                timestampMs = timestampMs,
+            ),
+        )
+    }
+
     private fun validCallId(value: String): Boolean =
         value.isNotEmpty() && value.length <= CALL_ID_MAX &&
             value.all { it in 'A'..'Z' || it in 'a'..'z' || it in '0'..'9' || it == '_' }
@@ -681,11 +829,20 @@ internal class PlatformProviderController {
         const val MESSAGING_DOMAIN = 1L shl 1
         const val CALLS_DOMAIN = 1L shl 3
         const val MEDIA_DOMAIN = 1L shl 2
+        const val LOCATION_DOMAIN = 1L shl 6
         const val NOTIFICATION_POSTED_EVENT = 2
         const val NOTIFICATION_CLOSED_EVENT = 3
         const val EVENT_FIELD_COUNT = 4
         const val MAX_UTC_OFFSET_SECONDS = 24 * 60 * 60
+        const val STATUS_OK = 0
+        const val STATUS_CANCELLED = 1
+        const val STATUS_INVALID_ARGUMENT = 2
+        const val STATUS_NOT_SUPPORTED = 3
+        const val STATUS_BUSY = 4
         const val STATUS_UNAVAILABLE = 5
+        const val STATUS_IO_ERROR = 6
+        const val STATUS_PROTOCOL_ERROR = 7
+        const val STATUS_INTERNAL_ERROR = 8
         const val NOTIFICATION_DISMISS = 1
         const val NOTIFICATION_OPEN = 2
         const val NOTIFICATION_HAS_DEFAULT_ACTION = 1
@@ -713,6 +870,15 @@ internal class PlatformProviderController {
         const val MEDIA_FIELD_COUNT = 2
         const val MIN_VOLUME_PERCENT = 0
         const val MAX_VOLUME_PERCENT = 100
+        const val LOCATION_COARSE = 1
+        const val LOCATION_FINE = 2
+        const val LOCATION_START_FIELD_COUNT = 2
+        const val LOCATION_EVENT_FIELD_COUNT = 6
+        const val LOCATION_TIMEOUT_MAX_MS = 30_000
+        const val MIN_LATITUDE_E7 = -900_000_000
+        const val MAX_LATITUDE_E7 = 900_000_000
+        const val MIN_LONGITUDE_E7 = -1_800_000_000
+        const val MAX_LONGITUDE_E7 = 1_800_000_000
         private val NOTIFICATION_STRING_MAX_BYTES = longArrayOf(
             NOTIFICATION_ID_MAX.toLong(),
             NOTIFICATION_ID_MAX.toLong(),
@@ -728,6 +894,7 @@ internal class PlatformProviderController {
         val PLATFORM_EVENT_INTERVAL = 100.milliseconds
         val PLATFORM_RESTART_TIMEOUT = 10.seconds
         val PLATFORM_RESTART_POLL_INTERVAL = 100.milliseconds
+        val LOCATION_COMPLETION_GRACE = 1.seconds
         private val UTF8_DECODER = ThreadLocal.withInitial {
             Charsets.UTF_8.newDecoder()
                 .onMalformedInput(CodingErrorAction.REPORT)
@@ -773,6 +940,15 @@ internal object PlatformProviderNative {
 
     @JvmStatic
     external fun drainMediaEvents(): LongArray
+
+    @JvmStatic
+    external fun locationStart(accuracy: Int, timeoutMs: Int): LongArray
+
+    @JvmStatic
+    external fun cancelLocation(requestId: Long): Int
+
+    @JvmStatic
+    external fun drainLocationEvents(): LongArray
 
     @JvmStatic
     external fun notificationCommand(command: Int, id: String): Int

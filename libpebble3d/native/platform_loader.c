@@ -44,6 +44,7 @@
 #define LP3_MAX_PATH 512
 #define LP3_MAX_QUEUED_EVENTS 64u
 #define LP3_MAX_PAYLOAD_BYTES (64u * 1024u)
+#define LP3_LOCATION_TIMEOUT_MAX_MS (30u * 1000u)
 
 typedef int32_t (*lp3_get_api_fn)(uint32_t, uint32_t,
                                   const struct lp3_platform_api_v1 **);
@@ -103,6 +104,15 @@ struct lp3_copied_media_event {
     int32_t volume_percent;
 };
 
+struct lp3_copied_location_event {
+    uint64_t request_id;
+    int32_t status;
+    int32_t latitude_e7;
+    int32_t longitude_e7;
+    int32_t accuracy_m;
+    int64_t timestamp_ms;
+};
+
 static pthread_mutex_t loader_lock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t event_lock = PTHREAD_MUTEX_INITIALIZER;
 static _Thread_local int event_batch_held;
@@ -120,6 +130,16 @@ static size_t call_event_count;
 static struct lp3_copied_media_event media_event_queue[LP3_MAX_QUEUED_EVENTS];
 static size_t media_event_head;
 static size_t media_event_count;
+static struct lp3_copied_location_event
+    location_event_queue[LP3_MAX_QUEUED_EVENTS];
+static size_t location_event_head;
+static size_t location_event_count;
+/* One bounded record per admitted request; zero is never a valid request ID. */
+static uint64_t location_outstanding[LP3_MAX_QUEUED_EVENTS];
+static size_t location_outstanding_count;
+/* Cancellation tombstones discard one late completion without retaining it. */
+static uint64_t location_tombstones[LP3_MAX_QUEUED_EVENTS];
+static size_t location_tombstone_count;
 static uint64_t event_failed_domains;
 static int provider_reset_pending;
 static size_t provider_command_dispatches;
@@ -166,6 +186,35 @@ static void end_provider_command_dispatch(void) {
         pthread_cond_broadcast(&provider_command_condition);
     }
     unlock_event_queues();
+}
+
+static int location_id_index(const uint64_t *ids, size_t count,
+                             uint64_t request_id) {
+    size_t index;
+    for (index = 0; index < count; ++index) {
+        if (ids[index] == request_id) {
+            return (int)index;
+        }
+    }
+    return -1;
+}
+
+static void location_remove_id(uint64_t *ids, size_t *count, size_t index) {
+    if (index + 1 < *count) {
+        memmove(&ids[index], &ids[index + 1],
+                (*count - index - 1) * sizeof(ids[0]));
+    }
+    --*count;
+}
+
+static void clear_location_events(void) {
+    memset(location_event_queue, 0, sizeof(location_event_queue));
+    location_event_head = 0;
+    location_event_count = 0;
+    memset(location_outstanding, 0, sizeof(location_outstanding));
+    location_outstanding_count = 0;
+    memset(location_tombstones, 0, sizeof(location_tombstones));
+    location_tombstone_count = 0;
 }
 
 /*
@@ -573,6 +622,19 @@ static int valid_media(const struct lp3_platform_media_state_v1 *media) {
            string_empty(&media->album);
 }
 
+static int valid_location_status(int32_t status) {
+    return status >= LP3_PLATFORM_OK && status <= LP3_PLATFORM_INTERNAL_ERROR;
+}
+
+static int valid_location(const struct lp3_platform_location_v1 *location) {
+    return location != NULL && location->struct_size >= sizeof(*location) &&
+           location->latitude_e7 >= -900000000 &&
+           location->latitude_e7 <= 900000000 &&
+           location->longitude_e7 >= -1800000000 &&
+           location->longitude_e7 <= 1800000000 &&
+           location->accuracy_m >= 0 && location->timestamp_ms > 0;
+}
+
 static int valid_provider_reset(
     const struct lp3_platform_provider_status_v1 *status) {
     uint64_t classified;
@@ -612,6 +674,7 @@ static void reset_events(void) {
     memset(media_event_queue, 0, sizeof(media_event_queue));
     media_event_head = 0;
     media_event_count = 0;
+    clear_location_events();
     event_failed_domains = 0;
     provider_reset_pending = 0;
     unlock_event_queues();
@@ -638,7 +701,6 @@ static void provider_event(void *context, const struct lp3_platform_event_v1 *ev
     if (event == NULL ||
         event->struct_size < offsetof(struct lp3_platform_event_v1, notification) +
             sizeof(event->notification) ||
-        event->request_id != 0 || event->status != LP3_PLATFORM_OK ||
         event->reserved != 0) {
         event_failed_domains = LP3_PLATFORM_DOMAIN_ALL;
         event_head = 0;
@@ -649,6 +711,16 @@ static void provider_event(void *context, const struct lp3_platform_event_v1 *ev
         call_event_count = 0;
         media_event_head = 0;
         media_event_count = 0;
+        clear_location_events();
+        unlock_event_queues();
+        return;
+    }
+    if (event->type != LP3_PLATFORM_EVENT_LOCATION &&
+        (event->request_id != 0 || event->status != LP3_PLATFORM_OK)) {
+        event_failed_domains = LP3_PLATFORM_DOMAIN_ALL;
+        event_head = notification_event_head = call_event_head = media_event_head = 0;
+        event_count = notification_event_count = call_event_count = media_event_count = 0;
+        clear_location_events();
         unlock_event_queues();
         return;
     }
@@ -657,7 +729,7 @@ static void provider_event(void *context, const struct lp3_platform_event_v1 *ev
         if (event->struct_size < offsetof(struct lp3_platform_event_v1, time) +
                 sizeof(event->time) || !valid_time_state(event->time) ||
             event_count + notification_event_count + call_event_count +
-                media_event_count >=
+                media_event_count + location_event_count >=
                 LP3_MAX_QUEUED_EVENTS) {
             event_failed_domains |= LP3_PLATFORM_DOMAIN_TIME;
             event_head = 0;
@@ -681,7 +753,7 @@ static void provider_event(void *context, const struct lp3_platform_event_v1 *ev
         struct lp3_copied_notification_event *copied;
         if (!valid_notification(event->type, event->notification) ||
             event_count + notification_event_count + call_event_count +
-                media_event_count >=
+                media_event_count + location_event_count >=
                 LP3_MAX_QUEUED_EVENTS) {
             event_failed_domains |= LP3_PLATFORM_DOMAIN_NOTIFICATIONS;
             notification_event_head = 0;
@@ -724,7 +796,7 @@ static void provider_event(void *context, const struct lp3_platform_event_v1 *ev
         if (event->struct_size < offsetof(struct lp3_platform_event_v1, call) +
                 sizeof(event->call) || !valid_call(event->call) ||
             event_count + notification_event_count + call_event_count +
-                media_event_count >=
+                media_event_count + location_event_count >=
                 LP3_MAX_QUEUED_EVENTS) {
             event_failed_domains |= LP3_PLATFORM_DOMAIN_CALLS;
             call_event_head = 0;
@@ -759,7 +831,8 @@ static void provider_event(void *context, const struct lp3_platform_event_v1 *ev
             return;
         }
         if (media_event_count == 0) {
-            if (event_count + notification_event_count + call_event_count >=
+            if (event_count + notification_event_count + call_event_count +
+                    location_event_count >=
                     LP3_MAX_QUEUED_EVENTS) {
                 event_failed_domains |= LP3_PLATFORM_DOMAIN_MEDIA;
                 unlock_event_queues();
@@ -775,6 +848,70 @@ static void provider_event(void *context, const struct lp3_platform_event_v1 *ev
         }
         copied->flags = event->media->flags;
         copied->volume_percent = event->media->volume_percent;
+    } else if (event->type == LP3_PLATFORM_EVENT_LOCATION) {
+        struct lp3_copied_location_event *copied;
+        int outstanding_index;
+        int tombstone_index;
+
+        if (event->struct_size < offsetof(struct lp3_platform_event_v1, location) +
+                sizeof(event->location) || event->request_id == 0) {
+            event_failed_domains |= LP3_PLATFORM_DOMAIN_LOCATION;
+            clear_location_events();
+            unlock_event_queues();
+            return;
+        }
+        tombstone_index = location_id_index(location_tombstones,
+                                             location_tombstone_count,
+                                             event->request_id);
+        if (tombstone_index >= 0) {
+            location_remove_id(location_tombstones, &location_tombstone_count,
+                               (size_t)tombstone_index);
+            unlock_event_queues();
+            return;
+        }
+        outstanding_index = location_id_index(location_outstanding,
+                                               location_outstanding_count,
+                                               event->request_id);
+        /* Unknown and retired completions have no authority over this domain. */
+        if (outstanding_index < 0) {
+            unlock_event_queues();
+            return;
+        }
+        if (!valid_location_status(event->status) ||
+            (event->status == LP3_PLATFORM_OK && !valid_location(event->location)) ||
+            (event->status != LP3_PLATFORM_OK && event->location != NULL)) {
+            event_failed_domains |= LP3_PLATFORM_DOMAIN_LOCATION;
+            clear_location_events();
+            unlock_event_queues();
+            return;
+        }
+        if ((event_failed_domains & LP3_PLATFORM_DOMAIN_LOCATION) != 0 ||
+            location_event_count >= LP3_MAX_QUEUED_EVENTS ||
+            event_count + notification_event_count + call_event_count +
+                media_event_count + location_event_count >= LP3_MAX_QUEUED_EVENTS) {
+            if (location_event_count >= LP3_MAX_QUEUED_EVENTS ||
+                event_count + notification_event_count + call_event_count +
+                    media_event_count + location_event_count >= LP3_MAX_QUEUED_EVENTS) {
+                event_failed_domains |= LP3_PLATFORM_DOMAIN_LOCATION;
+                clear_location_events();
+            }
+            unlock_event_queues();
+            return;
+        }
+        location_remove_id(location_outstanding, &location_outstanding_count,
+                           (size_t)outstanding_index);
+        copied = &location_event_queue[(location_event_head + location_event_count) %
+                                       LP3_MAX_QUEUED_EVENTS];
+        memset(copied, 0, sizeof(*copied));
+        copied->request_id = event->request_id;
+        copied->status = event->status;
+        if (event->status == LP3_PLATFORM_OK) {
+            copied->latitude_e7 = event->location->latitude_e7;
+            copied->longitude_e7 = event->location->longitude_e7;
+            copied->accuracy_m = event->location->accuracy_m;
+            copied->timestamp_ms = event->location->timestamp_ms;
+        }
+        ++location_event_count;
     } else if (event->type == LP3_PLATFORM_EVENT_PROVIDER_STATUS) {
         if (event->struct_size <
                 offsetof(struct lp3_platform_event_v1, provider_status) +
@@ -799,6 +936,7 @@ static void provider_event(void *context, const struct lp3_platform_event_v1 *ev
         call_event_count = 0;
         media_event_head = 0;
         media_event_count = 0;
+        clear_location_events();
     } else {
         event_failed_domains = LP3_PLATFORM_DOMAIN_ALL;
         provider_reset_pending = 0;
@@ -810,6 +948,7 @@ static void provider_event(void *context, const struct lp3_platform_event_v1 *ev
         call_event_count = 0;
         media_event_head = 0;
         media_event_count = 0;
+        clear_location_events();
     }
     unlock_event_queues();
 }
@@ -1459,6 +1598,163 @@ Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_drainMediaEvents(
     }
     if (count != 0) {
         (*env)->SetLongArrayRegion(env, result, 0, (jsize)(count * 2), values);
+    }
+    return result;
+}
+
+JNIEXPORT jlongArray JNICALL
+Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_locationStart(
+    JNIEnv *env, jclass klass, jint accuracy_value, jint timeout_ms_value) {
+    struct lp3_platform_location_request_v1 request;
+    jlong values[2];
+    jlongArray result;
+    uint64_t request_id = 0;
+    int32_t status = LP3_PLATFORM_UNAVAILABLE;
+    int command_gate_held = 0;
+    (void)klass;
+
+    if ((accuracy_value != LP3_PLATFORM_LOCATION_COARSE &&
+         accuracy_value != LP3_PLATFORM_LOCATION_FINE) || timeout_ms_value <= 0 ||
+        (uint32_t)timeout_ms_value > LP3_LOCATION_TIMEOUT_MAX_MS) {
+        status = LP3_PLATFORM_INVALID_ARGUMENT;
+        goto done;
+    }
+    pthread_mutex_lock(&loader_lock);
+    command_gate_held = begin_provider_command_dispatch(LP3_PLATFORM_DOMAIN_LOCATION);
+    if (command_gate_held && loader.api != NULL && loader.instance != NULL &&
+        (loader.api->info.domains & LP3_PLATFORM_DOMAIN_LOCATION) != 0 &&
+        API_HAS_MEMBER(loader.api, location_query) && loader.next_request_id != 0 &&
+        (loader.next_request_id & (UINT64_C(1) << 63)) == 0) {
+        lock_event_queues();
+        if (location_outstanding_count < LP3_MAX_QUEUED_EVENTS) {
+            request_id = loader.next_request_id++;
+            location_outstanding[location_outstanding_count++] = request_id;
+            unlock_event_queues();
+            memset(&request, 0, sizeof(request));
+            request.struct_size = sizeof(request);
+            request.accuracy = (uint32_t)accuracy_value;
+            request.timeout_ms = (uint32_t)timeout_ms_value;
+            status = loader.api->location_query(loader.instance, request_id, &request);
+            if (status != LP3_PLATFORM_OK) {
+                lock_event_queues();
+                {
+                    int index = location_id_index(location_outstanding,
+                                                   location_outstanding_count,
+                                                   request_id);
+                    if (index >= 0) {
+                        location_remove_id(location_outstanding,
+                                           &location_outstanding_count,
+                                           (size_t)index);
+                    }
+                }
+                unlock_event_queues();
+                request_id = 0;
+            }
+        } else {
+            unlock_event_queues();
+            status = LP3_PLATFORM_BUSY;
+        }
+    }
+    if (command_gate_held) {
+        end_provider_command_dispatch();
+    }
+    pthread_mutex_unlock(&loader_lock);
+
+done:
+    values[0] = (jlong)status;
+    values[1] = (jlong)request_id;
+    result = (*env)->NewLongArray(env, 2);
+    if (result != NULL) {
+        (*env)->SetLongArrayRegion(env, result, 0, 2, values);
+    }
+    return result;
+}
+
+JNIEXPORT jint JNICALL
+Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_cancelLocation(
+    JNIEnv *env, jclass klass, jlong request_id_value) {
+    uint64_t request_id;
+    int32_t status = LP3_PLATFORM_UNAVAILABLE;
+    int command_gate_held;
+    (void)env;
+    (void)klass;
+
+    if (request_id_value <= 0 ||
+        ((uint64_t)request_id_value & (UINT64_C(1) << 63)) != 0) {
+        return LP3_PLATFORM_INVALID_ARGUMENT;
+    }
+    request_id = (uint64_t)request_id_value;
+    pthread_mutex_lock(&loader_lock);
+    command_gate_held = begin_provider_command_dispatch(LP3_PLATFORM_DOMAIN_LOCATION);
+    if (command_gate_held && loader.api != NULL && loader.instance != NULL &&
+        (loader.api->info.domains & LP3_PLATFORM_DOMAIN_LOCATION) != 0) {
+        int index;
+        lock_event_queues();
+        index = location_id_index(location_outstanding, location_outstanding_count,
+                                  request_id);
+        if (index < 0) {
+            status = LP3_PLATFORM_INVALID_ARGUMENT;
+        } else {
+            location_remove_id(location_outstanding, &location_outstanding_count,
+                               (size_t)index);
+            if (location_tombstone_count >= LP3_MAX_QUEUED_EVENTS) {
+                /* IDs are monotonic and never reused; an evicted late reply is
+                 * still ignored as unknown before its payload is inspected. */
+                location_remove_id(location_tombstones,
+                                   &location_tombstone_count, 0);
+            }
+            location_tombstones[location_tombstone_count++] = request_id;
+            status = LP3_PLATFORM_OK;
+        }
+        unlock_event_queues();
+        if (status == LP3_PLATFORM_OK) {
+            status = API_HAS_MEMBER(loader.api, cancel) ?
+                loader.api->cancel(loader.instance, request_id) :
+                LP3_PLATFORM_NOT_SUPPORTED;
+        }
+    }
+    if (command_gate_held) {
+        end_provider_command_dispatch();
+    }
+    pthread_mutex_unlock(&loader_lock);
+    return status;
+}
+
+JNIEXPORT jlongArray JNICALL
+Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_drainLocationEvents(
+    JNIEnv *env, jclass klass) {
+    struct lp3_copied_location_event copied[LP3_MAX_QUEUED_EVENTS];
+    jlong values[LP3_MAX_QUEUED_EVENTS * 6];
+    jlongArray result;
+    size_t count;
+    size_t index;
+    (void)klass;
+
+    lock_event_queues();
+    /* A reset marker must cross JNI before any replacement-helper completion. */
+    count = provider_reset_pending ? 0 : location_event_count;
+    for (index = 0; index < count; ++index) {
+        copied[index] = location_event_queue[
+            (location_event_head + index) % LP3_MAX_QUEUED_EVENTS];
+    }
+    location_event_head = (location_event_head + count) % LP3_MAX_QUEUED_EVENTS;
+    location_event_count -= count;
+    unlock_event_queues();
+
+    result = (*env)->NewLongArray(env, (jsize)(count * 6));
+    if (result == NULL) {
+        return NULL;
+    }
+    for (index = 0; index < count; ++index) {
+        values[index * 6] = (jlong)copied[index].request_id;
+        values[index * 6 + 1] = (jlong)copied[index].status;
+        values[index * 6 + 2] = (jlong)copied[index].latitude_e7;
+        values[index * 6 + 3] = (jlong)copied[index].longitude_e7;
+        values[index * 6 + 4] = (jlong)copied[index].accuracy_m;
+        values[index * 6 + 5] = (jlong)copied[index].timestamp_ms;
+    }
+    if (count != 0) {
+        (*env)->SetLongArrayRegion(env, result, 0, (jsize)(count * 6), values);
     }
     return result;
 }

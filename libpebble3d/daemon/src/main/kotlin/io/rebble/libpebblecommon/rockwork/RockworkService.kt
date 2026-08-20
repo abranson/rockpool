@@ -16,6 +16,8 @@ import io.rebble.libpebblecommon.connection.PebbleDevice
 import io.rebble.libpebblecommon.database.dao.AppWithCount
 import io.rebble.libpebblecommon.linux.weather.OpenMeteoWeatherClient
 import io.rebble.libpebblecommon.rockpool.RockpoolSettings
+import io.rebble.libpebblecommon.util.GeolocationPositionResult
+import io.rebble.libpebblecommon.util.SystemGeolocation
 import io.rebble.libpebblecommon.rockpool.DevConnectionStateObserver
 import io.rebble.libpebblecommon.rockpool.AccountSettingsCoordinator
 import io.rebble.libpebblecommon.rockpool.BondedWatchForgetCoordinator
@@ -96,12 +98,21 @@ internal class RockworkService(
         scope = scope,
         coordinator = weatherCoordinator,
         units = { settings.get("weather.units", "m") },
-        fetch = { target, units ->
+        fetch = { _, coordinates, units ->
             weatherClient.fetch(
-                latitude = target.latitudeValue,
-                longitude = target.longitudeValue,
+                latitude = coordinates.latitude,
+                longitude = coordinates.longitude,
                 imperial = units == "e",
             )?.toRockworkWeatherObservation()
+        },
+        resolveCurrentLocation = {
+            (libPebble.getCurrentPosition(
+                maximumAge = SystemGeolocation.DEFAULT_MAX_AGE,
+                timeout = SystemGeolocation.DEFAULT_TIMEOUT,
+                highAccuracy = false,
+            ) as? GeolocationPositionResult.Success)?.let { position ->
+                RockworkWeatherCoordinates(position.latitude, position.longitude)
+            }
         },
         onFailure = { logger.w { "automatic weather refresh failed" } },
     )

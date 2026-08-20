@@ -13,6 +13,7 @@ import io.rebble.libpebblecommon.time.TimeChanged
 import io.rebble.libpebblecommon.linux.notifications.LinuxNotificationBackend
 import io.rebble.libpebblecommon.linux.music.VolumeControl
 import io.rebble.libpebblecommon.connection.endpointmanager.blobdb.TimelineWindowProvider
+import io.rebble.libpebblecommon.util.SystemGeolocation
 import org.koin.core.module.Module
 import org.koin.dsl.bind
 import org.koin.dsl.module
@@ -41,6 +42,7 @@ internal fun platformProviderModule(
         )
     }
     single { PlatformTimeChanged(controller) } bind TimeChanged::class
+    single { PlatformSystemGeolocation(controller::queryLocation) } bind SystemGeolocation::class
     single { notificationBackend } bind LinuxNotificationBackend::class
     single { deviceActivity } bind LinuxDeviceActivity::class
     single { PlatformCallsBackend(controller) } bind LegacyPhoneReceiver::class

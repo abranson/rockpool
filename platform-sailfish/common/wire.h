@@ -20,7 +20,7 @@
 namespace lp3wire {
 
 static const uint16_t kMajor = 1;
-static const uint16_t kMinor = 4;
+static const uint16_t kMinor = 5;
 static const size_t kHeaderSize = 24;
 static const size_t kMaxFrameSize = 64 * 1024;
 
@@ -42,6 +42,7 @@ enum Operation {
     CallCommand = 3,
     MediaCommand = 4,
     MessageReply = 5,
+    LocationQuery = 6,
 };
 
 enum EventType {
@@ -90,6 +91,7 @@ enum Domain {
     DomainMessaging = 1u << 1,
     DomainMedia = 1u << 2,
     DomainCalls = 1u << 3,
+    DomainLocation = 1u << 6,
     DomainTime = 1u << 7,
 };
 
@@ -158,6 +160,18 @@ struct MediaCommandData {
     uint32_t command;
 };
 
+struct LocationQueryData {
+    uint32_t accuracy;
+    uint32_t timeoutMs;
+};
+
+struct LocationData {
+    int32_t latitudeE7;
+    int32_t longitudeE7;
+    int32_t accuracyM;
+    int64_t timestampMs;
+};
+
 struct HealthState {
     uint64_t readyDomains;
     uint64_t degradedDomains;
@@ -176,6 +190,9 @@ static const size_t kMessageTextMax = 512;
 static const size_t kCallIdMax = 128;
 static const size_t kCallNameMax = 256;
 static const size_t kCallNumberMax = 256;
+static const uint32_t kLocationCoarse = 1;
+static const uint32_t kLocationFine = 2;
+static const uint32_t kLocationTimeoutMaxMs = 30000;
 
 inline void put16(uint8_t *data, uint16_t value) {
     data[0] = static_cast<uint8_t>(value & 0xff);
@@ -219,7 +236,8 @@ inline bool validStatus(uint32_t status);
 
 inline bool validHealthState(const HealthState &health) {
     const uint64_t supported = DomainNotifications | DomainMessaging |
-                               DomainMedia | DomainCalls | DomainTime;
+                               DomainMedia | DomainCalls | DomainLocation |
+                               DomainTime;
     return ((health.readyDomains | health.degradedDomains |
              health.failedDomains) & ~supported) == 0 &&
            (health.readyDomains & health.degradedDomains) == 0 &&
@@ -804,6 +822,95 @@ inline bool decodeTimeChanged(const std::vector<uint8_t> &payload,
         return false;
     }
     *state = decoded;
+    return true;
+}
+
+inline bool validLocationAccuracy(uint32_t accuracy) {
+    return accuracy == kLocationCoarse || accuracy == kLocationFine;
+}
+
+inline bool validLocationQuery(const LocationQueryData &query) {
+    return validLocationAccuracy(query.accuracy) && query.timeoutMs != 0 &&
+           query.timeoutMs <= kLocationTimeoutMaxMs;
+}
+
+inline bool validLocation(const LocationData &location) {
+    return location.latitudeE7 >= -900000000 && location.latitudeE7 <= 900000000 &&
+           location.longitudeE7 >= -1800000000 &&
+           location.longitudeE7 <= 1800000000 && location.accuracyM >= 0 &&
+           location.timestampMs > 0;
+}
+
+inline bool emptyLocation(const LocationData &location) {
+    return location.latitudeE7 == 0 && location.longitudeE7 == 0 &&
+           location.accuracyM == 0 && location.timestampMs == 0;
+}
+
+inline bool encodeLocationQuery(const LocationQueryData &query,
+                                std::vector<uint8_t> *payload) {
+    if (payload == NULL || !validLocationQuery(query)) {
+        return false;
+    }
+    payload->assign(12, 0);
+    put16(&(*payload)[0], LocationQuery);
+    put32(&(*payload)[4], query.accuracy);
+    put32(&(*payload)[8], query.timeoutMs);
+    return true;
+}
+
+inline bool decodeLocationQuery(const std::vector<uint8_t> &payload,
+                                LocationQueryData *query) {
+    LocationQueryData decoded;
+
+    if (query == NULL || payload.size() != 12 ||
+        get16(&payload[0]) != LocationQuery || get16(&payload[2]) != 0) {
+        return false;
+    }
+    decoded.accuracy = get32(&payload[4]);
+    decoded.timeoutMs = get32(&payload[8]);
+    if (!validLocationQuery(decoded)) {
+        return false;
+    }
+    *query = decoded;
+    return true;
+}
+
+inline bool encodeLocationReply(uint32_t status, const LocationData &location,
+                                std::vector<uint8_t> *payload) {
+    if (payload == NULL || !validStatus(status) ||
+        (status == 0 ? !validLocation(location) : !emptyLocation(location))) {
+        return false;
+    }
+    payload->assign(28, 0);
+    put16(&(*payload)[0], LocationQuery);
+    put32(&(*payload)[4], status);
+    put32(&(*payload)[8], static_cast<uint32_t>(location.latitudeE7));
+    put32(&(*payload)[12], static_cast<uint32_t>(location.longitudeE7));
+    put32(&(*payload)[16], static_cast<uint32_t>(location.accuracyM));
+    put64(&(*payload)[20], static_cast<uint64_t>(location.timestampMs));
+    return true;
+}
+
+inline bool decodeLocationReply(const std::vector<uint8_t> &payload,
+                                uint32_t *status, LocationData *location) {
+    LocationData decoded;
+    uint32_t decodedStatus;
+
+    if (status == NULL || location == NULL || payload.size() != 28 ||
+        get16(&payload[0]) != LocationQuery || get16(&payload[2]) != 0) {
+        return false;
+    }
+    decodedStatus = get32(&payload[4]);
+    decoded.latitudeE7 = static_cast<int32_t>(get32(&payload[8]));
+    decoded.longitudeE7 = static_cast<int32_t>(get32(&payload[12]));
+    decoded.accuracyM = static_cast<int32_t>(get32(&payload[16]));
+    decoded.timestampMs = static_cast<int64_t>(get64(&payload[20]));
+    if (!validStatus(decodedStatus) ||
+        (decodedStatus == 0 ? !validLocation(decoded) : !emptyLocation(decoded))) {
+        return false;
+    }
+    *status = decodedStatus;
+    *location = decoded;
     return true;
 }
 

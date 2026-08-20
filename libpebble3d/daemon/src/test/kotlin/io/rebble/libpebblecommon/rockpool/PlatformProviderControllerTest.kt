@@ -20,6 +20,7 @@ import kotlinx.coroutines.withTimeout
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -732,6 +733,112 @@ class PlatformProviderControllerTest {
         assertEquals("restarted", result)
         assertTrue(restarted)
     }
+
+    @Test
+    fun decodesStrictLocationSuccessAndErrorRecords() {
+        val location = assertIs<PlatformLocationQueryResult.Success>(
+            controller.decodeLocation(listOf(7, 0, 123_456_789, -987_654_321, 42, 1_234)),
+        ).location
+        assertEquals(123_456_789, location.latitudeE7)
+        assertEquals(-987_654_321, location.longitudeE7)
+        assertEquals(42, location.accuracyM)
+        assertEquals(1_234L, location.timestampMs)
+        assertEquals(
+            PlatformLocationQueryResult.Error(PlatformProviderController.STATUS_BUSY),
+            controller.decodeLocation(listOf(7, PlatformProviderController.STATUS_BUSY.toLong(), 0, 0, 0, 0)),
+        )
+        assertNull(controller.decodeLocation(listOf(0, 0, 0, 0, 0, 0)))
+        assertNull(controller.decodeLocation(listOf(7, 0, 900_000_001, 0, 0, 1)))
+        assertNull(controller.decodeLocation(listOf(7, 0, 0, 0, -1, 1)))
+        assertNull(controller.decodeLocation(listOf(7, 0, 0, 0, 0, 0)))
+        assertNull(controller.decodeLocation(listOf(7, 4, 1, 0, 0, 0)))
+        assertNull(controller.decodeLocation(listOf(7, 0, 0, 0, 0)))
+    }
+
+    @Test
+    fun queryCorrelatesOnlyMatchingLocationCompletion() = runBlocking {
+        val started = CompletableDeferred<Pair<Int, Int>>()
+        val controller = locationController(
+            start = { accuracy, timeout ->
+                started.complete(accuracy to timeout)
+                longArrayOf(0, 42)
+            },
+        )
+        val request = async { controller.queryLocation(highAccuracy = true, timeout = 40.seconds) }
+
+        assertEquals(PlatformProviderController.LOCATION_FINE to 30_000, started.await())
+        controller.providerLocationEvents(longArrayOf(41, 0, 1, 2, 3, 4))
+        assertFalse(request.isCompleted)
+        controller.providerLocationEvents(longArrayOf(42, 0, 1, 2, 3, 4))
+        assertEquals(
+            PlatformLocationQueryResult.Success(PlatformLocation(1, 2, 3, 4)),
+            withTimeout(1_000) { request.await() },
+        )
+    }
+
+    @Test
+    fun queryRejectsMalformedStartAndCancelsOnTimeout() = runBlocking {
+        var cancelled = -1L
+        val malformed = locationController(start = { _, _ -> longArrayOf(0) })
+        assertEquals(
+            PlatformLocationQueryResult.Error(PlatformProviderController.STATUS_PROTOCOL_ERROR),
+            malformed.queryLocation(false, 1.milliseconds),
+        )
+
+        val timedOut = locationController(
+            start = { _, _ -> longArrayOf(0, 9) },
+            cancel = { id -> cancelled = id; 0 },
+        )
+        assertEquals(
+            PlatformLocationQueryResult.Error(PlatformProviderController.STATUS_UNAVAILABLE),
+            withTimeout(2.seconds) { timedOut.queryLocation(false, 1.milliseconds) },
+        )
+        assertEquals(9L, cancelled)
+    }
+
+    @Test
+    fun domainLossAndGenerationRetirePendingLocations() = runBlocking {
+        suspend fun pending(controller: PlatformProviderController): kotlinx.coroutines.Deferred<PlatformLocationQueryResult> {
+            val request = async { controller.queryLocation(false, 5.seconds) }
+            delay(1)
+            return request
+        }
+
+        val lost = locationController(start = { _, _ -> longArrayOf(0, 1) })
+        val lostRequest = pending(lost)
+        lost.providerSnapshotChanged(locationSnapshot(domains = 0))
+        assertEquals(
+            PlatformLocationQueryResult.Error(PlatformProviderController.STATUS_UNAVAILABLE),
+            withTimeout(1_000) { lostRequest.await() },
+        )
+
+        val reset = locationController(start = { _, _ -> longArrayOf(0, 2) })
+        val resetRequest = pending(reset)
+        reset.applyProviderGenerationBoundary(
+            listOf(listOf(PlatformProviderController.PROVIDER_STATUS_EVENT.toLong(), 0, 0, 0)),
+        )
+        assertEquals(
+            PlatformLocationQueryResult.Error(PlatformProviderController.STATUS_UNAVAILABLE),
+            withTimeout(1_000) { resetRequest.await() },
+        )
+    }
+
+    private fun locationController(
+        start: (Int, Int) -> LongArray,
+        cancel: (Long) -> Int = { 0 },
+    ) = PlatformProviderController(
+        initialSnapshot = locationSnapshot(),
+        locationNativeAvailable = { true },
+        locationStartNative = start,
+        locationCancelNative = cancel,
+    )
+
+    private fun locationSnapshot(domains: Long = PlatformProviderController.LOCATION_DOMAIN) =
+        PlatformProviderSnapshot(
+            state = "ready",
+            domains = domains,
+            supportedDomains = PlatformProviderController.LOCATION_DOMAIN,
+        )
 
     private fun record(
         type: Int,

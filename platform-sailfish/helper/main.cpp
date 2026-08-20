@@ -404,7 +404,8 @@ private:
             (m_notificationsReady ? 0 : lp3wire::DomainNotifications) |
             (m_messagingReady ? 0 : lp3wire::DomainMessaging) |
             (m_callsReady ? 0 : lp3wire::DomainCalls) |
-            (m_mediaReady ? 0 : lp3wire::DomainMedia);
+            (m_mediaReady ? 0 : lp3wire::DomainMedia) |
+            lp3wire::DomainLocation;
         health.failedDomains = 0;
         std::vector<uint8_t> payload;
         return lp3wire::encodeHealth(health, &payload) &&
@@ -651,12 +652,33 @@ private:
         }
     }
 
+    void completeLocationUnavailable(uint64_t requestId) {
+        if (!m_pending.remove(requestId)) {
+            return;
+        }
+        lp3wire::LocationData location = {};
+        std::vector<uint8_t> payload;
+        if (!lp3wire::encodeLocationReply(
+                LP3_PLATFORM_NOT_SUPPORTED, location, &payload) ||
+            !queueFrame(lp3wire::Complete, requestId,
+                        &payload[0], payload.size())) {
+            failClosed();
+        }
+    }
+
     bool completeBusy(uint64_t requestId, uint16_t operation) {
         std::vector<uint8_t> payload;
         if (operation == lp3wire::TimeGet) {
             lp3wire::TimeState empty;
             memset(&empty, 0, sizeof(empty));
             return lp3wire::encodeTimeReply(
+                       LP3_PLATFORM_BUSY, empty, &payload) &&
+                queueFrame(lp3wire::Complete, requestId,
+                           &payload[0], payload.size());
+        }
+        if (operation == lp3wire::LocationQuery) {
+            lp3wire::LocationData empty = {};
+            return lp3wire::encodeLocationReply(
                        LP3_PLATFORM_BUSY, empty, &payload) &&
                 queueFrame(lp3wire::Complete, requestId,
                            &payload[0], payload.size());
@@ -708,6 +730,7 @@ private:
             lp3wire::MessageReplyData messageReply;
             lp3wire::CallCommandData callCommand;
             lp3wire::MediaCommandData mediaCommand = {};
+            lp3wire::LocationQueryData locationQuery = {};
             if ((operation == lp3wire::TimeGet &&
                  !lp3wire::decodeTimeGet(frame.payload)) ||
                 (operation == lp3wire::NotificationCommand &&
@@ -719,11 +742,14 @@ private:
                  !lp3wire::decodeCallCommand(frame.payload, &callCommand)) ||
                 (operation == lp3wire::MediaCommand &&
                  !lp3wire::decodeMediaCommand(frame.payload, &mediaCommand)) ||
+                (operation == lp3wire::LocationQuery &&
+                 !lp3wire::decodeLocationQuery(frame.payload, &locationQuery)) ||
                 (operation != lp3wire::TimeGet &&
                  operation != lp3wire::NotificationCommand &&
                  operation != lp3wire::MessageReply &&
                  operation != lp3wire::CallCommand &&
-                 operation != lp3wire::MediaCommand)) {
+                 operation != lp3wire::MediaCommand &&
+                 operation != lp3wire::LocationQuery)) {
                 return false;
             }
             if (m_pending.size() >= kMaximumPending) {
@@ -753,12 +779,16 @@ private:
                     [this, frame, callCommand]() {
                         completeCall(frame.requestId, callCommand);
                     });
-            } else {
+            } else if (operation == lp3wire::MediaCommand) {
                 QTimer::singleShot(
                     0, this,
                     [this, frame, mediaCommand]() {
                         completeMedia(frame.requestId, mediaCommand);
                     });
+            } else {
+                QTimer::singleShot(0, this, [this, frame]() {
+                    completeLocationUnavailable(frame.requestId);
+                });
             }
             return true;
         }

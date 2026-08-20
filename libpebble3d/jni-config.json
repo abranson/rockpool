@@ -43,6 +43,18 @@
         "parameterTypes": []
       },
       {
+        "name": "locationStart",
+        "parameterTypes": ["int", "int"]
+      },
+      {
+        "name": "cancelLocation",
+        "parameterTypes": ["long"]
+      },
+      {
+        "name": "drainLocationEvents",
+        "parameterTypes": []
+      },
+      {
         "name": "notificationCommand",
         "parameterTypes": ["int", "java.lang.String"]
       },

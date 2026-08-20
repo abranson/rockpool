@@ -53,8 +53,13 @@ internal data class RockworkWeatherFetchTarget(
     val name: String,
     val latitude: String,
     val longitude: String,
-    val latitudeValue: Double,
-    val longitudeValue: Double,
+    val coordinates: RockworkWeatherCoordinates?,
+    val currentLocation: Boolean,
+)
+
+internal data class RockworkWeatherCoordinates(
+    val latitude: Double,
+    val longitude: Double,
 )
 
 /**
@@ -125,23 +130,38 @@ internal class RockworkWeatherCoordinator(
         return true
     }
 
-    /** Static locations whose observations may be populated by the supported weather fetcher. */
+    /** Locations whose observations may be populated by the supported weather fetcher. */
     @Synchronized
-    fun automaticFetchTargets(): List<RockworkWeatherFetchTarget> = state.mapNotNull { location ->
+    fun automaticFetchTargets(): List<RockworkWeatherFetchTarget> = state.mapIndexedNotNull { index, location ->
         if (location.observation?.source == RockworkWeatherObservationSource.EXTERNAL) {
-            return@mapNotNull null
+            return@mapIndexedNotNull null
+        }
+        val currentLocation = index == 0 && location.latitude == CURRENT_COORDINATE &&
+            location.longitude == CURRENT_COORDINATE
+        if (currentLocation) {
+            return@mapIndexedNotNull RockworkWeatherFetchTarget(
+                key = location.key,
+                name = location.name,
+                latitude = location.latitude,
+                longitude = location.longitude,
+                coordinates = null,
+                currentLocation = true,
+            )
         }
         val latitude = location.latitude.toDoubleOrNull()?.takeIf(Double::isFinite)
-            ?: return@mapNotNull null
+            ?: return@mapIndexedNotNull null
         val longitude = location.longitude.toDoubleOrNull()?.takeIf(Double::isFinite)
-            ?: return@mapNotNull null
+            ?: return@mapIndexedNotNull null
+        if (latitude !in -90.0..90.0 || longitude !in -180.0..180.0) {
+            return@mapIndexedNotNull null
+        }
         RockworkWeatherFetchTarget(
             key = location.key,
             name = location.name,
             latitude = location.latitude,
             longitude = location.longitude,
-            latitudeValue = latitude,
-            longitudeValue = longitude,
+            coordinates = RockworkWeatherCoordinates(latitude, longitude),
+            currentLocation = false,
         )
     }
 

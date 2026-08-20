@@ -26,6 +26,19 @@ struct CapturedProviderStatus {
           failedDomains(0), helperPid(0) {}
 };
 
+struct CapturedLocation {
+    unsigned int count;
+    uint64_t requestId;
+    int32_t status;
+    bool hasLocation;
+    lp3_platform_location_v1 location;
+
+    CapturedLocation()
+        : count(0), requestId(0), status(0), hasLocation(false) {
+        memset(&location, 0, sizeof(location));
+    }
+};
+
 void captureProviderStatus(void *context,
                            const lp3_platform_event_v1 *event) {
     CapturedProviderStatus *captured =
@@ -40,6 +53,20 @@ void captureProviderStatus(void *context,
     captured->degradedDomains = event->provider_status->degraded_domains;
     captured->failedDomains = event->provider_status->failed_domains;
     captured->helperPid = event->provider_status->helper_pid;
+}
+
+void captureLocation(void *context, const lp3_platform_event_v1 *event) {
+    CapturedLocation *captured = static_cast<CapturedLocation *>(context);
+    assert(captured != NULL);
+    assert(event != NULL);
+    assert(event->type == LP3_PLATFORM_EVENT_LOCATION);
+    ++captured->count;
+    captured->requestId = event->request_id;
+    captured->status = event->status;
+    captured->hasLocation = event->location != NULL;
+    if (event->location != NULL) {
+        captured->location = *event->location;
+    }
 }
 
 void sendStoppedReply(int fd) {
@@ -210,6 +237,47 @@ void testHealthReadyLossPublishesAuthorityBarrier() {
     assert(captured.count == 1);
 }
 
+void testLocationCompletionUsesPayloadOnlyOnSuccess() {
+    SailfishInstance instance;
+    CapturedLocation captured;
+    lp3wire::Frame frame;
+    lp3wire::LocationData location = {};
+
+    instance.event = captureLocation;
+    instance.eventContext = &captured;
+    instance.pending[41] =
+        std::shared_ptr<Pending>(new Pending(lp3wire::LocationQuery));
+    frame.type = lp3wire::Complete;
+    frame.requestId = 41;
+    assert(lp3wire::encodeLocationReply(
+        LP3_PLATFORM_UNAVAILABLE, location, &frame.payload));
+    assert(dispatchFrame(&instance, frame));
+    assert(captured.count == 1);
+    assert(captured.requestId == 41);
+    assert(captured.status == LP3_PLATFORM_UNAVAILABLE);
+    assert(!captured.hasLocation);
+
+    location.latitudeE7 = 515000000;
+    location.longitudeE7 = -1000000;
+    location.accuracyM = 12;
+    location.timestampMs = 1785678901234LL;
+    instance.pending[42] =
+        std::shared_ptr<Pending>(new Pending(lp3wire::LocationQuery));
+    frame.requestId = 42;
+    frame.payload.clear();
+    assert(lp3wire::encodeLocationReply(
+        LP3_PLATFORM_OK, location, &frame.payload));
+    assert(dispatchFrame(&instance, frame));
+    assert(captured.count == 2);
+    assert(captured.requestId == 42);
+    assert(captured.status == LP3_PLATFORM_OK);
+    assert(captured.hasLocation);
+    assert(captured.location.latitude_e7 == location.latitudeE7);
+    assert(captured.location.longitude_e7 == location.longitudeE7);
+    assert(captured.location.accuracy_m == location.accuracyM);
+    assert(captured.location.timestamp_ms == location.timestampMs);
+}
+
 } // namespace
 
 int main() {
@@ -218,5 +286,6 @@ int main() {
     testExpectedStartSkipsLateStop();
     testExpectedStopClosesLateStartedDescriptor();
     testHealthReadyLossPublishesAuthorityBarrier();
+    testLocationCompletionUsesPayloadOnlyOnSuccess();
     return 0;
 }

@@ -214,7 +214,7 @@ class RockworkWeatherTest {
         assertEquals(2, updates.size)
         assertEquals(2, updates.last().size)
         assertTrue(updates.last().all { it is WeatherLocationData.WeatherLocationDataFailed })
-        assertEquals("London", coordinator.automaticFetchTargets().single().name)
+        assertEquals(listOf("Current Location", "London"), coordinator.automaticFetchTargets().map { it.name })
     }
 
     @Test

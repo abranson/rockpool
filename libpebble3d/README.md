@@ -536,7 +536,7 @@ Each `SOCK_SEQPACKET` packet is exactly one little-endian frame:
 ```text
 u32 total_length       // header + payload, 24..65536
 u16 major              // currently 1
-u16 minor              // currently 4
+u16 minor              // currently 5
 u16 type
 u16 flags              // zero unless specified for type
 u64 request_id         // zero for handshake, Health, and Event frames
@@ -589,8 +589,41 @@ new snapshot whenever a notification, volume, or call monitor changes
 availability. The three
 `u64` values are the ready, degraded, and failed domain masks. They are
 disjoint and together contain every domain implemented by this wire minor
-(currently notifications, messaging, media, calls, and time). A missing or disconnected monitor
+(currently notifications, messaging, media, calls, location, and time). A missing or disconnected monitor
 therefore degrades only its domain without hiding or failing the others.
+
+Minor 5 adds a bounded, one-shot location query. It has no watch/update mode:
+each accepted request produces exactly one `Complete`, or is cancelled. The
+proxy validates the requested accuracy and timeout before it reaches the
+helper; the helper must independently apply the same bound and stop any
+underlying acquisition when it receives `Cancel`.
+
+```text
+Request LocationQuery (request_id != 0, payload size 12)
+    u16 operation = 6
+    u16 reserved = 0
+    u32 accuracy                  // 1 coarse, 2 fine
+    u32 timeout_ms                // 1..30000
+
+Complete LocationReply (matching request_id, payload size 28)
+    u16 operation = 6
+    u16 reserved = 0
+    u32 status
+    i32 latitude_e7               // -900000000..900000000 on success
+    i32 longitude_e7              // -1800000000..1800000000 on success
+    i32 accuracy_m                // non-negative on success
+    i64 timestamp_ms              // positive on success
+```
+
+On a non-OK status every location value is zero. The helper has no authority
+to select a provider, D-Bus destination, or arbitrary options from this
+record. The proxy maps a valid terminal reply to the public
+`LP3_PLATFORM_EVENT_LOCATION`, preserving the original request ID and status.
+After cancellation, a late `Complete` is consumed against its bounded
+tombstone, or discarded as an unknown retired ID, and is never published.
+Helper disconnect, a Location health loss, or a
+provider-generation reset retires outstanding request authority before a
+replacement helper can report a result.
 
 The notification domain sends incoming notifications as events and accepts
 only narrow actions against a helper-retained numeric notification ID:
