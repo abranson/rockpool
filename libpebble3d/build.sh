@@ -79,6 +79,27 @@ else
         exit 1
     }
 fi
+mobileapp_version_code=$(git -C "$MOBILEAPP" rev-list --count "$mobileapp_commit") || {
+    echo "error: cannot determine mobileapp source version code" >&2
+    exit 1
+}
+case $mobileapp_version_code in
+    ''|*[!0-9]*|0)
+        echo "error: invalid mobileapp source version code" >&2
+        exit 1
+        ;;
+esac
+mobileapp_git_hash=
+if [ "$release_build" = true ]; then
+    mobileapp_git_hash=$(git -C "$MOBILEAPP" describe --always "$mobileapp_commit") || {
+        echo "error: cannot determine mobileapp source identity" >&2
+        exit 1
+    }
+    if [ -z "$mobileapp_git_hash" ]; then
+        echo "error: empty mobileapp source identity" >&2
+        exit 1
+    fi
+fi
 
 if [ "$release_build" = true ]; then
     # Never feed the hour-long native build from mutable worktree paths or shared Gradle output.
@@ -109,7 +130,11 @@ if [ -z "$ANDROID_HOME" ] && [ ! -f "$MOBILEAPP/local.properties" ]; then
 fi
 
 echo "== gradle jvmDist (daemon composite build; libpebble3 from $BUILD_MOBILEAPP)"
-(cd "$BUILD_HERE/daemon" && MOBILEAPP="$BUILD_MOBILEAPP" ./gradlew jvmDist)
+(cd "$BUILD_HERE/daemon" && \
+    MOBILEAPP="$BUILD_MOBILEAPP" \
+    LIBPEBBLE3_ARCHIVE_GIT_HASH="$mobileapp_git_hash" \
+    LIBPEBBLE3_ARCHIVE_VERSION_CODE="$mobileapp_version_code" \
+    ./gradlew jvmDist)
 
 echo "== builder image"
 BUILDER_IID_FILE=$(mktemp "${TMPDIR:-/tmp}/libpebble3d-builder-image.XXXXXX")

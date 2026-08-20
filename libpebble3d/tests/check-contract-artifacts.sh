@@ -148,6 +148,8 @@ rfcomm_socket_test=$libpebble3d_dir/tests/rfcomm_socket_test.c
 native_build=$libpebble3d_dir/build-native.sh
 daemon_build=$libpebble3d_dir/build.sh
 daemon_package=$libpebble3d_dir/package.sh
+mobileapp_compose_build=$libpebble3d_dir/mobileapp/composeApp/build.gradle.kts
+mobileapp_util_build=$libpebble3d_dir/mobileapp/util/build.gradle.kts
 builder_dockerfile=$libpebble3d_dir/Dockerfile
 primary_service=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockpool/RockpoolService.kt
 dbus_namespace_isolation_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebblecommon/rockpool/DBusNamespaceIsolationTest.kt
@@ -567,6 +569,8 @@ require_file "$sailfish_linux_backend" "Sailfish native-Linux overrides"
 require_file "$reflect_config" "Native Image reflection configuration"
 require_file "$proxy_config" "Native Image proxy configuration"
 require_file "$jni_config" "Native Image JNI configuration"
+require_file "$mobileapp_compose_build" "mobileapp archive version-code seam"
+require_file "$mobileapp_util_build" "mobileapp archive source-identity seam"
 
 if [ "$require_committed" = true ]; then
     require_mobileapp_gitlink
@@ -605,6 +609,20 @@ require_fixed 'git -C "$HERE/.." archive "$root_commit" |' "$daemon_build" \
     'immutable Rockpool release-build source snapshot'
 require_fixed '--prefix=libpebble3d/mobileapp/' "$daemon_build" \
     'immutable mobileapp release-build source snapshot'
+require_fixed 'git -C "$MOBILEAPP" rev-list --count "$mobileapp_commit"' \
+    "$daemon_build" 'captured mobileapp archive version code'
+require_fixed 'LIBPEBBLE3_ARCHIVE_VERSION_CODE="$mobileapp_version_code"' \
+    "$daemon_build" 'archive-safe Gradle version-code injection'
+require_fixed 'git -C "$MOBILEAPP" describe --always "$mobileapp_commit"' \
+    "$daemon_build" 'captured mobileapp archive source identity'
+require_fixed 'LIBPEBBLE3_ARCHIVE_GIT_HASH="$mobileapp_git_hash"' \
+    "$daemon_build" 'archive-safe Gradle source-identity injection'
+require_fixed 'versionCode = archivedVersionCode ?: versioning.getVersionCode()' \
+    "$mobileapp_compose_build" 'mobileapp archive version-code fallback'
+require_fixed 'providers.environmentVariable("LIBPEBBLE3_ARCHIVE_GIT_HASH")' \
+    "$mobileapp_util_build" 'mobileapp archive source-identity fallback'
+require_fixed 'archivedGitHash ?: project.providers.exec' \
+    "$mobileapp_util_build" 'development checkout source-identity fallback'
 require_fixed '-v "$BUILD_HERE/daemon/build/jvmDist":/dist:ro' "$daemon_build" \
     'private read-only release JVM distribution input'
 require_fixed '-v "$BUILD_HERE":/work:ro' "$daemon_build" \
