@@ -1530,11 +1530,21 @@ require_fixed 'while (provider_command_dispatches != 0)' "$loader" \
     'provider reset waits for admitted commands'
 require_fixed 'pthread_cond_wait(&provider_command_condition, &event_lock)' \
     "$loader" 'provider reset generation handoff'
-for command_domain in NOTIFICATIONS CALLS MEDIA
+for command_domain in CALLS MEDIA
 do
     require_fixed "LP3_PLATFORM_DOMAIN_$command_domain);" "$loader" \
         "provider command generation gate for $command_domain"
 done
+require_fixed 'command_domains = LP3_PLATFORM_DOMAIN_NOTIFICATIONS;' "$loader" \
+    'native notification command base-domain gate'
+require_fixed 'if (command_value == LP3_PLATFORM_NOTIFICATION_OPEN)' "$loader" \
+    'native Open-specific messaging-domain selection'
+require_fixed 'command_domains |= LP3_PLATFORM_DOMAIN_MESSAGING;' "$loader" \
+    'native Open messaging-domain gate'
+require_fixed 'command_domains);' "$loader" \
+    'native dual-domain notification dispatch reservation'
+require_fixed '(loader.api->info.domains & command_domains) == command_domains' \
+    "$loader" 'native current dual-domain Open gate'
 require_fixed 'assert(provider_command_dispatches == 1)' \
     "$platform_loader_event_test" \
     'provider command reserves current generation through dispatch regression'
@@ -1546,6 +1556,26 @@ require_fixed 'pthread_create(&reset_thread, NULL, enqueue_reset_thread, NULL)' 
 require_fixed 'event_failed_domains = LP3_PLATFORM_DOMAIN_CALLS' \
     "$platform_loader_event_test" \
     'domain-specific provider command rejection regression'
+if ! awk '
+    /A retired domain rejects only its corresponding command/ { section = 1 }
+    section && /event_failed_domains = LP3_PLATFORM_DOMAIN_CALLS \|/ { failed = NR }
+    section && /LP3_PLATFORM_DOMAIN_MESSAGING;/ { messaging = NR }
+    section && /LP3_PLATFORM_NOTIFICATION_DISMISS/ { dismiss = NR }
+    section && dismiss && /LP3_PLATFORM_OK\);/ { dismiss_ok = NR }
+    section && /LP3_PLATFORM_NOTIFICATION_OPEN/ { open = NR }
+    section && open && /LP3_PLATFORM_UNAVAILABLE\);/ {
+        open_unavailable = NR
+        exit
+    }
+    END {
+        exit !(failed && messaging && dismiss && dismiss_ok && open &&
+               open_unavailable && failed < messaging && messaging < dismiss &&
+               dismiss < dismiss_ok && dismiss_ok < open &&
+               open < open_unavailable)
+    }
+' "$platform_loader_event_test"; then
+    fail "native Open does not reject Messaging-domain retirement while Dismiss remains available in $platform_loader_event_test"
+fi
 
 # Classic uses the legacy backend's direct outbound RFCOMM channel-1 stream. The
 # packaged loader owns the JNI bridge, while libpebble3 owns protocol pumping,
@@ -1620,6 +1650,8 @@ require_fixed 'static const uint16_t kMinor = 5;' "$wire_header" \
     'private provider wire minor 1.5'
 require_fixed 'MessageReply = 5,' "$wire_header" \
     'private typed message-reply operation'
+require_fixed 'NotificationHasDefaultAction = 1u << 0,' "$wire_header" \
+    'notification authenticated-conversation capability flag'
 require_fixed 'NotificationHasReplyAction = 1u << 1,' "$wire_header" \
     'notification reply-capability flag'
 require_fixed 'DomainMessaging = 1u << 1,' "$wire_header" \
@@ -1632,6 +1664,14 @@ require_fixed 'validNotificationId(reply.notificationId)' "$wire_header" \
     'numeric notification ID message-reply bound'
 require_fixed 'validMessageReply' "$wire_header" \
     'typed message-reply codec validation'
+require_fixed 'u32 command                 // 1 = dismiss, 2 = open authenticated conversation' \
+    "$platform_wire_doc" 'documented authenticated notification Open command'
+require_fixed '`startConversation(accountPath, recipient)` with signature `ss`' \
+    "$platform_wire_doc" 'documented fixed Sailfish Messages Open route'
+require_fixed 'backend admission, controller dispatch, native-loader dispatch, and proxy' \
+    "$platform_wire_doc" 'documented dual-domain Open dispatch barriers'
+require_fixed 'notification-provided open D-Bus tuples are never executed' \
+    "$functional_parity" 'documented rejection of notification-derived Open targets'
 # Location is an independently classified private-wire domain.  Keep the
 # public provider ABI at 1.4 while making every request bounded and terminal.
 require_fixed 'LocationQuery = 6,' "$wire_header" \
@@ -1998,19 +2038,31 @@ require_fixed 'private var actionEpoch = 0L' "$platform_notification_backend" \
 require_fixed 'if (!notificationsReady.get() || resetQueued ||' \
     "$platform_notification_backend" \
     'provider notification/reset action readiness gate'
-require_fixed 'command is LinuxNotificationCommand.Reply && !messagingReady.get()' \
+require_fixed 'val requiresMessaging = command is LinuxNotificationCommand.Reply ||' \
     "$platform_notification_backend" \
-    'provider message-reply messaging-domain readiness gate'
-require_fixed 'command !is LinuxNotificationCommand.Reply || messagingReady.get()' \
+    'provider shared messaging-dependent action gate'
+require_fixed 'command is LinuxNotificationCommand.Open' \
     "$platform_notification_backend" \
-    'provider message-reply current messaging-domain gate'
+    'provider Open messaging-domain dependency'
+require_fixed 'requiresMessaging && !messagingReady.get()' \
+    "$platform_notification_backend" \
+    'provider messaging-dependent action readiness gate'
+require_fixed '(!requiresMessaging || messagingReady.get())' \
+    "$platform_notification_backend" \
+    'provider messaging-dependent current-domain gate'
 require_fixed 'actionEpoch++' "$platform_notification_backend" \
     'provider notification reset invalidates action authority'
+require_fixed 'val requiredDomains = if (command == NOTIFICATION_OPEN)' \
+    "$platform_provider_controller" 'controller Open domain selection'
+require_fixed 'NOTIFICATION_DOMAIN or MESSAGING_DOMAIN' \
+    "$platform_provider_controller" 'controller Open dual-domain gate'
+require_fixed 'current.domains and requiredDomains != requiredDomains' \
+    "$platform_provider_controller" 'controller current dual-domain check'
 if ! awk '
     /suspend fun notificationCommand\(/ { in_method = 1 }
     in_method && /lifecycleLock\.withLock/ && !locked { locked = NR }
     in_method && /if \(!isCurrent\(\)\)/ && !gated { gated = NR }
-    in_method && /current\.domains and NOTIFICATION_DOMAIN/ && !domain { domain = NR }
+    in_method && /current\.domains and requiredDomains/ && !domain { domain = NR }
     in_method && /PlatformProviderNative\.notificationCommand/ { native = NR; exit }
     END { exit !(locked && locked < gated && gated < domain && domain < native) }
 ' "$platform_provider_controller"; then
@@ -2018,12 +2070,24 @@ if ! awk '
 fi
 for notification_action_regression in \
     dismissDequeuedBeforeResetBarrierIsNotForwarded \
-    dismissDequeuedBeforeDomainLossIsNotForwardedToReplacement
+    dismissDequeuedBeforeDomainLossIsNotForwardedToReplacement \
+    providerDefaultFlagMapsToLinuxDefaultAuthority \
+    providerActionFlagsAreStrippedWithoutMessagingDomain \
+    openIsRejectedWithoutMessagingDomain \
+    openDequeuedBeforeMessagingDomainLossIsNotForwardedToReplacement
 do
     require_fixed "fun $notification_action_regression()" \
         "$platform_provider_controller_test" \
         "provider notification action regression $notification_action_regression"
 done
+require_fixed 'requiredDomains = lp3wire::DomainNotifications;' "$proxy_source" \
+    'proxy notification command base-domain gate'
+require_fixed 'wireCommand.command == lp3wire::NotificationOpen' "$proxy_source" \
+    'proxy Open-specific messaging-domain selection'
+require_fixed 'requiredDomains |= lp3wire::DomainMessaging;' "$proxy_source" \
+    'proxy Open messaging-domain gate'
+require_fixed '(instance->readyDomains & requiredDomains) != requiredDomains' \
+    "$proxy_source" 'proxy current dual-domain Open gate'
 if ! awk '
     /val fieldEvents =/ { fields = NR }
     /applyProviderGenerationBoundary\(fieldEvents\)/ { boundary = NR }
@@ -2091,6 +2155,12 @@ require_fixed 'pending.hints.value(typeName).toString() != QStringLiteral("input
     "$notification_monitor" 'input-only reply action gate'
 require_fixed 'parts.size() != 6' "$notification_monitor" \
     'exact two-route-argument reply hint shape'
+require_fixed 'action == QStringLiteral("default")' "$notification_monitor" \
+    'default remote-action hint exclusion'
+require_fixed 'containsActionKey(' "$notification_monitor" \
+    'literal notification action-key lookup'
+require_fixed 'pendingNotification.actions, QStringLiteral("default")' \
+    "$notification_monitor" 'default action conversation-intent gate'
 require_fixed 'const char kMessagesService[] = "org.sailfishos.Messages";' \
     "$notification_monitor" 'fixed Sailfish Messages reply service'
 require_fixed 'const char kMessagesPath[] = "/";' "$notification_monitor" \
@@ -2099,6 +2169,8 @@ require_fixed 'const char kMessagesInterface[] = "org.sailfishos.Messages";' \
     "$notification_monitor" 'fixed Sailfish Messages reply interface'
 require_fixed 'const char kMessagesMethod[] = "sendMessage";' \
     "$notification_monitor" 'fixed Sailfish Messages reply member'
+require_fixed 'const char kMessagesOpenMethod[] = "startConversation";' \
+    "$notification_monitor" 'fixed Sailfish Messages conversation member'
 require_fixed 'kMessagesService, kMessagesPath, kMessagesInterface,' \
     "$notification_monitor" 'fixed typed Sailfish Messages reply destination'
 require_fixed 'kMessagesMethod);' "$notification_monitor" \
@@ -2109,20 +2181,57 @@ require_fixed 'DBUS_TYPE_STRING, &recipientValue' "$notification_monitor" \
     'second QString reply route argument'
 require_fixed 'DBUS_TYPE_STRING, &textValue' "$notification_monitor" \
     'bounded reply text argument'
+require_fixed 'DBusMessage *createOpenMessage(const ReplyTarget &target)' \
+    "$notification_monitor" 'fixed typed Sailfish Messages conversation call'
+require_fixed 'kMessagesOpenMethod);' "$notification_monitor" \
+    'fixed typed Sailfish Messages conversation member use'
+require_fixed 'DBUS_TYPE_INVALID))' "$notification_monitor" \
+    'bounded fixed-arity Sailfish Messages call'
 require_fixed 'replyTargets.remove(numericId);' "$notification_monitor" \
     'one-shot helper reply authority consumption'
+require_fixed 'QHash<uint32_t, ReplyTarget> conversationTargets;' \
+    "$notification_monitor" 'separate retained conversation authority'
+require_fixed 'conversationTargets.value(numericId)' "$notification_monitor" \
+    'Open lookup against separately retained conversation authority'
+require_fixed 'targetOwnerCurrent(target)' "$notification_monitor" \
+    'current CommHistory owner validation before action dispatch'
+require_fixed 'currentOwner == commHistoryOwner &&' "$notification_monitor" \
+    'current CommHistory owner matches monitored generation'
+require_fixed 'currentOwner == target.sourceOwner;' "$notification_monitor" \
+    'current CommHistory owner matches target provenance'
+require_fixed 'conversationTargets.clear();' "$notification_monitor" \
+    'conversation authority cleared at generation boundaries'
+require_fixed 'conversationTargets.remove(id);' "$notification_monitor" \
+    'conversation authority retired with notification ID'
+require_fixed "dbus_message_get_signature(reply)[0] == '\\0'" \
+    "$notification_monitor" 'empty fixed Messages Open reply validation'
 require_fixed 'LP3_PLATFORM_NOTIFICATION_HAS_REPLY_ACTION' "$notification_monitor" \
     'notification reply-capability publication'
+require_fixed 'LP3_PLATFORM_NOTIFICATION_HAS_DEFAULT_ACTION' "$notification_monitor" \
+    'notification conversation-capability publication'
 require_fixed 'LP3_PLATFORM_MESSAGE_TEXT_MAX' "$notification_monitor" \
     'helper reply-text bound'
 reject_extended 'ChannelDispatcher|\.DRAFT|setArguments' "$notification_monitor" \
     'legacy or arbitrary notification route execution'
 for reply_test_contract in testExactReplyCapability testRejectsInvalidCapability \
-    testRejectsNonCanonicalSerializedArguments
+    testRejectsNonCanonicalSerializedArguments testExactOpenMessage \
+    testConversationTargetAuthorityAndRetirement
 do
     require_fixed "void $reply_test_contract()" "$notification_monitor_test" \
         "notification-reply regression $reply_test_contract"
 done
+require_fixed 'x-nemo-remote-action-default")) == 0' \
+    "$notification_monitor_test" \
+    'default remote-action hint rejection regression'
+require_fixed 'strcmp(dbus_message_get_signature(message), "ss") == 0' \
+    "$notification_monitor_test" 'exact fixed Messages Open signature regression'
+require_fixed 'assert(monitor.conversationTargets.contains(42));' \
+    "$notification_monitor_test" \
+    'conversation authority survives one-shot reply consumption regression'
+require_fixed 'assert(!monitor.conversationTargets.contains(43));' \
+    "$notification_monitor_test" 'default action required for Open regression'
+require_fixed 'monitor.setCommHistoryOwner(QStringLiteral(":1.43"));' \
+    "$notification_monitor_test" 'owner-generation retirement regression'
 require_fixed 'org.sailfishos.Messages' "$notification_monitor_test" \
     'fixed-route notification-reply regression'
 require_fixed 'x-nemo.messaging.mms' "$notification_monitor_test" \

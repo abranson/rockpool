@@ -1767,6 +1767,7 @@ Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_notificationComma
     size_t index;
     struct lp3_platform_notification_command_v1 command;
     uint64_t request_id;
+    uint64_t command_domains;
     int32_t result = LP3_PLATFORM_UNAVAILABLE;
     int command_gate_held;
     (void)klass;
@@ -1793,12 +1794,16 @@ Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_notificationComma
         }
     }
 
+    command_domains = LP3_PLATFORM_DOMAIN_NOTIFICATIONS;
+    if (command_value == LP3_PLATFORM_NOTIFICATION_OPEN) {
+        command_domains |= LP3_PLATFORM_DOMAIN_MESSAGING;
+    }
     pthread_mutex_lock(&loader_lock);
     command_gate_held = begin_provider_command_dispatch(
-        LP3_PLATFORM_DOMAIN_NOTIFICATIONS);
+        command_domains);
     if (command_gate_held &&
         loader.api != NULL && loader.instance != NULL &&
-        (loader.api->info.domains & LP3_PLATFORM_DOMAIN_NOTIFICATIONS) != 0 &&
+        (loader.api->info.domains & command_domains) == command_domains &&
         API_HAS_MEMBER(loader.api, notification_command) &&
         loader.next_request_id != 0 &&
         (loader.next_request_id & (UINT64_C(1) << 63)) == 0) {

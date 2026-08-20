@@ -332,16 +332,33 @@ class PlatformProviderControllerTest {
     }
 
     @Test
-    fun providerReplyFlagIsStrippedWithoutMessagingDomain() = runBlocking {
+    fun providerDefaultFlagMapsToLinuxDefaultAuthority() {
+        val posted = assertIs<LinuxNotificationEvent.Posted>(
+            mapPlatformNotificationEvent(
+                postedEvent(flags = PlatformProviderController.NOTIFICATION_HAS_DEFAULT_ACTION),
+                emptyMap(),
+            )
+        )
+
+        assertTrue(posted.notification.hasDefaultAction)
+        assertFalse(posted.notification.hasReplyAction)
+    }
+
+    @Test
+    fun providerActionFlagsAreStrippedWithoutMessagingDomain() = runBlocking {
         val backend = PlatformNotificationBackend(controller)
         backend.providerSnapshotChanged(readyNotificationSnapshot())
         backend.providerNotification(
-            postedEvent(flags = PlatformProviderController.NOTIFICATION_HAS_REPLY_ACTION)
+            postedEvent(
+                flags = PlatformProviderController.NOTIFICATION_HAS_DEFAULT_ACTION or
+                    PlatformProviderController.NOTIFICATION_HAS_REPLY_ACTION
+            )
         )
 
         val posted = assertIs<LinuxNotificationEvent.Posted>(
             withTimeout(1_000) { backend.events().first() }
         )
+        assertFalse(posted.notification.hasDefaultAction)
         assertFalse(posted.notification.hasReplyAction)
     }
 
@@ -531,6 +548,66 @@ class PlatformProviderControllerTest {
         assertTrue(backend.execute("42", LinuxNotificationCommand.Dismiss))
         assertEquals(
             listOf(PlatformProviderController.NOTIFICATION_DISMISS to "42"),
+            forwarded,
+        )
+    }
+
+    @Test
+    fun openIsRejectedWithoutMessagingDomain() = runBlocking {
+        var forwarded = false
+        val backend = PlatformNotificationBackend(
+            controller,
+            executeCommand = { _, _, _ ->
+                forwarded = true
+                0
+            },
+        )
+        backend.providerSnapshotChanged(readyNotificationSnapshot())
+
+        assertFalse(backend.execute("41", LinuxNotificationCommand.Open))
+        assertFalse(forwarded)
+    }
+
+    @Test
+    fun openDequeuedBeforeMessagingDomainLossIsNotForwardedToReplacement() = runBlocking {
+        val dequeued = CompletableDeferred<Unit>()
+        val dispatch = CompletableDeferred<Unit>()
+        val forwarded = mutableListOf<Pair<Int, String>>()
+        val backend = PlatformNotificationBackend(
+            controller,
+            executeCommand = { command, id, isCurrent ->
+                dequeued.complete(Unit)
+                dispatch.await()
+                if (isCurrent()) {
+                    forwarded += command to id
+                    0
+                } else {
+                    null
+                }
+            },
+        )
+        backend.providerSnapshotChanged(readyMessagingSnapshot())
+
+        val retired = async { backend.execute("41", LinuxNotificationCommand.Open) }
+        withTimeout(1_000) { dequeued.await() }
+        backend.providerSnapshotChanged(
+            readyMessagingSnapshot().copy(
+                domains = PlatformProviderController.NOTIFICATION_DOMAIN,
+            )
+        )
+        backend.providerSnapshotChanged(readyMessagingSnapshot())
+        dispatch.complete(Unit)
+
+        assertFalse(withTimeout(1_000) { retired.await() })
+        assertTrue(forwarded.isEmpty())
+        assertEquals(
+            LinuxNotificationEvent.Reset,
+            withTimeout(1_000) { backend.events().first() },
+        )
+
+        assertTrue(backend.execute("42", LinuxNotificationCommand.Open))
+        assertEquals(
+            listOf(PlatformProviderController.NOTIFICATION_OPEN to "42"),
             forwarded,
         )
     }

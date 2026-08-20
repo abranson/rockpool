@@ -1113,6 +1113,7 @@ int32_t notificationCommand(
     lp3wire::NotificationCommandData wireCommand;
     std::vector<uint8_t> payload;
     std::vector<uint8_t> frame;
+    uint64_t requiredDomains;
     std::shared_ptr<Pending> pending(
         new Pending(lp3wire::NotificationCommand));
 
@@ -1127,6 +1128,10 @@ int32_t notificationCommand(
     }
     wireCommand.command = command->command;
     wireCommand.id.assign(command->id.data, command->id.size);
+    requiredDomains = lp3wire::DomainNotifications;
+    if (wireCommand.command == lp3wire::NotificationOpen) {
+        requiredDomains |= lp3wire::DomainMessaging;
+    }
     if (!lp3wire::encodeNotificationCommand(wireCommand, &payload) ||
         !lp3wire::encodeFrame(lp3wire::Request, requestId,
                               &payload[0], payload.size(), &frame)) {
@@ -1136,7 +1141,7 @@ int32_t notificationCommand(
     std::unique_lock<std::mutex> lock(instance->mutex);
     if (instance->stopping.load() || instance->socket < 0 ||
         instance->latched ||
-        (instance->readyDomains & lp3wire::DomainNotifications) == 0) {
+        (instance->readyDomains & requiredDomains) != requiredDomains) {
         return LP3_PLATFORM_UNAVAILABLE;
     }
     if (instance->pending.size() + instance->tombstones.size() >=

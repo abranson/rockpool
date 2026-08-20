@@ -217,7 +217,7 @@ internal class PlatformNotificationBackend(
             ) {
                 event.copy(
                     flags = event.flags and
-                        PlatformProviderController.NOTIFICATION_HAS_REPLY_ACTION.inv(),
+                        PlatformProviderController.NOTIFICATION_FLAGS.inv(),
                 )
             } else {
                 event
@@ -272,16 +272,18 @@ internal class PlatformNotificationBackend(
         id: String,
         command: LinuxNotificationCommand,
     ): Boolean {
+        val requiresMessaging = command is LinuxNotificationCommand.Reply ||
+            command is LinuxNotificationCommand.Open
         val epoch = synchronized(eventLock) {
             if (!notificationsReady.get() || resetQueued ||
-                command is LinuxNotificationCommand.Reply && !messagingReady.get()
+                requiresMessaging && !messagingReady.get()
             ) return false
             actionEpoch
         }
         val isCurrent = {
             synchronized(eventLock) {
                 notificationsReady.get() && !resetQueued && actionEpoch == epoch &&
-                    (command !is LinuxNotificationCommand.Reply || messagingReady.get())
+                    (!requiresMessaging || messagingReady.get())
             }
         }
         return when (command) {

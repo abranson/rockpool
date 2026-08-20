@@ -247,7 +247,12 @@ internal class PlatformProviderController(
         withContext(Dispatchers.IO) {
             lifecycleLock.withLock {
                 if (!isCurrent()) return@withLock null
-                if (!nativeLibraryLoaded || current.domains and NOTIFICATION_DOMAIN == 0L) {
+                val requiredDomains = if (command == NOTIFICATION_OPEN) {
+                    NOTIFICATION_DOMAIN or MESSAGING_DOMAIN
+                } else {
+                    NOTIFICATION_DOMAIN
+                }
+                if (!nativeLibraryLoaded || current.domains and requiredDomains != requiredDomains) {
                     return@withLock STATUS_UNAVAILABLE
                 }
                 runCatching { PlatformProviderNative.notificationCommand(command, id) }

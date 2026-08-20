@@ -5,6 +5,7 @@ QT += core dbus
 QT -= gui
 PKGCONFIG += dbus-1
 CONFIG += console c++11 link_pkgconfig
+DEFINES += LP3_NOTIFICATIONMONITOR_TEST
 
 INCLUDEPATH += $$PWD/../../libpebble3d/include
 INCLUDEPATH += $$PWD/../common

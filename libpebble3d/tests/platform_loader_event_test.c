@@ -129,7 +129,8 @@ static int32_t test_notification_command(
     assert(provider_command_dispatches == 1);
     pthread_mutex_unlock(&event_lock);
     assert(request_id != 0);
-    assert(command->command == LP3_PLATFORM_NOTIFICATION_DISMISS);
+    assert(command->command == LP3_PLATFORM_NOTIFICATION_DISMISS ||
+           command->command == LP3_PLATFORM_NOTIFICATION_OPEN);
     ++notification_command_count;
     return LP3_PLATFORM_OK;
 }
@@ -451,6 +452,9 @@ int main(void) {
     assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_notificationCommand(
         &test_env, NULL, LP3_PLATFORM_NOTIFICATION_DISMISS, (jstring)"42") ==
         LP3_PLATFORM_OK);
+    assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_notificationCommand(
+        &test_env, NULL, LP3_PLATFORM_NOTIFICATION_OPEN, (jstring)"42") ==
+        LP3_PLATFORM_OK);
     assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_replyMessage(
         &test_env, NULL, (jstring)"42", (jstring)reply_text) ==
         LP3_PLATFORM_OK);
@@ -459,7 +463,7 @@ int main(void) {
         LP3_PLATFORM_OK);
     assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_mediaCommand(
         &test_env, NULL, LP3_PLATFORM_MEDIA_VOLUME_UP) == LP3_PLATFORM_OK);
-    assert(notification_command_count == 1);
+    assert(notification_command_count == 2);
     assert(reply_message_count == 1);
     assert(call_command_count == 1);
     assert(media_command_count == 1);
@@ -621,6 +625,9 @@ int main(void) {
     assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_notificationCommand(
         &test_env, NULL, LP3_PLATFORM_NOTIFICATION_DISMISS, (jstring)"42") ==
         LP3_PLATFORM_OK);
+    assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_notificationCommand(
+        &test_env, NULL, LP3_PLATFORM_NOTIFICATION_OPEN, (jstring)"42") ==
+        LP3_PLATFORM_UNAVAILABLE);
     assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_callCommand(
         &test_env, NULL, LP3_PLATFORM_CALL_ANSWER, (jstring)"call_1") ==
         LP3_PLATFORM_UNAVAILABLE);
@@ -629,7 +636,7 @@ int main(void) {
         LP3_PLATFORM_UNAVAILABLE);
     assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_mediaCommand(
         &test_env, NULL, LP3_PLATFORM_MEDIA_VOLUME_UP) == LP3_PLATFORM_OK);
-    assert(notification_command_count == 2);
+    assert(notification_command_count == 3);
     assert(reply_message_count == 1);
     assert(call_command_count == 1);
     assert(media_command_count == 2);
@@ -669,7 +676,7 @@ int main(void) {
     assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_mediaCommand(
         &test_env, NULL, LP3_PLATFORM_MEDIA_VOLUME_UP) ==
         LP3_PLATFORM_UNAVAILABLE);
-    assert(notification_command_count == 2);
+    assert(notification_command_count == 3);
     assert(reply_message_count == 2);
     assert(call_command_count == 1);
     assert(media_command_count == 2);

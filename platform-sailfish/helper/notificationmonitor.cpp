@@ -32,6 +32,7 @@ const char kMessagesService[] = "org.sailfishos.Messages";
 const char kMessagesPath[] = "/";
 const char kMessagesInterface[] = "org.sailfishos.Messages";
 const char kMessagesMethod[] = "sendMessage";
+const char kMessagesOpenMethod[] = "startConversation";
 const char kAccountPathPrefix[] = "/org/freedesktop/Telepathy/Account/";
 const int kMaximumPending = 64;
 const int kMaximumActive = 32;
@@ -229,7 +230,9 @@ size_t dynamicActionHintMaximum(const PendingNotification &pending,
         action = name.mid(actionPrefix.size());
         maximum = kMaximumRemoteAction;
     }
-    if (action.isEmpty()) {
+    // The default action is authority only to call our fixed conversation
+    // method. Never retain or inspect its notification-supplied D-Bus tuple.
+    if (action.isEmpty() || action == QStringLiteral("default")) {
         return 0;
     }
     for (int index = 0; index + 1 < pending.actions.size(); index += 2) {
@@ -314,6 +317,15 @@ bool validBoundedText(const QString &value, int maximumBytes) {
             bytes.constData(), static_cast<size_t>(bytes.size())));
 }
 
+bool containsActionKey(const QStringList &actions, const QString &key) {
+    for (int index = 0; index + 1 < actions.size(); index += 2) {
+        if (actions.at(index) == key) {
+            return true;
+        }
+    }
+    return false;
+}
+
 bool replyTarget(const PendingNotification &pending, const QString &category,
                  const QString &commHistoryOwner, ReplyTarget *target) {
     if (target == NULL || commHistoryOwner.isEmpty() ||
@@ -382,6 +394,27 @@ DBusMessage *createReplyMessage(const ReplyTarget &target,
             DBUS_TYPE_STRING, &accountValue,
             DBUS_TYPE_STRING, &recipientValue,
             DBUS_TYPE_STRING, &textValue,
+            DBUS_TYPE_INVALID)) {
+        if (message != NULL) {
+            dbus_message_unref(message);
+        }
+        return NULL;
+    }
+    return message;
+}
+
+DBusMessage *createOpenMessage(const ReplyTarget &target) {
+    const QByteArray account = target.accountPath.toUtf8();
+    const QByteArray recipient = target.recipient.toUtf8();
+    const char *accountValue = account.constData();
+    const char *recipientValue = recipient.constData();
+    DBusMessage *message = dbus_message_new_method_call(
+        kMessagesService, kMessagesPath, kMessagesInterface,
+        kMessagesOpenMethod);
+    if (message == NULL || !dbus_message_append_args(
+            message,
+            DBUS_TYPE_STRING, &accountValue,
+            DBUS_TYPE_STRING, &recipientValue,
             DBUS_TYPE_INVALID)) {
         if (message != NULL) {
             dbus_message_unref(message);
@@ -565,10 +598,36 @@ public:
             return LP3_PLATFORM_OK;
         }
         if (commandValue == LP3_PLATFORM_NOTIFICATION_OPEN) {
-            // A notification hint is not authority for this privileged-group
-            // process to issue an arbitrary D-Bus call. A future open action
-            // must use one fixed Sailfish application-launcher API.
-            return LP3_PLATFORM_NOT_SUPPORTED;
+            if (!conversationTargets.contains(numericId)) {
+                return LP3_PLATFORM_UNAVAILABLE;
+            }
+            const ReplyTarget target = conversationTargets.value(numericId);
+            if (!targetOwnerCurrent(target)) {
+                return LP3_PLATFORM_UNAVAILABLE;
+            }
+            DBusMessage *message = createOpenMessage(target);
+            if (message == NULL) {
+                return LP3_PLATFORM_INTERNAL_ERROR;
+            }
+            DBusError error = DBUS_ERROR_INIT;
+            DBusMessage *reply = dbus_connection_send_with_reply_and_block(
+                connection, message, kCommandTimeoutMs, &error);
+            dbus_message_unref(message);
+            if (reply == NULL) {
+                const bool disconnected =
+                    !dbus_connection_get_is_connected(connection);
+                dbus_error_free(&error);
+                if (disconnected) {
+                    busDisconnected();
+                }
+                return LP3_PLATFORM_IO_ERROR;
+            }
+            const bool succeeded =
+                dbus_message_get_type(reply) == DBUS_MESSAGE_TYPE_METHOD_RETURN &&
+                dbus_message_get_signature(reply)[0] == '\0';
+            dbus_message_unref(reply);
+            dbus_error_free(&error);
+            return succeeded ? LP3_PLATFORM_OK : LP3_PLATFORM_IO_ERROR;
         }
         return LP3_PLATFORM_INVALID_ARGUMENT;
     }
@@ -590,16 +649,7 @@ public:
         }
 
         const ReplyTarget target = replyTargets.value(numericId);
-        DBusError ownerError = DBUS_ERROR_INIT;
-        QString currentOwner;
-        const bool ownerCurrent = getNameOwner(
-            connection, kCommHistoryService, &currentOwner, &ownerError) &&
-            !dbus_error_is_set(&ownerError) &&
-            currentOwner == commHistoryOwner &&
-            currentOwner == target.sourceOwner;
-        dbus_error_free(&ownerError);
-        if (!ownerCurrent) {
-            setCommHistoryOwner(currentOwner);
+        if (!targetOwnerCurrent(target)) {
             return LP3_PLATFORM_UNAVAILABLE;
         }
 
@@ -633,7 +683,11 @@ public:
         return succeeded ? LP3_PLATFORM_OK : LP3_PLATFORM_IO_ERROR;
     }
 
+#ifdef LP3_NOTIFICATIONMONITOR_TEST
+public:
+#else
 private:
+#endif
     static dbus_bool_t addWatch(DBusWatch *watch, void *context) {
         NotificationMonitorPrivate *self =
             static_cast<NotificationMonitorPrivate *>(context);
@@ -740,6 +794,7 @@ private:
         const QList<uint32_t> ids = activeOrder;
         activeIds.clear();
         replyTargets.clear();
+        conversationTargets.clear();
         activeOrder.clear();
         pending.clear();
         for (QList<uint32_t>::const_iterator it = ids.begin();
@@ -777,8 +832,24 @@ private:
             messagingHealthCallback(false);
         }
         replyTargets.clear();
+        conversationTargets.clear();
         commHistoryOwner = owner;
         updateMessagingAvailable();
+    }
+
+    bool targetOwnerCurrent(const ReplyTarget &target) {
+        DBusError ownerError = DBUS_ERROR_INIT;
+        QString currentOwner;
+        const bool ownerCurrent = getNameOwner(
+            connection, kCommHistoryService, &currentOwner, &ownerError) &&
+            !dbus_error_is_set(&ownerError) &&
+            currentOwner == commHistoryOwner &&
+            currentOwner == target.sourceOwner;
+        dbus_error_free(&ownerError);
+        if (!ownerCurrent) {
+            setCommHistoryOwner(currentOwner);
+        }
+        return ownerCurrent;
     }
 
     void serviceOwnerChanged(const char *oldOwner, const char *newOwner) {
@@ -1021,6 +1092,8 @@ private:
         ReplyTarget target;
         const bool canReply = replyTarget(
             pendingNotification, category, commHistoryOwner, &target);
+        const bool canOpen = canReply && containsActionKey(
+            pendingNotification.actions, QStringLiteral("default"));
         const bool replacedActive = pendingNotification.replacesId != 0 &&
             removeActive(pendingNotification.replacesId);
         const bool suppressed = id == 0 ||
@@ -1058,6 +1131,9 @@ private:
         if (canReply) {
             notification.flags |= LP3_PLATFORM_NOTIFICATION_HAS_REPLY_ACTION;
         }
+        if (canOpen) {
+            notification.flags |= LP3_PLATFORM_NOTIFICATION_HAS_DEFAULT_ACTION;
+        }
         notification.iconName = themeIconName(pendingNotification.appIcon);
         if (notification.iconName.isEmpty()) {
             notification.iconName = themeIconName(
@@ -1068,7 +1144,8 @@ private:
                 stringHint(pendingNotification.hints, "x-nemo-preview-icon"));
         }
 
-        trackActive(id, canReply ? &target : NULL);
+        trackActive(id, canReply ? &target : NULL,
+                    canOpen ? &target : NULL);
         postedCallback(notification);
     }
 
@@ -1081,24 +1158,31 @@ private:
     bool removeActive(uint32_t id) {
         if (!activeIds.remove(id)) {
             replyTargets.remove(id);
+            conversationTargets.remove(id);
             return false;
         }
         replyTargets.remove(id);
+        conversationTargets.remove(id);
         activeOrder.removeAll(id);
         return true;
     }
 
-    void trackActive(uint32_t id, const ReplyTarget *target) {
+    void trackActive(uint32_t id, const ReplyTarget *replyTarget,
+                     const ReplyTarget *conversationTarget) {
         removeActive(id);
         activeIds.insert(id);
-        if (target != NULL) {
-            replyTargets.insert(id, *target);
+        if (replyTarget != NULL) {
+            replyTargets.insert(id, *replyTarget);
+        }
+        if (conversationTarget != NULL) {
+            conversationTargets.insert(id, *conversationTarget);
         }
         activeOrder.append(id);
         while (activeOrder.size() > kMaximumActive) {
             const uint32_t evicted = activeOrder.takeFirst();
             if (activeIds.remove(evicted)) {
                 replyTargets.remove(evicted);
+                conversationTargets.remove(evicted);
                 emitClosed(evicted, 0);
             }
         }
@@ -1128,6 +1212,7 @@ private:
     QMap<QString, PendingNotification> pending;
     QSet<uint32_t> activeIds;
     QHash<uint32_t, ReplyTarget> replyTargets;
+    QHash<uint32_t, ReplyTarget> conversationTargets;
     QList<uint32_t> activeOrder;
 };
 

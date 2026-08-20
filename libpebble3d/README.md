@@ -470,7 +470,7 @@ It is deliberately not a list of obsolete endpoints to carry forward.
 | Apps/watchfaces | `Applications1` FD operations | libpebble3 |
 | Firmware/recovery/language | `Firmware1` FD operations | libpebble3 |
 | Timeline/calendar | Account-global `Timeline1.CalendarEnabled`; internal phone-calendar reconciliation preserves the last complete local projection on unavailable, denied, or failed source reads and applies successful replacements atomically. `watch.timeline` and `platform.calendar` remain absent pending a typed calendar domain | libpebble3d |
-| Notifications/actions/replies | `Notifications1`/`Messaging1`; replies are available only for a live, trusted Sailfish SMS/IM/MMS notification with one narrowly validated input route, and are consumed after one attempt. Canonical primary canned groups are account-global and replayed into libpebble3 (including an explicit empty collection), while compatibility groups remain source-scoped and are not reply actions | libpebble3 + provider |
+| Notifications/actions/replies | `Notifications1`/`Messaging1`; replies are available only for a live, trusted Sailfish SMS/IM/MMS notification with one narrowly validated input route, and are consumed after one attempt. A `default` action on the same authenticated target separately permits only the fixed `org.sailfishos.Messages.startConversation(ss)` conversation open; notification-provided open D-Bus tuples are never executed, and both actions require the current CommHistory owner. Canonical primary canned groups are account-global and replayed into libpebble3 (including an explicit empty collection), while compatibility groups remain source-scoped and are not reply actions | libpebble3 + provider |
 | Calls/media/contacts/location/profiles | Watch domains + provider | provider |
 | Health and units | Account-global `Health1` settings projection on every watch; compatibility health strings round-trip only `female`/`male`. The compatibility UI exposes the bounded legacy health dashboard and addressed incremental sync, explicitly labelled as shared account history rather than per-watch provenance | libpebble3d |
 | Weather | Compatibility locations receive keyless automatic forecasts for saved coordinates and still accept validated external injection. Migration imports a single physical legacy saved-location collection, or a unanimous collection from eligible legacy watch directories; conflicting legacy collections are preserved without choosing one. The `n/a` current-location slot remains pending `platform.location` | libpebble3 + libpebble3d |
@@ -648,7 +648,7 @@ Event NotificationPosted/NotificationClosed (request_id = 0)
 Request NotificationCommand (request_id != 0)
     u16 operation = 2
     u16 reserved = 0
-    u32 command                 // 1 = dismiss, 2 = reserved open action
+    u32 command                 // 1 = dismiss, 2 = open authenticated conversation
     u32 id_length
     u8  id[id_length]
 
@@ -668,12 +668,33 @@ notifications before encoding.
 The command contains no D-Bus destination, object path, interface, method,
 arguments, file path, or generic payload. Dismissal always targets the fixed
 notifications service and is accepted only for an ID observed as active by the
-helper. This protocol does not expose an open action: notification-supplied remote
-action tuples are untrusted and are neither parsed nor retained. A future open
-action must target one fixed Sailfish application-launcher API using a
-validated application identity. Dismiss reports success only after a bounded
-reply from the fixed notification service; a missing, rejected, or timed-out
-service call fails without discarding the retained ID.
+helper. Open is available only for an active, authenticated messaging
+notification for which the helper separately retained conversation authority.
+That authority requires both the narrowly validated reply target described
+below and the literal `default` key in the notification action list. The
+default action is only an intent gate: its label is ignored, while its dynamic
+remote-action hint is not admitted, retained, decoded, or executed.
+
+Open always issues the fixed empty-reply D-Bus call
+`org.sailfishos.Messages` `/` `org.sailfishos.Messages`
+`startConversation(accountPath, recipient)` with signature `ss`. Its two
+arguments come only from the already authenticated, bounded reply target; no
+notification-provided open destination, path, interface, member, signature,
+or argument list is executable. Immediately before dispatch, the helper
+resolves the current unique owner of `org.nemomobile.CommHistory` and requires
+it to equal both the monitored owner and the target's source owner.
+
+Conversation authority is retained separately from one-shot reply authority:
+reply consumption does not consume Open, and opening does not consume Reply.
+Notification replacement/removal, active-ID eviction, notification-service
+generation loss, CommHistory owner change, and bus disconnect/reconnect revoke
+both authorities. Open remains gated by both Notifications and Messaging at
+backend admission, controller dispatch, native-loader dispatch, and proxy
+queueing, so either domain loss prevents a dequeued command from crossing into
+a replacement generation. Dismiss reports success only after a bounded reply
+from the fixed notification service; Open likewise requires a bounded empty
+method reply from the fixed Messages service. A missing, rejected, or timed-out
+call fails safely.
 
 Minor 4 adds the messaging domain and a single safe reply request. It carries
 only the helper-retained decimal notification ID and bounded UTF-8 reply text:
