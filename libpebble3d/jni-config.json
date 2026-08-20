@@ -47,6 +47,10 @@
         "parameterTypes": ["int", "java.lang.String"]
       },
       {
+        "name": "replyMessage",
+        "parameterTypes": ["java.lang.String", "java.lang.String"]
+      },
+      {
         "name": "callCommand",
         "parameterTypes": ["int", "java.lang.String"]
       },

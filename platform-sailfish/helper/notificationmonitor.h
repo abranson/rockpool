@@ -39,11 +39,13 @@ public:
     NotificationMonitor(const PostedCallback &posted,
                         const ClosedCallback &closed,
                         const HealthCallback &health,
+                        const HealthCallback &messagingHealth,
                         QObject *parent = 0);
     ~NotificationMonitor();
 
     bool start();
     int32_t command(uint32_t command, const QString &id);
+    int32_t reply(const QString &id, const QString &text);
 
 private:
     NotificationMonitorPrivate *m_private;

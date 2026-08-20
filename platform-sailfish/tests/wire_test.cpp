@@ -122,7 +122,8 @@ void testNotificationCodec() {
     uint16_t eventType = 0;
     std::vector<uint8_t> payload;
 
-    original.flags = lp3wire::NotificationHasDefaultAction;
+    original.flags = lp3wire::NotificationHasDefaultAction |
+        lp3wire::NotificationHasReplyAction;
     original.timestampMs = INT64_C(1785678901234);
     original.closeReason = 0;
     original.id = "42";
@@ -250,6 +251,52 @@ void testNotificationCommandCodec() {
         payload, lp3wire::NotificationCommand, &status));
     assert(status == 0);
     payload[2] = 1;
+    assert(!lp3wire::decodeStatusReply(
+        payload, lp3wire::NotificationCommand, &status));
+}
+
+void testMessageReplyCodec() {
+    lp3wire::MessageReplyData original;
+    lp3wire::MessageReplyData decoded;
+    uint32_t status = UINT32_MAX;
+    std::vector<uint8_t> payload;
+
+    original.notificationId = "4294967295";
+    original.text = "Hello \xf0\x9f\x91\x8b";
+    assert(lp3wire::encodeMessageReply(original, &payload));
+    assert(lp3wire::decodeMessageReply(payload, &decoded));
+    assert(decoded.notificationId == original.notificationId);
+    assert(decoded.text == original.text);
+
+    original.notificationId = "0";
+    assert(!lp3wire::encodeMessageReply(original, &payload));
+    original.notificationId = "042";
+    assert(!lp3wire::encodeMessageReply(original, &payload));
+    original.notificationId = "42";
+    original.text.clear();
+    assert(!lp3wire::encodeMessageReply(original, &payload));
+    original.text.assign(lp3wire::kMessageTextMax, 'x');
+    assert(lp3wire::encodeMessageReply(original, &payload));
+    original.text.push_back('x');
+    assert(!lp3wire::encodeMessageReply(original, &payload));
+    original.text.assign("bad\xc0\x80", 5);
+    assert(!lp3wire::encodeMessageReply(original, &payload));
+
+    original.text = "reply";
+    assert(lp3wire::encodeMessageReply(original, &payload));
+    payload.push_back('x');
+    assert(!lp3wire::decodeMessageReply(payload, &decoded));
+    assert(lp3wire::encodeMessageReply(original, &payload));
+    payload[2] = 1;
+    assert(!lp3wire::decodeMessageReply(payload, &decoded));
+    payload[2] = 0;
+    lp3wire::put32(&payload[8], UINT32_MAX);
+    assert(!lp3wire::decodeMessageReply(payload, &decoded));
+
+    assert(lp3wire::encodeStatusReply(lp3wire::MessageReply, 0, &payload));
+    assert(lp3wire::decodeStatusReply(
+        payload, lp3wire::MessageReply, &status));
+    assert(status == 0);
     assert(!lp3wire::decodeStatusReply(
         payload, lp3wire::NotificationCommand, &status));
 }
@@ -518,7 +565,7 @@ void testEventFrameClassification() {
 
 void testHealthCodec() {
     const lp3wire::HealthState original = {
-        lp3wire::DomainCalls,
+        lp3wire::DomainCalls | lp3wire::DomainMessaging,
         lp3wire::DomainNotifications | lp3wire::DomainMedia,
         lp3wire::DomainTime,
     };
@@ -622,6 +669,7 @@ int main() {
     testNotificationClosedCodec();
     testNotificationRejectsInvalidTextAndLengths();
     testNotificationCommandCodec();
+    testMessageReplyCodec();
     testCallChangedCodec();
     testCallChangedRejectsMalformedData();
     testCallCommandCodec();

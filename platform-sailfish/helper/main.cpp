@@ -259,8 +259,9 @@ public:
                   emitNotification(lp3wire::NotificationClosed, notification);
               },
               [this](bool ready) { updateNotificationHealth(ready); },
+              [this](bool ready) { updateMessagingHealth(ready); },
               this),
-          m_notificationsReady(false),
+          m_notificationsReady(false), m_messagingReady(false),
           m_calls(
               [this](const CallMonitor::Call &call) { emitCall(call); },
               [this](bool ready) { updateCallHealth(ready); },
@@ -396,10 +397,12 @@ private:
         lp3wire::HealthState health;
         health.readyDomains = lp3wire::DomainTime |
             (m_notificationsReady ? lp3wire::DomainNotifications : 0) |
+            (m_messagingReady ? lp3wire::DomainMessaging : 0) |
             (m_callsReady ? lp3wire::DomainCalls : 0) |
             (m_mediaReady ? lp3wire::DomainMedia : 0);
         health.degradedDomains =
             (m_notificationsReady ? 0 : lp3wire::DomainNotifications) |
+            (m_messagingReady ? 0 : lp3wire::DomainMessaging) |
             (m_callsReady ? 0 : lp3wire::DomainCalls) |
             (m_mediaReady ? 0 : lp3wire::DomainMedia);
         health.failedDomains = 0;
@@ -413,6 +416,16 @@ private:
             return;
         }
         m_notificationsReady = ready;
+        if (m_phase == Active && !queueHealth()) {
+            failClosed();
+        }
+    }
+
+    void updateMessagingHealth(bool ready) {
+        if (m_messagingReady == ready) {
+            return;
+        }
+        m_messagingReady = ready;
         if (m_phase == Active && !queueHealth()) {
             failClosed();
         }
@@ -587,6 +600,25 @@ private:
         }
     }
 
+    void completeMessageReply(
+        uint64_t requestId, const lp3wire::MessageReplyData &reply) {
+        if (!m_pending.remove(requestId)) {
+            return;
+        }
+        const int32_t status = m_notifications.reply(
+            QString::fromUtf8(reply.notificationId.data(),
+                              static_cast<int>(reply.notificationId.size())),
+            QString::fromUtf8(reply.text.data(),
+                              static_cast<int>(reply.text.size())));
+        std::vector<uint8_t> payload;
+        if (!lp3wire::encodeStatusReply(
+                lp3wire::MessageReply, static_cast<uint32_t>(status), &payload) ||
+            !queueFrame(lp3wire::Complete, requestId,
+                        &payload[0], payload.size())) {
+            failClosed();
+        }
+    }
+
     void completeCall(uint64_t requestId,
                       const lp3wire::CallCommandData &command) {
         if (!m_pending.remove(requestId)) {
@@ -630,6 +662,7 @@ private:
                            &payload[0], payload.size());
         }
         return (operation == lp3wire::NotificationCommand ||
+                operation == lp3wire::MessageReply ||
                 operation == lp3wire::CallCommand ||
                 operation == lp3wire::MediaCommand) &&
             lp3wire::encodeStatusReply(
@@ -672,6 +705,7 @@ private:
             }
             const uint16_t operation = lp3wire::get16(&frame.payload[0]);
             lp3wire::NotificationCommandData notificationCommand;
+            lp3wire::MessageReplyData messageReply;
             lp3wire::CallCommandData callCommand;
             lp3wire::MediaCommandData mediaCommand = {};
             if ((operation == lp3wire::TimeGet &&
@@ -679,12 +713,15 @@ private:
                 (operation == lp3wire::NotificationCommand &&
                  !lp3wire::decodeNotificationCommand(
                      frame.payload, &notificationCommand)) ||
+                (operation == lp3wire::MessageReply &&
+                 !lp3wire::decodeMessageReply(frame.payload, &messageReply)) ||
                 (operation == lp3wire::CallCommand &&
                  !lp3wire::decodeCallCommand(frame.payload, &callCommand)) ||
                 (operation == lp3wire::MediaCommand &&
                  !lp3wire::decodeMediaCommand(frame.payload, &mediaCommand)) ||
                 (operation != lp3wire::TimeGet &&
                  operation != lp3wire::NotificationCommand &&
+                 operation != lp3wire::MessageReply &&
                  operation != lp3wire::CallCommand &&
                  operation != lp3wire::MediaCommand)) {
                 return false;
@@ -703,6 +740,12 @@ private:
                     [this, frame, notificationCommand]() {
                         completeNotification(
                             frame.requestId, notificationCommand);
+                    });
+            } else if (operation == lp3wire::MessageReply) {
+                QTimer::singleShot(
+                    0, this,
+                    [this, frame, messageReply]() {
+                        completeMessageReply(frame.requestId, messageReply);
                     });
             } else if (operation == lp3wire::CallCommand) {
                 QTimer::singleShot(
@@ -786,6 +829,7 @@ private:
     MDConfItem m_timeFormat;
     NotificationMonitor m_notifications;
     bool m_notificationsReady;
+    bool m_messagingReady;
     CallMonitor m_calls;
     bool m_callsReady;
     MainVolumeMonitor m_media;

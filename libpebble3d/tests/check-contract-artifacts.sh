@@ -215,6 +215,8 @@ helper_source=$libpebble3d_dir/../platform-sailfish/helper/main.cpp
 wire_header=$libpebble3d_dir/../platform-sailfish/common/wire.h
 notification_monitor=$libpebble3d_dir/../platform-sailfish/helper/notificationmonitor.cpp
 notification_monitor_header=$libpebble3d_dir/../platform-sailfish/helper/notificationmonitor.h
+notification_monitor_test=$libpebble3d_dir/../platform-sailfish/tests/notificationmonitor_test.cpp
+notification_monitor_test_project=$libpebble3d_dir/../platform-sailfish/tests/notificationmonitor_test.pro
 call_monitor=$libpebble3d_dir/../platform-sailfish/helper/callmonitor.cpp
 call_monitor_header=$libpebble3d_dir/../platform-sailfish/helper/callmonitor.h
 main_volume_monitor=$libpebble3d_dir/../platform-sailfish/helper/mainvolumemonitor.cpp
@@ -449,6 +451,8 @@ require_file "$helper_source" "Sailfish helper source"
 require_file "$wire_header" "Sailfish provider wire header"
 require_file "$notification_monitor" "Sailfish notification monitor"
 require_file "$notification_monitor_header" "Sailfish notification monitor header"
+require_file "$notification_monitor_test" "Sailfish notification-reply regression"
+require_file "$notification_monitor_test_project" "Sailfish notification-reply test project"
 require_file "$call_monitor" "Sailfish calls monitor"
 require_file "$call_monitor_header" "Sailfish calls monitor header"
 require_file "$main_volume_monitor" "Sailfish system-volume monitor"
@@ -1494,7 +1498,7 @@ require_fixed 'supportsBtClassic = rfcommSocketFactory.available' "$platform_pro
 # header, avoiding a self-BuildRequire.
 require_fixed 'unversioned_libname' "$proxy_project" \
     'unversioned proxy plugin configuration'
-require_fixed '%global lp3_platform_sdk_version 1.3' "$rockpool_spec" \
+require_fixed '%global lp3_platform_sdk_version 1.4' "$rockpool_spec" \
     'fixed platform ABI SDK version'
 require_fixed 'BuildArch:  noarch' "$rockpool_spec" \
     'architecture-neutral platform ABI development package'
@@ -1515,14 +1519,38 @@ require_fixed 'Provides:   rockwork-dbus-compat = 1' "$package_spec" \
     'temporary Rockwork compatibility virtual provide'
 require_fixed 'Provides:   libpebble3d-platform-launcher-abi = 1' "$package_spec" \
     'private session-launcher protocol capability'
-require_fixed 'Provides:   libpebble3d-platform-abi-minor = 3' "$package_spec" \
+require_fixed '#define LP3_PLATFORM_ABI_MINOR 4u' "$header" \
+    'public platform ABI minor 1.4'
+require_fixed '"1.4"' "$loader" \
+    'native platform snapshot ABI version 1.4'
+require_fixed 'val abiVersion: String = "1.4"' "$platform_provider_controller" \
+    'daemon platform snapshot ABI default 1.4'
+require_fixed 'field(3).ifEmpty { "1.4" }' "$platform_provider_controller" \
+    'daemon platform snapshot ABI fallback 1.4'
+require_fixed 'Provides:   libpebble3d-platform-abi-minor = 4' "$package_spec" \
     'runtime platform ABI minor capability'
 require_fixed '%attr(0755,root,root) /usr/libexec/libpebble3d/*.so' "$package_spec" \
     'package-owned native-image support libraries'
 require_fixed 'Requires:   libpebble3d-platform-launcher-abi = 1' "$rockpool_spec" \
     'provider dependency on daemon launcher bootstrap'
-require_fixed 'Requires:   libpebble3d-platform-abi-minor >= 3' "$rockpool_spec" \
+require_fixed 'Requires:   libpebble3d-platform-abi-minor >= 4' "$rockpool_spec" \
     'provider dependency on runtime platform ABI minor'
+require_fixed 'static const uint16_t kMinor = 4;' "$wire_header" \
+    'private provider wire minor 1.4'
+require_fixed 'MessageReply = 5,' "$wire_header" \
+    'private typed message-reply operation'
+require_fixed 'NotificationHasReplyAction = 1u << 1,' "$wire_header" \
+    'notification reply-capability flag'
+require_fixed 'DomainMessaging = 1u << 1,' "$wire_header" \
+    'private messaging domain'
+require_fixed 'DomainNotifications | DomainMessaging |' "$wire_header" \
+    'messaging domain included in complete health validation'
+require_fixed 'kMessageTextMax = 512' "$wire_header" \
+    'bounded message-reply text'
+require_fixed 'validNotificationId(reply.notificationId)' "$wire_header" \
+    'numeric notification ID message-reply bound'
+require_fixed 'validMessageReply' "$wire_header" \
+    'typed message-reply codec validation'
 
 # Only the tiny session launcher may acquire the privileged group.  It must be
 # launched by the real user manager, withhold the host until the daemon is
@@ -1564,6 +1592,8 @@ require_fixed 'LP3_PLATFORM_DOMAIN_TIME' "$proxy_source" \
     'advertised typed time domain'
 require_fixed 'LP3_PLATFORM_DOMAIN_NOTIFICATIONS' "$proxy_source" \
     'advertised typed notification domain'
+require_fixed 'LP3_PLATFORM_DOMAIN_MESSAGING' "$proxy_source" \
+    'advertised typed messaging domain'
 require_fixed 'LP3_PLATFORM_DOMAIN_CALLS' "$proxy_source" \
     'advertised typed calls domain'
 require_fixed 'LP3_PLATFORM_DOMAIN_MEDIA' "$proxy_source" \
@@ -1582,6 +1612,20 @@ do
     require_fixed "\"name\": \"$media_jni_method\"" "$jni_config" \
         "Native Image Media JNI method $media_jni_method"
 done
+require_fixed 'int32_t (*reply_message)' "$header" \
+    'public typed notification reply entry point'
+require_fixed '"name": "replyMessage"' "$jni_config" \
+    'Native Image message-reply JNI method'
+require_fixed 'Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_replyMessage' \
+    "$loader" 'bounded native message-reply JNI bridge'
+require_fixed 'LP3_PLATFORM_MESSAGE_TEXT_MAX' "$loader" \
+    'native message-reply text bound'
+require_fixed 'const val MESSAGING_DOMAIN = 1L shl 1' "$platform_provider_controller" \
+    'daemon messaging-domain capability'
+require_fixed 'val requiredDomains = NOTIFICATION_DOMAIN or MESSAGING_DOMAIN' \
+    "$platform_provider_controller" 'dual-domain message-reply gate'
+require_fixed 'PlatformProviderNative.replyMessage(id, text)' \
+    "$platform_provider_controller" 'typed daemon message-reply dispatch'
 
 # Calls and volume commands originate on libpebble3's watch-processing path.
 # Provider I/O must run asynchronously through bounded FIFO workers. Call
@@ -1686,13 +1730,15 @@ require_fixed 'LP3_PLATFORM_MEDIA_VOLUME_DOWN' "$main_volume_monitor" \
 # merely leaving test sources in a developer worktree is not a release gate.
 require_fixed '%check' "$rockpool_spec" 'Rockpool package test phase'
 for helper_test_project in \
-    callmonitor_test.pro mainvolumemonitor_test.pro stop_handshake_test.pro wire_test.pro
+    callmonitor_test.pro mainvolumemonitor_test.pro notificationmonitor_test.pro \
+    stop_handshake_test.pro wire_test.pro
 do
     require_fixed "../platform-sailfish/tests/$helper_test_project" "$rockpool_spec" \
         "packaged Sailfish helper regression project $helper_test_project"
 done
 for helper_test_binary in \
-    callmonitor_test mainvolumemonitor_test stop_handshake_test wire_test
+    callmonitor_test mainvolumemonitor_test notificationmonitor_test \
+    stop_handshake_test wire_test
 do
     require_fixed "./$helper_test_binary" "$rockpool_spec" \
         "executed Sailfish helper regression $helper_test_binary"
@@ -1729,6 +1775,10 @@ require_fixed 'assert(!monitor.peerActiveForTest())' "$main_volume_monitor_test"
     'stale MainVolume2 lookup cannot activate a peer regression'
 require_fixed 'SOURCES += stop_handshake_test.cpp' "$stop_handshake_test_project" \
     'STOP_HOST regression source wiring'
+require_fixed 'SOURCES += notificationmonitor_test.cpp' "$notification_monitor_test_project" \
+    'notification-reply regression source wiring'
+require_fixed '#include "../helper/notificationmonitor.cpp"' "$notification_monitor_test" \
+    'notification-reply implementation under test'
 require_fixed 'SOURCES += wire_test.cpp' "$wire_test_project" \
     'provider wire regression source wiring'
 require_fixed '../common/wire.h' "$wire_test_project" \
@@ -1737,11 +1787,16 @@ for stop_regression in \
     testStopReplyIsConsumedWhileStopping \
     testRegularReplyWaitRemainsInterruptible \
     testExpectedStartSkipsLateStop \
-    testExpectedStopClosesLateStartedDescriptor
+    testExpectedStopClosesLateStartedDescriptor \
+    testHealthReadyLossPublishesAuthorityBarrier
 do
     require_fixed "void $stop_regression()" "$stop_handshake_test" \
         "launcher STOP_HOST regression $stop_regression"
 done
+require_fixed 'lostDomains = instance->readyDomains & ~health.readyDomains &' \
+    "$proxy_source" 'provider ready-domain loss authority barrier'
+require_fixed 'publishDomainLoss(lostDomains, callback, context);' \
+    "$proxy_source" 'provider domain-loss event publication'
 require_fixed 'interface LinuxNotificationBackend' "$linux_notification_backend" \
     'injectable native-Linux notification backend'
 require_fixed 'class FreedesktopNotificationBackend' "$linux_notification_backend" \
@@ -1755,9 +1810,15 @@ require_fixed 'fun providerGenerationBoundaryResetsNotificationsBeforeDomainDrai
     'provider-generation notification reset regression'
 require_fixed 'private var actionEpoch = 0L' "$platform_notification_backend" \
     'provider notification action generation'
-require_fixed 'if (!notificationsReady.get() || resetQueued) return false' \
+require_fixed 'if (!notificationsReady.get() || resetQueued ||' \
     "$platform_notification_backend" \
-    'provider notification action readiness gate'
+    'provider notification/reset action readiness gate'
+require_fixed 'command is LinuxNotificationCommand.Reply && !messagingReady.get()' \
+    "$platform_notification_backend" \
+    'provider message-reply messaging-domain readiness gate'
+require_fixed 'command !is LinuxNotificationCommand.Reply || messagingReady.get()' \
+    "$platform_notification_backend" \
+    'provider message-reply current messaging-domain gate'
 require_fixed 'actionEpoch++' "$platform_notification_backend" \
     'provider notification reset invalidates action authority'
 if ! awk '
@@ -1828,8 +1889,61 @@ require_fixed 'const int kMaximumActive = 32' "$notification_monitor" \
     'bounded native notification authority'
 reject_extended "method_return',sender='org\\.freedesktop\\.Notifications" \
     "$notification_monitor" 'Sailfish-incompatible well-known reply sender match'
-reject_extended 'x-nemo-remote-action|QDataStream|setArguments' \
-    "$notification_monitor" 'untrusted generic notification action execution'
+require_fixed 'getNameOwner(connection, kCommHistoryService' "$notification_monitor" \
+    'current CommHistory unique-owner lookup'
+require_fixed 'pending.sender != commHistoryOwner' "$notification_monitor" \
+    'trusted CommHistory notification sender gate'
+require_fixed 'commHistoryOwnerChanged' "$notification_monitor" \
+    'CommHistory owner-change reply-authority revocation'
+require_fixed 'replyTargets.clear();' "$notification_monitor" \
+    'reply authority cleared on owner change'
+for reply_category in x-nemo.messaging.sms x-nemo.messaging.im x-nemo.messaging.mms
+do
+    require_fixed "$reply_category" "$notification_monitor" \
+        "trusted message-reply category $reply_category"
+done
+require_fixed 'pending.hints.value(typeName).toString() != QStringLiteral("input")' \
+    "$notification_monitor" 'input-only reply action gate'
+require_fixed 'parts.size() != 6' "$notification_monitor" \
+    'exact two-route-argument reply hint shape'
+require_fixed 'const char kMessagesService[] = "org.sailfishos.Messages";' \
+    "$notification_monitor" 'fixed Sailfish Messages reply service'
+require_fixed 'const char kMessagesPath[] = "/";' "$notification_monitor" \
+    'fixed Sailfish Messages reply path'
+require_fixed 'const char kMessagesInterface[] = "org.sailfishos.Messages";' \
+    "$notification_monitor" 'fixed Sailfish Messages reply interface'
+require_fixed 'const char kMessagesMethod[] = "sendMessage";' \
+    "$notification_monitor" 'fixed Sailfish Messages reply member'
+require_fixed 'kMessagesService, kMessagesPath, kMessagesInterface,' \
+    "$notification_monitor" 'fixed typed Sailfish Messages reply destination'
+require_fixed 'kMessagesMethod);' "$notification_monitor" \
+    'fixed typed Sailfish Messages reply member use'
+require_fixed 'DBUS_TYPE_STRING, &accountValue' "$notification_monitor" \
+    'first QString reply route argument'
+require_fixed 'DBUS_TYPE_STRING, &recipientValue' "$notification_monitor" \
+    'second QString reply route argument'
+require_fixed 'DBUS_TYPE_STRING, &textValue' "$notification_monitor" \
+    'bounded reply text argument'
+require_fixed 'replyTargets.remove(numericId);' "$notification_monitor" \
+    'one-shot helper reply authority consumption'
+require_fixed 'LP3_PLATFORM_NOTIFICATION_HAS_REPLY_ACTION' "$notification_monitor" \
+    'notification reply-capability publication'
+require_fixed 'LP3_PLATFORM_MESSAGE_TEXT_MAX' "$notification_monitor" \
+    'helper reply-text bound'
+reject_extended 'ChannelDispatcher|\.DRAFT|setArguments' "$notification_monitor" \
+    'legacy or arbitrary notification route execution'
+for reply_test_contract in testExactReplyCapability testRejectsInvalidCapability \
+    testRejectsNonCanonicalSerializedArguments
+do
+    require_fixed "void $reply_test_contract()" "$notification_monitor_test" \
+        "notification-reply regression $reply_test_contract"
+done
+require_fixed 'org.sailfishos.Messages' "$notification_monitor_test" \
+    'fixed-route notification-reply regression'
+require_fixed 'x-nemo.messaging.mms' "$notification_monitor_test" \
+    'MMS notification-reply regression'
+require_fixed 'assert(!replyTarget(' "$notification_monitor_test" \
+    'rejected notification-reply authority regression'
 require_fixed 'PKGCONFIG += dbus-1 mlite5' "$helper_project" \
     'notification and MDConfItem build dependencies'
 require_fixed 'packageOwned(path, 0750' "$helper_source" \

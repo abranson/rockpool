@@ -27,7 +27,7 @@ import kotlin.time.Duration.Companion.seconds
 internal data class PlatformProviderSnapshot(
     val state: String,
     val provider: String = "",
-    val abiVersion: String = "1.3",
+    val abiVersion: String = "1.4",
     val buildId: String = "",
     val domains: Long = 0,
     val supportedDomains: Long = 0,
@@ -229,6 +229,26 @@ internal class PlatformProviderController {
                 runCatching { PlatformProviderNative.notificationCommand(command, id) }
                     .getOrElse {
                         logger.w { "platform notification command failed: ${it.message}" }
+                        STATUS_UNAVAILABLE
+                    }
+            }
+        }
+
+    suspend fun replyMessage(
+        id: String,
+        text: String,
+        isCurrent: () -> Boolean,
+    ): Int? =
+        withContext(Dispatchers.IO) {
+            lifecycleLock.withLock {
+                if (!isCurrent()) return@withLock null
+                val requiredDomains = NOTIFICATION_DOMAIN or MESSAGING_DOMAIN
+                if (!nativeLibraryLoaded || current.domains and requiredDomains != requiredDomains) {
+                    return@withLock STATUS_UNAVAILABLE
+                }
+                runCatching { PlatformProviderNative.replyMessage(id, text) }
+                    .getOrElse {
+                        logger.w { "platform message reply failed: ${it.message}" }
                         STATUS_UNAVAILABLE
                     }
             }
@@ -602,7 +622,7 @@ internal class PlatformProviderController {
             state = field(0).ifEmpty { "failed" },
             provider = field(1),
             buildId = field(2),
-            abiVersion = field(3).ifEmpty { "1.3" },
+            abiVersion = field(3).ifEmpty { "1.4" },
             domains = field(4).toLongOrNull() ?: 0,
             helperPid = field(5).toLongOrNull() ?: 0,
             error = field(6),
@@ -658,6 +678,7 @@ internal class PlatformProviderController {
         const val PROVIDER_STATUS_EVENT = 12
         const val TIME_DOMAIN = 1L shl 7
         const val NOTIFICATION_DOMAIN = 1L
+        const val MESSAGING_DOMAIN = 1L shl 1
         const val CALLS_DOMAIN = 1L shl 3
         const val MEDIA_DOMAIN = 1L shl 2
         const val NOTIFICATION_POSTED_EVENT = 2
@@ -668,7 +689,9 @@ internal class PlatformProviderController {
         const val NOTIFICATION_DISMISS = 1
         const val NOTIFICATION_OPEN = 2
         const val NOTIFICATION_HAS_DEFAULT_ACTION = 1
-        const val NOTIFICATION_FLAGS = NOTIFICATION_HAS_DEFAULT_ACTION
+        const val NOTIFICATION_HAS_REPLY_ACTION = 1 shl 1
+        const val NOTIFICATION_FLAGS =
+            NOTIFICATION_HAS_DEFAULT_ACTION or NOTIFICATION_HAS_REPLY_ACTION
         const val NOTIFICATION_PREFIX_SIZE = 52
         const val NOTIFICATION_STRING_COUNT = 8
         const val NOTIFICATION_ID_MAX = 64
@@ -753,6 +776,9 @@ internal object PlatformProviderNative {
 
     @JvmStatic
     external fun notificationCommand(command: Int, id: String): Int
+
+    @JvmStatic
+    external fun replyMessage(id: String, text: String): Int
 
     @JvmStatic
     external fun callCommand(command: Int, id: String): Int

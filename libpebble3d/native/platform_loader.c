@@ -248,7 +248,7 @@ static void set_literal(char *destination, size_t destination_size,
 static void set_snapshot_state(const char *state, const char *error) {
     memset(&loader.snapshot, 0, sizeof(loader.snapshot));
     set_literal(loader.snapshot.state, sizeof(loader.snapshot.state), state);
-    set_literal(loader.snapshot.abi_version, sizeof(loader.snapshot.abi_version), "1.3");
+    set_literal(loader.snapshot.abi_version, sizeof(loader.snapshot.abi_version), "1.4");
     set_literal(loader.snapshot.domains, sizeof(loader.snapshot.domains), "0");
     set_literal(loader.snapshot.helper_pid, sizeof(loader.snapshot.helper_pid), "0");
     set_literal(loader.snapshot.supported_domains,
@@ -413,6 +413,76 @@ static int valid_utf8(const char *text, uint32_t size) {
     return 1;
 }
 
+static int java_string_to_utf8(JNIEnv *env, jstring value, char *output,
+                               uint32_t maximum, uint32_t *output_size,
+                               int allow_empty) {
+    const jchar *characters;
+    jsize length;
+    uint32_t written = 0;
+    jsize index;
+
+    if (value == NULL || output == NULL || output_size == NULL) {
+        return 0;
+    }
+    length = (*env)->GetStringLength(env, value);
+    if ((!allow_empty && length == 0) || length > (jsize)maximum) {
+        return 0;
+    }
+    characters = (*env)->GetStringChars(env, value, NULL);
+    if (characters == NULL) {
+        return 0;
+    }
+    for (index = 0; index < length; ++index) {
+        uint32_t codepoint = characters[index];
+        uint32_t needed;
+        if (codepoint == 0 || (codepoint >= 0xdc00 && codepoint <= 0xdfff)) {
+            (*env)->ReleaseStringChars(env, value, characters);
+            return 0;
+        }
+        if (codepoint >= 0xd800 && codepoint <= 0xdbff) {
+            uint32_t low;
+            if (++index >= length || characters[index] < 0xdc00 ||
+                characters[index] > 0xdfff) {
+                (*env)->ReleaseStringChars(env, value, characters);
+                return 0;
+            }
+            low = characters[index];
+            codepoint = UINT32_C(0x10000) +
+                ((codepoint - UINT32_C(0xd800)) << 10) +
+                (low - UINT32_C(0xdc00));
+        }
+        needed = codepoint <= UINT32_C(0x7f) ? 1 :
+            codepoint <= UINT32_C(0x7ff) ? 2 :
+            codepoint <= UINT32_C(0xffff) ? 3 : 4;
+        if (written > maximum - needed) {
+            (*env)->ReleaseStringChars(env, value, characters);
+            return 0;
+        }
+        if (needed == 1) {
+            output[written++] = (char)codepoint;
+        } else if (needed == 2) {
+            output[written++] = (char)(UINT32_C(0xc0) | (codepoint >> 6));
+            output[written++] = (char)(UINT32_C(0x80) | (codepoint & 0x3f));
+        } else if (needed == 3) {
+            output[written++] = (char)(UINT32_C(0xe0) | (codepoint >> 12));
+            output[written++] = (char)(UINT32_C(0x80) |
+                ((codepoint >> 6) & 0x3f));
+            output[written++] = (char)(UINT32_C(0x80) | (codepoint & 0x3f));
+        } else {
+            output[written++] = (char)(UINT32_C(0xf0) | (codepoint >> 18));
+            output[written++] = (char)(UINT32_C(0x80) |
+                ((codepoint >> 12) & 0x3f));
+            output[written++] = (char)(UINT32_C(0x80) |
+                ((codepoint >> 6) & 0x3f));
+            output[written++] = (char)(UINT32_C(0x80) | (codepoint & 0x3f));
+        }
+    }
+    (*env)->ReleaseStringChars(env, value, characters);
+    output[written] = '\0';
+    *output_size = written;
+    return allow_empty || written != 0;
+}
+
 static int valid_string(const struct lp3_platform_string *value,
                         uint32_t maximum, int allow_empty) {
     return value != NULL && value->size <= maximum &&
@@ -448,7 +518,8 @@ static int valid_notification(
     }
     return event_type == LP3_PLATFORM_EVENT_NOTIFICATION &&
            (notification->flags &
-            ~LP3_PLATFORM_NOTIFICATION_HAS_DEFAULT_ACTION) == 0 &&
+            ~(LP3_PLATFORM_NOTIFICATION_HAS_DEFAULT_ACTION |
+              LP3_PLATFORM_NOTIFICATION_HAS_REPLY_ACTION)) == 0 &&
            notification->close_reason == 0 &&
            valid_string(&notification->replaces_id,
                         LP3_PLATFORM_NOTIFICATION_ID_MAX, 1) &&
@@ -1450,6 +1521,77 @@ Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_notificationComma
     pthread_mutex_unlock(&loader_lock);
 
 done:
+    (*env)->ReleaseStringUTFChars(env, id_value, id);
+    return result;
+}
+
+JNIEXPORT jint JNICALL
+Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_replyMessage(
+    JNIEnv *env, jclass klass, jstring id_value, jstring text_value) {
+    const char *id;
+    jsize id_size;
+    size_t index;
+    char text[LP3_PLATFORM_MESSAGE_TEXT_MAX + 1];
+    uint32_t text_size = 0;
+    struct lp3_platform_message_v1 message;
+    uint64_t request_id;
+    int32_t result = LP3_PLATFORM_UNAVAILABLE;
+    int command_gate_held;
+    (void)klass;
+
+    if (id_value == NULL || text_value == NULL) {
+        return LP3_PLATFORM_INVALID_ARGUMENT;
+    }
+    id_size = (*env)->GetStringUTFLength(env, id_value);
+    id = (*env)->GetStringUTFChars(env, id_value, NULL);
+    if (id == NULL) {
+        return LP3_PLATFORM_INTERNAL_ERROR;
+    }
+    if (id_size <= 0 ||
+        (uint32_t)id_size > LP3_PLATFORM_MESSAGE_CONVERSATION_ID_MAX) {
+        result = LP3_PLATFORM_INVALID_ARGUMENT;
+        goto done_reply;
+    }
+    for (index = 0; index < (size_t)id_size; ++index) {
+        if (id[index] < '0' || id[index] > '9') {
+            result = LP3_PLATFORM_INVALID_ARGUMENT;
+            goto done_reply;
+        }
+    }
+    if (!java_string_to_utf8(env, text_value, text,
+                             LP3_PLATFORM_MESSAGE_TEXT_MAX,
+                             &text_size, 0)) {
+        result = (*env)->ExceptionCheck(env) ?
+            LP3_PLATFORM_INTERNAL_ERROR : LP3_PLATFORM_INVALID_ARGUMENT;
+        goto done_reply;
+    }
+
+    pthread_mutex_lock(&loader_lock);
+    command_gate_held = begin_provider_command_dispatch(
+        LP3_PLATFORM_DOMAIN_NOTIFICATIONS | LP3_PLATFORM_DOMAIN_MESSAGING);
+    if (command_gate_held && loader.api != NULL && loader.instance != NULL &&
+        (loader.api->info.domains &
+         (LP3_PLATFORM_DOMAIN_NOTIFICATIONS | LP3_PLATFORM_DOMAIN_MESSAGING)) ==
+            (LP3_PLATFORM_DOMAIN_NOTIFICATIONS | LP3_PLATFORM_DOMAIN_MESSAGING) &&
+        API_HAS_MEMBER(loader.api, reply_message) &&
+        loader.next_request_id != 0 &&
+        (loader.next_request_id & (UINT64_C(1) << 63)) == 0) {
+        request_id = loader.next_request_id++;
+        memset(&message, 0, sizeof(message));
+        message.struct_size = sizeof(message);
+        message.conversation_id.data = id;
+        message.conversation_id.size = (uint32_t)id_size;
+        message.text.data = text;
+        message.text.size = text_size;
+        result = loader.api->reply_message(
+            loader.instance, request_id, &message);
+    }
+    if (command_gate_held) {
+        end_provider_command_dispatch();
+    }
+    pthread_mutex_unlock(&loader_lock);
+
+done_reply:
     (*env)->ReleaseStringUTFChars(env, id_value, id);
     return result;
 }

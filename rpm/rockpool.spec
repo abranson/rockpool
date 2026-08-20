@@ -1,6 +1,6 @@
 Name:       rockpool
 
-%global lp3_platform_sdk_version 1.3
+%global lp3_platform_sdk_version 1.4
 
 %{!?qtc_qmake:%define qtc_qmake %qmake}
 %{!?qtc_qmake5:%define qtc_qmake5 %qmake5}
@@ -48,7 +48,7 @@ providers.  This package is independent of the libpebble3d daemon runtime.
 Summary:    Sailfish platform provider for libpebble3d
 License:    Apache-2.0
 Requires:   libpebble3d-platform-abi = 1
-Requires:   libpebble3d-platform-abi-minor >= 3
+Requires:   libpebble3d-platform-abi-minor >= 4
 Requires:   libpebble3d-platform-launcher-abi = 1
 
 %description -n libpebble3d-platform-sailfish
@@ -113,6 +113,14 @@ cd platform-stop-handshake-test-build
 %qtc_make clean
 %qtc_make %{?_smp_mflags}
 ./stop_handshake_test
+
+cd ..
+mkdir -p platform-notificationmonitor-test-build
+cd platform-notificationmonitor-test-build
+%qmake5 ../platform-sailfish/tests/notificationmonitor_test.pro
+%qtc_make clean
+%qtc_make %{?_smp_mflags}
+./notificationmonitor_test
 
 cd ..
 mkdir -p platform-wire-test-build

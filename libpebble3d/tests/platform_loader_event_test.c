@@ -18,6 +18,7 @@ static void enqueue_reset(void);
 static void enqueue_media(int32_t volume_percent);
 
 static unsigned int notification_command_count;
+static unsigned int reply_message_count;
 static unsigned int call_command_count;
 static unsigned int media_command_count;
 static struct JNINativeInterface_ test_jni_functions;
@@ -64,6 +65,37 @@ static void test_release_string_utf_chars(JNIEnv *env, jstring value,
     (void)text;
 }
 
+static jsize test_get_string_length(JNIEnv *env, jstring value) {
+    const jchar *text = (const jchar *)value;
+    jsize length = 0;
+    (void)env;
+    while (text[length] != 0) {
+        ++length;
+    }
+    return length;
+}
+
+static const jchar *test_get_string_chars(JNIEnv *env, jstring value,
+                                           jboolean *copied) {
+    (void)env;
+    if (copied != NULL) {
+        *copied = JNI_FALSE;
+    }
+    return (const jchar *)value;
+}
+
+static void test_release_string_chars(JNIEnv *env, jstring value,
+                                      const jchar *text) {
+    (void)env;
+    (void)value;
+    (void)text;
+}
+
+static jboolean test_exception_check(JNIEnv *env) {
+    (void)env;
+    return JNI_FALSE;
+}
+
 static int32_t test_notification_command(
     struct lp3_platform_instance *instance, uint64_t request_id,
     const struct lp3_platform_notification_command_v1 *command) {
@@ -74,6 +106,30 @@ static int32_t test_notification_command(
     assert(request_id != 0);
     assert(command->command == LP3_PLATFORM_NOTIFICATION_DISMISS);
     ++notification_command_count;
+    return LP3_PLATFORM_OK;
+}
+
+static int32_t test_reply_message(
+    struct lp3_platform_instance *instance, uint64_t request_id,
+    const struct lp3_platform_message_v1 *message) {
+    static const char expected_text[] = "On my way \xf0\x9f\x98\x80";
+    (void)instance;
+    pthread_mutex_lock(&event_lock);
+    assert(provider_command_dispatches == 1);
+    pthread_mutex_unlock(&event_lock);
+    assert(request_id != 0);
+    assert(message->flags == 0);
+    assert(message->conversation_id.size == 2);
+    assert(memcmp(message->conversation_id.data, "42", 2) == 0);
+    assert(message->recipient.size == 0);
+    assert(message->recipient.data == NULL);
+    assert((message->text.size == sizeof(expected_text) - 1 &&
+            memcmp(message->text.data, expected_text,
+                   sizeof(expected_text) - 1) == 0) ||
+           (message->text.size == LP3_PLATFORM_MESSAGE_TEXT_MAX &&
+            strspn(message->text.data, "x") ==
+                LP3_PLATFORM_MESSAGE_TEXT_MAX));
+    ++reply_message_count;
     return LP3_PLATFORM_OK;
 }
 
@@ -108,8 +164,10 @@ static void set_up_command_provider(void) {
     memset(&command_api, 0, sizeof(command_api));
     command_api.struct_size = sizeof(command_api);
     command_api.info.domains = LP3_PLATFORM_DOMAIN_NOTIFICATIONS |
-        LP3_PLATFORM_DOMAIN_CALLS | LP3_PLATFORM_DOMAIN_MEDIA;
+        LP3_PLATFORM_DOMAIN_MESSAGING | LP3_PLATFORM_DOMAIN_CALLS |
+        LP3_PLATFORM_DOMAIN_MEDIA;
     command_api.notification_command = test_notification_command;
+    command_api.reply_message = test_reply_message;
     command_api.call_command = test_call_command;
     command_api.media_command = test_media_command;
     memset(&loader, 0, sizeof(loader));
@@ -117,12 +175,17 @@ static void set_up_command_provider(void) {
     loader.instance = (struct lp3_platform_instance *)&command_api;
     loader.next_request_id = 1;
     notification_command_count = 0;
+    reply_message_count = 0;
     call_command_count = 0;
     media_command_count = 0;
     memset(&test_jni_functions, 0, sizeof(test_jni_functions));
     test_jni_functions.GetStringUTFLength = test_get_string_utf_length;
     test_jni_functions.GetStringUTFChars = test_get_string_utf_chars;
     test_jni_functions.ReleaseStringUTFChars = test_release_string_utf_chars;
+    test_jni_functions.GetStringLength = test_get_string_length;
+    test_jni_functions.GetStringChars = test_get_string_chars;
+    test_jni_functions.ReleaseStringChars = test_release_string_chars;
+    test_jni_functions.ExceptionCheck = test_exception_check;
 }
 
 static struct lp3_platform_string string(const char *value) {
@@ -187,6 +250,22 @@ static void enqueue_reset(void) {
 int main(void) {
     unsigned int index;
     pthread_t reset_thread;
+    jchar maximum_reply_text[LP3_PLATFORM_MESSAGE_TEXT_MAX + 1];
+    jchar oversized_reply_text[LP3_PLATFORM_MESSAGE_TEXT_MAX + 2];
+    static const jchar reply_text[] = {
+        'O', 'n', ' ', 'm', 'y', ' ', 'w', 'a', 'y', ' ',
+        0xd83d, 0xde00, 0,
+    };
+    static const jchar invalid_reply_text[] = { 0xd83d, 0 };
+    static const jchar invalid_low_surrogate[] = { 0xdc00, 0 };
+
+    for (index = 0; index < LP3_PLATFORM_MESSAGE_TEXT_MAX; ++index) {
+        maximum_reply_text[index] = 'x';
+        oversized_reply_text[index] = 'x';
+    }
+    maximum_reply_text[LP3_PLATFORM_MESSAGE_TEXT_MAX] = 0;
+    oversized_reply_text[LP3_PLATFORM_MESSAGE_TEXT_MAX] = 'x';
+    oversized_reply_text[LP3_PLATFORM_MESSAGE_TEXT_MAX + 1] = 0;
 
     reset_events();
 
@@ -285,12 +364,16 @@ int main(void) {
     assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_notificationCommand(
         &test_env, NULL, LP3_PLATFORM_NOTIFICATION_DISMISS, (jstring)"42") ==
         LP3_PLATFORM_OK);
+    assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_replyMessage(
+        &test_env, NULL, (jstring)"42", (jstring)reply_text) ==
+        LP3_PLATFORM_OK);
     assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_callCommand(
         &test_env, NULL, LP3_PLATFORM_CALL_ANSWER, (jstring)"call_1") ==
         LP3_PLATFORM_OK);
     assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_mediaCommand(
         &test_env, NULL, LP3_PLATFORM_MEDIA_VOLUME_UP) == LP3_PLATFORM_OK);
     assert(notification_command_count == 1);
+    assert(reply_message_count == 1);
     assert(call_command_count == 1);
     assert(media_command_count == 1);
     assert(media_event_count == 1);
@@ -298,7 +381,8 @@ int main(void) {
 
     /* A retired domain rejects only its corresponding command. */
     pthread_mutex_lock(&event_lock);
-    event_failed_domains = LP3_PLATFORM_DOMAIN_CALLS;
+    event_failed_domains = LP3_PLATFORM_DOMAIN_CALLS |
+        LP3_PLATFORM_DOMAIN_MESSAGING;
     pthread_mutex_unlock(&event_lock);
     assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_notificationCommand(
         &test_env, NULL, LP3_PLATFORM_NOTIFICATION_DISMISS, (jstring)"42") ==
@@ -306,18 +390,44 @@ int main(void) {
     assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_callCommand(
         &test_env, NULL, LP3_PLATFORM_CALL_ANSWER, (jstring)"call_1") ==
         LP3_PLATFORM_UNAVAILABLE);
+    assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_replyMessage(
+        &test_env, NULL, (jstring)"42", (jstring)reply_text) ==
+        LP3_PLATFORM_UNAVAILABLE);
     assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_mediaCommand(
         &test_env, NULL, LP3_PLATFORM_MEDIA_VOLUME_UP) == LP3_PLATFORM_OK);
     assert(notification_command_count == 2);
+    assert(reply_message_count == 1);
     assert(call_command_count == 1);
     assert(media_command_count == 2);
     reset_events();
+
+    /* Java UTF-16 is converted to strict bounded UTF-8 before provider use. */
+    assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_replyMessage(
+        &test_env, NULL, (jstring)"42", (jstring)maximum_reply_text) ==
+        LP3_PLATFORM_OK);
+    assert(reply_message_count == 2);
+    assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_replyMessage(
+        &test_env, NULL, (jstring)"42", (jstring)oversized_reply_text) ==
+        LP3_PLATFORM_INVALID_ARGUMENT);
+    assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_replyMessage(
+        &test_env, NULL, (jstring)"42", (jstring)invalid_reply_text) ==
+        LP3_PLATFORM_INVALID_ARGUMENT);
+    assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_replyMessage(
+        &test_env, NULL, (jstring)"42", (jstring)invalid_low_surrogate) ==
+        LP3_PLATFORM_INVALID_ARGUMENT);
+    assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_replyMessage(
+        &test_env, NULL, (jstring)"not-a-number", (jstring)reply_text) ==
+        LP3_PLATFORM_INVALID_ARGUMENT);
+    assert(reply_message_count == 2);
 
     /* A queued reset rejects all commands until JNI drains its marker. */
     enqueue_reset();
     assert(provider_reset_pending);
     assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_notificationCommand(
         &test_env, NULL, LP3_PLATFORM_NOTIFICATION_DISMISS, (jstring)"42") ==
+        LP3_PLATFORM_UNAVAILABLE);
+    assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_replyMessage(
+        &test_env, NULL, (jstring)"42", (jstring)reply_text) ==
         LP3_PLATFORM_UNAVAILABLE);
     assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_callCommand(
         &test_env, NULL, LP3_PLATFORM_CALL_ANSWER, (jstring)"call_1") ==
@@ -326,6 +436,7 @@ int main(void) {
         &test_env, NULL, LP3_PLATFORM_MEDIA_VOLUME_UP) ==
         LP3_PLATFORM_UNAVAILABLE);
     assert(notification_command_count == 2);
+    assert(reply_message_count == 2);
     assert(call_command_count == 1);
     assert(media_command_count == 2);
     assert(pthread_mutex_trylock(&event_lock) == 0);

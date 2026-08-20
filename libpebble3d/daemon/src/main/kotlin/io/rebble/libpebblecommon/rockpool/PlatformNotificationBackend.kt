@@ -138,6 +138,8 @@ internal fun mapPlatformNotificationEvent(
                     ),
                     hasDefaultAction = event.flags and
                         PlatformProviderController.NOTIFICATION_HAS_DEFAULT_ACTION != 0,
+                    hasReplyAction = event.flags and
+                        PlatformProviderController.NOTIFICATION_HAS_REPLY_ACTION != 0,
                 )
             )
         }
@@ -156,11 +158,14 @@ internal class PlatformNotificationBackend(
     private val filterApplyTimeoutMs: Long = FILTER_APPLY_TIMEOUT_MS,
     private val executeCommand: suspend (Int, String, () -> Boolean) -> Int? =
         controller::notificationCommand,
+    private val executeReply: suspend (String, String, () -> Boolean) -> Int? =
+        controller::replyMessage,
 ) : LinuxNotificationBackend {
     private val logger = Logger.withTag("PlatformNotificationBackend")
     private val eventChannel = Channel<LinuxNotificationEvent>(eventCapacity)
     private val eventLock = Any()
     private val notificationsReady = AtomicBoolean(false)
+    private val messagingReady = AtomicBoolean(false)
     private val filters = AtomicReference(initialFilters.toMap())
     private var actionEpoch = 0L
     private var resetQueued = false
@@ -192,9 +197,12 @@ internal class PlatformNotificationBackend(
     }
 
     internal fun providerSnapshotChanged(snapshot: PlatformProviderSnapshot) {
-        val ready = snapshot.domains and NOTIFICATION_DOMAIN != 0L
+        val notifications = snapshot.domains and NOTIFICATION_DOMAIN != 0L
+        val messaging = snapshot.domains and MESSAGING_DOMAIN != 0L
         synchronized(eventLock) {
-            if (notificationsReady.getAndSet(ready) && !ready) {
+            val lostNotifications = notificationsReady.getAndSet(notifications) && !notifications
+            val lostMessaging = messagingReady.getAndSet(messaging) && !messaging
+            if (lostNotifications || lostMessaging) {
                 queueResetLocked()
             }
         }
@@ -204,7 +212,21 @@ internal class PlatformNotificationBackend(
         synchronized(eventLock) {
             if (!notificationsReady.get() || resetQueued) return
             val deviceActive = runCatching(deviceActivity::isActiveAndUnlocked).getOrDefault(false)
-            val mapped = mapPlatformNotificationEvent(event, filters.get(), deviceActive) ?: return
+            val authorizedEvent = if (
+                event is PlatformNotificationEvent.Posted && !messagingReady.get()
+            ) {
+                event.copy(
+                    flags = event.flags and
+                        PlatformProviderController.NOTIFICATION_HAS_REPLY_ACTION.inv(),
+                )
+            } else {
+                event
+            }
+            val mapped = mapPlatformNotificationEvent(
+                authorizedEvent,
+                filters.get(),
+                deviceActive,
+            ) ?: return
             if (eventChannel.trySend(mapped).isFailure) {
                 logger.e { "native notification event queue is full; resetting state" }
                 queueResetLocked()
@@ -250,19 +272,30 @@ internal class PlatformNotificationBackend(
         id: String,
         command: LinuxNotificationCommand,
     ): Boolean {
-        val nativeCommand = when (command) {
-            LinuxNotificationCommand.Dismiss ->
-                PlatformProviderController.NOTIFICATION_DISMISS
-            LinuxNotificationCommand.Open -> PlatformProviderController.NOTIFICATION_OPEN
-        }
         val epoch = synchronized(eventLock) {
-            if (!notificationsReady.get() || resetQueued) return false
+            if (!notificationsReady.get() || resetQueued ||
+                command is LinuxNotificationCommand.Reply && !messagingReady.get()
+            ) return false
             actionEpoch
         }
-        return executeCommand(nativeCommand, id) {
+        val isCurrent = {
             synchronized(eventLock) {
-                notificationsReady.get() && !resetQueued && actionEpoch == epoch
+                notificationsReady.get() && !resetQueued && actionEpoch == epoch &&
+                    (command !is LinuxNotificationCommand.Reply || messagingReady.get())
             }
+        }
+        return when (command) {
+            LinuxNotificationCommand.Dismiss -> executeCommand(
+                PlatformProviderController.NOTIFICATION_DISMISS,
+                id,
+                isCurrent,
+            )
+            LinuxNotificationCommand.Open -> executeCommand(
+                PlatformProviderController.NOTIFICATION_OPEN,
+                id,
+                isCurrent,
+            )
+            is LinuxNotificationCommand.Reply -> executeReply(id, command.text, isCurrent)
         } == STATUS_OK
     }
 
@@ -301,6 +334,7 @@ internal class PlatformNotificationBackend(
         private const val FILTER_APPLY_TIMEOUT_MS = 15_000L
         private const val STATUS_OK = 0
         private const val NOTIFICATION_DOMAIN = 1L
+        private const val MESSAGING_DOMAIN = 1L shl 1
     }
 }
 

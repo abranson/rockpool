@@ -6,6 +6,7 @@
 
 #include <QByteArray>
 #include <QDateTime>
+#include <QDataStream>
 #include <QHash>
 #include <QList>
 #include <QMap>
@@ -26,23 +27,42 @@ namespace {
 const char kNotificationsInterface[] = "org.freedesktop.Notifications";
 const char kNotificationsService[] = "org.freedesktop.Notifications";
 const char kNotificationsPath[] = "/org/freedesktop/Notifications";
+const char kCommHistoryService[] = "org.nemomobile.CommHistory";
+const char kMessagesService[] = "org.sailfishos.Messages";
+const char kMessagesPath[] = "/";
+const char kMessagesInterface[] = "org.sailfishos.Messages";
+const char kMessagesMethod[] = "sendMessage";
+const char kAccountPathPrefix[] = "/org/freedesktop/Telepathy/Account/";
 const int kMaximumPending = 64;
 const int kMaximumActive = 32;
 const int kMaximumActions = 64;
 const int kMaximumHints = 64;
 const size_t kMaximumHintName = 64;
+const size_t kMaximumRemoteAction = 4096;
+const int kMaximumActionText = 256;
+const int kMaximumEncodedArgument = 2048;
+const int kMaximumAccountPathBytes = 512;
+const int kMaximumRecipientBytes = 512;
 const int kCommandTimeoutMs = 1000;
 const int kPendingTimeoutMs = 5000;
 
 struct PendingNotification {
+    QString sender;
     QString appName;
     uint32_t replacesId;
     QString appIcon;
     QString summary;
     QString body;
     QHash<QString, QVariant> hints;
+    QStringList actions;
 
     PendingNotification() : replacesId(0) {}
+};
+
+struct ReplyTarget {
+    QString sourceOwner;
+    QString accountPath;
+    QString recipient;
 };
 
 QString pendingKey(const char *name, dbus_uint32_t serial) {
@@ -196,6 +216,181 @@ size_t maximumHintString(const QString &name) {
     return 0;
 }
 
+size_t dynamicActionHintMaximum(const PendingNotification &pending,
+                                const QString &name) {
+    const QString actionPrefix = QStringLiteral("x-nemo-remote-action-");
+    const QString typePrefix = QStringLiteral("x-nemo-remote-action-type-");
+    QString action;
+    size_t maximum = 0;
+    if (name.startsWith(typePrefix)) {
+        action = name.mid(typePrefix.size());
+        maximum = 16;
+    } else if (name.startsWith(actionPrefix)) {
+        action = name.mid(actionPrefix.size());
+        maximum = kMaximumRemoteAction;
+    }
+    if (action.isEmpty()) {
+        return 0;
+    }
+    for (int index = 0; index + 1 < pending.actions.size(); index += 2) {
+        if (pending.actions.at(index) == action) {
+            return maximum;
+        }
+    }
+    return 0;
+}
+
+uint32_t bigEndian32(const QByteArray &bytes, int offset) {
+    return (static_cast<uint32_t>(static_cast<uint8_t>(bytes.at(offset))) << 24) |
+        (static_cast<uint32_t>(static_cast<uint8_t>(bytes.at(offset + 1))) << 16) |
+        (static_cast<uint32_t>(static_cast<uint8_t>(bytes.at(offset + 2))) << 8) |
+        static_cast<uint32_t>(static_cast<uint8_t>(bytes.at(offset + 3)));
+}
+
+bool exactSerializedQString(const QByteArray &bytes, int offset,
+                            int maximumUtf16Bytes) {
+    if (offset < 0 || bytes.size() - offset < 4) {
+        return false;
+    }
+    const uint32_t length = bigEndian32(bytes, offset);
+    return length != UINT32_MAX && (length % 2) == 0 &&
+        length <= static_cast<uint32_t>(maximumUtf16Bytes) &&
+        length == static_cast<uint32_t>(bytes.size() - offset - 4);
+}
+
+bool decodeCanonicalStringVariant(const QString &token, QString *value) {
+    const QByteArray encoded = token.toLatin1();
+    if (value == NULL || encoded.isEmpty() ||
+        encoded.size() > kMaximumEncodedArgument ||
+        QString::fromLatin1(encoded) != token || (encoded.size() % 4) != 0) {
+        return false;
+    }
+    int padding = 0;
+    bool sawPadding = false;
+    for (int index = 0; index < encoded.size(); ++index) {
+        const char character = encoded.at(index);
+        if (character == '=') {
+            sawPadding = true;
+            ++padding;
+            if (padding > 2) {
+                return false;
+            }
+        } else if (sawPadding ||
+                   !((character >= 'A' && character <= 'Z') ||
+                     (character >= 'a' && character <= 'z') ||
+                     (character >= '0' && character <= '9') ||
+                     character == '+' || character == '/')) {
+            return false;
+        }
+    }
+    const QByteArray decoded = QByteArray::fromBase64(encoded);
+    if (decoded.isEmpty() || decoded.toBase64() != encoded ||
+        decoded.size() < 9 || decoded.at(4) != 0 ||
+        bigEndian32(decoded, 0) !=
+            static_cast<uint32_t>(QVariant::String) ||
+        !exactSerializedQString(decoded, 5,
+                                2 * kMaximumAccountPathBytes)) {
+        return false;
+    }
+    QDataStream stream(decoded);
+    QVariant decodedValue;
+    stream >> decodedValue;
+    if (stream.status() != QDataStream::Ok || !stream.atEnd() ||
+        !decodedValue.isValid()) {
+        return false;
+    }
+    if (decodedValue.type() != QVariant::String) {
+        return false;
+    }
+    *value = decodedValue.toString();
+    return true;
+}
+
+bool validBoundedText(const QString &value, int maximumBytes) {
+    const QByteArray bytes = value.toUtf8();
+    return !value.isEmpty() && !value.contains(QChar(0)) &&
+        bytes.size() <= maximumBytes &&
+        lp3wire::validUtf8(std::string(
+            bytes.constData(), static_cast<size_t>(bytes.size())));
+}
+
+bool replyTarget(const PendingNotification &pending, const QString &category,
+                 const QString &commHistoryOwner, ReplyTarget *target) {
+    if (target == NULL || commHistoryOwner.isEmpty() ||
+        pending.sender != commHistoryOwner ||
+        (category != QStringLiteral("x-nemo.messaging.sms") &&
+         category != QStringLiteral("x-nemo.messaging.im") &&
+         category != QStringLiteral("x-nemo.messaging.mms"))) {
+        return false;
+    }
+    int candidates = 0;
+    ReplyTarget candidate;
+    for (int index = 0; index + 1 < pending.actions.size(); index += 2) {
+        const QString action = pending.actions.at(index);
+        const QString remoteName =
+            QStringLiteral("x-nemo-remote-action-") + action;
+        const QString typeName =
+            QStringLiteral("x-nemo-remote-action-type-") + action;
+        if (pending.hints.value(typeName).toString() != QStringLiteral("input")) {
+            continue;
+        }
+        const QString remote = pending.hints.value(remoteName).toString();
+        const QStringList parts = remote.split(QLatin1Char(' '),
+                                               QString::KeepEmptyParts);
+        if (parts.size() != 6 ||
+            parts.at(0) != QString::fromLatin1(kMessagesService) ||
+            parts.at(1) != QString::fromLatin1(kMessagesPath) ||
+            parts.at(2) != QString::fromLatin1(kMessagesInterface) ||
+            parts.at(3) != QString::fromLatin1(kMessagesMethod) ||
+            !decodeCanonicalStringVariant(parts.at(4),
+                                          &candidate.accountPath) ||
+            !decodeCanonicalStringVariant(parts.at(5),
+                                          &candidate.recipient)) {
+            continue;
+        }
+        const QByteArray accountBytes = candidate.accountPath.toUtf8();
+        if (!validBoundedText(candidate.accountPath,
+                              kMaximumAccountPathBytes) ||
+            !candidate.accountPath.startsWith(
+                QString::fromLatin1(kAccountPathPrefix)) ||
+            candidate.accountPath.size() <=
+                static_cast<int>(strlen(kAccountPathPrefix)) ||
+            !dbus_validate_path(accountBytes.constData(), NULL) ||
+            !validBoundedText(candidate.recipient,
+                              kMaximumRecipientBytes)) {
+            continue;
+        }
+        ++candidates;
+        candidate.sourceOwner = pending.sender;
+        *target = candidate;
+    }
+    return candidates == 1;
+}
+
+DBusMessage *createReplyMessage(const ReplyTarget &target,
+                                const QByteArray &text) {
+    const QByteArray account = target.accountPath.toUtf8();
+    const QByteArray recipient = target.recipient.toUtf8();
+    const char *accountValue = account.constData();
+    const char *recipientValue = recipient.constData();
+    const char *textValue = text.constData();
+    DBusMessage *message = dbus_message_new_method_call(
+        kMessagesService, kMessagesPath, kMessagesInterface,
+        kMessagesMethod);
+    if (message == NULL || !dbus_message_append_args(
+            message,
+            DBUS_TYPE_STRING, &accountValue,
+            DBUS_TYPE_STRING, &recipientValue,
+            DBUS_TYPE_STRING, &textValue,
+            DBUS_TYPE_INVALID)) {
+        if (message != NULL) {
+            dbus_message_unref(message);
+        }
+        return NULL;
+    }
+    return message;
+}
+
 } // namespace
 
 class NotificationMonitorPrivate {
@@ -212,11 +407,13 @@ public:
     NotificationMonitorPrivate(NotificationMonitor *owner,
                                const NotificationMonitor::PostedCallback &posted,
                                const NotificationMonitor::ClosedCallback &closed,
-                               const NotificationMonitor::HealthCallback &health)
+                               const NotificationMonitor::HealthCallback &health,
+                               const NotificationMonitor::HealthCallback &messagingHealth)
         : q(owner), connection(NULL), postedCallback(posted),
-          closedCallback(closed), healthCallback(health), started(false),
-          available(false), retryScheduled(false), shuttingDown(false),
-          connectionGeneration(0) {}
+          closedCallback(closed), healthCallback(health),
+          messagingHealthCallback(messagingHealth), started(false),
+          available(false), messagingAvailable(false), retryScheduled(false),
+          shuttingDown(false), connectionGeneration(0) {}
 
     ~NotificationMonitorPrivate() {
         shuttingDown = true;
@@ -260,6 +457,11 @@ public:
             "interface='org.freedesktop.DBus',"
             "member='NameOwnerChanged',"
             "arg0='org.freedesktop.Notifications'",
+            "type='signal',sender='org.freedesktop.DBus',"
+            "path='/org/freedesktop/DBus',"
+            "interface='org.freedesktop.DBus',"
+            "member='NameOwnerChanged',"
+            "arg0='org.nemomobile.CommHistory'",
         };
         for (size_t index = 0; index < sizeof(rules) / sizeof(rules[0]); ++index) {
             dbus_bus_add_match(connection, rules[index], &error);
@@ -292,6 +494,27 @@ public:
             serviceOwner = owner;
         } else {
             serviceOwner.clear();
+        }
+        const bool hasCommHistoryOwner = dbus_bus_name_has_owner(
+            connection, kCommHistoryService, &error) != FALSE;
+        if (dbus_error_is_set(&error)) {
+            dbus_error_free(&error);
+            closeConnection();
+            scheduleReconnect();
+            return false;
+        }
+        if (hasCommHistoryOwner) {
+            QString owner;
+            if (!getNameOwner(connection, kCommHistoryService, &owner,
+                              &error) || dbus_error_is_set(&error)) {
+                dbus_error_free(&error);
+                closeConnection();
+                scheduleReconnect();
+                return false;
+            }
+            commHistoryOwner = owner;
+        } else {
+            commHistoryOwner.clear();
         }
         setAvailable(hasOwner);
         return available;
@@ -348,6 +571,66 @@ public:
             return LP3_PLATFORM_NOT_SUPPORTED;
         }
         return LP3_PLATFORM_INVALID_ARGUMENT;
+    }
+
+    int32_t reply(const QString &id, const QString &text) {
+        bool ok = false;
+        const uint32_t numericId = id.toUInt(&ok);
+        const QByteArray textBytes = text.toUtf8();
+        if (!ok || numericId == 0 ||
+            !validBoundedText(text,
+                              static_cast<int>(LP3_PLATFORM_MESSAGE_TEXT_MAX))) {
+            return LP3_PLATFORM_INVALID_ARGUMENT;
+        }
+        if (!started || !available) {
+            return LP3_PLATFORM_UNAVAILABLE;
+        }
+        if (!replyTargets.contains(numericId)) {
+            return LP3_PLATFORM_UNAVAILABLE;
+        }
+
+        const ReplyTarget target = replyTargets.value(numericId);
+        DBusError ownerError = DBUS_ERROR_INIT;
+        QString currentOwner;
+        const bool ownerCurrent = getNameOwner(
+            connection, kCommHistoryService, &currentOwner, &ownerError) &&
+            !dbus_error_is_set(&ownerError) &&
+            currentOwner == commHistoryOwner &&
+            currentOwner == target.sourceOwner;
+        dbus_error_free(&ownerError);
+        if (!ownerCurrent) {
+            setCommHistoryOwner(currentOwner);
+            return LP3_PLATFORM_UNAVAILABLE;
+        }
+
+        // Sending is externally visible and cannot be made idempotent. Consume
+        // the authority before dispatch, and never restore it after an
+        // ambiguous timeout or error.
+        replyTargets.remove(numericId);
+        DBusMessage *message = createReplyMessage(target, textBytes);
+        if (message == NULL) {
+            return LP3_PLATFORM_INTERNAL_ERROR;
+        }
+
+        DBusError error = DBUS_ERROR_INIT;
+        DBusMessage *response = dbus_connection_send_with_reply_and_block(
+            connection, message, kCommandTimeoutMs, &error);
+        dbus_message_unref(message);
+        if (response == NULL) {
+            const bool disconnected =
+                !dbus_connection_get_is_connected(connection);
+            dbus_error_free(&error);
+            if (disconnected) {
+                busDisconnected();
+            }
+            return LP3_PLATFORM_IO_ERROR;
+        }
+        const bool succeeded = dbus_message_get_type(response) ==
+                DBUS_MESSAGE_TYPE_METHOD_RETURN &&
+            dbus_message_get_signature(response)[0] == '\0';
+        dbus_message_unref(response);
+        dbus_error_free(&error);
+        return succeeded ? LP3_PLATFORM_OK : LP3_PLATFORM_IO_ERROR;
     }
 
 private:
@@ -426,6 +709,7 @@ private:
     void closeConnection() {
         started = false;
         serviceOwner.clear();
+        commHistoryOwner.clear();
         ++connectionGeneration;
         if (connection != NULL) {
             dbus_connection_remove_filter(connection, messageFilter, this);
@@ -455,6 +739,7 @@ private:
     void clearTrackedNotifications() {
         const QList<uint32_t> ids = activeOrder;
         activeIds.clear();
+        replyTargets.clear();
         activeOrder.clear();
         pending.clear();
         for (QList<uint32_t>::const_iterator it = ids.begin();
@@ -469,6 +754,31 @@ private:
         }
         available = value;
         healthCallback(available);
+        updateMessagingAvailable();
+    }
+
+    void updateMessagingAvailable() {
+        const bool value = available && !commHistoryOwner.isEmpty();
+        if (messagingAvailable == value) {
+            return;
+        }
+        messagingAvailable = value;
+        messagingHealthCallback(value);
+    }
+
+    void setCommHistoryOwner(const QString &owner) {
+        if (commHistoryOwner == owner) {
+            return;
+        }
+        // A same-state owner replacement is still a reply-authority generation
+        // boundary. Publish loss before accepting capabilities from the new owner.
+        if (messagingAvailable) {
+            messagingAvailable = false;
+            messagingHealthCallback(false);
+        }
+        replyTargets.clear();
+        commHistoryOwner = owner;
+        updateMessagingAvailable();
     }
 
     void serviceOwnerChanged(const char *oldOwner, const char *newOwner) {
@@ -483,6 +793,11 @@ private:
             serviceOwner = QString::fromUtf8(newOwner);
             setAvailable(true);
         }
+    }
+
+    void commHistoryOwnerChanged(const char *, const char *newOwner) {
+        setCommHistoryOwner(QString::fromUtf8(
+            newOwner == NULL ? "" : newOwner));
     }
 
     void busDisconnected() {
@@ -506,7 +821,9 @@ private:
             });
         } else if (dbus_message_is_signal(
                        message, DBUS_INTERFACE_DBUS,
-                       "NameOwnerChanged")) {
+                       "NameOwnerChanged") &&
+                   dbus_message_has_sender(message, DBUS_SERVICE_DBUS) &&
+                   dbus_message_has_path(message, DBUS_PATH_DBUS)) {
             DBusError error = DBUS_ERROR_INIT;
             const char *name = NULL;
             const char *oldOwner = NULL;
@@ -516,8 +833,12 @@ private:
                                       DBUS_TYPE_STRING, &oldOwner,
                                       DBUS_TYPE_STRING, &newOwner,
                                       DBUS_TYPE_INVALID) &&
-                name != NULL && strcmp(name, kNotificationsService) == 0) {
-                self->serviceOwnerChanged(oldOwner, newOwner);
+                name != NULL) {
+                if (strcmp(name, kNotificationsService) == 0) {
+                    self->serviceOwnerChanged(oldOwner, newOwner);
+                } else if (strcmp(name, kCommHistoryService) == 0) {
+                    self->commHistoryOwnerChanged(oldOwner, newOwner);
+                }
             }
             dbus_error_free(&error);
         } else if (dbus_message_is_method_call(
@@ -532,6 +853,9 @@ private:
             }
             PendingNotification pending;
             if (self->parseNotify(message, &pending)) {
+                pending.sender = QString::fromUtf8(
+                    dbus_message_get_sender(message) == NULL ? "" :
+                    dbus_message_get_sender(message));
                 const QString key = pendingKey(
                     dbus_message_get_sender(message),
                     dbus_message_get_serial(message));
@@ -635,10 +959,19 @@ private:
         dbus_message_iter_recurse(&iterator, &actionsIterator);
         int actionCount = 0;
         while (dbus_message_iter_get_arg_type(&actionsIterator) == DBUS_TYPE_STRING) {
-            if (++actionCount > kMaximumActions) {
+            QString action;
+            if (++actionCount > kMaximumActions ||
+                !readBasicString(&actionsIterator, &action,
+                                 kMaximumActionText)) {
                 return false;
             }
+            pending->actions.append(action);
             dbus_message_iter_next(&actionsIterator);
+        }
+        if ((actionCount % 2) != 0 ||
+            dbus_message_iter_get_arg_type(&actionsIterator) !=
+                DBUS_TYPE_INVALID) {
+            return false;
         }
         dbus_message_iter_next(&iterator);
         if (dbus_message_iter_get_arg_type(&iterator) != DBUS_TYPE_ARRAY) {
@@ -647,6 +980,7 @@ private:
         DBusMessageIter hintsIterator;
         dbus_message_iter_recurse(&iterator, &hintsIterator);
         int hintCount = 0;
+        QSet<QString> recognizedHints;
         while (dbus_message_iter_get_arg_type(&hintsIterator) ==
                DBUS_TYPE_DICT_ENTRY) {
             if (++hintCount > kMaximumHints) {
@@ -660,10 +994,20 @@ private:
                 dbus_message_iter_get_arg_type(&entry) != DBUS_TYPE_VARIANT) {
                 return false;
             }
-            const size_t maximum = maximumHintString(key);
+            size_t maximum = maximumHintString(key);
+            bool dynamicActionHint = false;
+            if (maximum == 0) {
+                maximum = dynamicActionHintMaximum(*pending, key);
+                dynamicActionHint = maximum != 0;
+            }
             if (maximum != 0) {
+                if (recognizedHints.contains(key)) {
+                    return false;
+                }
+                recognizedHints.insert(key);
                 const QVariant value = readVariant(&entry, maximum);
-                if (value.isValid()) {
+                if (value.isValid() &&
+                    (!dynamicActionHint || value.type() == QVariant::String)) {
                     pending->hints.insert(key, value);
                 }
             }
@@ -674,6 +1018,9 @@ private:
 
     void post(uint32_t id, const PendingNotification &pendingNotification) {
         const QString category = stringHint(pendingNotification.hints, "category");
+        ReplyTarget target;
+        const bool canReply = replyTarget(
+            pendingNotification, category, commHistoryOwner, &target);
         const bool replacedActive = pendingNotification.replacesId != 0 &&
             removeActive(pendingNotification.replacesId);
         const bool suppressed = id == 0 ||
@@ -708,6 +1055,9 @@ private:
         notification.title = pendingNotification.summary;
         notification.body = pendingNotification.body;
         notification.category = category;
+        if (canReply) {
+            notification.flags |= LP3_PLATFORM_NOTIFICATION_HAS_REPLY_ACTION;
+        }
         notification.iconName = themeIconName(pendingNotification.appIcon);
         if (notification.iconName.isEmpty()) {
             notification.iconName = themeIconName(
@@ -718,7 +1068,7 @@ private:
                 stringHint(pendingNotification.hints, "x-nemo-preview-icon"));
         }
 
-        trackActive(id);
+        trackActive(id, canReply ? &target : NULL);
         postedCallback(notification);
     }
 
@@ -730,19 +1080,25 @@ private:
 
     bool removeActive(uint32_t id) {
         if (!activeIds.remove(id)) {
+            replyTargets.remove(id);
             return false;
         }
+        replyTargets.remove(id);
         activeOrder.removeAll(id);
         return true;
     }
 
-    void trackActive(uint32_t id) {
+    void trackActive(uint32_t id, const ReplyTarget *target) {
         removeActive(id);
         activeIds.insert(id);
+        if (target != NULL) {
+            replyTargets.insert(id, *target);
+        }
         activeOrder.append(id);
         while (activeOrder.size() > kMaximumActive) {
             const uint32_t evicted = activeOrder.takeFirst();
             if (activeIds.remove(evicted)) {
+                replyTargets.remove(evicted);
                 emitClosed(evicted, 0);
             }
         }
@@ -760,14 +1116,18 @@ private:
     NotificationMonitor::PostedCallback postedCallback;
     NotificationMonitor::ClosedCallback closedCallback;
     NotificationMonitor::HealthCallback healthCallback;
+    NotificationMonitor::HealthCallback messagingHealthCallback;
     bool started;
     bool available;
+    bool messagingAvailable;
     bool retryScheduled;
     bool shuttingDown;
     quint64 connectionGeneration;
     QString serviceOwner;
+    QString commHistoryOwner;
     QMap<QString, PendingNotification> pending;
     QSet<uint32_t> activeIds;
+    QHash<uint32_t, ReplyTarget> replyTargets;
     QList<uint32_t> activeOrder;
 };
 
@@ -777,9 +1137,11 @@ NotificationMonitor::Notification::Notification()
 NotificationMonitor::NotificationMonitor(const PostedCallback &posted,
                                          const ClosedCallback &closed,
                                          const HealthCallback &health,
+                                         const HealthCallback &messagingHealth,
                                          QObject *parent)
     : QObject(parent),
-      m_private(new NotificationMonitorPrivate(this, posted, closed, health)) {}
+      m_private(new NotificationMonitorPrivate(
+          this, posted, closed, health, messagingHealth)) {}
 
 NotificationMonitor::~NotificationMonitor() {
     delete m_private;
@@ -792,4 +1154,8 @@ bool NotificationMonitor::start() {
 int32_t NotificationMonitor::command(uint32_t commandValue,
                                      const QString &id) {
     return m_private->command(commandValue, id);
+}
+
+int32_t NotificationMonitor::reply(const QString &id, const QString &text) {
+    return m_private->reply(id, text);
 }

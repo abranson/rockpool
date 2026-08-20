@@ -13,6 +13,35 @@
 
 namespace {
 
+struct CapturedProviderStatus {
+    unsigned int count;
+    uint32_t state;
+    uint64_t readyDomains;
+    uint64_t degradedDomains;
+    uint64_t failedDomains;
+    int64_t helperPid;
+
+    CapturedProviderStatus()
+        : count(0), state(0), readyDomains(0), degradedDomains(0),
+          failedDomains(0), helperPid(0) {}
+};
+
+void captureProviderStatus(void *context,
+                           const lp3_platform_event_v1 *event) {
+    CapturedProviderStatus *captured =
+        static_cast<CapturedProviderStatus *>(context);
+    assert(captured != NULL);
+    assert(event != NULL);
+    assert(event->type == LP3_PLATFORM_EVENT_PROVIDER_STATUS);
+    assert(event->provider_status != NULL);
+    ++captured->count;
+    captured->state = event->provider_status->state;
+    captured->readyDomains = event->provider_status->ready_domains;
+    captured->degradedDomains = event->provider_status->degraded_domains;
+    captured->failedDomains = event->provider_status->failed_domains;
+    captured->helperPid = event->provider_status->helper_pid;
+}
+
 void sendStoppedReply(int fd) {
     lp3_launcher_message_v1 reply;
     ssize_t sent;
@@ -147,6 +176,40 @@ void testExpectedStopClosesLateStartedDescriptor() {
     close(control[1]);
 }
 
+void testHealthReadyLossPublishesAuthorityBarrier() {
+    SailfishInstance instance;
+    CapturedProviderStatus captured;
+    lp3wire::HealthState health;
+    lp3wire::Frame frame;
+
+    instance.event = captureProviderStatus;
+    instance.eventContext = &captured;
+    instance.readyDomains = kSupportedDomains;
+    instance.degradedDomains = 0;
+    instance.failedDomains = 0;
+
+    health.readyDomains = kSupportedDomains & ~lp3wire::DomainMessaging;
+    health.degradedDomains = lp3wire::DomainMessaging;
+    health.failedDomains = 0;
+    frame.type = lp3wire::Health;
+    frame.requestId = 0;
+    assert(lp3wire::encodeHealth(health, &frame.payload));
+    assert(dispatchFrame(&instance, frame));
+    assert(captured.count == 1);
+    assert(captured.state == LP3_PLATFORM_PROVIDER_DEGRADED);
+    assert(captured.readyDomains == 0);
+    assert(captured.degradedDomains == lp3wire::DomainMessaging);
+    assert(captured.failedDomains == 0);
+    assert(captured.helperPid == 0);
+
+    health.readyDomains = kSupportedDomains;
+    health.degradedDomains = 0;
+    frame.payload.clear();
+    assert(lp3wire::encodeHealth(health, &frame.payload));
+    assert(dispatchFrame(&instance, frame));
+    assert(captured.count == 1);
+}
+
 } // namespace
 
 int main() {
@@ -154,5 +217,6 @@ int main() {
     testRegularReplyWaitRemainsInterruptible();
     testExpectedStartSkipsLateStop();
     testExpectedStopClosesLateStartedDescriptor();
+    testHealthReadyLossPublishesAuthorityBarrier();
     return 0;
 }

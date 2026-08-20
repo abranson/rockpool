@@ -55,7 +55,8 @@ const size_t kMaximumOutgoing = 64;
 const std::chrono::seconds kRequestTimeout(2);
 const std::chrono::seconds kCancellationGrace(2);
 const uint64_t kSupportedDomains = LP3_PLATFORM_DOMAIN_TIME |
-    LP3_PLATFORM_DOMAIN_NOTIFICATIONS | LP3_PLATFORM_DOMAIN_MEDIA |
+    LP3_PLATFORM_DOMAIN_NOTIFICATIONS | LP3_PLATFORM_DOMAIN_MESSAGING |
+    LP3_PLATFORM_DOMAIN_MEDIA |
     LP3_PLATFORM_DOMAIN_CALLS;
 
 struct Pending {
@@ -360,6 +361,27 @@ void publishDisconnected(SailfishInstance *instance) {
     }
 }
 
+void publishDomainLoss(uint64_t lostDomains,
+                       lp3_platform_event_callback callback, void *context) {
+    if (lostDomains == 0 || callback == NULL) {
+        return;
+    }
+    static const char error[] = "platform helper domain became unavailable";
+    lp3_platform_provider_status_v1 status;
+    lp3_platform_event_v1 event;
+    memset(&status, 0, sizeof(status));
+    status.struct_size = sizeof(status);
+    status.state = LP3_PLATFORM_PROVIDER_DEGRADED;
+    status.degraded_domains = lostDomains;
+    status.error.data = error;
+    status.error.size = sizeof(error) - 1;
+    memset(&event, 0, sizeof(event));
+    event.struct_size = sizeof(event);
+    event.type = LP3_PLATFORM_EVENT_PROVIDER_STATUS;
+    event.provider_status = &status;
+    callback(context, &event);
+}
+
 void stopHost(SailfishInstance *instance, int *dataSocket) {
     lp3_launcher_message_v1 reply;
     int receivedFd = -1;
@@ -460,6 +482,7 @@ bool decodeCompletion(uint16_t operation, const std::vector<uint8_t> &payload,
             return false;
         }
     } else if (operation == lp3wire::NotificationCommand ||
+               operation == lp3wire::MessageReply ||
                operation == lp3wire::CallCommand ||
                operation == lp3wire::MediaCommand) {
         if (!lp3wire::decodeStatusReply(payload, operation, &decodedStatus)) {
@@ -476,13 +499,31 @@ bool decodeCompletion(uint16_t operation, const std::vector<uint8_t> &payload,
 bool dispatchFrame(SailfishInstance *instance, const lp3wire::Frame &frame) {
     if (frame.type == lp3wire::Health) {
         lp3wire::HealthState health;
+        lp3_platform_event_callback callback;
+        void *context;
+        uint64_t lostDomains;
         if (frame.requestId != 0 || !lp3wire::decodeHealth(frame.payload, &health)) {
             return false;
         }
-        std::lock_guard<std::mutex> lock(instance->mutex);
-        instance->readyDomains = health.readyDomains;
-        instance->degradedDomains = health.degradedDomains;
-        instance->failedDomains = health.failedDomains;
+        {
+            std::lock_guard<std::mutex> lock(instance->mutex);
+            const uint64_t commandDomains =
+                lp3wire::DomainNotifications | lp3wire::DomainMessaging |
+                lp3wire::DomainCalls | lp3wire::DomainMedia;
+            lostDomains = instance->readyDomains & ~health.readyDomains &
+                commandDomains;
+            instance->readyDomains = health.readyDomains;
+            instance->degradedDomains = health.degradedDomains;
+            instance->failedDomains = health.failedDomains;
+            callback = instance->event;
+            context = instance->eventContext;
+        }
+        /*
+         * Health is otherwise level-triggered and polled by the daemon.  Do
+         * not let a rapid unavailable -> ready transition erase the edge that
+         * retires notification, reply, call, or media command authority.
+         */
+        publishDomainLoss(lostDomains, callback, context);
         return true;
     }
 
@@ -907,11 +948,6 @@ int32_t notSupportedNotification(lp3_platform_instance *, uint64_t,
     return LP3_PLATFORM_NOT_SUPPORTED;
 }
 
-int32_t notSupportedMessage(lp3_platform_instance *, uint64_t,
-                            const lp3_platform_message_v1 *) {
-    return LP3_PLATFORM_NOT_SUPPORTED;
-}
-
 int32_t notSupportedCalendar(lp3_platform_instance *, uint64_t,
                              const lp3_platform_calendar_query_v1 *) {
     return LP3_PLATFORM_NOT_SUPPORTED;
@@ -992,6 +1028,87 @@ int32_t notificationCommand(
                 Tombstone tombstone;
                 std::vector<uint8_t> cancelFrame;
                 tombstone.operation = lp3wire::NotificationCommand;
+                tombstone.expires =
+                    std::chrono::steady_clock::now() + kCancellationGrace;
+                instance->tombstones[requestId] = tombstone;
+                if (!lp3wire::encodeFrame(lp3wire::Cancel, requestId,
+                                          NULL, 0, &cancelFrame)) {
+                    instance->forceReset = true;
+                } else {
+                    instance->outgoing.push_back(cancelFrame);
+                }
+            }
+            wakeWorker(instance);
+        }
+        return LP3_PLATFORM_UNAVAILABLE;
+    }
+    return pending->complete ? pending->status : LP3_PLATFORM_UNAVAILABLE;
+}
+
+int32_t replyMessage(lp3_platform_instance *raw, uint64_t requestId,
+                     const lp3_platform_message_v1 *message) {
+    SailfishInstance *instance = static_cast<SailfishInstance *>(raw);
+    lp3wire::MessageReplyData wireReply;
+    std::vector<uint8_t> payload;
+    std::vector<uint8_t> frame;
+    std::shared_ptr<Pending> pending(new Pending(lp3wire::MessageReply));
+
+    if (instance == NULL || requestId == 0 ||
+        (requestId & (UINT64_C(1) << 63)) != 0 || message == NULL ||
+        message->struct_size < sizeof(*message) || message->flags != 0 ||
+        message->conversation_id.size == 0 ||
+        message->conversation_id.size >
+            LP3_PLATFORM_MESSAGE_CONVERSATION_ID_MAX ||
+        message->conversation_id.data == NULL || message->recipient.size != 0 ||
+        message->text.size == 0 ||
+        message->text.size > LP3_PLATFORM_MESSAGE_TEXT_MAX ||
+        message->text.data == NULL) {
+        return LP3_PLATFORM_INVALID_ARGUMENT;
+    }
+    wireReply.notificationId.assign(message->conversation_id.data,
+                                    message->conversation_id.size);
+    wireReply.text.assign(message->text.data, message->text.size);
+    if (!lp3wire::encodeMessageReply(wireReply, &payload) ||
+        !lp3wire::encodeFrame(lp3wire::Request, requestId,
+                              &payload[0], payload.size(), &frame)) {
+        return LP3_PLATFORM_INVALID_ARGUMENT;
+    }
+
+    std::unique_lock<std::mutex> lock(instance->mutex);
+    const uint64_t requiredDomains = lp3wire::DomainNotifications |
+        lp3wire::DomainMessaging;
+    if (instance->stopping.load() || instance->socket < 0 ||
+        instance->latched ||
+        (instance->readyDomains & requiredDomains) != requiredDomains) {
+        return LP3_PLATFORM_UNAVAILABLE;
+    }
+    if (instance->pending.size() + instance->tombstones.size() >=
+            kMaximumOutstanding ||
+        instance->outgoing.size() >= kMaximumOutgoing ||
+        instance->pending.count(requestId) != 0 ||
+        instance->tombstones.count(requestId) != 0) {
+        return LP3_PLATFORM_BUSY;
+    }
+    instance->pending[requestId] = pending;
+    instance->outgoing.push_back(frame);
+    wakeWorker(instance);
+
+    if (!pending->condition.wait_for(lock, kRequestTimeout,
+                                     [pending, instance] {
+                                         return pending->complete ||
+                                             instance->stopping.load();
+                                     })) {
+        std::map<uint64_t, std::shared_ptr<Pending> >::iterator current =
+            instance->pending.find(requestId);
+        if (current != instance->pending.end()) {
+            instance->pending.erase(current);
+            if (instance->tombstones.size() >= kMaximumOutstanding ||
+                instance->outgoing.size() >= kMaximumOutgoing) {
+                instance->forceReset = true;
+            } else {
+                Tombstone tombstone;
+                std::vector<uint8_t> cancelFrame;
+                tombstone.operation = lp3wire::MessageReply;
                 tombstone.expires =
                     std::chrono::steady_clock::now() + kCancellationGrace;
                 instance->tombstones[requestId] = tombstone;
@@ -1306,6 +1423,7 @@ const lp3_platform_api_v1 kApi = {
         LP3_PLATFORM_ABI_MAJOR,
         LP3_PLATFORM_ABI_MINOR,
         LP3_PLATFORM_DOMAIN_TIME | LP3_PLATFORM_DOMAIN_NOTIFICATIONS |
+            LP3_PLATFORM_DOMAIN_MESSAGING |
             LP3_PLATFORM_DOMAIN_MEDIA | LP3_PLATFORM_DOMAIN_CALLS,
         { kProviderName, sizeof(kProviderName) - 1 },
         { kBuildId, sizeof(kBuildId) - 1 },
@@ -1317,7 +1435,7 @@ const lp3_platform_api_v1 kApi = {
     requestStop,
     destroy,
     notSupportedNotification,
-    notSupportedMessage,
+    replyMessage,
     mediaCommand,
     callCommand,
     notSupportedCalendar,
@@ -1335,8 +1453,8 @@ const lp3_platform_api_v1 kApi = {
 extern "C" __attribute__((visibility("default"))) int32_t
 lp3_platform_get_api(uint32_t hostAbiMajor, uint32_t hostAbiMinor,
                      const lp3_platform_api_v1 **api) {
-    (void)hostAbiMinor;
-    if (api == NULL || hostAbiMajor != LP3_PLATFORM_ABI_MAJOR) {
+    if (api == NULL || hostAbiMajor != LP3_PLATFORM_ABI_MAJOR ||
+        hostAbiMinor < LP3_PLATFORM_ABI_MINOR) {
         return LP3_PLATFORM_NOT_SUPPORTED;
     }
     *api = &kApi;

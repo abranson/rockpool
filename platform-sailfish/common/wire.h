@@ -20,7 +20,7 @@
 namespace lp3wire {
 
 static const uint16_t kMajor = 1;
-static const uint16_t kMinor = 3;
+static const uint16_t kMinor = 4;
 static const size_t kHeaderSize = 24;
 static const size_t kMaxFrameSize = 64 * 1024;
 
@@ -41,6 +41,7 @@ enum Operation {
     NotificationCommand = 2,
     CallCommand = 3,
     MediaCommand = 4,
+    MessageReply = 5,
 };
 
 enum EventType {
@@ -53,6 +54,7 @@ enum EventType {
 
 enum NotificationFlag {
     NotificationHasDefaultAction = 1u << 0,
+    NotificationHasReplyAction = 1u << 1,
 };
 
 enum NotificationCommand {
@@ -85,6 +87,7 @@ enum MediaCommand {
 
 enum Domain {
     DomainNotifications = 1u << 0,
+    DomainMessaging = 1u << 1,
     DomainMedia = 1u << 2,
     DomainCalls = 1u << 3,
     DomainTime = 1u << 7,
@@ -129,6 +132,11 @@ struct NotificationCommandData {
     std::string id;
 };
 
+struct MessageReplyData {
+    std::string notificationId;
+    std::string text;
+};
+
 struct CallData {
     uint32_t state;
     std::string id;
@@ -163,6 +171,8 @@ static const size_t kNotificationTitleMax = 512;
 static const size_t kNotificationBodyMax = 4096;
 static const size_t kNotificationCategoryMax = 128;
 static const size_t kNotificationIconNameMax = 128;
+static const size_t kMessageConversationIdMax = 64;
+static const size_t kMessageTextMax = 512;
 static const size_t kCallIdMax = 128;
 static const size_t kCallNameMax = 256;
 static const size_t kCallNumberMax = 256;
@@ -208,8 +218,8 @@ inline uint64_t get64(const uint8_t *data) {
 inline bool validStatus(uint32_t status);
 
 inline bool validHealthState(const HealthState &health) {
-    const uint64_t supported = DomainNotifications | DomainMedia | DomainCalls |
-                               DomainTime;
+    const uint64_t supported = DomainNotifications | DomainMessaging |
+                               DomainMedia | DomainCalls | DomainTime;
     return ((health.readyDomains | health.degradedDomains |
              health.failedDomains) & ~supported) == 0 &&
            (health.readyDomains & health.degradedDomains) == 0 &&
@@ -389,7 +399,8 @@ inline bool validNotification(uint16_t eventType,
                notification.iconName.empty();
     }
     return eventType == NotificationPosted && notification.closeReason == 0 &&
-           (notification.flags & ~NotificationHasDefaultAction) == 0 &&
+           (notification.flags & ~(NotificationHasDefaultAction |
+                                   NotificationHasReplyAction)) == 0 &&
            validNotificationId(notification.replacesId, true) &&
            validText(notification.applicationId,
                      kNotificationApplicationIdMax, false) &&
@@ -519,6 +530,42 @@ inline bool decodeNotificationCommand(const std::vector<uint8_t> &payload,
     return true;
 }
 
+inline bool validMessageReply(const MessageReplyData &reply) {
+    return validNotificationId(reply.notificationId) &&
+           reply.notificationId[0] != '0' &&
+           validText(reply.text, kMessageTextMax, false);
+}
+
+inline bool encodeMessageReply(const MessageReplyData &reply,
+                               std::vector<uint8_t> *payload) {
+    if (payload == NULL || !validMessageReply(reply)) {
+        return false;
+    }
+    payload->assign(12, 0);
+    put16(&(*payload)[0], MessageReply);
+    put32(&(*payload)[4], static_cast<uint32_t>(reply.notificationId.size()));
+    put32(&(*payload)[8], static_cast<uint32_t>(reply.text.size()));
+    appendText(payload, reply.notificationId);
+    appendText(payload, reply.text);
+    return true;
+}
+
+inline bool decodeMessageReply(const std::vector<uint8_t> &payload,
+                               MessageReplyData *reply) {
+    MessageReplyData decoded;
+    size_t offset = 12;
+    if (reply == NULL || payload.size() < offset ||
+        get16(&payload[0]) != MessageReply || get16(&payload[2]) != 0 ||
+        !readText(payload, &offset, get32(&payload[4]),
+                  &decoded.notificationId) ||
+        !readText(payload, &offset, get32(&payload[8]), &decoded.text) ||
+        offset != payload.size() || !validMessageReply(decoded)) {
+        return false;
+    }
+    *reply = decoded;
+    return true;
+}
+
 inline bool encodeCallChanged(const CallData &call,
                               std::vector<uint8_t> *payload) {
     if (payload == NULL || !validCall(call)) {
@@ -642,6 +689,7 @@ inline bool decodeMediaCommand(const std::vector<uint8_t> &payload,
 inline bool encodeStatusReply(uint16_t operation, uint32_t status,
                               std::vector<uint8_t> *payload) {
     if (payload == NULL || (operation != NotificationCommand &&
+                            operation != MessageReply &&
                             operation != CallCommand &&
                             operation != MediaCommand) ||
         !validStatus(status)) {

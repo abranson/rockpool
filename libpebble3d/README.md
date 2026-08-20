@@ -11,6 +11,13 @@ Native Image JNI loader can compile against it directly.  The Rockpool source
 RPM packages the same file as `libpebble3d-platform-devel`; the daemon RPM
 provides only the matching runtime ABI capability.
 
+Platform ABI 1.4 adds safe Sailfish notification replies. The provider exposes
+both notification and messaging domains, but the private helper wire carries
+only a retained numeric notification ID and reply text. The helper accepts a
+reply only once for a current `org.nemomobile.CommHistory` SMS/IM/MMS
+notification whose input action resolves to the fixed Sailfish Messages
+`sendMessage` API; notification hints cannot select an arbitrary D-Bus call.
+
 ## Build
 
 `build.sh` first builds the daemon JVM distribution on the host, then builds
@@ -179,7 +186,7 @@ The daemon RPM provides these package capabilities:
 
 - `rockpool-dbus-api = 1`
 - `libpebble3d-platform-abi = 1`
-- `libpebble3d-platform-abi-minor = 3`
+- `libpebble3d-platform-abi-minor = 4`
 - `libpebble3d-platform-launcher-abi = 1`
 - `rockwork-dbus-compat = 1` for the temporary UI migration release
 
@@ -213,7 +220,7 @@ That spec produces three packages:
 - `rockpool` — the Silica UI.  It requires `rockpool-dbus-api = 1` and, during
   the migration release, `rockwork-dbus-compat = 1`.
 - `libpebble3d-platform-devel` — the architecture-independent Apache-2.0 ABI
-  header and pkg-config file, currently versioned as platform SDK `1.3`.  It
+  header and pkg-config file, currently versioned as platform SDK `1.4`.  It
   has no daemon runtime dependency.
 - `libpebble3d-platform-sailfish` — the AArch64 provider package.  It requires
   both platform ABI capabilities supplied by the daemon RPM.
@@ -454,7 +461,7 @@ It is deliberately not a list of obsolete endpoints to carry forward.
 | Apps/watchfaces | `Applications1` FD operations | libpebble3 |
 | Firmware/recovery/language | `Firmware1` FD operations | libpebble3 |
 | Timeline/calendar | Account-global `Timeline1.CalendarEnabled`; `watch.timeline` and `platform.calendar` remain absent pending a typed calendar domain | libpebble3d |
-| Notifications/actions/replies | `Notifications1`/`Messaging1`; canonical primary canned groups are account-global and replayed into libpebble3 (including an explicit empty collection), while compatibility groups remain source-scoped and are not reply actions | libpebble3 + provider |
+| Notifications/actions/replies | `Notifications1`/`Messaging1`; replies are available only for a live, trusted Sailfish SMS/IM/MMS notification with one narrowly validated input route, and are consumed after one attempt. Canonical primary canned groups are account-global and replayed into libpebble3 (including an explicit empty collection), while compatibility groups remain source-scoped and are not reply actions | libpebble3 + provider |
 | Calls/media/contacts/location/profiles | Watch domains + provider | provider |
 | Health and units | Account-global `Health1` settings projection on every watch; compatibility health strings round-trip only `female`/`male`; historical health data remains unpublished | libpebble3d |
 | Weather | Compatibility locations receive keyless automatic forecasts for saved coordinates and still accept validated external injection. Migration imports a single physical legacy saved-location collection, or a unanimous collection from eligible legacy watch directories; conflicting legacy collections are preserved without choosing one. The `n/a` current-location slot remains pending `platform.location` | libpebble3 + libpebble3d |
@@ -520,7 +527,7 @@ Each `SOCK_SEQPACKET` packet is exactly one little-endian frame:
 ```text
 u32 total_length       // header + payload, 24..65536
 u16 major              // currently 1
-u16 minor              // currently 3
+u16 minor              // currently 4
 u16 type
 u16 flags              // zero unless specified for type
 u64 request_id         // zero for handshake, Health, and Event frames
@@ -573,7 +580,7 @@ new snapshot whenever a notification, volume, or call monitor changes
 availability. The three
 `u64` values are the ready, degraded, and failed domain masks. They are
 disjoint and together contain every domain implemented by this wire minor
-(currently notifications, media, calls, and time). A missing or disconnected monitor
+(currently notifications, messaging, media, calls, and time). A missing or disconnected monitor
 therefore degrades only its domain without hiding or failing the others.
 
 The notification domain sends incoming notifications as events and accepts
@@ -583,7 +590,7 @@ only narrow actions against a helper-retained numeric notification ID:
 Event NotificationPosted/NotificationClosed (request_id = 0)
     u16 event                   // 2 = posted, 3 = closed
     u16 reserved = 0
-    u32 flags                   // bit 0 reserved for a safe default action
+    u32 flags                   // bit 0 safe default action; bit 1 safe reply
     i64 timestamp_ms
     u32 close_reason            // 0 unknown, otherwise specification values 1..4
     u32 id_length
@@ -625,6 +632,41 @@ action must target one fixed Sailfish application-launcher API using a
 validated application identity. Dismiss reports success only after a bounded
 reply from the fixed notification service; a missing, rejected, or timed-out
 service call fails without discarding the retained ID.
+
+Minor 4 adds the messaging domain and a single safe reply request. It carries
+only the helper-retained decimal notification ID and bounded UTF-8 reply text:
+
+```text
+Request MessageReply (request_id != 0)
+    u16 operation = 5
+    u16 reserved = 0
+    u32 notification_id_length  // decimal ID, 1..64 bytes, no leading zero
+    u32 text_length             // strict UTF-8, 1..512 bytes
+    u8  notification_id[notification_id_length]
+    u8  text[text_length]
+
+Complete MessageReplyStatus (matching request_id, payload size 8)
+    u16 operation = 5
+    u16 reserved = 0
+    u32 status
+```
+
+The helper grants reply authority only when the current unique owner of
+`org.nemomobile.CommHistory` posted an active notification in exactly one of
+the `x-nemo.messaging.sms`, `x-nemo.messaging.im`, or
+`x-nemo.messaging.mms` categories. Its action must be an `input` action whose
+strictly parsed `x-nemo-remote-action-*` value names exactly the fixed
+`org.sailfishos.Messages`, `/`, `org.sailfishos.Messages`, `sendMessage`
+route and contains exactly two bounded QString route arguments (account path
+and recipient). The private wire never carries those route arguments or any
+D-Bus tuple. The helper consumes the retained authority before issuing the
+fixed three-QString `sendMessage(account, recipient, replyText)` call, so a
+reply is one-shot even on a timeout or error. Owner changes, notification
+replacement/removal, and bounded active-ID eviction revoke it.
+
+Hints are input to this narrow parser, not executable authority. In
+particular, Telepathy ChannelDispatcher/DRAFT routes and arbitrary hinted
+destinations, paths, interfaces, members, or argument lists are never used.
 
 The calls domain reports the one call selected for Pebble phone-control and
 accepts only fixed operations against the helper-observed handler ID:
