@@ -29,7 +29,7 @@ import kotlin.time.Duration.Companion.seconds
 internal data class PlatformProviderSnapshot(
     val state: String,
     val provider: String = "",
-    val abiVersion: String = "1.4",
+    val abiVersion: String = "1.6",
     val buildId: String = "",
     val domains: Long = 0,
     val supportedDomains: Long = 0,
@@ -118,6 +118,86 @@ internal sealed interface PlatformLocationQueryResult {
     data class Error(val status: Int) : PlatformLocationQueryResult
 }
 
+internal data class PlatformCalendarRecord(
+    val flags: Int,
+    val colorArgb: Int,
+    val id: String,
+    val name: String,
+    val ownerName: String,
+    val ownerId: String,
+)
+
+internal data class PlatformCalendarAttendee(
+    val flags: Int,
+    val role: Int,
+    val status: Int,
+    val name: String,
+    val email: String,
+)
+
+internal data class PlatformCalendarEventRecord(
+    val flags: Int,
+    val availability: Int,
+    val status: Int,
+    val startMs: Long,
+    val endMs: Long,
+    val id: String,
+    val calendarId: String,
+    val baseEventId: String,
+    val title: String,
+    val description: String,
+    val location: String,
+    val attendees: List<PlatformCalendarAttendee>,
+    val reminderMinutes: List<Int>,
+)
+
+internal data class PlatformCalendarSnapshot(
+    val kind: Int,
+    val nextOffset: Int,
+    val calendars: List<PlatformCalendarRecord>,
+    val events: List<PlatformCalendarEventRecord>,
+)
+
+internal sealed interface PlatformCalendarQueryResult {
+    data class Success(val snapshot: PlatformCalendarSnapshot) : PlatformCalendarQueryResult
+    data class Error(val status: Int) : PlatformCalendarQueryResult
+}
+
+private sealed interface PlatformCalendarNativeEvent {
+    object Changed : PlatformCalendarNativeEvent
+    data class Completed(
+        val requestId: Long,
+        val result: PlatformCalendarQueryResult,
+    ) : PlatformCalendarNativeEvent
+}
+
+internal data class PlatformContactRecord(
+    val flags: Int,
+    val id: String,
+    val displayName: String,
+    val phoneNumber: String,
+    val avatar: ByteArray,
+)
+
+internal data class PlatformContactSnapshot(
+    val kind: Int,
+    val nextOffset: Int,
+    val contacts: List<PlatformContactRecord>,
+)
+
+internal sealed interface PlatformContactQueryResult {
+    data class Success(val snapshot: PlatformContactSnapshot) : PlatformContactQueryResult
+    data class Error(val status: Int) : PlatformContactQueryResult
+}
+
+private sealed interface PlatformContactNativeEvent {
+    object Changed : PlatformContactNativeEvent
+    data class Completed(
+        val requestId: Long,
+        val result: PlatformContactQueryResult,
+    ) : PlatformContactNativeEvent
+}
+
 /**
  * Generic host-side lifecycle for a native platform provider.  The native
  * library scans only the fixed installation directory and validates ownership,
@@ -135,6 +215,20 @@ internal class PlatformProviderController(
         PlatformProviderNative::cancelLocation,
     private val locationDrainNative: () -> LongArray =
         PlatformProviderNative::drainLocationEvents,
+    private val calendarNativeAvailable: () -> Boolean = { nativeLibraryLoaded },
+    private val calendarStartNative: (Int, Int, Int, Long, Long, String) -> LongArray =
+        PlatformProviderNative::calendarStart,
+    private val calendarCancelNative: (Long) -> Int =
+        PlatformProviderNative::cancelCalendar,
+    private val calendarDrainNative: () -> Array<ByteArray> =
+        PlatformProviderNative::drainCalendarEvents,
+    private val contactNativeAvailable: () -> Boolean = { nativeLibraryLoaded },
+    private val contactStartNative: (Int, Int, Int, String) -> LongArray =
+        PlatformProviderNative::contactStart,
+    private val contactCancelNative: (Long) -> Int =
+        PlatformProviderNative::cancelContact,
+    private val contactDrainNative: () -> Array<ByteArray> =
+        PlatformProviderNative::drainContactEvents,
 ) {
     private val logger = Logger.withTag("PlatformProvider")
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -147,10 +241,16 @@ internal class PlatformProviderController(
         CopyOnWriteArrayList<(PlatformNotificationEvent) -> Unit>()
     private val callListeners = CopyOnWriteArrayList<(PlatformCallEvent) -> Unit>()
     private val mediaListeners = CopyOnWriteArrayList<(Int?) -> Unit>()
+    private val calendarChangedListeners = CopyOnWriteArrayList<() -> Unit>()
+    private val contactChangedListeners = CopyOnWriteArrayList<() -> Unit>()
     private val mediaLock = Any()
     private val pendingLocations = mutableMapOf<Long, CompletableDeferred<PlatformLocationQueryResult>>()
+    private val pendingCalendars = mutableMapOf<Long, CompletableDeferred<PlatformCalendarQueryResult>>()
+    private val pendingContacts = mutableMapOf<Long, CompletableDeferred<PlatformContactQueryResult>>()
 
     private var latestMediaVolume: Int? = null
+    private var calendarAvailable = initialSnapshot.domains and CALENDAR_DOMAIN != 0L
+    private var contactsAvailable = initialSnapshot.domains and CONTACTS_DOMAIN != 0L
 
     @Volatile
     private var current = initialSnapshot
@@ -184,6 +284,14 @@ internal class PlatformProviderController(
                 }
             }
         }
+    }
+
+    fun addCalendarChangedListener(listener: () -> Unit) {
+        calendarChangedListeners += listener
+    }
+
+    fun addContactChangedListener(listener: () -> Unit) {
+        contactChangedListeners += listener
     }
 
     fun start() {
@@ -345,6 +453,28 @@ internal class PlatformProviderController(
         if (snapshot.domains and LOCATION_DOMAIN == 0L) {
             retirePendingLocations(STATUS_UNAVAILABLE)
         }
+        val calendarIsAvailable = snapshot.domains and CALENDAR_DOMAIN != 0L
+        if (!calendarIsAvailable) {
+            retirePendingCalendars(STATUS_UNAVAILABLE)
+        } else if (!calendarAvailable) {
+            calendarChangedListeners.forEach { listener ->
+                runCatching(listener).onFailure {
+                    logger.w { "platform calendar listener failed: ${it.message}" }
+                }
+            }
+        }
+        calendarAvailable = calendarIsAvailable
+        val contactsAreAvailable = snapshot.domains and CONTACTS_DOMAIN != 0L
+        if (!contactsAreAvailable) {
+            retirePendingContacts(STATUS_UNAVAILABLE)
+        } else if (!contactsAvailable) {
+            contactChangedListeners.forEach { listener ->
+                runCatching(listener).onFailure {
+                    logger.w { "platform contacts listener failed: ${it.message}" }
+                }
+            }
+        }
+        contactsAvailable = contactsAreAvailable
     }
 
     suspend fun queryLocation(
@@ -411,6 +541,132 @@ internal class PlatformProviderController(
         val pending = pendingLocations.values.toList()
         pendingLocations.clear()
         pending.forEach { it.complete(PlatformLocationQueryResult.Error(status)) }
+    }
+
+    suspend fun queryCalendarPage(
+        kind: Int,
+        maxRecords: Int,
+        offset: Int,
+        startMs: Long = 0,
+        endMs: Long = 0,
+        calendarId: String = "",
+    ): PlatformCalendarQueryResult = withContext(Dispatchers.IO) {
+        val completion = CompletableDeferred<PlatformCalendarQueryResult>()
+        val requestId = lifecycleLock.withLock {
+            if (!calendarNativeAvailable() || current.domains and CALENDAR_DOMAIN == 0L) {
+                return@withContext PlatformCalendarQueryResult.Error(STATUS_UNAVAILABLE)
+            }
+            val started = runCatching {
+                calendarStartNative(kind, maxRecords, offset, startMs, endMs, calendarId)
+            }.getOrElse {
+                logger.w { "platform calendar query failed to start: ${it.message}" }
+                return@withContext PlatformCalendarQueryResult.Error(STATUS_UNAVAILABLE)
+            }
+            if (started.size != CALENDAR_START_FIELD_COUNT ||
+                started[0] !in STATUS_OK.toLong()..STATUS_INTERNAL_ERROR.toLong()) {
+                return@withContext PlatformCalendarQueryResult.Error(STATUS_PROTOCOL_ERROR)
+            }
+            val status = started[0].toInt()
+            val id = started[1]
+            if (status != STATUS_OK) {
+                if (id != 0L) {
+                    return@withContext PlatformCalendarQueryResult.Error(STATUS_PROTOCOL_ERROR)
+                }
+                return@withContext PlatformCalendarQueryResult.Error(status)
+            }
+            if (id <= 0L || pendingCalendars.containsKey(id)) {
+                return@withContext PlatformCalendarQueryResult.Error(STATUS_PROTOCOL_ERROR)
+            }
+            pendingCalendars[id] = completion
+            id
+        }
+
+        try {
+            withTimeoutOrNull(CALENDAR_QUERY_TIMEOUT) { completion.await() }
+                ?: PlatformCalendarQueryResult.Error(STATUS_UNAVAILABLE)
+        } catch (e: CancellationException) {
+            throw e
+        } finally {
+            withContext(NonCancellable) {
+                lifecycleLock.withLock {
+                    if (pendingCalendars.remove(requestId) === completion) {
+                        runCatching { calendarCancelNative(requestId) }
+                            .onFailure {
+                                logger.w { "platform calendar cancellation failed: ${it.message}" }
+                            }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun retirePendingCalendars(status: Int) {
+        if (pendingCalendars.isEmpty()) return
+        val pending = pendingCalendars.values.toList()
+        pendingCalendars.clear()
+        pending.forEach { it.complete(PlatformCalendarQueryResult.Error(status)) }
+    }
+
+    suspend fun queryContactPage(
+        kind: Int,
+        maxRecords: Int,
+        offset: Int,
+        query: String = "",
+    ): PlatformContactQueryResult = withContext(Dispatchers.IO) {
+        val completion = CompletableDeferred<PlatformContactQueryResult>()
+        val requestId = lifecycleLock.withLock {
+            if (!contactNativeAvailable() || current.domains and CONTACTS_DOMAIN == 0L) {
+                return@withContext PlatformContactQueryResult.Error(STATUS_UNAVAILABLE)
+            }
+            val started = runCatching {
+                contactStartNative(kind, maxRecords, offset, query)
+            }.getOrElse {
+                logger.w { "platform contact query failed to start: ${it.message}" }
+                return@withContext PlatformContactQueryResult.Error(STATUS_UNAVAILABLE)
+            }
+            if (started.size != CONTACT_START_FIELD_COUNT ||
+                started[0] !in STATUS_OK.toLong()..STATUS_INTERNAL_ERROR.toLong()) {
+                return@withContext PlatformContactQueryResult.Error(STATUS_PROTOCOL_ERROR)
+            }
+            val status = started[0].toInt()
+            val id = started[1]
+            if (status != STATUS_OK) {
+                if (id != 0L) {
+                    return@withContext PlatformContactQueryResult.Error(STATUS_PROTOCOL_ERROR)
+                }
+                return@withContext PlatformContactQueryResult.Error(status)
+            }
+            if (id <= 0L || pendingContacts.containsKey(id)) {
+                return@withContext PlatformContactQueryResult.Error(STATUS_PROTOCOL_ERROR)
+            }
+            pendingContacts[id] = completion
+            id
+        }
+
+        try {
+            withTimeoutOrNull(CONTACT_QUERY_TIMEOUT) { completion.await() }
+                ?: PlatformContactQueryResult.Error(STATUS_UNAVAILABLE)
+        } catch (e: CancellationException) {
+            throw e
+        } finally {
+            withContext(NonCancellable) {
+                lifecycleLock.withLock {
+                    if (pendingContacts.remove(requestId) === completion) {
+                        runCatching { contactCancelNative(requestId) }
+                            .onFailure {
+                                logger.w { "platform contact cancellation failed: ${it.message}" }
+                            }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun retirePendingContacts(status: Int) {
+        if (pendingContacts.isEmpty()) return
+        val pending = pendingContacts.values.toList()
+        pendingContacts.clear()
+        pending.forEach { it.complete(PlatformContactQueryResult.Error(status)) }
     }
 
     /** Publish a helper-generation boundary before any fallible per-domain drain. */
@@ -506,6 +762,16 @@ internal class PlatformProviderController(
                 retirePendingLocations(STATUS_UNAVAILABLE)
                 return
             }
+            val calendars = runCatching { calendarDrainNative() }.getOrElse {
+                logger.w { "platform calendar drain failed: ${it.message}" }
+                retirePendingCalendars(STATUS_UNAVAILABLE)
+                return
+            }
+            val contacts = runCatching { contactDrainNative() }.getOrElse {
+                logger.w { "platform contact drain failed: ${it.message}" }
+                retirePendingContacts(STATUS_UNAVAILABLE)
+                return
+            }
             if (media.size % MEDIA_FIELD_COUNT != 0) {
                 logger.w { "platform media drain returned malformed data" }
                 return
@@ -516,7 +782,8 @@ internal class PlatformProviderController(
                 return
             }
             if (fieldEvents.isNotEmpty() || notifications.isNotEmpty() ||
-                calls.isNotEmpty() || media.isNotEmpty() || locations.isNotEmpty()) {
+                calls.isNotEmpty() || media.isNotEmpty() || locations.isNotEmpty() ||
+                calendars.isNotEmpty() || contacts.isNotEmpty()) {
                 // Provider callbacks cannot mutate the queues during this
                 // batch. Refresh the authoritative domain mask before
                 // dispatch; a concurrent disconnect has already cleared the
@@ -524,6 +791,8 @@ internal class PlatformProviderController(
                 update(statusNative())
             }
             providerLocationEvents(locations)
+            providerCalendarEvents(calendars)
+            providerContactEvents(contacts)
             fieldEvents.forEach { event ->
                 if (event[0] == PROVIDER_STATUS_EVENT.toLong()) return@forEach
                 if (event[0] != TIME_CHANGED_EVENT.toLong() ||
@@ -735,6 +1004,266 @@ internal class PlatformProviderController(
         )
     }
 
+    internal fun providerCalendarEvents(records: Array<ByteArray>) {
+        records.forEach { record ->
+            when (val event = decodeCalendar(record)) {
+                PlatformCalendarNativeEvent.Changed -> {
+                    if (current.domains and CALENDAR_DOMAIN == 0L) return@forEach
+                    calendarChangedListeners.forEach { listener ->
+                        runCatching(listener).onFailure {
+                            logger.w { "platform calendar listener failed: ${it.message}" }
+                        }
+                    }
+                }
+                is PlatformCalendarNativeEvent.Completed -> {
+                    pendingCalendars.remove(event.requestId)?.complete(event.result)
+                }
+                null -> {
+                    logger.w { "platform calendar drain returned malformed data" }
+                    retirePendingCalendars(STATUS_PROTOCOL_ERROR)
+                }
+            }
+        }
+    }
+
+    private fun decodeCalendar(record: ByteArray): PlatformCalendarNativeEvent? {
+        if (record.size < CALENDAR_PREFIX_SIZE) return null
+        val requestId = record.i64(0) ?: return null
+        val status = record.u32(8)?.toInt() ?: return null
+        val kind = record.u32(12)?.toInt() ?: return null
+        val nextOffset = record.u32(16)?.toInt() ?: return null
+        val calendarCount = record.u32(20)?.toInt() ?: return null
+        val eventCount = record.u32(24)?.toInt() ?: return null
+        val changed = record.u32(28)?.toInt() ?: return null
+        if (status !in STATUS_OK..STATUS_INTERNAL_ERROR ||
+            nextOffset !in 0..CALENDAR_TOTAL_MAX ||
+            calendarCount !in 0..CALENDAR_PAGE_MAX ||
+            eventCount !in 0..CALENDAR_PAGE_MAX) {
+            return null
+        }
+        if (changed == 1) {
+            return if (requestId == 0L && status == STATUS_OK && kind == 0 &&
+                nextOffset == 0 && calendarCount == 0 && eventCount == 0 &&
+                record.size == CALENDAR_PREFIX_SIZE
+            ) PlatformCalendarNativeEvent.Changed else null
+        }
+        if (changed != 0 || requestId <= 0L) return null
+        if (status != STATUS_OK) {
+            return if (kind == 0 && nextOffset == 0 && calendarCount == 0 &&
+                eventCount == 0 && record.size == CALENDAR_PREFIX_SIZE
+            ) {
+                PlatformCalendarNativeEvent.Completed(
+                    requestId,
+                    PlatformCalendarQueryResult.Error(status),
+                )
+            } else null
+        }
+        if ((kind != CALENDAR_QUERY_CALENDARS && kind != CALENDAR_QUERY_EVENTS) ||
+            (kind == CALENDAR_QUERY_CALENDARS && eventCount != 0) ||
+            (kind == CALENDAR_QUERY_EVENTS && calendarCount != 0)) {
+            return null
+        }
+
+        val reader = CalendarReader(record, CALENDAR_PREFIX_SIZE)
+        val calendars = ArrayList<PlatformCalendarRecord>(calendarCount)
+        repeat(calendarCount) {
+            val flags = reader.u32()?.toInt() ?: return null
+            val color = reader.u32()?.toInt() ?: return null
+            val id = reader.string(CALENDAR_ID_MAX, false) ?: return null
+            val name = reader.string(CALENDAR_NAME_MAX, false) ?: return null
+            val ownerName = reader.string(CALENDAR_OWNER_MAX, true) ?: return null
+            val ownerId = reader.string(CALENDAR_OWNER_MAX, true) ?: return null
+            if (flags and CALENDAR_FLAGS.inv() != 0) return null
+            calendars += PlatformCalendarRecord(flags, color, id, name, ownerName, ownerId)
+        }
+        val events = ArrayList<PlatformCalendarEventRecord>(eventCount)
+        repeat(eventCount) {
+            val flags = reader.u32()?.toInt() ?: return null
+            val availability = reader.u32()?.toInt() ?: return null
+            val eventStatus = reader.u32()?.toInt() ?: return null
+            val attendeeCount = reader.u32()?.toInt() ?: return null
+            val reminderCount = reader.u32()?.toInt() ?: return null
+            val startMs = reader.i64() ?: return null
+            val endMs = reader.i64() ?: return null
+            if (flags and CALENDAR_EVENT_FLAGS.inv() != 0 ||
+                availability !in 0..3 || eventStatus !in 0..3 ||
+                attendeeCount !in 0..CALENDAR_ATTENDEE_MAX ||
+                reminderCount !in 0..CALENDAR_REMINDER_MAX || startMs >= endMs) {
+                return null
+            }
+            val id = reader.string(CALENDAR_EVENT_ID_MAX, false) ?: return null
+            val calendarId = reader.string(CALENDAR_ID_MAX, false) ?: return null
+            val baseEventId = reader.string(CALENDAR_EVENT_ID_MAX, false) ?: return null
+            val title = reader.string(CALENDAR_TITLE_MAX, false) ?: return null
+            val description = reader.string(CALENDAR_DESCRIPTION_MAX, true) ?: return null
+            val location = reader.string(CALENDAR_LOCATION_MAX, true) ?: return null
+            val attendees = ArrayList<PlatformCalendarAttendee>(attendeeCount)
+            repeat(attendeeCount) {
+                val attendeeFlags = reader.u32()?.toInt() ?: return null
+                val role = reader.u32()?.toInt() ?: return null
+                val attendanceStatus = reader.u32()?.toInt() ?: return null
+                val attendeeName = reader.string(CALENDAR_OWNER_MAX, true) ?: return null
+                val email = reader.string(CALENDAR_OWNER_MAX, true) ?: return null
+                if (attendeeFlags and CALENDAR_ATTENDEE_FLAGS.inv() != 0 ||
+                    role !in 0..3 || attendanceStatus !in 0..4 ||
+                    attendeeName.isEmpty() && email.isEmpty()) {
+                    return null
+                }
+                attendees += PlatformCalendarAttendee(
+                    attendeeFlags, role, attendanceStatus, attendeeName, email,
+                )
+            }
+            val reminders = ArrayList<Int>(reminderCount)
+            repeat(reminderCount) {
+                val minutes = reader.u32()?.toInt() ?: return null
+                if (minutes !in 0..CALENDAR_REMINDER_MINUTES_MAX) return null
+                reminders += minutes
+            }
+            events += PlatformCalendarEventRecord(
+                flags, availability, eventStatus, startMs, endMs, id, calendarId,
+                baseEventId, title, description, location, attendees, reminders,
+            )
+        }
+        if (!reader.finished()) return null
+        return PlatformCalendarNativeEvent.Completed(
+            requestId,
+            PlatformCalendarQueryResult.Success(
+                PlatformCalendarSnapshot(kind, nextOffset, calendars, events),
+            ),
+        )
+    }
+
+    private inner class CalendarReader(
+        private val data: ByteArray,
+        private var offset: Int,
+    ) {
+        fun u32(): Long? = data.u32(offset)?.also { offset += 4 }
+        fun i64(): Long? = data.i64(offset)?.also { offset += 8 }
+
+        fun string(maximum: Int, allowEmpty: Boolean): String? {
+            val length = u32() ?: return null
+            if (length > maximum.toLong() || length > Int.MAX_VALUE ||
+                length.toInt() > data.size - offset || (!allowEmpty && length == 0L)) {
+                return null
+            }
+            val value = runCatching {
+                UTF8_DECODER.get().reset().decode(
+                    ByteBuffer.wrap(data, offset, length.toInt()),
+                ).toString()
+            }.getOrNull() ?: return null
+            offset += length.toInt()
+            return value.takeIf { '\u0000' !in it }
+        }
+
+        fun finished(): Boolean = offset == data.size
+    }
+
+    internal fun providerContactEvents(records: Array<ByteArray>) {
+        records.forEach { record ->
+            when (val event = decodeContact(record)) {
+                PlatformContactNativeEvent.Changed -> {
+                    if (current.domains and CONTACTS_DOMAIN == 0L) return@forEach
+                    contactChangedListeners.forEach { listener ->
+                        runCatching(listener).onFailure {
+                            logger.w { "platform contact listener failed: ${it.message}" }
+                        }
+                    }
+                }
+                is PlatformContactNativeEvent.Completed -> {
+                    pendingContacts.remove(event.requestId)?.complete(event.result)
+                }
+                null -> {
+                    logger.w { "platform contact drain returned malformed data" }
+                    retirePendingContacts(STATUS_PROTOCOL_ERROR)
+                }
+            }
+        }
+    }
+
+    private fun decodeContact(record: ByteArray): PlatformContactNativeEvent? {
+        if (record.size < CONTACT_PREFIX_SIZE) return null
+        val requestId = record.i64(0) ?: return null
+        val status = record.u32(8)?.toInt() ?: return null
+        val kind = record.u32(12)?.toInt() ?: return null
+        val nextOffset = record.u32(16)?.toInt() ?: return null
+        val count = record.u32(20)?.toInt() ?: return null
+        val changed = record.u32(24)?.toInt() ?: return null
+        if (status !in STATUS_OK..STATUS_INTERNAL_ERROR ||
+            nextOffset !in 0..CONTACT_TOTAL_MAX || count !in 0..CONTACT_PAGE_MAX) {
+            return null
+        }
+        if (changed == 1) {
+            return if (requestId == 0L && status == STATUS_OK && kind == 0 &&
+                nextOffset == 0 && count == 0 && record.size == CONTACT_PREFIX_SIZE
+            ) PlatformContactNativeEvent.Changed else null
+        }
+        if (changed != 0 || requestId <= 0L) return null
+        if (status != STATUS_OK) {
+            return if (kind == 0 && nextOffset == 0 && count == 0 &&
+                record.size == CONTACT_PREFIX_SIZE
+            ) PlatformContactNativeEvent.Completed(
+                requestId, PlatformContactQueryResult.Error(status),
+            ) else null
+        }
+        if (kind != CONTACT_QUERY_LIST && kind != CONTACT_QUERY_PHONE ||
+            kind == CONTACT_QUERY_PHONE && (nextOffset != 0 || count > 1)) {
+            return null
+        }
+        val reader = ContactReader(record, CONTACT_PREFIX_SIZE)
+        val contacts = ArrayList<PlatformContactRecord>(count)
+        repeat(count) {
+            val flags = reader.u32()?.toInt() ?: return null
+            val id = reader.string(CONTACT_ID_MAX, false) ?: return null
+            val name = reader.string(CONTACT_NAME_MAX, false) ?: return null
+            val number = reader.string(CONTACT_NUMBER_MAX, true) ?: return null
+            val avatar = reader.bytes(CONTACT_AVATAR_MAX) ?: return null
+            if (flags != 0) return null
+            contacts += PlatformContactRecord(flags, id, name, number, avatar)
+        }
+        if (!reader.finished()) return null
+        return PlatformContactNativeEvent.Completed(
+            requestId,
+            PlatformContactQueryResult.Success(
+                PlatformContactSnapshot(kind, nextOffset, contacts),
+            ),
+        )
+    }
+
+    private inner class ContactReader(
+        private val data: ByteArray,
+        private var offset: Int,
+    ) {
+        fun u32(): Long? = data.u32(offset)?.also { offset += 4 }
+
+        fun string(maximum: Int, allowEmpty: Boolean): String? {
+            val length = u32() ?: return null
+            if (length > maximum.toLong() || length > Int.MAX_VALUE ||
+                length.toInt() > data.size - offset || (!allowEmpty && length == 0L)) {
+                return null
+            }
+            val value = runCatching {
+                UTF8_DECODER.get().reset().decode(
+                    ByteBuffer.wrap(data, offset, length.toInt()),
+                ).toString()
+            }.getOrNull() ?: return null
+            offset += length.toInt()
+            return value.takeIf { '\u0000' !in it }
+        }
+
+        fun bytes(maximum: Int): ByteArray? {
+            val length = u32() ?: return null
+            if (length > maximum.toLong() || length > Int.MAX_VALUE ||
+                length.toInt() > data.size - offset) {
+                return null
+            }
+            return data.copyOfRange(offset, offset + length.toInt()).also {
+                offset += length.toInt()
+            }
+        }
+
+        fun finished(): Boolean = offset == data.size
+    }
+
     private fun validCallId(value: String): Boolean =
         value.isNotEmpty() && value.length <= CALL_ID_MAX &&
             value.all { it in 'A'..'Z' || it in 'a'..'z' || it in '0'..'9' || it == '_' }
@@ -775,7 +1304,7 @@ internal class PlatformProviderController(
             state = field(0).ifEmpty { "failed" },
             provider = field(1),
             buildId = field(2),
-            abiVersion = field(3).ifEmpty { "1.4" },
+            abiVersion = field(3).ifEmpty { "1.6" },
             domains = field(4).toLongOrNull() ?: 0,
             helperPid = field(5).toLongOrNull() ?: 0,
             error = field(6),
@@ -835,6 +1364,8 @@ internal class PlatformProviderController(
         const val CALLS_DOMAIN = 1L shl 3
         const val MEDIA_DOMAIN = 1L shl 2
         const val LOCATION_DOMAIN = 1L shl 6
+        const val CALENDAR_DOMAIN = 1L shl 4
+        const val CONTACTS_DOMAIN = 1L shl 5
         const val NOTIFICATION_POSTED_EVENT = 2
         const val NOTIFICATION_CLOSED_EVENT = 3
         const val EVENT_FIELD_COUNT = 4
@@ -884,6 +1415,35 @@ internal class PlatformProviderController(
         const val MAX_LATITUDE_E7 = 900_000_000
         const val MIN_LONGITUDE_E7 = -1_800_000_000
         const val MAX_LONGITUDE_E7 = 1_800_000_000
+        const val CALENDAR_QUERY_CALENDARS = 1
+        const val CALENDAR_QUERY_EVENTS = 2
+        const val CALENDAR_START_FIELD_COUNT = 2
+        const val CALENDAR_PREFIX_SIZE = 32
+        const val CALENDAR_PAGE_MAX = 64
+        const val CALENDAR_TOTAL_MAX = 512
+        const val CALENDAR_ID_MAX = 256
+        const val CALENDAR_NAME_MAX = 256
+        const val CALENDAR_OWNER_MAX = 256
+        const val CALENDAR_EVENT_ID_MAX = 256
+        const val CALENDAR_TITLE_MAX = 512
+        const val CALENDAR_DESCRIPTION_MAX = 1024
+        const val CALENDAR_LOCATION_MAX = 512
+        const val CALENDAR_ATTENDEE_MAX = 16
+        const val CALENDAR_REMINDER_MAX = 8
+        const val CALENDAR_REMINDER_MINUTES_MAX = 366 * 24 * 60
+        const val CALENDAR_FLAGS = 0x7
+        const val CALENDAR_EVENT_FLAGS = 0x3
+        const val CALENDAR_ATTENDEE_FLAGS = 0x3
+        const val CONTACT_QUERY_LIST = 1
+        const val CONTACT_QUERY_PHONE = 2
+        const val CONTACT_START_FIELD_COUNT = 2
+        const val CONTACT_PREFIX_SIZE = 28
+        const val CONTACT_PAGE_MAX = 64
+        const val CONTACT_TOTAL_MAX = 4096
+        const val CONTACT_ID_MAX = 256
+        const val CONTACT_NAME_MAX = 256
+        const val CONTACT_NUMBER_MAX = 256
+        const val CONTACT_AVATAR_MAX = 16 * 1024
         private val NOTIFICATION_STRING_MAX_BYTES = longArrayOf(
             NOTIFICATION_ID_MAX.toLong(),
             NOTIFICATION_ID_MAX.toLong(),
@@ -900,6 +1460,8 @@ internal class PlatformProviderController(
         val PLATFORM_RESTART_TIMEOUT = 10.seconds
         val PLATFORM_RESTART_POLL_INTERVAL = 100.milliseconds
         val LOCATION_COMPLETION_GRACE = 1.seconds
+        val CALENDAR_QUERY_TIMEOUT = 10.seconds
+        val CONTACT_QUERY_TIMEOUT = 10.seconds
         private val UTF8_DECODER = ThreadLocal.withInitial {
             Charsets.UTF_8.newDecoder()
                 .onMalformedInput(CodingErrorAction.REPORT)
@@ -954,6 +1516,36 @@ internal object PlatformProviderNative {
 
     @JvmStatic
     external fun drainLocationEvents(): LongArray
+
+    @JvmStatic
+    external fun calendarStart(
+        kind: Int,
+        maxRecords: Int,
+        offset: Int,
+        startMs: Long,
+        endMs: Long,
+        calendarId: String,
+    ): LongArray
+
+    @JvmStatic
+    external fun cancelCalendar(requestId: Long): Int
+
+    @JvmStatic
+    external fun drainCalendarEvents(): Array<ByteArray>
+
+    @JvmStatic
+    external fun contactStart(
+        kind: Int,
+        maxRecords: Int,
+        offset: Int,
+        query: String,
+    ): LongArray
+
+    @JvmStatic
+    external fun cancelContact(requestId: Long): Int
+
+    @JvmStatic
+    external fun drainContactEvents(): Array<ByteArray>
 
     @JvmStatic
     external fun notificationCommand(command: Int, id: String): Int

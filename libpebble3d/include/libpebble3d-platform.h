@@ -21,7 +21,7 @@ extern "C" {
 #endif
 
 #define LP3_PLATFORM_ABI_MAJOR 1u
-#define LP3_PLATFORM_ABI_MINOR 4u
+#define LP3_PLATFORM_ABI_MINOR 6u
 
 #define LP3_PLATFORM_NOTIFICATION_ID_MAX 64u
 #define LP3_PLATFORM_NOTIFICATION_APPLICATION_ID_MAX 256u
@@ -35,6 +35,21 @@ extern "C" {
 #define LP3_PLATFORM_CALL_ID_MAX 128u
 #define LP3_PLATFORM_CALL_NAME_MAX 256u
 #define LP3_PLATFORM_CALL_NUMBER_MAX 256u
+#define LP3_PLATFORM_CALENDAR_ID_MAX 256u
+#define LP3_PLATFORM_CALENDAR_NAME_MAX 256u
+#define LP3_PLATFORM_CALENDAR_OWNER_MAX 256u
+#define LP3_PLATFORM_CALENDAR_EVENT_ID_MAX 256u
+#define LP3_PLATFORM_CALENDAR_TITLE_MAX 512u
+#define LP3_PLATFORM_CALENDAR_DESCRIPTION_MAX 1024u
+#define LP3_PLATFORM_CALENDAR_LOCATION_MAX 512u
+#define LP3_PLATFORM_CALENDAR_ATTENDEE_MAX 16u
+#define LP3_PLATFORM_CALENDAR_REMINDER_MAX 8u
+#define LP3_PLATFORM_CALENDAR_PAGE_MAX 64u
+#define LP3_PLATFORM_CONTACT_ID_MAX 256u
+#define LP3_PLATFORM_CONTACT_NAME_MAX 256u
+#define LP3_PLATFORM_CONTACT_NUMBER_MAX 256u
+#define LP3_PLATFORM_CONTACT_AVATAR_MAX (16u * 1024u)
+#define LP3_PLATFORM_CONTACT_PAGE_MAX 64u
 
 enum lp3_platform_status {
     LP3_PLATFORM_OK = 0,
@@ -183,6 +198,50 @@ struct lp3_platform_calendar_query_v1 {
     uint32_t max_records;
     int64_t start_ms;
     int64_t end_ms;
+    uint32_t kind;
+    uint32_t offset;
+    struct lp3_platform_string calendar_id;
+};
+
+enum lp3_platform_calendar_query_kind {
+    LP3_PLATFORM_CALENDAR_QUERY_CALENDARS = 1,
+    LP3_PLATFORM_CALENDAR_QUERY_EVENTS = 2
+};
+
+enum lp3_platform_calendar_flag {
+    LP3_PLATFORM_CALENDAR_VISIBLE = 1u << 0,
+    LP3_PLATFORM_CALENDAR_ENABLED = 1u << 1,
+    LP3_PLATFORM_CALENDAR_SYNC_EVENTS = 1u << 2
+};
+
+enum lp3_platform_calendar_event_flag {
+    LP3_PLATFORM_CALENDAR_EVENT_ALL_DAY = 1u << 0,
+    LP3_PLATFORM_CALENDAR_EVENT_RECURS = 1u << 1
+};
+
+enum lp3_platform_calendar_attendee_flag {
+    LP3_PLATFORM_CALENDAR_ATTENDEE_ORGANIZER = 1u << 0,
+    LP3_PLATFORM_CALENDAR_ATTENDEE_CURRENT_USER = 1u << 1
+};
+
+struct lp3_platform_calendar_v1 {
+    uint32_t struct_size;
+    uint32_t flags;
+    uint32_t color_argb;
+    uint32_t reserved;
+    struct lp3_platform_string id;
+    struct lp3_platform_string name;
+    struct lp3_platform_string owner_name;
+    struct lp3_platform_string owner_id;
+};
+
+struct lp3_platform_calendar_attendee_v1 {
+    uint32_t struct_size;
+    uint32_t flags;
+    uint32_t role;
+    uint32_t status;
+    struct lp3_platform_string name;
+    struct lp3_platform_string email;
 };
 
 struct lp3_platform_calendar_event_v1 {
@@ -193,12 +252,39 @@ struct lp3_platform_calendar_event_v1 {
     struct lp3_platform_string id;
     struct lp3_platform_string title;
     struct lp3_platform_string location;
+    uint32_t availability;
+    uint32_t status;
+    struct lp3_platform_string calendar_id;
+    struct lp3_platform_string base_event_id;
+    struct lp3_platform_string description;
+    uint32_t attendee_count;
+    const struct lp3_platform_calendar_attendee_v1 *attendees;
+    uint32_t reminder_count;
+    const int32_t *reminder_minutes;
+};
+
+struct lp3_platform_calendar_snapshot_v1 {
+    uint32_t struct_size;
+    uint32_t kind;
+    uint32_t next_offset;
+    uint32_t calendar_count;
+    const struct lp3_platform_calendar_v1 *calendars;
+    uint32_t event_count;
+    const struct lp3_platform_calendar_event_v1 *events;
 };
 
 struct lp3_platform_contact_query_v1 {
     uint32_t struct_size;
     uint32_t max_records;
     struct lp3_platform_string query;
+    /* Added in ABI 1.6. */
+    uint32_t kind;
+    uint32_t offset;
+};
+
+enum lp3_platform_contact_query_kind {
+    LP3_PLATFORM_CONTACT_QUERY_LIST = 1,
+    LP3_PLATFORM_CONTACT_QUERY_PHONE = 2
 };
 
 struct lp3_platform_contact_v1 {
@@ -208,6 +294,14 @@ struct lp3_platform_contact_v1 {
     struct lp3_platform_string display_name;
     struct lp3_platform_string phone_number;
     struct lp3_platform_bytes avatar;
+};
+
+struct lp3_platform_contact_snapshot_v1 {
+    uint32_t struct_size;
+    uint32_t kind;
+    uint32_t next_offset;
+    uint32_t contact_count;
+    const struct lp3_platform_contact_v1 *contacts;
 };
 
 struct lp3_platform_location_request_v1 {
@@ -296,6 +390,10 @@ struct lp3_platform_event_v1 {
     const struct lp3_platform_device_state_v1 *device_state;
     const struct lp3_platform_profile_v1 *profile;
     const struct lp3_platform_provider_status_v1 *provider_status;
+    /* Added in ABI 1.5. One bounded snapshot completes a calendar query. */
+    const struct lp3_platform_calendar_snapshot_v1 *calendar_snapshot;
+    /* Added in ABI 1.6. One bounded snapshot completes a contact query. */
+    const struct lp3_platform_contact_snapshot_v1 *contact_snapshot;
 };
 
 struct lp3_platform_provider_info_v1 {

@@ -20,7 +20,7 @@
 namespace lp3wire {
 
 static const uint16_t kMajor = 1;
-static const uint16_t kMinor = 5;
+static const uint16_t kMinor = 7;
 static const size_t kHeaderSize = 24;
 static const size_t kMaxFrameSize = 64 * 1024;
 
@@ -43,6 +43,8 @@ enum Operation {
     MediaCommand = 4,
     MessageReply = 5,
     LocationQuery = 6,
+    CalendarQuery = 7,
+    ContactQuery = 8,
 };
 
 enum EventType {
@@ -51,6 +53,8 @@ enum EventType {
     NotificationClosed = 3,
     CallChanged = 4,
     MediaVolumeChanged = 5,
+    CalendarChanged = 6,
+    ContactChanged = 7,
 };
 
 enum NotificationFlag {
@@ -91,6 +95,8 @@ enum Domain {
     DomainMessaging = 1u << 1,
     DomainMedia = 1u << 2,
     DomainCalls = 1u << 3,
+    DomainCalendar = 1u << 4,
+    DomainContacts = 1u << 5,
     DomainLocation = 1u << 6,
     DomainTime = 1u << 7,
 };
@@ -172,6 +178,102 @@ struct LocationData {
     int64_t timestampMs;
 };
 
+enum CalendarQueryKind {
+    CalendarQueryCalendars = 1,
+    CalendarQueryEvents = 2,
+};
+
+enum CalendarFlag {
+    CalendarVisible = 1u << 0,
+    CalendarEnabled = 1u << 1,
+    CalendarSyncEvents = 1u << 2,
+};
+
+enum CalendarEventFlag {
+    CalendarEventAllDay = 1u << 0,
+    CalendarEventRecurs = 1u << 1,
+};
+
+enum CalendarAttendeeFlag {
+    CalendarAttendeeOrganizer = 1u << 0,
+    CalendarAttendeeCurrentUser = 1u << 1,
+};
+
+struct CalendarQueryData {
+    uint32_t kind;
+    uint32_t maxRecords;
+    uint32_t offset;
+    int64_t startMs;
+    int64_t endMs;
+    std::string calendarId;
+};
+
+struct CalendarData {
+    uint32_t flags;
+    uint32_t colorArgb;
+    std::string id;
+    std::string name;
+    std::string ownerName;
+    std::string ownerId;
+};
+
+struct CalendarAttendeeData {
+    uint32_t flags;
+    uint32_t role;
+    uint32_t status;
+    std::string name;
+    std::string email;
+};
+
+struct CalendarEventData {
+    uint32_t flags;
+    uint32_t availability;
+    uint32_t status;
+    int64_t startMs;
+    int64_t endMs;
+    std::string id;
+    std::string calendarId;
+    std::string baseEventId;
+    std::string title;
+    std::string description;
+    std::string location;
+    std::vector<CalendarAttendeeData> attendees;
+    std::vector<int32_t> reminderMinutes;
+};
+
+struct CalendarReplyData {
+    uint32_t kind;
+    uint32_t nextOffset;
+    std::vector<CalendarData> calendars;
+    std::vector<CalendarEventData> events;
+};
+
+enum ContactQueryKind {
+    ContactQueryList = 1,
+    ContactQueryPhone = 2,
+};
+
+struct ContactQueryData {
+    uint32_t kind;
+    uint32_t maxRecords;
+    uint32_t offset;
+    std::string query;
+};
+
+struct ContactData {
+    uint32_t flags;
+    std::string id;
+    std::string displayName;
+    std::string phoneNumber;
+    std::vector<uint8_t> avatar;
+};
+
+struct ContactReplyData {
+    uint32_t kind;
+    uint32_t nextOffset;
+    std::vector<ContactData> contacts;
+};
+
 struct HealthState {
     uint64_t readyDomains;
     uint64_t degradedDomains;
@@ -193,6 +295,25 @@ static const size_t kCallNumberMax = 256;
 static const uint32_t kLocationCoarse = 1;
 static const uint32_t kLocationFine = 2;
 static const uint32_t kLocationTimeoutMaxMs = 30000;
+static const uint32_t kCalendarPageMax = 64;
+static const uint32_t kCalendarTotalMax = 512;
+static const uint32_t kCalendarAttendeeMax = 16;
+static const uint32_t kCalendarReminderMax = 8;
+static const int64_t kCalendarRangeMaxMs = INT64_C(370) * 24 * 60 * 60 * 1000;
+static const size_t kCalendarIdMax = 256;
+static const size_t kCalendarNameMax = 256;
+static const size_t kCalendarOwnerMax = 256;
+static const size_t kCalendarEventIdMax = 256;
+static const size_t kCalendarTitleMax = 512;
+static const size_t kCalendarDescriptionMax = 1024;
+static const size_t kCalendarLocationMax = 512;
+static const size_t kCalendarAttendeeTextMax = 256;
+static const uint32_t kContactPageMax = 64;
+static const uint32_t kContactTotalMax = 4096;
+static const size_t kContactIdMax = 256;
+static const size_t kContactNameMax = 256;
+static const size_t kContactNumberMax = 256;
+static const size_t kContactAvatarMax = 16 * 1024;
 
 inline void put16(uint8_t *data, uint16_t value) {
     data[0] = static_cast<uint8_t>(value & 0xff);
@@ -236,8 +357,8 @@ inline bool validStatus(uint32_t status);
 
 inline bool validHealthState(const HealthState &health) {
     const uint64_t supported = DomainNotifications | DomainMessaging |
-                               DomainMedia | DomainCalls | DomainLocation |
-                               DomainTime;
+                               DomainMedia | DomainCalls | DomainCalendar |
+                               DomainContacts | DomainLocation | DomainTime;
     return ((health.readyDomains | health.degradedDomains |
              health.failedDomains) & ~supported) == 0 &&
            (health.readyDomains & health.degradedDomains) == 0 &&
@@ -912,6 +1033,511 @@ inline bool decodeLocationReply(const std::vector<uint8_t> &payload,
     *status = decodedStatus;
     *location = decoded;
     return true;
+}
+
+inline bool validCalendarKind(uint32_t kind) {
+    return kind == CalendarQueryCalendars || kind == CalendarQueryEvents;
+}
+
+inline bool validCalendarQuery(const CalendarQueryData &query) {
+    if (!validCalendarKind(query.kind) || query.maxRecords == 0 ||
+        query.maxRecords > kCalendarPageMax || query.offset > kCalendarTotalMax) {
+        return false;
+    }
+    if (query.kind == CalendarQueryCalendars) {
+        return query.startMs == 0 && query.endMs == 0 &&
+               query.calendarId.empty();
+    }
+    if (!validText(query.calendarId, kCalendarIdMax, false) ||
+        query.startMs >= query.endMs) {
+        return false;
+    }
+    return static_cast<uint64_t>(query.endMs) -
+               static_cast<uint64_t>(query.startMs) <=
+           static_cast<uint64_t>(kCalendarRangeMaxMs);
+}
+
+inline bool validCalendar(const CalendarData &calendar) {
+    return (calendar.flags & ~(CalendarVisible | CalendarEnabled |
+                               CalendarSyncEvents)) == 0 &&
+           validText(calendar.id, kCalendarIdMax, false) &&
+           validText(calendar.name, kCalendarNameMax, false) &&
+           validText(calendar.ownerName, kCalendarOwnerMax) &&
+           validText(calendar.ownerId, kCalendarOwnerMax);
+}
+
+inline bool validCalendarAttendee(const CalendarAttendeeData &attendee) {
+    return (attendee.flags & ~(CalendarAttendeeOrganizer |
+                               CalendarAttendeeCurrentUser)) == 0 &&
+           attendee.role <= 3 && attendee.status <= 4 &&
+           validText(attendee.name, kCalendarAttendeeTextMax) &&
+           validText(attendee.email, kCalendarAttendeeTextMax) &&
+           (!attendee.name.empty() || !attendee.email.empty());
+}
+
+inline bool validCalendarEvent(const CalendarEventData &event) {
+    if ((event.flags & ~(CalendarEventAllDay | CalendarEventRecurs)) != 0 ||
+        event.availability > 3 || event.status > 3 ||
+        event.startMs >= event.endMs ||
+        !validText(event.id, kCalendarEventIdMax, false) ||
+        !validText(event.calendarId, kCalendarIdMax, false) ||
+        !validText(event.baseEventId, kCalendarEventIdMax, false) ||
+        !validText(event.title, kCalendarTitleMax, false) ||
+        !validText(event.description, kCalendarDescriptionMax) ||
+        !validText(event.location, kCalendarLocationMax) ||
+        event.attendees.size() > kCalendarAttendeeMax ||
+        event.reminderMinutes.size() > kCalendarReminderMax) {
+        return false;
+    }
+    for (size_t index = 0; index < event.attendees.size(); ++index) {
+        if (!validCalendarAttendee(event.attendees[index])) {
+            return false;
+        }
+    }
+    for (size_t index = 0; index < event.reminderMinutes.size(); ++index) {
+        if (event.reminderMinutes[index] < 0 ||
+            event.reminderMinutes[index] > 366 * 24 * 60) {
+            return false;
+        }
+    }
+    return true;
+}
+
+inline bool encodeCalendarQuery(const CalendarQueryData &query,
+                                std::vector<uint8_t> *payload) {
+    if (payload == NULL || !validCalendarQuery(query)) {
+        return false;
+    }
+    payload->assign(36, 0);
+    put16(&(*payload)[0], CalendarQuery);
+    put32(&(*payload)[4], query.kind);
+    put32(&(*payload)[8], query.maxRecords);
+    put32(&(*payload)[12], query.offset);
+    put64(&(*payload)[16], static_cast<uint64_t>(query.startMs));
+    put64(&(*payload)[24], static_cast<uint64_t>(query.endMs));
+    put32(&(*payload)[32], static_cast<uint32_t>(query.calendarId.size()));
+    appendText(payload, query.calendarId);
+    return payload->size() <= kMaxFrameSize - kHeaderSize;
+}
+
+inline bool decodeCalendarQuery(const std::vector<uint8_t> &payload,
+                                CalendarQueryData *query) {
+    CalendarQueryData decoded;
+    size_t offset = 36;
+    if (query == NULL || payload.size() < offset ||
+        get16(&payload[0]) != CalendarQuery || get16(&payload[2]) != 0) {
+        return false;
+    }
+    decoded.kind = get32(&payload[4]);
+    decoded.maxRecords = get32(&payload[8]);
+    decoded.offset = get32(&payload[12]);
+    decoded.startMs = static_cast<int64_t>(get64(&payload[16]));
+    decoded.endMs = static_cast<int64_t>(get64(&payload[24]));
+    if (!readText(payload, &offset, get32(&payload[32]), &decoded.calendarId) ||
+        offset != payload.size() || !validCalendarQuery(decoded)) {
+        return false;
+    }
+    *query = decoded;
+    return true;
+}
+
+inline bool appendCalendar(std::vector<uint8_t> *payload,
+                           const CalendarData &calendar) {
+    const size_t base = payload->size();
+    if (!validCalendar(calendar)) {
+        return false;
+    }
+    payload->resize(base + 24, 0);
+    put32(&(*payload)[base], calendar.flags);
+    put32(&(*payload)[base + 4], calendar.colorArgb);
+    put32(&(*payload)[base + 8], static_cast<uint32_t>(calendar.id.size()));
+    put32(&(*payload)[base + 12], static_cast<uint32_t>(calendar.name.size()));
+    put32(&(*payload)[base + 16], static_cast<uint32_t>(calendar.ownerName.size()));
+    put32(&(*payload)[base + 20], static_cast<uint32_t>(calendar.ownerId.size()));
+    appendText(payload, calendar.id);
+    appendText(payload, calendar.name);
+    appendText(payload, calendar.ownerName);
+    appendText(payload, calendar.ownerId);
+    return payload->size() <= kMaxFrameSize - kHeaderSize;
+}
+
+inline bool readCalendar(const std::vector<uint8_t> &payload, size_t *offset,
+                         CalendarData *calendar) {
+    CalendarData decoded;
+    if (offset == NULL || calendar == NULL || *offset > payload.size() ||
+        payload.size() - *offset < 24) {
+        return false;
+    }
+    const size_t base = *offset;
+    decoded.flags = get32(&payload[base]);
+    decoded.colorArgb = get32(&payload[base + 4]);
+    *offset += 24;
+    if (!readText(payload, offset, get32(&payload[base + 8]), &decoded.id) ||
+        !readText(payload, offset, get32(&payload[base + 12]), &decoded.name) ||
+        !readText(payload, offset, get32(&payload[base + 16]), &decoded.ownerName) ||
+        !readText(payload, offset, get32(&payload[base + 20]), &decoded.ownerId) ||
+        !validCalendar(decoded)) {
+        return false;
+    }
+    *calendar = decoded;
+    return true;
+}
+
+inline bool appendCalendarEvent(std::vector<uint8_t> *payload,
+                                const CalendarEventData &event) {
+    const size_t base = payload->size();
+    if (!validCalendarEvent(event)) {
+        return false;
+    }
+    payload->resize(base + 60, 0);
+    put32(&(*payload)[base], event.flags);
+    put32(&(*payload)[base + 4], event.availability);
+    put32(&(*payload)[base + 8], event.status);
+    put32(&(*payload)[base + 12], static_cast<uint32_t>(event.attendees.size()));
+    put32(&(*payload)[base + 16], static_cast<uint32_t>(event.reminderMinutes.size()));
+    const std::string *strings[] = {
+        &event.id, &event.calendarId, &event.baseEventId,
+        &event.title, &event.description, &event.location,
+    };
+    for (size_t index = 0; index < 6; ++index) {
+        put32(&(*payload)[base + 20 + index * 4],
+              static_cast<uint32_t>(strings[index]->size()));
+    }
+    put64(&(*payload)[base + 44], static_cast<uint64_t>(event.startMs));
+    put64(&(*payload)[base + 52], static_cast<uint64_t>(event.endMs));
+    for (size_t index = 0; index < 6; ++index) {
+        appendText(payload, *strings[index]);
+    }
+    for (size_t index = 0; index < event.attendees.size(); ++index) {
+        const CalendarAttendeeData &attendee = event.attendees[index];
+        const size_t attendeeBase = payload->size();
+        payload->resize(attendeeBase + 20, 0);
+        put32(&(*payload)[attendeeBase], attendee.flags);
+        put32(&(*payload)[attendeeBase + 4], attendee.role);
+        put32(&(*payload)[attendeeBase + 8], attendee.status);
+        put32(&(*payload)[attendeeBase + 12], static_cast<uint32_t>(attendee.name.size()));
+        put32(&(*payload)[attendeeBase + 16], static_cast<uint32_t>(attendee.email.size()));
+        appendText(payload, attendee.name);
+        appendText(payload, attendee.email);
+    }
+    for (size_t index = 0; index < event.reminderMinutes.size(); ++index) {
+        const size_t reminderBase = payload->size();
+        payload->resize(reminderBase + 4, 0);
+        put32(&(*payload)[reminderBase],
+              static_cast<uint32_t>(event.reminderMinutes[index]));
+    }
+    return payload->size() <= kMaxFrameSize - kHeaderSize;
+}
+
+inline bool readCalendarEvent(const std::vector<uint8_t> &payload,
+                              size_t *offset, CalendarEventData *event) {
+    CalendarEventData decoded;
+    if (offset == NULL || event == NULL || *offset > payload.size() ||
+        payload.size() - *offset < 60) {
+        return false;
+    }
+    const size_t base = *offset;
+    decoded.flags = get32(&payload[base]);
+    decoded.availability = get32(&payload[base + 4]);
+    decoded.status = get32(&payload[base + 8]);
+    const uint32_t attendeeCount = get32(&payload[base + 12]);
+    const uint32_t reminderCount = get32(&payload[base + 16]);
+    decoded.startMs = static_cast<int64_t>(get64(&payload[base + 44]));
+    decoded.endMs = static_cast<int64_t>(get64(&payload[base + 52]));
+    *offset += 60;
+    std::string *strings[] = {
+        &decoded.id, &decoded.calendarId, &decoded.baseEventId,
+        &decoded.title, &decoded.description, &decoded.location,
+    };
+    for (size_t index = 0; index < 6; ++index) {
+        if (!readText(payload, offset, get32(&payload[base + 20 + index * 4]),
+                      strings[index])) {
+            return false;
+        }
+    }
+    if (attendeeCount > kCalendarAttendeeMax ||
+        reminderCount > kCalendarReminderMax) {
+        return false;
+    }
+    for (uint32_t index = 0; index < attendeeCount; ++index) {
+        if (*offset > payload.size() || payload.size() - *offset < 20) {
+            return false;
+        }
+        const size_t attendeeBase = *offset;
+        CalendarAttendeeData attendee;
+        attendee.flags = get32(&payload[attendeeBase]);
+        attendee.role = get32(&payload[attendeeBase + 4]);
+        attendee.status = get32(&payload[attendeeBase + 8]);
+        *offset += 20;
+        if (!readText(payload, offset, get32(&payload[attendeeBase + 12]),
+                      &attendee.name) ||
+            !readText(payload, offset, get32(&payload[attendeeBase + 16]),
+                      &attendee.email) || !validCalendarAttendee(attendee)) {
+            return false;
+        }
+        decoded.attendees.push_back(attendee);
+    }
+    for (uint32_t index = 0; index < reminderCount; ++index) {
+        if (*offset > payload.size() || payload.size() - *offset < 4) {
+            return false;
+        }
+        decoded.reminderMinutes.push_back(
+            static_cast<int32_t>(get32(&payload[*offset])));
+        *offset += 4;
+    }
+    if (!validCalendarEvent(decoded)) {
+        return false;
+    }
+    *event = decoded;
+    return true;
+}
+
+inline bool encodeCalendarReply(uint32_t status,
+                                const CalendarReplyData &reply,
+                                std::vector<uint8_t> *payload) {
+    if (payload == NULL || !validStatus(status) ||
+        !validCalendarKind(reply.kind) || reply.nextOffset > kCalendarTotalMax ||
+        (status != 0 && (reply.nextOffset != 0 || !reply.calendars.empty() ||
+                         !reply.events.empty())) ||
+        (reply.kind == CalendarQueryCalendars && !reply.events.empty()) ||
+        (reply.kind == CalendarQueryEvents && !reply.calendars.empty())) {
+        return false;
+    }
+    const size_t count = reply.kind == CalendarQueryCalendars ?
+        reply.calendars.size() : reply.events.size();
+    if (count > kCalendarPageMax) {
+        return false;
+    }
+    payload->assign(20, 0);
+    put16(&(*payload)[0], CalendarQuery);
+    put32(&(*payload)[4], status);
+    put32(&(*payload)[8], reply.kind);
+    put32(&(*payload)[12], reply.nextOffset);
+    put32(&(*payload)[16], static_cast<uint32_t>(count));
+    for (size_t index = 0; index < count; ++index) {
+        const bool encoded = reply.kind == CalendarQueryCalendars ?
+            appendCalendar(payload, reply.calendars[index]) :
+            appendCalendarEvent(payload, reply.events[index]);
+        if (!encoded) {
+            return false;
+        }
+    }
+    return payload->size() <= kMaxFrameSize - kHeaderSize;
+}
+
+inline bool decodeCalendarReply(const std::vector<uint8_t> &payload,
+                                uint32_t *status, CalendarReplyData *reply) {
+    CalendarReplyData decoded;
+    if (status == NULL || reply == NULL || payload.size() < 20 ||
+        get16(&payload[0]) != CalendarQuery || get16(&payload[2]) != 0 ||
+        !validStatus(get32(&payload[4]))) {
+        return false;
+    }
+    const uint32_t decodedStatus = get32(&payload[4]);
+    decoded.kind = get32(&payload[8]);
+    decoded.nextOffset = get32(&payload[12]);
+    const uint32_t count = get32(&payload[16]);
+    if (!validCalendarKind(decoded.kind) || count > kCalendarPageMax ||
+        decoded.nextOffset > kCalendarTotalMax) {
+        return false;
+    }
+    size_t offset = 20;
+    for (uint32_t index = 0; index < count; ++index) {
+        if (decoded.kind == CalendarQueryCalendars) {
+            CalendarData calendar;
+            if (!readCalendar(payload, &offset, &calendar)) return false;
+            decoded.calendars.push_back(calendar);
+        } else {
+            CalendarEventData event;
+            if (!readCalendarEvent(payload, &offset, &event)) return false;
+            decoded.events.push_back(event);
+        }
+    }
+    if (offset != payload.size() ||
+        (decodedStatus != 0 && (count != 0 || decoded.nextOffset != 0))) {
+        return false;
+    }
+    *status = decodedStatus;
+    *reply = decoded;
+    return true;
+}
+
+inline bool encodeCalendarChanged(std::vector<uint8_t> *payload) {
+    if (payload == NULL) return false;
+    payload->assign(4, 0);
+    put16(&(*payload)[0], CalendarChanged);
+    return true;
+}
+
+inline bool decodeCalendarChanged(const std::vector<uint8_t> &payload) {
+    return payload.size() == 4 && get16(&payload[0]) == CalendarChanged &&
+           get16(&payload[2]) == 0;
+}
+
+inline bool validContactKind(uint32_t kind) {
+    return kind == ContactQueryList || kind == ContactQueryPhone;
+}
+
+inline bool validContactQuery(const ContactQueryData &query) {
+    if (!validContactKind(query.kind) || query.maxRecords == 0 ||
+        query.maxRecords > kContactPageMax || query.offset > kContactTotalMax ||
+        !validText(query.query, kContactNumberMax)) {
+        return false;
+    }
+    if (query.kind == ContactQueryList) {
+        return query.query.empty();
+    }
+    return query.maxRecords == 1 && query.offset == 0 && !query.query.empty();
+}
+
+inline bool validContact(const ContactData &contact) {
+    return contact.flags == 0 &&
+           validText(contact.id, kContactIdMax, false) &&
+           validText(contact.displayName, kContactNameMax, false) &&
+           validText(contact.phoneNumber, kContactNumberMax) &&
+           contact.avatar.size() <= kContactAvatarMax;
+}
+
+inline bool encodeContactQuery(const ContactQueryData &query,
+                               std::vector<uint8_t> *payload) {
+    if (payload == NULL || !validContactQuery(query)) return false;
+    payload->assign(20, 0);
+    put16(&(*payload)[0], ContactQuery);
+    put32(&(*payload)[4], query.kind);
+    put32(&(*payload)[8], query.maxRecords);
+    put32(&(*payload)[12], query.offset);
+    put32(&(*payload)[16], static_cast<uint32_t>(query.query.size()));
+    appendText(payload, query.query);
+    return payload->size() <= kMaxFrameSize - kHeaderSize;
+}
+
+inline bool decodeContactQuery(const std::vector<uint8_t> &payload,
+                               ContactQueryData *query) {
+    ContactQueryData decoded;
+    size_t offset = 20;
+    if (query == NULL || payload.size() < offset ||
+        get16(&payload[0]) != ContactQuery || get16(&payload[2]) != 0) {
+        return false;
+    }
+    decoded.kind = get32(&payload[4]);
+    decoded.maxRecords = get32(&payload[8]);
+    decoded.offset = get32(&payload[12]);
+    if (!readText(payload, &offset, get32(&payload[16]), &decoded.query) ||
+        offset != payload.size() || !validContactQuery(decoded)) {
+        return false;
+    }
+    *query = decoded;
+    return true;
+}
+
+inline bool appendContact(std::vector<uint8_t> *payload,
+                          const ContactData &contact) {
+    const size_t base = payload->size();
+    if (!validContact(contact)) return false;
+    payload->resize(base + 20, 0);
+    put32(&(*payload)[base], contact.flags);
+    put32(&(*payload)[base + 4], static_cast<uint32_t>(contact.id.size()));
+    put32(&(*payload)[base + 8], static_cast<uint32_t>(contact.displayName.size()));
+    put32(&(*payload)[base + 12], static_cast<uint32_t>(contact.phoneNumber.size()));
+    put32(&(*payload)[base + 16], static_cast<uint32_t>(contact.avatar.size()));
+    appendText(payload, contact.id);
+    appendText(payload, contact.displayName);
+    appendText(payload, contact.phoneNumber);
+    payload->insert(payload->end(), contact.avatar.begin(), contact.avatar.end());
+    return payload->size() <= kMaxFrameSize - kHeaderSize;
+}
+
+inline bool readContact(const std::vector<uint8_t> &payload, size_t *offset,
+                        ContactData *contact) {
+    ContactData decoded;
+    if (offset == NULL || contact == NULL || *offset > payload.size() ||
+        payload.size() - *offset < 20) {
+        return false;
+    }
+    const size_t base = *offset;
+    decoded.flags = get32(&payload[base]);
+    const uint32_t avatarSize = get32(&payload[base + 16]);
+    *offset += 20;
+    if (!readText(payload, offset, get32(&payload[base + 4]), &decoded.id) ||
+        !readText(payload, offset, get32(&payload[base + 8]), &decoded.displayName) ||
+        !readText(payload, offset, get32(&payload[base + 12]), &decoded.phoneNumber) ||
+        avatarSize > kContactAvatarMax || *offset > payload.size() ||
+        avatarSize > payload.size() - *offset) {
+        return false;
+    }
+    decoded.avatar.assign(payload.begin() + *offset,
+                          payload.begin() + *offset + avatarSize);
+    *offset += avatarSize;
+    if (!validContact(decoded)) return false;
+    *contact = decoded;
+    return true;
+}
+
+inline bool encodeContactReply(uint32_t status, const ContactReplyData &reply,
+                               std::vector<uint8_t> *payload) {
+    if (payload == NULL || !validStatus(status) ||
+        !validContactKind(reply.kind) || reply.nextOffset > kContactTotalMax ||
+        reply.contacts.size() > kContactPageMax ||
+        (status != 0 && (reply.nextOffset != 0 || !reply.contacts.empty())) ||
+        (reply.kind == ContactQueryPhone &&
+         (reply.nextOffset != 0 || reply.contacts.size() > 1))) {
+        return false;
+    }
+    payload->assign(20, 0);
+    put16(&(*payload)[0], ContactQuery);
+    put32(&(*payload)[4], status);
+    put32(&(*payload)[8], reply.kind);
+    put32(&(*payload)[12], reply.nextOffset);
+    put32(&(*payload)[16], static_cast<uint32_t>(reply.contacts.size()));
+    for (size_t index = 0; index < reply.contacts.size(); ++index) {
+        if (!appendContact(payload, reply.contacts[index])) return false;
+    }
+    return payload->size() <= kMaxFrameSize - kHeaderSize;
+}
+
+inline bool decodeContactReply(const std::vector<uint8_t> &payload,
+                               uint32_t *status, ContactReplyData *reply) {
+    ContactReplyData decoded;
+    if (status == NULL || reply == NULL || payload.size() < 20 ||
+        get16(&payload[0]) != ContactQuery || get16(&payload[2]) != 0 ||
+        !validStatus(get32(&payload[4]))) {
+        return false;
+    }
+    const uint32_t decodedStatus = get32(&payload[4]);
+    decoded.kind = get32(&payload[8]);
+    decoded.nextOffset = get32(&payload[12]);
+    const uint32_t count = get32(&payload[16]);
+    if (!validContactKind(decoded.kind) || count > kContactPageMax ||
+        decoded.nextOffset > kContactTotalMax ||
+        (decoded.kind == ContactQueryPhone &&
+         (decoded.nextOffset != 0 || count > 1))) {
+        return false;
+    }
+    size_t offset = 20;
+    for (uint32_t index = 0; index < count; ++index) {
+        ContactData contact;
+        if (!readContact(payload, &offset, &contact)) return false;
+        decoded.contacts.push_back(contact);
+    }
+    if (offset != payload.size() ||
+        (decodedStatus != 0 && (count != 0 || decoded.nextOffset != 0))) {
+        return false;
+    }
+    *status = decodedStatus;
+    *reply = decoded;
+    return true;
+}
+
+inline bool encodeContactChanged(std::vector<uint8_t> *payload) {
+    if (payload == NULL) return false;
+    payload->assign(4, 0);
+    put16(&(*payload)[0], ContactChanged);
+    return true;
+}
+
+inline bool decodeContactChanged(const std::vector<uint8_t> &payload) {
+    return payload.size() == 4 && get16(&payload[0]) == ContactChanged &&
+           get16(&payload[2]) == 0;
 }
 
 inline bool waitReadable(int fd, int timeoutMs) {

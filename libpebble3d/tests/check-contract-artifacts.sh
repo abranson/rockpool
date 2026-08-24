@@ -219,6 +219,8 @@ launcher_project=$libpebble3d_dir/../platform-sailfish/launcher/launcher.pro
 proxy_source=$libpebble3d_dir/../platform-sailfish/proxy/sailfish_proxy.cpp
 helper_source=$libpebble3d_dir/../platform-sailfish/helper/main.cpp
 location_monitor=$libpebble3d_dir/../platform-sailfish/helper/locationmonitor.cpp
+calendar_monitor=$libpebble3d_dir/../platform-sailfish/helper/calendarmonitor.cpp
+contact_monitor=$libpebble3d_dir/../platform-sailfish/helper/contactmonitor.cpp
 location_monitor_header=$libpebble3d_dir/../platform-sailfish/helper/locationmonitor.h
 wire_header=$libpebble3d_dir/../platform-sailfish/common/wire.h
 notification_monitor=$libpebble3d_dir/../platform-sailfish/helper/notificationmonitor.cpp
@@ -297,6 +299,8 @@ platform_volume_control_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/l
 platform_provider_module=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockpool/PlatformTimeChanged.kt
 platform_system_geolocation=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockpool/PlatformSystemGeolocation.kt
 platform_system_geolocation_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebblecommon/rockpool/PlatformSystemGeolocationTest.kt
+platform_system_calendar=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockpool/PlatformSystemCalendar.kt
+platform_system_contacts=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockpool/PlatformSystemContacts.kt
 platform_wire_doc=$libpebble3d_dir/README.md
 sailfish_rfcomm_socket=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockpool/SailfishRfcommSocket.kt
 linux_notification_backend=$libpebble3d_dir/mobileapp/libpebble3/src/jvmMain/kotlin/io/rebble/libpebblecommon/linux/notifications/LinuxNotificationBackend.kt
@@ -317,6 +321,7 @@ libpebble3_config=$libpebble3_common_source/io/rebble/libpebblecommon/LibPebbleC
 libpebble3_notification_dao=$libpebble3_common_source/io/rebble/libpebblecommon/database/dao/NotificationAppDao.kt
 libpebble3_notification_api=$libpebble3_common_source/io/rebble/libpebblecommon/notification/PlatformNotificationListener.kt
 libpebble3_calendar_syncer=$libpebble3_common_source/io/rebble/libpebblecommon/calendar/PhoneCalendarSyncer.kt
+libpebble3_contact_syncer=$libpebble3_common_source/io/rebble/libpebblecommon/contacts/PhoneContactsSyncer.kt
 libpebble3_calendar_dao=$libpebble3_common_source/io/rebble/libpebblecommon/database/dao/CalendarDao.kt
 libpebble3_android_calendar=$libpebble3d_dir/mobileapp/libpebble3/src/androidMain/kotlin/io/rebble/libpebblecommon/calendar/AndroidSystemCalendar.kt
 libpebble3_ios_calendar=$libpebble3d_dir/mobileapp/libpebble3/src/iosMain/kotlin/io/rebble/libpebblecommon/calendar/IosSystemCalendar.kt
@@ -450,6 +455,11 @@ require_file "$libpebble3_calendar_syncer" "libpebble3 phone-calendar reconciler
 require_file "$libpebble3_calendar_dao" "libpebble3 calendar projection DAO"
 require_file "$libpebble3_android_calendar" "libpebble3 Android calendar source"
 require_file "$libpebble3_ios_calendar" "libpebble3 iOS calendar source"
+require_file "$platform_system_calendar" "Sailfish typed calendar source"
+require_file "$calendar_monitor" "Sailfish mkcal calendar monitor"
+require_file "$platform_system_contacts" "Sailfish typed contact source"
+require_file "$contact_monitor" "Sailfish QtContacts monitor"
+require_file "$libpebble3_contact_syncer" "libpebble3 phone-contact reconciler"
 require_file "$libpebble3_connection" "libpebble3 concrete facade"
 require_file "$libpebble3_config" "libpebble3 config holder"
 require_file "$libpebble3_notification_dao" "libpebble3 notification application DAO"
@@ -1190,8 +1200,8 @@ reject_extended '\$settingPrefix\.(canned|calendar\.enabled)' "$primary_service"
 # A platform calendar read is authoritative only after a complete source
 # snapshot succeeds. Preserve the previous durable projection on denial,
 # malformed data, provider failure, or cancellation, and publish a successful
-# replacement as one Room transaction. This is an internal safety contract;
-# it does not advertise Timeline sync or a platform.calendar domain.
+# replacement as one Room transaction. Sailfish obtains that snapshot only
+# through the bounded provider calendar domain.
 require_fixed 'internal suspend fun syncDeviceCalendarsToDb() = reconciliationMutex.withLock {' \
     "$libpebble3_calendar_syncer" 'serialized phone-calendar reconciliation'
 require_fixed 'if (!systemCalendar.hasPermission()) {' "$libpebble3_calendar_syncer" \
@@ -1237,8 +1247,12 @@ do
 done
 require_fixed 'internal phone-calendar reconciliation preserves the last complete local projection' \
     "$functional_parity" 'documented calendar preservation boundary'
-require_fixed '`watch.timeline` and `platform.calendar` remain absent' \
-    "$functional_parity" 'documented unavailable calendar domains'
+require_fixed 'bounded read-only Sailfish `platform.calendar` domain' \
+    "$functional_parity" 'documented Sailfish calendar domain'
+require_fixed 'class PlatformSystemCalendar' "$platform_system_calendar" \
+    'Sailfish SystemCalendar binding'
+require_fixed 'CALENDAR_QUERY_EVENTS' "$platform_system_calendar" \
+    'typed Sailfish event queries'
 require_fixed 'unavailable("watch.timeline-sync", "timeline sync is not available yet")' \
     "$primary_service" 'explicit unavailable Timeline1 sync contract'
 require_fixed 'fun `serialized mutations preserve fields changed by another caller`()' \
@@ -1635,7 +1649,7 @@ require_fixed 'supportsBtClassic = rfcommSocketFactory.available' "$platform_pro
 # header, avoiding a self-BuildRequire.
 require_fixed 'unversioned_libname' "$proxy_project" \
     'unversioned proxy plugin configuration'
-require_fixed '%global lp3_platform_sdk_version 1.4' "$rockpool_spec" \
+require_fixed '%global lp3_platform_sdk_version 1.6' "$rockpool_spec" \
     'fixed platform ABI SDK version'
 require_fixed 'BuildArch:  noarch' "$rockpool_spec" \
     'architecture-neutral platform ABI development package'
@@ -1656,32 +1670,40 @@ require_fixed 'Provides:   rockwork-dbus-compat = 1' "$package_spec" \
     'temporary Rockwork compatibility virtual provide'
 require_fixed 'Provides:   libpebble3d-platform-launcher-abi = 1' "$package_spec" \
     'private session-launcher protocol capability'
-require_fixed '#define LP3_PLATFORM_ABI_MINOR 4u' "$header" \
-    'public platform ABI minor 1.4'
-require_fixed '"1.4"' "$loader" \
-    'native platform snapshot ABI version 1.4'
-require_fixed 'val abiVersion: String = "1.4"' "$platform_provider_controller" \
-    'daemon platform snapshot ABI default 1.4'
-require_fixed 'field(3).ifEmpty { "1.4" }' "$platform_provider_controller" \
-    'daemon platform snapshot ABI fallback 1.4'
-require_fixed 'Provides:   libpebble3d-platform-abi-minor = 4' "$package_spec" \
+require_fixed '#define LP3_PLATFORM_ABI_MINOR 6u' "$header" \
+    'public platform ABI minor 1.6'
+require_fixed '"1.6"' "$loader" \
+    'native platform snapshot ABI version 1.6'
+require_fixed 'val abiVersion: String = "1.6"' "$platform_provider_controller" \
+    'daemon platform snapshot ABI default 1.6'
+require_fixed 'field(3).ifEmpty { "1.6" }' "$platform_provider_controller" \
+    'daemon platform snapshot ABI fallback 1.6'
+require_fixed 'Provides:   libpebble3d-platform-abi-minor = 6' "$package_spec" \
     'runtime platform ABI minor capability'
+require_fixed 'api->info.abi_minor < 6' "$loader" \
+    'Contacts domain ABI-minor admission gate'
 require_fixed '%attr(0755,root,root) /usr/libexec/libpebble3d/*.so' "$package_spec" \
     'package-owned native-image support libraries'
 require_fixed 'Requires:   libpebble3d-platform-launcher-abi = 1' "$rockpool_spec" \
     'provider dependency on daemon launcher bootstrap'
-require_fixed 'Requires:   libpebble3d-platform-abi-minor >= 4' "$rockpool_spec" \
+require_fixed 'Requires:   libpebble3d-platform-abi-minor >= 6' "$rockpool_spec" \
     'provider dependency on runtime platform ABI minor'
 require_fixed 'BuildRequires:  pkgconfig(Qt5Positioning)' "$rockpool_spec" \
     'Sailfish Location build dependency'
+require_fixed 'BuildRequires:  pkgconfig(libmkcal-qt5)' "$rockpool_spec" \
+    'Sailfish mkcal build dependency'
+require_fixed 'BuildRequires:  pkgconfig(KF5CalendarCore)' "$rockpool_spec" \
+    'Sailfish KCalendarCore build dependency'
 require_fixed 'Requires:   qt5-plugin-position-geoclue' "$rockpool_spec" \
     'Sailfish GeoClue positioning plugin runtime dependency'
 require_fixed 'Requires:   geoclue' "$rockpool_spec" \
     'Sailfish GeoClue runtime dependency'
-require_fixed 'QT += core dbus positioning' "$helper_project" \
+require_fixed 'BuildRequires:  pkgconfig(Qt5Contacts)' "$rockpool_spec" \
+    'Sailfish QtContacts build dependency'
+require_fixed 'QT += core dbus positioning contacts' "$helper_project" \
     'Qt Positioning linked only into the privileged Sailfish helper'
-require_fixed 'static const uint16_t kMinor = 5;' "$wire_header" \
-    'private provider wire minor 1.5'
+require_fixed 'static const uint16_t kMinor = 7;' "$wire_header" \
+    'private provider wire minor 1.7'
 require_fixed 'MessageReply = 5,' "$wire_header" \
     'private typed message-reply operation'
 require_fixed 'NotificationHasDefaultAction = 1u << 0,' "$wire_header" \
@@ -1706,13 +1728,81 @@ require_fixed 'backend admission, controller dispatch, native-loader dispatch, a
     "$platform_wire_doc" 'documented dual-domain Open dispatch barriers'
 require_fixed 'notification-provided open D-Bus tuples are never executed' \
     "$functional_parity" 'documented rejection of notification-derived Open targets'
+# Calendar is read-only and all source access remains inside the helper.
+require_fixed 'CalendarQuery = 7,' "$wire_header" \
+    'private typed calendar-query operation'
+require_fixed 'DomainCalendar = 1u << 4,' "$wire_header" \
+    'private Calendar health domain'
+require_fixed 'kCalendarPageMax = 64' "$wire_header" \
+    'bounded private calendar pages'
+require_fixed 'kCalendarTotalMax = 512' "$wire_header" \
+    'bounded complete calendar snapshot'
+require_fixed 'encodeCalendarReply' "$wire_header" \
+    'private typed calendar reply codec'
+require_fixed 'void testCalendarCodec()' "$wire_test" \
+    'private calendar wire codec regression'
+require_fixed 'testCalendarCodec();' "$wire_test" \
+    'executed private calendar wire codec regression'
+require_fixed 'KCalendarCore::OccurrenceIterator' "$calendar_monitor" \
+    'mkcal recurrence expansion inside the helper'
+require_fixed 'm_storage->registerObserver(this);' "$calendar_monitor" \
+    'mkcal storage change observation'
+require_fixed 'int32_t calendarQuery(' "$proxy_source" \
+    'asynchronous proxy calendar query'
+require_fixed 'publishCalendarReply' "$proxy_source" \
+    'typed public calendar completion event'
+require_fixed 'Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_calendarStart' \
+    "$loader" 'native JNI calendar start'
+require_fixed 'Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_cancelCalendar' \
+    "$loader" 'native JNI calendar cancellation'
+require_fixed 'Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_drainCalendarEvents' \
+    "$loader" 'native JNI calendar completion drain'
+require_fixed 'suspend fun queryCalendarPage(' "$platform_provider_controller" \
+    'controller correlated calendar query'
+require_fixed 'single { PlatformSystemCalendar(controller) } bind SystemCalendar::class' \
+    "$platform_provider_module" 'Sailfish SystemCalendar module binding'
+# Contacts are read-only, bounded, and all source access remains inside the helper.
+require_fixed 'ContactQuery = 8,' "$wire_header" \
+    'private typed contact-query operation'
+require_fixed 'DomainContacts = 1u << 5,' "$wire_header" \
+    'private Contacts health domain'
+require_fixed 'kContactPageMax = 64' "$wire_header" \
+    'bounded private contact pages'
+require_fixed 'kContactTotalMax = 4096' "$wire_header" \
+    'bounded complete contact snapshot'
+require_fixed 'encodeContactReply' "$wire_header" \
+    'private typed contact reply codec'
+require_fixed 'void testContactCodec()' "$wire_test" \
+    'private contact wire codec regression'
+require_fixed 'testContactCodec();' "$wire_test" \
+    'executed private contact wire codec regression'
+require_fixed 'QContactFilter::MatchPhoneNumber' "$contact_monitor" \
+    'QtContacts normalized phone lookup inside the helper'
+require_fixed 'int32_t contactQuery(' "$proxy_source" \
+    'asynchronous proxy contact query'
+require_fixed 'publishContactReply' "$proxy_source" \
+    'typed public contact completion event'
+require_fixed 'Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_contactStart' \
+    "$loader" 'native JNI contact start'
+require_fixed 'Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_cancelContact' \
+    "$loader" 'native JNI contact cancellation'
+require_fixed 'Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_drainContactEvents' \
+    "$loader" 'native JNI contact completion drain'
+require_fixed 'suspend fun queryContactPage(' "$platform_provider_controller" \
+    'controller correlated contact query'
+require_fixed 'single { PlatformSystemContacts(controller) } bind SystemContacts::class' \
+    "$platform_provider_module" 'Sailfish SystemContacts module binding'
+require_fixed 'lookupContactName = get<PlatformSystemContacts>()::lookupDisplayName' \
+    "$platform_provider_module" 'Sailfish caller-name contact lookup'
+require_fixed 'getContacts()' "$libpebble3_contact_syncer" \
+    'generic phone-contact reconciliation source read'
 # Location is an independently classified private-wire domain.  Keep the
-# public provider ABI at 1.4 while making every request bounded and terminal.
+# public provider ABI while making every request bounded and terminal.
 require_fixed 'LocationQuery = 6,' "$wire_header" \
     'private typed location-query operation'
 require_fixed 'DomainLocation = 1u << 6,' "$wire_header" \
     'private Location health domain'
-require_fixed 'DomainMedia | DomainCalls | DomainLocation |' "$wire_header" \
+require_fixed 'DomainMedia | DomainCalls | DomainCalendar |' "$wire_header" \
     'Location included in complete health classification'
 require_fixed 'kLocationTimeoutMaxMs = 30000' "$wire_header" \
     'bounded private location timeout'
@@ -1734,9 +1824,9 @@ require_fixed 'On a non-OK status every location value is zero.' \
     "$platform_wire_doc" 'documented empty failed location completion'
 require_fixed 'int32_t locationQuery(' "$proxy_source" \
     'asynchronous proxy location query'
-require_fixed 'pending->second->operation != lp3wire::LocationQuery' \
+require_fixed 'pending->second->operation != lp3wire::LocationQuery &&' \
     "$proxy_source" 'proxy location cancellation correlation'
-require_fixed 'tombstone.operation = lp3wire::LocationQuery;' "$proxy_source" \
+require_fixed 'tombstone.operation = pending->second->operation;' "$proxy_source" \
     'proxy late-location completion tombstone'
 require_fixed 'event.type = LP3_PLATFORM_EVENT_LOCATION;' "$proxy_source" \
     'proxy native location completion event'

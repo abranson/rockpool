@@ -46,7 +46,9 @@
 
 #include "libpebble3d-launcher-wire.h"
 #include "libpebble3d-platform.h"
+#include "calendarmonitor.h"
 #include "callmonitor.h"
+#include "contactmonitor.h"
 #include "locationmonitor.h"
 #include "mainvolumemonitor.h"
 #include "notificationmonitor.h"
@@ -282,7 +284,25 @@ public:
               },
               [this](bool ready) { updateLocationHealth(ready); },
               this),
-          m_locationReady(false) {
+          m_locationReady(false),
+          m_calendar(
+              [this](quint64 requestId, int32_t status,
+                     const QByteArray &payload) {
+                  completeCalendar(requestId, status, payload);
+              },
+              [this]() { emitCalendarChanged(); },
+              [this](bool ready) { updateCalendarHealth(ready); },
+              this),
+          m_calendarReady(false),
+          m_contacts(
+              [this](quint64 requestId, int32_t status,
+                     const QByteArray &payload) {
+                  completeContact(requestId, status, payload);
+              },
+              [this]() { emitContactChanged(); },
+              [this](bool ready) { updateContactHealth(ready); },
+              this),
+          m_contactsReady(false) {
         const int flags = fcntl(fd, F_GETFL);
         if (flags < 0 || fcntl(fd, F_SETFL, flags | O_NONBLOCK) != 0) {
             QTimer::singleShot(0, QCoreApplication::instance(),
@@ -402,6 +422,42 @@ private:
         return flushOutgoing();
     }
 
+    bool queueCalendarChanged(const std::vector<uint8_t> &payload) {
+        std::vector<uint8_t> frame;
+        if (!lp3wire::encodeFrame(lp3wire::Event, 0, &payload[0], payload.size(),
+                                  &frame)) {
+            return false;
+        }
+        for (std::deque<std::vector<uint8_t> >::iterator it = m_outgoing.begin();
+             it != m_outgoing.end(); ++it) {
+            if (lp3wire::isEventFrame(*it, lp3wire::CalendarChanged)) {
+                return true;
+            }
+        }
+        if (m_outgoing.size() >= kMaximumOutgoing) {
+            return true;
+        }
+        m_outgoing.push_back(frame);
+        return flushOutgoing();
+    }
+
+    bool queueContactChanged(const std::vector<uint8_t> &payload) {
+        std::vector<uint8_t> frame;
+        if (!lp3wire::encodeFrame(lp3wire::Event, 0, &payload[0], payload.size(),
+                                  &frame)) {
+            return false;
+        }
+        for (std::deque<std::vector<uint8_t> >::iterator it = m_outgoing.begin();
+             it != m_outgoing.end(); ++it) {
+            if (lp3wire::isEventFrame(*it, lp3wire::ContactChanged)) {
+                return true;
+            }
+        }
+        if (m_outgoing.size() >= kMaximumOutgoing) return true;
+        m_outgoing.push_back(frame);
+        return flushOutgoing();
+    }
+
     bool queueHealth() {
         lp3wire::HealthState health;
         health.readyDomains = lp3wire::DomainTime |
@@ -409,12 +465,16 @@ private:
             (m_messagingReady ? lp3wire::DomainMessaging : 0) |
             (m_callsReady ? lp3wire::DomainCalls : 0) |
             (m_mediaReady ? lp3wire::DomainMedia : 0) |
+            (m_calendarReady ? lp3wire::DomainCalendar : 0) |
+            (m_contactsReady ? lp3wire::DomainContacts : 0) |
             (m_locationReady ? lp3wire::DomainLocation : 0);
         health.degradedDomains =
             (m_notificationsReady ? 0 : lp3wire::DomainNotifications) |
             (m_messagingReady ? 0 : lp3wire::DomainMessaging) |
             (m_callsReady ? 0 : lp3wire::DomainCalls) |
             (m_mediaReady ? 0 : lp3wire::DomainMedia) |
+            (m_calendarReady ? 0 : lp3wire::DomainCalendar) |
+            (m_contactsReady ? 0 : lp3wire::DomainContacts) |
             (m_locationReady ? 0 : lp3wire::DomainLocation);
         health.failedDomains = 0;
         std::vector<uint8_t> payload;
@@ -470,6 +530,22 @@ private:
         if (m_phase == Active && !queueHealth()) {
             failClosed();
         }
+    }
+
+    void updateCalendarHealth(bool ready) {
+        if (m_calendarReady == ready) {
+            return;
+        }
+        m_calendarReady = ready;
+        if (m_phase == Active && !queueHealth()) {
+            failClosed();
+        }
+    }
+
+    void updateContactHealth(bool ready) {
+        if (m_contactsReady == ready) return;
+        m_contactsReady = ready;
+        if (m_phase == Active && !queueHealth()) failClosed();
     }
 
     void updateMediaState(const MainVolumeMonitor::State &state) {
@@ -693,7 +769,54 @@ private:
         }
     }
 
-    bool completeBusy(uint64_t requestId, uint16_t operation) {
+    void completeCalendar(uint64_t requestId, int32_t status,
+                          const QByteArray &bytes) {
+        if (!m_pending.remove(requestId)) {
+            return;
+        }
+        m_calendarPending.remove(requestId);
+        if (bytes.isEmpty()) {
+            failClosed();
+            return;
+        }
+        const uint8_t *begin =
+            reinterpret_cast<const uint8_t *>(bytes.constData());
+        const std::vector<uint8_t> payload(begin, begin + bytes.size());
+        uint32_t decodedStatus = 0;
+        lp3wire::CalendarReplyData reply;
+        if (!lp3wire::decodeCalendarReply(payload, &decodedStatus, &reply) ||
+            decodedStatus != static_cast<uint32_t>(status) ||
+            !queueFrame(lp3wire::Complete, requestId,
+                        &payload[0], payload.size())) {
+            failClosed();
+        }
+    }
+
+    void completeContact(uint64_t requestId, int32_t status,
+                         const QByteArray &bytes) {
+        if (!m_pending.remove(requestId)) return;
+        m_contactPending.remove(requestId);
+        if (bytes.isEmpty()) {
+            failClosed();
+            return;
+        }
+        const uint8_t *begin =
+            reinterpret_cast<const uint8_t *>(bytes.constData());
+        const std::vector<uint8_t> payload(begin, begin + bytes.size());
+        uint32_t decodedStatus = 0;
+        lp3wire::ContactReplyData reply;
+        if (!lp3wire::decodeContactReply(payload, &decodedStatus, &reply) ||
+            decodedStatus != static_cast<uint32_t>(status) ||
+            !queueFrame(lp3wire::Complete, requestId,
+                        &payload[0], payload.size())) {
+            failClosed();
+        }
+    }
+
+    bool completeBusy(uint64_t requestId, uint16_t operation,
+                      uint32_t calendarKind =
+                          lp3wire::CalendarQueryCalendars,
+                      uint32_t contactKind = lp3wire::ContactQueryList) {
         std::vector<uint8_t> payload;
         if (operation == lp3wire::TimeGet) {
             lp3wire::TimeState empty;
@@ -707,6 +830,24 @@ private:
             lp3wire::LocationData empty = {};
             return lp3wire::encodeLocationReply(
                        LP3_PLATFORM_BUSY, empty, &payload) &&
+                queueFrame(lp3wire::Complete, requestId,
+                           &payload[0], payload.size());
+        }
+        if (operation == lp3wire::CalendarQuery) {
+            lp3wire::CalendarReplyData reply;
+            reply.kind = calendarKind;
+            reply.nextOffset = 0;
+            return lp3wire::encodeCalendarReply(
+                       LP3_PLATFORM_BUSY, reply, &payload) &&
+                queueFrame(lp3wire::Complete, requestId,
+                           &payload[0], payload.size());
+        }
+        if (operation == lp3wire::ContactQuery) {
+            lp3wire::ContactReplyData reply;
+            reply.kind = contactKind;
+            reply.nextOffset = 0;
+            return lp3wire::encodeContactReply(
+                       LP3_PLATFORM_BUSY, reply, &payload) &&
                 queueFrame(lp3wire::Complete, requestId,
                            &payload[0], payload.size());
         }
@@ -744,6 +885,8 @@ private:
             m_callsReady = m_calls.start();
             m_mediaReady = m_media.start();
             m_locationReady = m_location.start();
+            m_calendarReady = m_calendar.start();
+            m_contactsReady = m_contacts.start();
             m_phase = Active;
             emitMediaState();
             return queueHealth();
@@ -759,6 +902,8 @@ private:
             lp3wire::CallCommandData callCommand;
             lp3wire::MediaCommandData mediaCommand = {};
             lp3wire::LocationQueryData locationQuery = {};
+            lp3wire::CalendarQueryData calendarQuery = {};
+            lp3wire::ContactQueryData contactQuery = {};
             if ((operation == lp3wire::TimeGet &&
                  !lp3wire::decodeTimeGet(frame.payload)) ||
                 (operation == lp3wire::NotificationCommand &&
@@ -772,16 +917,27 @@ private:
                  !lp3wire::decodeMediaCommand(frame.payload, &mediaCommand)) ||
                 (operation == lp3wire::LocationQuery &&
                  !lp3wire::decodeLocationQuery(frame.payload, &locationQuery)) ||
+                (operation == lp3wire::CalendarQuery &&
+                 !lp3wire::decodeCalendarQuery(frame.payload, &calendarQuery)) ||
+                (operation == lp3wire::ContactQuery &&
+                 !lp3wire::decodeContactQuery(frame.payload, &contactQuery)) ||
                 (operation != lp3wire::TimeGet &&
                  operation != lp3wire::NotificationCommand &&
                  operation != lp3wire::MessageReply &&
                  operation != lp3wire::CallCommand &&
                  operation != lp3wire::MediaCommand &&
-                 operation != lp3wire::LocationQuery)) {
+                 operation != lp3wire::LocationQuery &&
+                 operation != lp3wire::CalendarQuery &&
+                 operation != lp3wire::ContactQuery)) {
                 return false;
             }
             if (m_pending.size() >= kMaximumPending) {
-                return completeBusy(frame.requestId, operation);
+                return completeBusy(
+                    frame.requestId, operation,
+                    operation == lp3wire::CalendarQuery ? calendarQuery.kind :
+                        lp3wire::CalendarQueryCalendars,
+                    operation == lp3wire::ContactQuery ? contactQuery.kind :
+                        lp3wire::ContactQueryList);
             }
             m_pending.insert(frame.requestId);
             if (operation == lp3wire::TimeGet) {
@@ -813,11 +969,17 @@ private:
                     [this, frame, mediaCommand]() {
                         completeMedia(frame.requestId, mediaCommand);
                     });
-            } else {
+            } else if (operation == lp3wire::LocationQuery) {
                 m_location.query(
                     frame.requestId,
                     locationQuery.accuracy == lp3wire::kLocationFine,
                     locationQuery.timeoutMs);
+            } else if (operation == lp3wire::CalendarQuery) {
+                m_calendarPending.insert(frame.requestId);
+                m_calendar.query(frame.requestId, calendarQuery);
+            } else {
+                m_contactPending.insert(frame.requestId);
+                m_contacts.query(frame.requestId, contactQuery);
             }
             return true;
         }
@@ -827,6 +989,12 @@ private:
             }
             if (m_pending.remove(frame.requestId)) {
                 m_location.cancel(frame.requestId);
+                if (m_calendarPending.remove(frame.requestId)) {
+                    m_calendar.cancel(frame.requestId);
+                }
+                if (m_contactPending.remove(frame.requestId)) {
+                    m_contacts.cancel(frame.requestId);
+                }
                 return queueFrame(lp3wire::Cancelled, frame.requestId, NULL, 0);
             }
             return true;
@@ -858,6 +1026,26 @@ private:
         std::vector<uint8_t> payload;
         if (!lp3wire::encodeTimeChanged(timeState(), &payload) ||
             !queueTimeChanged(payload)) {
+            failClosed();
+        }
+    }
+
+    void emitCalendarChanged() {
+        if (m_phase != Active || !m_calendarReady) {
+            return;
+        }
+        std::vector<uint8_t> payload;
+        if (!lp3wire::encodeCalendarChanged(&payload) ||
+            !queueCalendarChanged(payload)) {
+            failClosed();
+        }
+    }
+
+    void emitContactChanged() {
+        if (m_phase != Active || !m_contactsReady) return;
+        std::vector<uint8_t> payload;
+        if (!lp3wire::encodeContactChanged(&payload) ||
+            !queueContactChanged(payload)) {
             failClosed();
         }
     }
@@ -898,11 +1086,17 @@ private:
     bool m_mediaStatePending;
     LocationMonitor m_location;
     bool m_locationReady;
+    CalendarMonitor m_calendar;
+    bool m_calendarReady;
+    ContactMonitor m_contacts;
+    bool m_contactsReady;
     QTimer m_changeTimer;
     QElapsedTimer m_elapsed;
     qint64 m_lastWallMs;
     int m_lastOffsetSeconds;
     QSet<quint64> m_pending;
+    QSet<quint64> m_calendarPending;
+    QSet<quint64> m_contactPending;
     std::deque<std::vector<uint8_t> > m_outgoing;
 };
 

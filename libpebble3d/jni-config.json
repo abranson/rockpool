@@ -55,6 +55,30 @@
         "parameterTypes": []
       },
       {
+        "name": "calendarStart",
+        "parameterTypes": ["int", "int", "int", "long", "long", "java.lang.String"]
+      },
+      {
+        "name": "cancelCalendar",
+        "parameterTypes": ["long"]
+      },
+      {
+        "name": "drainCalendarEvents",
+        "parameterTypes": []
+      },
+      {
+        "name": "contactStart",
+        "parameterTypes": ["int", "int", "int", "java.lang.String"]
+      },
+      {
+        "name": "cancelContact",
+        "parameterTypes": ["long"]
+      },
+      {
+        "name": "drainContactEvents",
+        "parameterTypes": []
+      },
+      {
         "name": "notificationCommand",
         "parameterTypes": ["int", "java.lang.String"]
       },

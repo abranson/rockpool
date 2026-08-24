@@ -8,6 +8,8 @@ import io.rebble.libpebblecommon.connection.bt.ble.BlePlatformConfig
 import io.rebble.libpebblecommon.connection.bt.ble.bluez.LinuxBluezAdapterSelector
 import io.rebble.libpebblecommon.connection.bt.classic.transport.LinuxRfcommSocketFactory
 import io.rebble.libpebblecommon.calls.LegacyPhoneReceiver
+import io.rebble.libpebblecommon.calendar.SystemCalendar
+import io.rebble.libpebblecommon.contacts.SystemContacts
 import io.rebble.libpebblecommon.linux.LinuxDeviceActivity
 import io.rebble.libpebblecommon.time.TimeChanged
 import io.rebble.libpebblecommon.linux.notifications.LinuxNotificationBackend
@@ -43,9 +45,16 @@ internal fun platformProviderModule(
     }
     single { PlatformTimeChanged(controller) } bind TimeChanged::class
     single { PlatformSystemGeolocation(controller::queryLocation) } bind SystemGeolocation::class
+    single { PlatformSystemCalendar(controller) } bind SystemCalendar::class
+    single { PlatformSystemContacts(controller) } bind SystemContacts::class
     single { notificationBackend } bind LinuxNotificationBackend::class
     single { deviceActivity } bind LinuxDeviceActivity::class
-    single { PlatformCallsBackend(controller) } bind LegacyPhoneReceiver::class
+    single {
+        PlatformCallsBackend(
+            controller,
+            lookupContactName = get<PlatformSystemContacts>()::lookupDisplayName,
+        )
+    } bind LegacyPhoneReceiver::class
     single { PlatformVolumeControl(controller) } bind VolumeControl::class
     single { SailfishPairingRequester() } bind LinuxPairingRequester::class
     single { SailfishBluezAdapterSelector() } bind LinuxBluezAdapterSelector::class

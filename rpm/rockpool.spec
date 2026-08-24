@@ -1,6 +1,6 @@
 Name:       rockpool
 
-%global lp3_platform_sdk_version 1.4
+%global lp3_platform_sdk_version 1.6
 
 %{!?qtc_qmake:%define qtc_qmake %qmake}
 %{!?qtc_qmake5:%define qtc_qmake5 %qmake5}
@@ -24,8 +24,11 @@ BuildRequires:  pkgconfig(Qt5Qml)
 BuildRequires:  pkgconfig(Qt5Core)
 BuildRequires:  pkgconfig(Qt5Network)
 BuildRequires:  pkgconfig(Qt5Positioning)
+BuildRequires:  pkgconfig(Qt5Contacts)
 BuildRequires:  pkgconfig(dbus-1)
 BuildRequires:  pkgconfig(mlite5)
+BuildRequires:  pkgconfig(libmkcal-qt5)
+BuildRequires:  pkgconfig(KF5CalendarCore)
 BuildRequires:  pkgconfig(sailfishapp) >= 0.0.10
 BuildRequires:  pkgconfig(sailfishwebengine)
 BuildRequires:  pkgconfig(qt5embedwidget)
@@ -49,7 +52,7 @@ providers.  This package is independent of the libpebble3d daemon runtime.
 Summary:    Sailfish platform provider for libpebble3d
 License:    Apache-2.0
 Requires:   libpebble3d-platform-abi = 1
-Requires:   libpebble3d-platform-abi-minor >= 4
+Requires:   libpebble3d-platform-abi-minor >= 6
 Requires:   libpebble3d-platform-launcher-abi = 1
 Requires:   qt5-plugin-position-geoclue
 Requires:   geoclue

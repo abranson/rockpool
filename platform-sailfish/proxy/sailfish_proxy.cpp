@@ -57,7 +57,9 @@ const std::chrono::seconds kCancellationGrace(2);
 const uint64_t kSupportedDomains = LP3_PLATFORM_DOMAIN_TIME |
     LP3_PLATFORM_DOMAIN_NOTIFICATIONS | LP3_PLATFORM_DOMAIN_MESSAGING |
     LP3_PLATFORM_DOMAIN_MEDIA |
-    LP3_PLATFORM_DOMAIN_CALLS | LP3_PLATFORM_DOMAIN_LOCATION;
+    LP3_PLATFORM_DOMAIN_CALLS | LP3_PLATFORM_DOMAIN_CALENDAR |
+    LP3_PLATFORM_DOMAIN_CONTACTS |
+    LP3_PLATFORM_DOMAIN_LOCATION;
 
 struct Pending {
     std::condition_variable condition;
@@ -66,12 +68,18 @@ struct Pending {
     int32_t status;
     lp3wire::TimeState time;
     lp3wire::LocationData location;
+    lp3wire::CalendarReplyData calendar;
+    lp3wire::ContactReplyData contacts;
 
     explicit Pending(uint16_t requestOperation)
         : operation(requestOperation), complete(false),
           status(LP3_PLATFORM_UNAVAILABLE) {
         memset(&time, 0, sizeof(time));
         memset(&location, 0, sizeof(location));
+        calendar.kind = lp3wire::CalendarQueryCalendars;
+        calendar.nextOffset = 0;
+        contacts.kind = lp3wire::ContactQueryList;
+        contacts.nextOffset = 0;
     }
 };
 
@@ -473,11 +481,135 @@ lp3_platform_string abiString(const std::string &value) {
     return result;
 }
 
+void publishCalendarReply(uint64_t requestId, int32_t status,
+                          const lp3wire::CalendarReplyData &reply,
+                          lp3_platform_event_callback callback, void *context) {
+    if (callback == NULL) {
+        return;
+    }
+    std::vector<lp3_platform_calendar_v1> calendars(reply.calendars.size());
+    for (size_t index = 0; index < reply.calendars.size(); ++index) {
+        const lp3wire::CalendarData &source = reply.calendars[index];
+        lp3_platform_calendar_v1 &target = calendars[index];
+        memset(&target, 0, sizeof(target));
+        target.struct_size = sizeof(target);
+        target.flags = source.flags;
+        target.color_argb = source.colorArgb;
+        target.id = abiString(source.id);
+        target.name = abiString(source.name);
+        target.owner_name = abiString(source.ownerName);
+        target.owner_id = abiString(source.ownerId);
+    }
+
+    std::vector<std::vector<lp3_platform_calendar_attendee_v1> > attendees(
+        reply.events.size());
+    std::vector<std::vector<int32_t> > reminders(reply.events.size());
+    std::vector<lp3_platform_calendar_event_v1> events(reply.events.size());
+    for (size_t eventIndex = 0; eventIndex < reply.events.size(); ++eventIndex) {
+        const lp3wire::CalendarEventData &source = reply.events[eventIndex];
+        attendees[eventIndex].resize(source.attendees.size());
+        for (size_t attendeeIndex = 0;
+             attendeeIndex < source.attendees.size(); ++attendeeIndex) {
+            const lp3wire::CalendarAttendeeData &sourceAttendee =
+                source.attendees[attendeeIndex];
+            lp3_platform_calendar_attendee_v1 &targetAttendee =
+                attendees[eventIndex][attendeeIndex];
+            memset(&targetAttendee, 0, sizeof(targetAttendee));
+            targetAttendee.struct_size = sizeof(targetAttendee);
+            targetAttendee.flags = sourceAttendee.flags;
+            targetAttendee.role = sourceAttendee.role;
+            targetAttendee.status = sourceAttendee.status;
+            targetAttendee.name = abiString(sourceAttendee.name);
+            targetAttendee.email = abiString(sourceAttendee.email);
+        }
+        reminders[eventIndex] = source.reminderMinutes;
+        lp3_platform_calendar_event_v1 &target = events[eventIndex];
+        memset(&target, 0, sizeof(target));
+        target.struct_size = sizeof(target);
+        target.flags = source.flags;
+        target.start_ms = source.startMs;
+        target.end_ms = source.endMs;
+        target.id = abiString(source.id);
+        target.title = abiString(source.title);
+        target.location = abiString(source.location);
+        target.availability = source.availability;
+        target.status = source.status;
+        target.calendar_id = abiString(source.calendarId);
+        target.base_event_id = abiString(source.baseEventId);
+        target.description = abiString(source.description);
+        target.attendee_count = static_cast<uint32_t>(
+            attendees[eventIndex].size());
+        target.attendees = attendees[eventIndex].empty() ? NULL :
+            &attendees[eventIndex][0];
+        target.reminder_count = static_cast<uint32_t>(
+            reminders[eventIndex].size());
+        target.reminder_minutes = reminders[eventIndex].empty() ? NULL :
+            &reminders[eventIndex][0];
+    }
+
+    lp3_platform_calendar_snapshot_v1 snapshot;
+    memset(&snapshot, 0, sizeof(snapshot));
+    snapshot.struct_size = sizeof(snapshot);
+    snapshot.kind = reply.kind;
+    snapshot.next_offset = reply.nextOffset;
+    snapshot.calendar_count = static_cast<uint32_t>(calendars.size());
+    snapshot.calendars = calendars.empty() ? NULL : &calendars[0];
+    snapshot.event_count = static_cast<uint32_t>(events.size());
+    snapshot.events = events.empty() ? NULL : &events[0];
+
+    lp3_platform_event_v1 event;
+    memset(&event, 0, sizeof(event));
+    event.struct_size = sizeof(event);
+    event.type = LP3_PLATFORM_EVENT_CALENDAR;
+    event.request_id = requestId;
+    event.status = status;
+    event.calendar_snapshot = status == LP3_PLATFORM_OK ? &snapshot : NULL;
+    callback(context, &event);
+}
+
+void publishContactReply(uint64_t requestId, int32_t status,
+                         const lp3wire::ContactReplyData &reply,
+                         lp3_platform_event_callback callback, void *context) {
+    if (callback == NULL) return;
+    std::vector<lp3_platform_contact_v1> contacts(reply.contacts.size());
+    for (size_t index = 0; index < reply.contacts.size(); ++index) {
+        const lp3wire::ContactData &source = reply.contacts[index];
+        lp3_platform_contact_v1 &target = contacts[index];
+        memset(&target, 0, sizeof(target));
+        target.struct_size = sizeof(target);
+        target.flags = source.flags;
+        target.id = abiString(source.id);
+        target.display_name = abiString(source.displayName);
+        target.phone_number = abiString(source.phoneNumber);
+        target.avatar.data = source.avatar.empty() ? NULL : &source.avatar[0];
+        target.avatar.size = static_cast<uint32_t>(source.avatar.size());
+    }
+    lp3_platform_contact_snapshot_v1 snapshot;
+    memset(&snapshot, 0, sizeof(snapshot));
+    snapshot.struct_size = sizeof(snapshot);
+    snapshot.kind = reply.kind;
+    snapshot.next_offset = reply.nextOffset;
+    snapshot.contact_count = static_cast<uint32_t>(contacts.size());
+    snapshot.contacts = contacts.empty() ? NULL : &contacts[0];
+
+    lp3_platform_event_v1 event;
+    memset(&event, 0, sizeof(event));
+    event.struct_size = sizeof(event);
+    event.type = LP3_PLATFORM_EVENT_CONTACT;
+    event.request_id = requestId;
+    event.status = status;
+    event.contact_snapshot = status == LP3_PLATFORM_OK ? &snapshot : NULL;
+    callback(context, &event);
+}
+
 bool decodeCompletion(uint16_t operation, const std::vector<uint8_t> &payload,
                       int32_t *status, lp3wire::TimeState *time,
-                      lp3wire::LocationData *location) {
+                      lp3wire::LocationData *location,
+                      lp3wire::CalendarReplyData *calendar,
+                      lp3wire::ContactReplyData *contacts) {
     uint32_t decodedStatus;
-    if (status == NULL || time == NULL || location == NULL) {
+    if (status == NULL || time == NULL || location == NULL || calendar == NULL ||
+        contacts == NULL) {
         return false;
     }
     if (operation == lp3wire::TimeGet) {
@@ -485,11 +617,32 @@ bool decodeCompletion(uint16_t operation, const std::vector<uint8_t> &payload,
             return false;
         }
         memset(location, 0, sizeof(*location));
+        calendar->calendars.clear();
+        calendar->events.clear();
+        contacts->contacts.clear();
     } else if (operation == lp3wire::LocationQuery) {
         if (!lp3wire::decodeLocationReply(payload, &decodedStatus, location)) {
             return false;
         }
         memset(time, 0, sizeof(*time));
+        calendar->calendars.clear();
+        calendar->events.clear();
+        contacts->contacts.clear();
+    } else if (operation == lp3wire::CalendarQuery) {
+        if (!lp3wire::decodeCalendarReply(payload, &decodedStatus, calendar)) {
+            return false;
+        }
+        memset(time, 0, sizeof(*time));
+        memset(location, 0, sizeof(*location));
+        contacts->contacts.clear();
+    } else if (operation == lp3wire::ContactQuery) {
+        if (!lp3wire::decodeContactReply(payload, &decodedStatus, contacts)) {
+            return false;
+        }
+        memset(time, 0, sizeof(*time));
+        memset(location, 0, sizeof(*location));
+        calendar->calendars.clear();
+        calendar->events.clear();
     } else if (operation == lp3wire::NotificationCommand ||
                operation == lp3wire::MessageReply ||
                operation == lp3wire::CallCommand ||
@@ -499,6 +652,9 @@ bool decodeCompletion(uint16_t operation, const std::vector<uint8_t> &payload,
         }
         memset(time, 0, sizeof(*time));
         memset(location, 0, sizeof(*location));
+        calendar->calendars.clear();
+        calendar->events.clear();
+        contacts->contacts.clear();
     } else {
         return false;
     }
@@ -521,14 +677,26 @@ bool dispatchFrame(SailfishInstance *instance, const lp3wire::Frame &frame) {
             const uint64_t commandDomains =
                 lp3wire::DomainNotifications | lp3wire::DomainMessaging |
                 lp3wire::DomainCalls | lp3wire::DomainMedia |
+                lp3wire::DomainCalendar | lp3wire::DomainContacts |
                 lp3wire::DomainLocation;
             lostDomains = instance->readyDomains & ~health.readyDomains &
                 commandDomains;
-            if ((lostDomains & lp3wire::DomainLocation) != 0) {
+            if ((lostDomains & (lp3wire::DomainLocation |
+                                lp3wire::DomainCalendar |
+                                lp3wire::DomainContacts)) != 0) {
                 for (std::map<uint64_t, std::shared_ptr<Pending> >::iterator
                          pending = instance->pending.begin();
                      pending != instance->pending.end();) {
-                    if (pending->second->operation != lp3wire::LocationQuery) {
+                    const bool lostLocation =
+                        pending->second->operation == lp3wire::LocationQuery &&
+                        (lostDomains & lp3wire::DomainLocation) != 0;
+                    const bool lostCalendar =
+                        pending->second->operation == lp3wire::CalendarQuery &&
+                        (lostDomains & lp3wire::DomainCalendar) != 0;
+                    const bool lostContacts =
+                        pending->second->operation == lp3wire::ContactQuery &&
+                        (lostDomains & lp3wire::DomainContacts) != 0;
+                    if (!lostLocation && !lostCalendar && !lostContacts) {
                         ++pending;
                         continue;
                     }
@@ -541,7 +709,7 @@ bool dispatchFrame(SailfishInstance *instance, const lp3wire::Frame &frame) {
                         break;
                     }
                     Tombstone tombstone;
-                    tombstone.operation = lp3wire::LocationQuery;
+                    tombstone.operation = pending->second->operation;
                     tombstone.expires = std::chrono::steady_clock::now() +
                         kCancellationGrace;
                     instance->tombstones[pending->first] = tombstone;
@@ -690,6 +858,33 @@ bool dispatchFrame(SailfishInstance *instance, const lp3wire::Frame &frame) {
             callback(context, &event);
             return true;
         }
+        if (eventType == lp3wire::CalendarChanged) {
+            {
+                std::lock_guard<std::mutex> lock(instance->mutex);
+                if ((instance->readyDomains &
+                     lp3wire::DomainCalendar) == 0) {
+                    return false;
+                }
+            }
+            if (!lp3wire::decodeCalendarChanged(frame.payload)) {
+                return false;
+            }
+            event.type = LP3_PLATFORM_EVENT_CALENDAR;
+            callback(context, &event);
+            return true;
+        }
+        if (eventType == lp3wire::ContactChanged) {
+            {
+                std::lock_guard<std::mutex> lock(instance->mutex);
+                if ((instance->readyDomains & lp3wire::DomainContacts) == 0) {
+                    return false;
+                }
+            }
+            if (!lp3wire::decodeContactChanged(frame.payload)) return false;
+            event.type = LP3_PLATFORM_EVENT_CONTACT;
+            callback(context, &event);
+            return true;
+        }
         return false;
     }
 
@@ -702,8 +897,16 @@ bool dispatchFrame(SailfishInstance *instance, const lp3wire::Frame &frame) {
     }
 
     bool publishLocation = false;
+    bool publishCalendar = false;
+    bool publishContacts = false;
     int32_t locationStatus = LP3_PLATFORM_CANCELLED;
     lp3wire::LocationData location = {};
+    lp3wire::CalendarReplyData calendar;
+    calendar.kind = lp3wire::CalendarQueryCalendars;
+    calendar.nextOffset = 0;
+    lp3wire::ContactReplyData contacts;
+    contacts.kind = lp3wire::ContactQueryList;
+    contacts.nextOffset = 0;
     lp3_platform_event_callback callback = NULL;
     void *context = NULL;
     {
@@ -715,9 +918,12 @@ bool dispatchFrame(SailfishInstance *instance, const lp3wire::Frame &frame) {
                 int32_t ignoredStatus;
                 lp3wire::TimeState ignoredTime;
                 lp3wire::LocationData ignoredLocation;
+                lp3wire::CalendarReplyData ignoredCalendar;
+                lp3wire::ContactReplyData ignoredContacts;
                 if (!decodeCompletion(tombstone->second.operation, frame.payload,
                                       &ignoredStatus, &ignoredTime,
-                                      &ignoredLocation)) {
+                                      &ignoredLocation, &ignoredCalendar,
+                                      &ignoredContacts)) {
                     return false;
                 }
             }
@@ -733,12 +939,15 @@ bool dispatchFrame(SailfishInstance *instance, const lp3wire::Frame &frame) {
         if (frame.type == lp3wire::Complete) {
             lp3wire::TimeState time;
             if (!decodeCompletion(pending->second->operation, frame.payload,
-                                  &locationStatus, &time, &location)) {
+                                  &locationStatus, &time, &location,
+                                  &calendar, &contacts)) {
                 return false;
             }
             pending->second->status = locationStatus;
             pending->second->time = time;
             pending->second->location = location;
+            pending->second->calendar = calendar;
+            pending->second->contacts = contacts;
         } else {
             pending->second->status = LP3_PLATFORM_CANCELLED;
             locationStatus = LP3_PLATFORM_CANCELLED;
@@ -746,9 +955,13 @@ bool dispatchFrame(SailfishInstance *instance, const lp3wire::Frame &frame) {
         pending->second->complete = true;
         pending->second->condition.notify_all();
         publishLocation = pending->second->operation == lp3wire::LocationQuery;
-        if (publishLocation) {
+        publishCalendar = pending->second->operation == lp3wire::CalendarQuery;
+        publishContacts = pending->second->operation == lp3wire::ContactQuery;
+        if (publishLocation || publishCalendar || publishContacts) {
             locationStatus = pending->second->status;
             location = pending->second->location;
+            calendar = pending->second->calendar;
+            contacts = pending->second->contacts;
             callback = instance->event;
             context = instance->eventContext;
         }
@@ -770,6 +983,14 @@ bool dispatchFrame(SailfishInstance *instance, const lp3wire::Frame &frame) {
         event.status = locationStatus;
         event.location = locationStatus == LP3_PLATFORM_OK ? &abiLocation : NULL;
         callback(context, &event);
+    }
+    if (publishCalendar) {
+        publishCalendarReply(frame.requestId, locationStatus, calendar,
+                             callback, context);
+    }
+    if (publishContacts) {
+        publishContactReply(frame.requestId, locationStatus, contacts,
+                            callback, context);
     }
     return true;
 }
@@ -994,7 +1215,9 @@ int32_t cancel(lp3_platform_instance *raw, uint64_t requestId) {
     std::map<uint64_t, std::shared_ptr<Pending> >::iterator pending =
         instance->pending.find(requestId);
     if (pending == instance->pending.end() ||
-        pending->second->operation != lp3wire::LocationQuery) {
+        (pending->second->operation != lp3wire::LocationQuery &&
+         pending->second->operation != lp3wire::CalendarQuery &&
+         pending->second->operation != lp3wire::ContactQuery)) {
         return LP3_PLATFORM_NOT_SUPPORTED;
     }
     if (instance->stopping.load() || instance->socket < 0 || instance->latched) {
@@ -1007,7 +1230,7 @@ int32_t cancel(lp3_platform_instance *raw, uint64_t requestId) {
         wakeWorker(instance);
         return LP3_PLATFORM_UNAVAILABLE;
     }
-    tombstone.operation = lp3wire::LocationQuery;
+    tombstone.operation = pending->second->operation;
     tombstone.expires = std::chrono::steady_clock::now() + kCancellationGrace;
     instance->pending.erase(pending);
     instance->tombstones[requestId] = tombstone;
@@ -1052,14 +1275,97 @@ int32_t notSupportedNotification(lp3_platform_instance *, uint64_t,
     return LP3_PLATFORM_NOT_SUPPORTED;
 }
 
-int32_t notSupportedCalendar(lp3_platform_instance *, uint64_t,
-                             const lp3_platform_calendar_query_v1 *) {
-    return LP3_PLATFORM_NOT_SUPPORTED;
+int32_t calendarQuery(lp3_platform_instance *raw, uint64_t requestId,
+                      const lp3_platform_calendar_query_v1 *request) {
+    SailfishInstance *instance = static_cast<SailfishInstance *>(raw);
+    lp3wire::CalendarQueryData query = {};
+    std::vector<uint8_t> payload;
+    std::vector<uint8_t> frame;
+    std::shared_ptr<Pending> pending(new Pending(lp3wire::CalendarQuery));
+
+    if (instance == NULL || requestId == 0 ||
+        (requestId & (UINT64_C(1) << 63)) != 0 || request == NULL ||
+        request->struct_size < sizeof(*request) ||
+        request->calendar_id.size > LP3_PLATFORM_CALENDAR_ID_MAX ||
+        (request->calendar_id.size != 0 && request->calendar_id.data == NULL)) {
+        return LP3_PLATFORM_INVALID_ARGUMENT;
+    }
+    query.kind = request->kind;
+    query.maxRecords = request->max_records;
+    query.offset = request->offset;
+    query.startMs = request->start_ms;
+    query.endMs = request->end_ms;
+    if (request->calendar_id.size != 0) {
+        query.calendarId.assign(request->calendar_id.data,
+                                request->calendar_id.size);
+    }
+    pending->calendar.kind = query.kind;
+    if (!lp3wire::encodeCalendarQuery(query, &payload) ||
+        !lp3wire::encodeFrame(lp3wire::Request, requestId,
+                              &payload[0], payload.size(), &frame)) {
+        return LP3_PLATFORM_INVALID_ARGUMENT;
+    }
+
+    std::lock_guard<std::mutex> lock(instance->mutex);
+    if (instance->stopping.load() || instance->socket < 0 || instance->latched ||
+        (instance->readyDomains & lp3wire::DomainCalendar) == 0) {
+        return LP3_PLATFORM_UNAVAILABLE;
+    }
+    if (instance->pending.size() + instance->tombstones.size() >=
+            kMaximumOutstanding ||
+        instance->outgoing.size() >= kMaximumOutgoing ||
+        instance->pending.count(requestId) != 0 ||
+        instance->tombstones.count(requestId) != 0) {
+        return LP3_PLATFORM_BUSY;
+    }
+    instance->pending[requestId] = pending;
+    instance->outgoing.push_back(frame);
+    wakeWorker(instance);
+    return LP3_PLATFORM_OK;
 }
 
-int32_t notSupportedContact(lp3_platform_instance *, uint64_t,
-                            const lp3_platform_contact_query_v1 *) {
-    return LP3_PLATFORM_NOT_SUPPORTED;
+int32_t contactQuery(lp3_platform_instance *raw, uint64_t requestId,
+                     const lp3_platform_contact_query_v1 *request) {
+    SailfishInstance *instance = static_cast<SailfishInstance *>(raw);
+    lp3wire::ContactQueryData query = {};
+    std::vector<uint8_t> payload;
+    std::vector<uint8_t> frame;
+    std::shared_ptr<Pending> pending(new Pending(lp3wire::ContactQuery));
+    if (instance == NULL || requestId == 0 ||
+        (requestId & (UINT64_C(1) << 63)) != 0 || request == NULL ||
+        request->struct_size < sizeof(*request) ||
+        request->query.size > LP3_PLATFORM_CONTACT_NUMBER_MAX ||
+        (request->query.size != 0 && request->query.data == NULL)) {
+        return LP3_PLATFORM_INVALID_ARGUMENT;
+    }
+    query.kind = request->kind;
+    query.maxRecords = request->max_records;
+    query.offset = request->offset;
+    if (request->query.size != 0) {
+        query.query.assign(request->query.data, request->query.size);
+    }
+    pending->contacts.kind = query.kind;
+    if (!lp3wire::encodeContactQuery(query, &payload) ||
+        !lp3wire::encodeFrame(lp3wire::Request, requestId,
+                              &payload[0], payload.size(), &frame)) {
+        return LP3_PLATFORM_INVALID_ARGUMENT;
+    }
+    std::lock_guard<std::mutex> lock(instance->mutex);
+    if (instance->stopping.load() || instance->socket < 0 || instance->latched ||
+        (instance->readyDomains & lp3wire::DomainContacts) == 0) {
+        return LP3_PLATFORM_UNAVAILABLE;
+    }
+    if (instance->pending.size() + instance->tombstones.size() >=
+            kMaximumOutstanding ||
+        instance->outgoing.size() >= kMaximumOutgoing ||
+        instance->pending.count(requestId) != 0 ||
+        instance->tombstones.count(requestId) != 0) {
+        return LP3_PLATFORM_BUSY;
+    }
+    instance->pending[requestId] = pending;
+    instance->outgoing.push_back(frame);
+    wakeWorker(instance);
+    return LP3_PLATFORM_OK;
 }
 
 int32_t locationQuery(lp3_platform_instance *raw, uint64_t requestId,
@@ -1568,6 +1874,7 @@ const lp3_platform_api_v1 kApi = {
         LP3_PLATFORM_DOMAIN_TIME | LP3_PLATFORM_DOMAIN_NOTIFICATIONS |
             LP3_PLATFORM_DOMAIN_MESSAGING |
             LP3_PLATFORM_DOMAIN_MEDIA | LP3_PLATFORM_DOMAIN_CALLS |
+            LP3_PLATFORM_DOMAIN_CALENDAR | LP3_PLATFORM_DOMAIN_CONTACTS |
             LP3_PLATFORM_DOMAIN_LOCATION,
         { kProviderName, sizeof(kProviderName) - 1 },
         { kBuildId, sizeof(kBuildId) - 1 },
@@ -1582,8 +1889,8 @@ const lp3_platform_api_v1 kApi = {
     replyMessage,
     mediaCommand,
     callCommand,
-    notSupportedCalendar,
-    notSupportedContact,
+    calendarQuery,
+    contactQuery,
     locationQuery,
     notSupportedProfile,
     getTimeState,

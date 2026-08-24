@@ -900,6 +900,106 @@ class PlatformProviderControllerTest {
         )
     }
 
+    @Test
+    fun calendarQueryDecodesBoundedPageAndCorrelatesCompletion() = runBlocking {
+        val calendarController = calendarController { _, _, _, _, _, _ ->
+            longArrayOf(PlatformProviderController.STATUS_OK.toLong(), 71)
+        }
+        val pending = async {
+            calendarController.queryCalendarPage(
+                PlatformProviderController.CALENDAR_QUERY_CALENDARS,
+                PlatformProviderController.CALENDAR_PAGE_MAX,
+                0,
+            )
+        }
+        delay(1)
+        calendarController.providerCalendarEvents(
+            arrayOf(calendarPageRecord(requestId = 71, nextOffset = 12)),
+        )
+
+        val result = assertIs<PlatformCalendarQueryResult.Success>(
+            withTimeout(1_000) { pending.await() },
+        )
+        assertEquals(12, result.snapshot.nextOffset)
+        assertEquals("calendar-1", result.snapshot.calendars.single().id)
+        assertEquals("Personal", result.snapshot.calendars.single().name)
+    }
+
+    @Test
+    fun calendarChangeAndDomainLossRetireOnlyCurrentAuthority() = runBlocking {
+        var changed = 0
+        val calendarController = calendarController { _, _, _, _, _, _ ->
+            longArrayOf(PlatformProviderController.STATUS_OK.toLong(), 72)
+        }
+        calendarController.addCalendarChangedListener { changed++ }
+        calendarController.providerCalendarEvents(arrayOf(calendarChangedRecord()))
+        assertEquals(1, changed)
+
+        val pending = async {
+            calendarController.queryCalendarPage(
+                PlatformProviderController.CALENDAR_QUERY_CALENDARS,
+                PlatformProviderController.CALENDAR_PAGE_MAX,
+                0,
+            )
+        }
+        delay(1)
+        calendarController.providerSnapshotChanged(calendarSnapshot(domains = 0))
+        assertEquals(
+            PlatformCalendarQueryResult.Error(PlatformProviderController.STATUS_UNAVAILABLE),
+            withTimeout(1_000) { pending.await() },
+        )
+    }
+
+    @Test
+    fun contactQueryDecodesBoundedPageAndCorrelatesCompletion() = runBlocking {
+        val contactController = contactController { _, _, _, _ ->
+            longArrayOf(PlatformProviderController.STATUS_OK.toLong(), 81)
+        }
+        val pending = async {
+            contactController.queryContactPage(
+                PlatformProviderController.CONTACT_QUERY_LIST,
+                PlatformProviderController.CONTACT_PAGE_MAX,
+                0,
+            )
+        }
+        delay(1)
+        contactController.providerContactEvents(
+            arrayOf(contactPageRecord(requestId = 81, nextOffset = 64)),
+        )
+        val result = assertIs<PlatformContactQueryResult.Success>(
+            withTimeout(1_000) { pending.await() },
+        )
+        assertEquals(64, result.snapshot.nextOffset)
+        assertEquals("qtcontacts:tracker::42", result.snapshot.contacts.single().id)
+        assertEquals("Alice", result.snapshot.contacts.single().displayName)
+        assertEquals("+358401234567", result.snapshot.contacts.single().phoneNumber)
+    }
+
+    @Test
+    fun contactChangeAndDomainLossRetireOnlyCurrentAuthority() = runBlocking {
+        var changed = 0
+        val contactController = contactController { _, _, _, _ ->
+            longArrayOf(PlatformProviderController.STATUS_OK.toLong(), 82)
+        }
+        contactController.addContactChangedListener { changed++ }
+        contactController.providerContactEvents(arrayOf(contactChangedRecord()))
+        assertEquals(1, changed)
+
+        val pending = async {
+            contactController.queryContactPage(
+                PlatformProviderController.CONTACT_QUERY_LIST,
+                PlatformProviderController.CONTACT_PAGE_MAX,
+                0,
+            )
+        }
+        delay(1)
+        contactController.providerSnapshotChanged(contactSnapshot(domains = 0))
+        assertEquals(
+            PlatformContactQueryResult.Error(PlatformProviderController.STATUS_UNAVAILABLE),
+            withTimeout(1_000) { pending.await() },
+        )
+    }
+
     private fun locationController(
         start: (Int, Int) -> LongArray,
         cancel: (Long) -> Int = { 0 },
@@ -916,6 +1016,117 @@ class PlatformProviderControllerTest {
             domains = domains,
             supportedDomains = PlatformProviderController.LOCATION_DOMAIN,
         )
+
+    private fun calendarController(
+        start: (Int, Int, Int, Long, Long, String) -> LongArray,
+    ) = PlatformProviderController(
+        initialSnapshot = calendarSnapshot(),
+        calendarNativeAvailable = { true },
+        calendarStartNative = start,
+        calendarCancelNative = { PlatformProviderController.STATUS_OK },
+    )
+
+    private fun calendarSnapshot(domains: Long = PlatformProviderController.CALENDAR_DOMAIN) =
+        PlatformProviderSnapshot(
+            state = "ready",
+            domains = domains,
+            supportedDomains = PlatformProviderController.CALENDAR_DOMAIN,
+        )
+
+    private fun calendarPageRecord(requestId: Long, nextOffset: Int): ByteArray {
+        val values = listOf(
+            "calendar-1",
+            "Personal",
+            "Owner",
+            "owner@example.test",
+        ).map(String::encodeToByteArray)
+        return ByteBuffer.allocate(40 + values.sumOf(ByteArray::size) + values.size * 4)
+            .order(ByteOrder.LITTLE_ENDIAN)
+            .apply {
+                putLong(requestId)
+                putInt(PlatformProviderController.STATUS_OK)
+                putInt(PlatformProviderController.CALENDAR_QUERY_CALENDARS)
+                putInt(nextOffset)
+                putInt(1)
+                putInt(0)
+                putInt(0)
+                putInt(0x7)
+                putInt(0xff0099cc.toInt())
+                values.forEach { value ->
+                    putInt(value.size)
+                    put(value)
+                }
+            }
+            .array()
+    }
+
+    private fun calendarChangedRecord(): ByteArray =
+        ByteBuffer.allocate(PlatformProviderController.CALENDAR_PREFIX_SIZE)
+            .order(ByteOrder.LITTLE_ENDIAN)
+            .apply {
+                putLong(0)
+                putInt(PlatformProviderController.STATUS_OK)
+                putInt(0)
+                putInt(0)
+                putInt(0)
+                putInt(0)
+                putInt(1)
+            }
+            .array()
+
+    private fun contactController(
+        start: (Int, Int, Int, String) -> LongArray,
+    ) = PlatformProviderController(
+        initialSnapshot = contactSnapshot(),
+        contactNativeAvailable = { true },
+        contactStartNative = start,
+        contactCancelNative = { PlatformProviderController.STATUS_OK },
+    )
+
+    private fun contactSnapshot(domains: Long = PlatformProviderController.CONTACTS_DOMAIN) =
+        PlatformProviderSnapshot(
+            state = "ready",
+            domains = domains,
+            supportedDomains = PlatformProviderController.CONTACTS_DOMAIN,
+        )
+
+    private fun contactPageRecord(requestId: Long, nextOffset: Int): ByteArray {
+        val values = listOf(
+            "qtcontacts:tracker::42",
+            "Alice",
+            "+358401234567",
+        ).map(String::encodeToByteArray)
+        return ByteBuffer.allocate(36 + values.sumOf(ByteArray::size) + values.size * 4)
+            .order(ByteOrder.LITTLE_ENDIAN)
+            .apply {
+                putLong(requestId)
+                putInt(PlatformProviderController.STATUS_OK)
+                putInt(PlatformProviderController.CONTACT_QUERY_LIST)
+                putInt(nextOffset)
+                putInt(1)
+                putInt(0)
+                putInt(0)
+                values.forEach { value ->
+                    putInt(value.size)
+                    put(value)
+                }
+                putInt(0)
+            }
+            .array()
+    }
+
+    private fun contactChangedRecord(): ByteArray =
+        ByteBuffer.allocate(PlatformProviderController.CONTACT_PREFIX_SIZE)
+            .order(ByteOrder.LITTLE_ENDIAN)
+            .apply {
+                putLong(0)
+                putInt(PlatformProviderController.STATUS_OK)
+                putInt(0)
+                putInt(0)
+                putInt(0)
+                putInt(1)
+            }
+            .array()
 
     private fun record(
         type: Int,

@@ -11,12 +11,15 @@ Native Image JNI loader can compile against it directly.  The Rockpool source
 RPM packages the same file as `libpebble3d-platform-devel`; the daemon RPM
 provides only the matching runtime ABI capability.
 
-Platform ABI 1.4 adds safe Sailfish notification replies. The provider exposes
-both notification and messaging domains, but the private helper wire carries
-only a retained numeric notification ID and reply text. The helper accepts a
-reply only once for a current `org.nemomobile.CommHistory` SMS/IM/MMS
-notification whose input action resolves to the fixed Sailfish Messages
-`sendMessage` API; notification hints cannot select an arbitrary D-Bus call.
+Platform ABI 1.6 adds bounded read-only Sailfish contact snapshots, exact
+phone-number lookup, and change notifications. Platform ABI 1.5 added bounded
+read-only calendar snapshots. The isolated helper reads mkcal on its worker thread, expands
+occurrences only inside the requested window, and returns typed, paginated
+calendar and event records. Platform ABI 1.4 added safe Sailfish notification
+replies: the private helper wire carries only a retained numeric notification
+ID and reply text, and the helper accepts a reply only once for a current
+`org.nemomobile.CommHistory` SMS/IM/MMS notification whose input action
+resolves to the fixed Sailfish Messages `sendMessage` API.
 
 ## Build
 
@@ -186,7 +189,7 @@ The daemon RPM provides these package capabilities:
 
 - `rockpool-dbus-api = 1`
 - `libpebble3d-platform-abi = 1`
-- `libpebble3d-platform-abi-minor = 4`
+- `libpebble3d-platform-abi-minor = 6`
 - `libpebble3d-platform-launcher-abi = 1`
 - `rockwork-dbus-compat = 1` for the temporary UI migration release
 
@@ -220,7 +223,7 @@ That spec produces three packages:
 - `rockpool` — the Silica UI.  It requires `rockpool-dbus-api = 1` and, during
   the migration release, `rockwork-dbus-compat = 1`.
 - `libpebble3d-platform-devel` — the architecture-independent Apache-2.0 ABI
-  header and pkg-config file, currently versioned as platform SDK `1.4`.  It
+  header and pkg-config file, currently versioned as platform SDK `1.6`.  It
   has no daemon runtime dependency.
 - `libpebble3d-platform-sailfish` — the AArch64 provider package.  It requires
   both platform ABI capabilities supplied by the daemon RPM.
@@ -469,10 +472,10 @@ It is deliberately not a list of obsolete endpoints to carry forward.
 | Connect/disconnect/forget | `Watch1` operations; Forget removes all selected-adapter BlueZ aliases before portable state | libpebble3 + Rockpool integration |
 | Apps/watchfaces | `Applications1` FD operations | libpebble3 |
 | Firmware/recovery/language | `Firmware1` FD operations | libpebble3 |
-| Timeline/calendar | Account-global `Timeline1.CalendarEnabled`; internal phone-calendar reconciliation preserves the last complete local projection on unavailable, denied, or failed source reads and applies successful replacements atomically. `watch.timeline` and `platform.calendar` remain absent pending a typed calendar domain | libpebble3d |
+| Timeline/calendar | Account-global `Timeline1.CalendarEnabled`; a bounded read-only Sailfish `platform.calendar` domain enumerates mkcal notebooks and expanded event occurrences through the isolated helper. The internal phone-calendar reconciliation preserves the last complete local projection on unavailable or failed reads and applies successful replacements atomically. Explicit `Timeline1.Sync` remains pending | libpebble3 + provider |
 | Notifications/actions/replies | `Notifications1`/`Messaging1`; replies are available only for a live, trusted Sailfish SMS/IM/MMS notification with one narrowly validated input route, and are consumed after one attempt. A `default` action on the same authenticated target separately permits only the fixed `org.sailfishos.Messages.startConversation(ss)` conversation open; notification-provided open D-Bus tuples are never executed, and both actions require the current CommHistory owner. Canonical primary canned groups are account-global and replayed into libpebble3 (including an explicit empty collection), while compatibility groups remain source-scoped and are not reply actions | libpebble3 + provider |
 | Calls/media/location/profile switching | Calls, media, and bounded one-shot/watch location use the independently healthy Sailfish provider; existing connection-driven profile switching remains daemon-owned | libpebble3 + provider |
-| Contacts/outgoing Send Text | Compatibility favourites remain configuration-only pending a bounded contacts provider and watch-originated send action; notification replies are covered above | pending |
+| Contacts/outgoing Send Text | A bounded read-only Sailfish `platform.contacts` domain synchronizes QtContacts names/IDs into libpebble3 and resolves caller names by exact phone lookup. Native-Linux notifications do not yet supply participant lookup keys, so contact-specific notification policy remains pending. Compatibility favourites remain configuration-only pending Contacts/AppConfig BlobDB support and a separately authenticated watch-originated send action; notification replies are covered above | provider + pending notification/Send Text actions |
 | Health and units | Account-global `Health1` settings projection on every watch; compatibility health strings round-trip only `female`/`male`. The compatibility UI exposes the bounded legacy health dashboard and addressed incremental sync, explicitly labelled as shared account history rather than per-watch provenance | libpebble3d |
 | Weather | Compatibility locations receive keyless automatic forecasts for saved coordinates and still accept validated external injection. Migration imports a single physical legacy saved-location collection, or a unanimous collection from eligible legacy watch directories; conflicting legacy collections are preserved without choosing one. The canonical `n/a` slot resolves through the bounded Sailfish Location provider without persisting coordinates | libpebble3 + libpebble3d + provider |
 | Screenshots | `Screenshots1` | libpebble3 |
@@ -537,7 +540,7 @@ Each `SOCK_SEQPACKET` packet is exactly one little-endian frame:
 ```text
 u32 total_length       // header + payload, 24..65536
 u16 major              // currently 1
-u16 minor              // currently 5
+u16 minor              // currently 7
 u16 type
 u16 flags              // zero unless specified for type
 u64 request_id         // zero for handshake, Health, and Event frames
@@ -586,11 +589,11 @@ single constant Sailfish `/sailfish/i18n/lc_timeformat24h` setting; no setting
 key or other selector crosses the protocol.
 
 After `Ready`, the helper sends an initial 24-byte `Health` payload and sends a
-new snapshot whenever a notification, volume, call, or location monitor changes
+new snapshot whenever a notification, volume, call, calendar, contacts, or location monitor changes
 availability. The three
 `u64` values are the ready, degraded, and failed domain masks. They are
 disjoint and together contain every domain implemented by this wire minor
-(currently notifications, messaging, media, calls, location, and time). A missing or disconnected monitor
+(currently notifications, messaging, media, calls, calendar, contacts, location, and time). A missing or disconnected monitor
 therefore degrades only its domain without hiding or failing the others.
 
 Minor 5 adds a bounded, one-shot location query. It has no watch/update mode:
@@ -633,6 +636,89 @@ tombstone, or discarded as an unknown retired ID, and is never published.
 Helper disconnect, a Location health loss, or a
 provider-generation reset retires outstanding request authority before a
 replacement helper can report a result.
+
+Minor 6 adds a read-only Calendar domain backed by mkcal and KCalendarCore in
+the isolated helper. Requests contain no database path, SQL, D-Bus endpoint,
+or arbitrary selector. Calendar and event results are paginated to 64 records,
+at most 512 records may exist in one source snapshot, the event window is at
+most 370 days, and the complete frame remains below 64 KiB. The helper expands
+recurrence only inside the requested half-open window and applies the same
+notebook visibility, exclusion, name, and colour settings as the Sailfish
+calendar application.
+
+```text
+Request CalendarQuery (request_id != 0)
+    u16 operation = 7
+    u16 reserved = 0
+    u32 kind                      // 1 calendars, 2 event occurrences
+    u32 max_records               // 1..64
+    u32 offset                    // 0..512
+    i64 start_ms                  // zero for calendars
+    i64 end_ms                    // zero for calendars; exclusive for events
+    u32 calendar_id_length        // empty for calendars, 1..256 for events
+    u8  calendar_id[calendar_id_length]
+
+Complete CalendarReply (matching request_id)
+    u16 operation = 7
+    u16 reserved = 0
+    u32 status
+    u32 kind
+    u32 next_offset               // zero when complete
+    u32 record_count              // 0..64
+    u8  bounded_typed_records[...] // calendars or expanded event occurrences
+
+Event CalendarChanged (request_id = 0, payload size 4)
+    u16 event = 6
+    u16 reserved = 0
+```
+
+Calendar records carry bounded IDs, display and owner fields, colour, and
+visible/enabled/sync flags. Event records carry occurrence and base IDs,
+calendar ID, title, description, location, start/end milliseconds, all-day and
+recurrence flags, availability/status, up to 16 attendees, and up to eight
+minutes-before reminders. Non-OK replies contain no records or next offset.
+Cancellation, Calendar health loss, helper replacement, malformed records,
+oversized results, and non-advancing pagination all retire the query without
+replacing libpebble3's last complete calendar projection. Storage changes emit
+only a coalesced invalidation edge; libpebble3 then rereads a complete snapshot.
+
+Minor 7 adds a read-only Contacts domain backed by QtContacts on its own helper
+thread. Empty-query list reads are paginated to 64 records and capped at 4096
+contacts. Exact phone lookups accept one bounded phone number and return at most
+one record. The operation accepts no contacts-manager name, storage path, or
+arbitrary filter expression.
+
+```text
+Request ContactQuery (request_id != 0)
+    u16 operation = 8
+    u16 reserved = 0
+    u32 kind                      // 1 list, 2 exact phone lookup
+    u32 max_records               // 1..64; exactly 1 for phone lookup
+    u32 offset                    // 0..4096; zero for phone lookup
+    u32 query_length              // zero for list, 1..256 for phone lookup
+    u8  query[query_length]
+
+Complete ContactReply (matching request_id)
+    u16 operation = 8
+    u16 reserved = 0
+    u32 status
+    u32 kind
+    u32 next_offset               // zero when complete
+    u32 record_count              // 0..64; at most 1 for phone lookup
+    u8  bounded_contact_records[...]
+
+Event ContactChanged (request_id = 0, payload size 4)
+    u16 event = 7
+    u16 reserved = 0
+```
+
+Contact records contain a stable QtContacts ID, display name, optional first
+phone number, and a bounded avatar byte view. The Sailfish implementation does
+not currently export avatar bytes. A complete list is staged before the Room
+projection is reconciled; unavailable, failed, cancelled, malformed, or
+source-invalidated reads preserve the last complete projection. Exact phone
+lookup is also used to enrich call events whose voice-call source provides
+only a line ID.
 
 The notification domain sends incoming notifications as events and accepts
 only narrow actions against a helper-retained numeric notification ID:

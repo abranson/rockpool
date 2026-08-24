@@ -186,6 +186,163 @@ void testLocationCodec() {
     assert(!lp3wire::encodeLocationReply(9, empty, &payload));
 }
 
+void testCalendarCodec() {
+    lp3wire::CalendarQueryData query = {};
+    lp3wire::CalendarQueryData decodedQuery;
+    lp3wire::CalendarReplyData reply;
+    lp3wire::CalendarReplyData decodedReply;
+    uint32_t status = UINT32_MAX;
+    std::vector<uint8_t> payload;
+
+    query.kind = lp3wire::CalendarQueryEvents;
+    query.maxRecords = 32;
+    query.offset = 4;
+    query.startMs = INT64_C(1785678901234);
+    query.endMs = query.startMs + INT64_C(7) * 24 * 60 * 60 * 1000;
+    query.calendarId = "calendar-1";
+    assert(lp3wire::encodeCalendarQuery(query, &payload));
+    assert(lp3wire::decodeCalendarQuery(payload, &decodedQuery));
+    assert(decodedQuery.kind == query.kind);
+    assert(decodedQuery.maxRecords == query.maxRecords);
+    assert(decodedQuery.offset == query.offset);
+    assert(decodedQuery.startMs == query.startMs);
+    assert(decodedQuery.endMs == query.endMs);
+    assert(decodedQuery.calendarId == query.calendarId);
+    query.endMs = INT64_MAX;
+    query.startMs = INT64_MIN;
+    assert(!lp3wire::encodeCalendarQuery(query, &payload));
+    query.startMs = 0;
+    query.endMs = lp3wire::kCalendarRangeMaxMs + 1;
+    assert(!lp3wire::encodeCalendarQuery(query, &payload));
+    query.endMs = lp3wire::kCalendarRangeMaxMs;
+    query.maxRecords = lp3wire::kCalendarPageMax + 1;
+    assert(!lp3wire::encodeCalendarQuery(query, &payload));
+
+    lp3wire::CalendarData calendar;
+    calendar.flags = lp3wire::CalendarVisible | lp3wire::CalendarEnabled |
+        lp3wire::CalendarSyncEvents;
+    calendar.colorArgb = 0xff0099cc;
+    calendar.id = "calendar-1";
+    calendar.name = "Personal";
+    calendar.ownerName = "Owner";
+    calendar.ownerId = "owner@example.test";
+    reply.kind = lp3wire::CalendarQueryCalendars;
+    reply.nextOffset = 1;
+    reply.calendars.push_back(calendar);
+    assert(lp3wire::encodeCalendarReply(0, reply, &payload));
+    assert(lp3wire::decodeCalendarReply(payload, &status, &decodedReply));
+    assert(status == 0 && decodedReply.nextOffset == 1);
+    assert(decodedReply.calendars.size() == 1);
+    assert(decodedReply.calendars[0].name == "Personal");
+
+    lp3wire::CalendarEventData event;
+    event.flags = lp3wire::CalendarEventAllDay |
+        lp3wire::CalendarEventRecurs;
+    event.availability = 1;
+    event.status = 1;
+    event.startMs = INT64_C(1785678901234);
+    event.endMs = event.startMs + 24 * 60 * 60 * 1000;
+    event.id = "event-1#1785678901234";
+    event.calendarId = "calendar-1";
+    event.baseEventId = "event-1";
+    event.title = "Release";
+    event.description = "Ship Rockpool";
+    event.location = "Harbour";
+    lp3wire::CalendarAttendeeData attendee;
+    attendee.flags = lp3wire::CalendarAttendeeCurrentUser;
+    attendee.role = 1;
+    attendee.status = 1;
+    attendee.name = "Owner";
+    attendee.email = "owner@example.test";
+    event.attendees.push_back(attendee);
+    event.reminderMinutes.push_back(15);
+    reply.kind = lp3wire::CalendarQueryEvents;
+    reply.nextOffset = 0;
+    reply.calendars.clear();
+    reply.events.push_back(event);
+    assert(lp3wire::encodeCalendarReply(0, reply, &payload));
+    assert(lp3wire::decodeCalendarReply(payload, &status, &decodedReply));
+    assert(status == 0 && decodedReply.events.size() == 1);
+    assert(decodedReply.events[0].attendees.size() == 1);
+    assert(decodedReply.events[0].reminderMinutes[0] == 15);
+    payload.pop_back();
+    assert(!lp3wire::decodeCalendarReply(payload, &status, &decodedReply));
+
+    reply.events.clear();
+    assert(lp3wire::encodeCalendarReply(5, reply, &payload));
+    assert(lp3wire::decodeCalendarReply(payload, &status, &decodedReply));
+    assert(status == 5 && decodedReply.events.empty());
+    reply.events.push_back(event);
+    assert(!lp3wire::encodeCalendarReply(5, reply, &payload));
+
+    assert(lp3wire::encodeCalendarChanged(&payload));
+    assert(lp3wire::decodeCalendarChanged(payload));
+    payload.push_back(0);
+    assert(!lp3wire::decodeCalendarChanged(payload));
+}
+
+void testContactCodec() {
+    lp3wire::ContactQueryData query;
+    lp3wire::ContactQueryData decodedQuery;
+    lp3wire::ContactReplyData reply;
+    lp3wire::ContactReplyData decodedReply;
+    uint32_t status = UINT32_MAX;
+    std::vector<uint8_t> payload;
+
+    query.kind = lp3wire::ContactQueryList;
+    query.maxRecords = 32;
+    query.offset = 64;
+    assert(lp3wire::encodeContactQuery(query, &payload));
+    assert(lp3wire::decodeContactQuery(payload, &decodedQuery));
+    assert(decodedQuery.kind == query.kind);
+    assert(decodedQuery.maxRecords == query.maxRecords);
+    assert(decodedQuery.offset == query.offset);
+    query.query = "not-allowed";
+    assert(!lp3wire::encodeContactQuery(query, &payload));
+
+    query.kind = lp3wire::ContactQueryPhone;
+    query.maxRecords = 1;
+    query.offset = 0;
+    query.query = "+358401234567";
+    assert(lp3wire::encodeContactQuery(query, &payload));
+    assert(lp3wire::decodeContactQuery(payload, &decodedQuery));
+    assert(decodedQuery.query == query.query);
+    query.maxRecords = 2;
+    assert(!lp3wire::encodeContactQuery(query, &payload));
+
+    lp3wire::ContactData contact;
+    contact.flags = 0;
+    contact.id = "qtcontacts:tracker::42";
+    contact.displayName = "Alice";
+    contact.phoneNumber = "+358401234567";
+    contact.avatar.push_back(1);
+    contact.avatar.push_back(2);
+    reply.kind = lp3wire::ContactQueryList;
+    reply.nextOffset = 1;
+    reply.contacts.push_back(contact);
+    assert(lp3wire::encodeContactReply(0, reply, &payload));
+    assert(lp3wire::decodeContactReply(payload, &status, &decodedReply));
+    assert(status == 0 && decodedReply.nextOffset == 1);
+    assert(decodedReply.contacts.size() == 1);
+    assert(decodedReply.contacts[0].displayName == "Alice");
+    assert(decodedReply.contacts[0].avatar.size() == 2);
+    payload.pop_back();
+    assert(!lp3wire::decodeContactReply(payload, &status, &decodedReply));
+
+    reply.contacts.clear();
+    reply.nextOffset = 0;
+    assert(lp3wire::encodeContactReply(5, reply, &payload));
+    assert(lp3wire::decodeContactReply(payload, &status, &decodedReply));
+    contact.flags = 1;
+    reply.contacts.push_back(contact);
+    assert(!lp3wire::encodeContactReply(0, reply, &payload));
+
+    assert(lp3wire::encodeContactChanged(&payload));
+    assert(lp3wire::decodeContactChanged(payload));
+    payload.push_back(0);
+    assert(!lp3wire::decodeContactChanged(payload));
+}
+
 void testNotificationCodec() {
     lp3wire::NotificationData original;
     lp3wire::NotificationData decoded;
@@ -637,7 +794,8 @@ void testHealthCodec() {
     const lp3wire::HealthState original = {
         lp3wire::DomainCalls | lp3wire::DomainMessaging,
         lp3wire::DomainNotifications | lp3wire::DomainMedia,
-        lp3wire::DomainTime | lp3wire::DomainLocation,
+        lp3wire::DomainTime | lp3wire::DomainLocation |
+            lp3wire::DomainCalendar | lp3wire::DomainContacts,
     };
     lp3wire::HealthState decoded;
     std::vector<uint8_t> payload;
@@ -736,6 +894,8 @@ int main() {
     testErrorReplyMustHaveZeroValues();
     testTimeChangedCodec();
     testLocationCodec();
+    testCalendarCodec();
+    testContactCodec();
     testNotificationCodec();
     testNotificationClosedCodec();
     testNotificationRejectsInvalidTextAndLengths();

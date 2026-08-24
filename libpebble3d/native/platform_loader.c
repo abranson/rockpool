@@ -24,6 +24,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/prctl.h>
@@ -113,6 +114,16 @@ struct lp3_copied_location_event {
     int64_t timestamp_ms;
 };
 
+struct lp3_copied_calendar_event {
+    uint8_t *payload;
+    uint32_t size;
+};
+
+struct lp3_copied_contact_event {
+    uint8_t *payload;
+    uint32_t size;
+};
+
 static pthread_mutex_t loader_lock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t event_lock = PTHREAD_MUTEX_INITIALIZER;
 static _Thread_local int event_batch_held;
@@ -140,6 +151,22 @@ static size_t location_outstanding_count;
 /* Cancellation tombstones discard one late completion without retaining it. */
 static uint64_t location_tombstones[LP3_MAX_QUEUED_EVENTS];
 static size_t location_tombstone_count;
+static struct lp3_copied_calendar_event
+    calendar_event_queue[LP3_MAX_QUEUED_EVENTS];
+static size_t calendar_event_head;
+static size_t calendar_event_count;
+static uint64_t calendar_outstanding[LP3_MAX_QUEUED_EVENTS];
+static size_t calendar_outstanding_count;
+static uint64_t calendar_tombstones[LP3_MAX_QUEUED_EVENTS];
+static size_t calendar_tombstone_count;
+static struct lp3_copied_contact_event
+    contact_event_queue[LP3_MAX_QUEUED_EVENTS];
+static size_t contact_event_head;
+static size_t contact_event_count;
+static uint64_t contact_outstanding[LP3_MAX_QUEUED_EVENTS];
+static size_t contact_outstanding_count;
+static uint64_t contact_tombstones[LP3_MAX_QUEUED_EVENTS];
+static size_t contact_tombstone_count;
 static uint64_t event_failed_domains;
 static int provider_reset_pending;
 static size_t provider_command_dispatches;
@@ -215,6 +242,36 @@ static void clear_location_events(void) {
     location_outstanding_count = 0;
     memset(location_tombstones, 0, sizeof(location_tombstones));
     location_tombstone_count = 0;
+}
+
+static void clear_calendar_events(void) {
+    size_t index;
+    for (index = 0; index < calendar_event_count; ++index) {
+        size_t slot = (calendar_event_head + index) % LP3_MAX_QUEUED_EVENTS;
+        free(calendar_event_queue[slot].payload);
+    }
+    memset(calendar_event_queue, 0, sizeof(calendar_event_queue));
+    calendar_event_head = 0;
+    calendar_event_count = 0;
+    memset(calendar_outstanding, 0, sizeof(calendar_outstanding));
+    calendar_outstanding_count = 0;
+    memset(calendar_tombstones, 0, sizeof(calendar_tombstones));
+    calendar_tombstone_count = 0;
+}
+
+static void clear_contact_events(void) {
+    size_t index;
+    for (index = 0; index < contact_event_count; ++index) {
+        size_t slot = (contact_event_head + index) % LP3_MAX_QUEUED_EVENTS;
+        free(contact_event_queue[slot].payload);
+    }
+    memset(contact_event_queue, 0, sizeof(contact_event_queue));
+    contact_event_head = 0;
+    contact_event_count = 0;
+    memset(contact_outstanding, 0, sizeof(contact_outstanding));
+    contact_outstanding_count = 0;
+    memset(contact_tombstones, 0, sizeof(contact_tombstones));
+    contact_tombstone_count = 0;
 }
 
 /*
@@ -297,7 +354,7 @@ static void set_literal(char *destination, size_t destination_size,
 static void set_snapshot_state(const char *state, const char *error) {
     memset(&loader.snapshot, 0, sizeof(loader.snapshot));
     set_literal(loader.snapshot.state, sizeof(loader.snapshot.state), state);
-    set_literal(loader.snapshot.abi_version, sizeof(loader.snapshot.abi_version), "1.4");
+    set_literal(loader.snapshot.abi_version, sizeof(loader.snapshot.abi_version), "1.6");
     set_literal(loader.snapshot.domains, sizeof(loader.snapshot.domains), "0");
     set_literal(loader.snapshot.helper_pid, sizeof(loader.snapshot.helper_pid), "0");
     set_literal(loader.snapshot.supported_domains,
@@ -539,6 +596,12 @@ static int valid_string(const struct lp3_platform_string *value,
            valid_utf8(value->data, value->size);
 }
 
+static int valid_bytes(const struct lp3_platform_bytes *value,
+                       uint32_t maximum) {
+    return value != NULL && value->size <= maximum &&
+           (value->size == 0 || value->data != NULL);
+}
+
 static int string_empty(const struct lp3_platform_string *value) {
     return value != NULL && value->size == 0;
 }
@@ -660,6 +723,283 @@ static void copy_string(char *destination, size_t destination_size,
         destination_size - 1] = '\0';
 }
 
+struct calendar_encoder {
+    uint8_t *data;
+    size_t size;
+};
+
+static int calendar_append(struct calendar_encoder *encoder,
+                           const void *data, size_t size) {
+    if (encoder->size > LP3_MAX_PAYLOAD_BYTES ||
+        size > LP3_MAX_PAYLOAD_BYTES - encoder->size) {
+        return 0;
+    }
+    if (size == 0) {
+        return 1;
+    }
+    memcpy(encoder->data + encoder->size, data, size);
+    encoder->size += size;
+    return 1;
+}
+
+static int calendar_append_u32(struct calendar_encoder *encoder,
+                               uint32_t value) {
+    uint8_t data[4];
+    data[0] = (uint8_t)value;
+    data[1] = (uint8_t)(value >> 8);
+    data[2] = (uint8_t)(value >> 16);
+    data[3] = (uint8_t)(value >> 24);
+    return calendar_append(encoder, data, sizeof(data));
+}
+
+static int calendar_append_u64(struct calendar_encoder *encoder,
+                               uint64_t value) {
+    uint8_t data[8];
+    size_t index;
+    for (index = 0; index < sizeof(data); ++index) {
+        data[index] = (uint8_t)(value >> (index * 8));
+    }
+    return calendar_append(encoder, data, sizeof(data));
+}
+
+static int calendar_append_string(
+    struct calendar_encoder *encoder,
+    const struct lp3_platform_string *value, uint32_t maximum, int allow_empty) {
+    return valid_string(value, maximum, allow_empty) &&
+           calendar_append_u32(encoder, value->size) &&
+           calendar_append(encoder, value->data, value->size);
+}
+
+static uint8_t *encode_calendar_event(
+    const struct lp3_platform_event_v1 *event, uint32_t *encoded_size) {
+    const struct lp3_platform_calendar_snapshot_v1 *snapshot =
+        event->calendar_snapshot;
+    struct calendar_encoder encoder;
+    uint32_t calendar_count = 0;
+    uint32_t event_count_value = 0;
+    uint32_t kind = 0;
+    uint32_t next_offset = 0;
+    uint32_t index;
+
+    if (encoded_size == NULL ||
+        event->struct_size <
+            offsetof(struct lp3_platform_event_v1, calendar_snapshot) +
+                sizeof(event->calendar_snapshot) ||
+        !valid_location_status(event->status)) {
+        return NULL;
+    }
+    if (event->request_id == 0) {
+        if (event->status != LP3_PLATFORM_OK || snapshot != NULL) {
+            return NULL;
+        }
+    } else if (event->status == LP3_PLATFORM_OK) {
+        if (snapshot == NULL || snapshot->struct_size < sizeof(*snapshot) ||
+            (snapshot->kind != LP3_PLATFORM_CALENDAR_QUERY_CALENDARS &&
+             snapshot->kind != LP3_PLATFORM_CALENDAR_QUERY_EVENTS) ||
+            snapshot->next_offset > 512 ||
+            snapshot->calendar_count > LP3_PLATFORM_CALENDAR_PAGE_MAX ||
+            snapshot->event_count > LP3_PLATFORM_CALENDAR_PAGE_MAX ||
+            (snapshot->kind == LP3_PLATFORM_CALENDAR_QUERY_CALENDARS &&
+             snapshot->event_count != 0) ||
+            (snapshot->kind == LP3_PLATFORM_CALENDAR_QUERY_EVENTS &&
+             snapshot->calendar_count != 0) ||
+            (snapshot->calendar_count != 0 && snapshot->calendars == NULL) ||
+            (snapshot->event_count != 0 && snapshot->events == NULL)) {
+            return NULL;
+        }
+        kind = snapshot->kind;
+        next_offset = snapshot->next_offset;
+        calendar_count = snapshot->calendar_count;
+        event_count_value = snapshot->event_count;
+    } else if (snapshot != NULL) {
+        return NULL;
+    }
+
+    encoder.data = (uint8_t *)malloc(LP3_MAX_PAYLOAD_BYTES);
+    encoder.size = 0;
+    if (encoder.data == NULL ||
+        !calendar_append_u64(&encoder, event->request_id) ||
+        !calendar_append_u32(&encoder, (uint32_t)event->status) ||
+        !calendar_append_u32(&encoder, kind) ||
+        !calendar_append_u32(&encoder, next_offset) ||
+        !calendar_append_u32(&encoder, calendar_count) ||
+        !calendar_append_u32(&encoder, event_count_value) ||
+        !calendar_append_u32(&encoder, event->request_id == 0 ? 1 : 0)) {
+        free(encoder.data);
+        return NULL;
+    }
+    for (index = 0; index < calendar_count; ++index) {
+        const struct lp3_platform_calendar_v1 *calendar =
+            &snapshot->calendars[index];
+        if (calendar->struct_size < sizeof(*calendar) ||
+            calendar->reserved != 0 ||
+            (calendar->flags & ~(LP3_PLATFORM_CALENDAR_VISIBLE |
+                                 LP3_PLATFORM_CALENDAR_ENABLED |
+                                 LP3_PLATFORM_CALENDAR_SYNC_EVENTS)) != 0 ||
+            !calendar_append_u32(&encoder, calendar->flags) ||
+            !calendar_append_u32(&encoder, calendar->color_argb) ||
+            !calendar_append_string(&encoder, &calendar->id,
+                                    LP3_PLATFORM_CALENDAR_ID_MAX, 0) ||
+            !calendar_append_string(&encoder, &calendar->name,
+                                    LP3_PLATFORM_CALENDAR_NAME_MAX, 0) ||
+            !calendar_append_string(&encoder, &calendar->owner_name,
+                                    LP3_PLATFORM_CALENDAR_OWNER_MAX, 1) ||
+            !calendar_append_string(&encoder, &calendar->owner_id,
+                                    LP3_PLATFORM_CALENDAR_OWNER_MAX, 1)) {
+            free(encoder.data);
+            return NULL;
+        }
+    }
+    for (index = 0; index < event_count_value; ++index) {
+        const struct lp3_platform_calendar_event_v1 *calendar_event =
+            &snapshot->events[index];
+        uint32_t attendee_index;
+        uint32_t reminder_index;
+        if (calendar_event->struct_size < sizeof(*calendar_event) ||
+            (calendar_event->flags &
+             ~(LP3_PLATFORM_CALENDAR_EVENT_ALL_DAY |
+               LP3_PLATFORM_CALENDAR_EVENT_RECURS)) != 0 ||
+            calendar_event->availability > 3 || calendar_event->status > 3 ||
+            calendar_event->start_ms >= calendar_event->end_ms ||
+            calendar_event->attendee_count >
+                LP3_PLATFORM_CALENDAR_ATTENDEE_MAX ||
+            calendar_event->reminder_count >
+                LP3_PLATFORM_CALENDAR_REMINDER_MAX ||
+            (calendar_event->attendee_count != 0 &&
+             calendar_event->attendees == NULL) ||
+            (calendar_event->reminder_count != 0 &&
+             calendar_event->reminder_minutes == NULL) ||
+            !calendar_append_u32(&encoder, calendar_event->flags) ||
+            !calendar_append_u32(&encoder, calendar_event->availability) ||
+            !calendar_append_u32(&encoder, calendar_event->status) ||
+            !calendar_append_u32(&encoder, calendar_event->attendee_count) ||
+            !calendar_append_u32(&encoder, calendar_event->reminder_count) ||
+            !calendar_append_u64(&encoder, (uint64_t)calendar_event->start_ms) ||
+            !calendar_append_u64(&encoder, (uint64_t)calendar_event->end_ms) ||
+            !calendar_append_string(&encoder, &calendar_event->id,
+                                    LP3_PLATFORM_CALENDAR_EVENT_ID_MAX, 0) ||
+            !calendar_append_string(&encoder, &calendar_event->calendar_id,
+                                    LP3_PLATFORM_CALENDAR_ID_MAX, 0) ||
+            !calendar_append_string(&encoder, &calendar_event->base_event_id,
+                                    LP3_PLATFORM_CALENDAR_EVENT_ID_MAX, 0) ||
+            !calendar_append_string(&encoder, &calendar_event->title,
+                                    LP3_PLATFORM_CALENDAR_TITLE_MAX, 0) ||
+            !calendar_append_string(&encoder, &calendar_event->description,
+                                    LP3_PLATFORM_CALENDAR_DESCRIPTION_MAX, 1) ||
+            !calendar_append_string(&encoder, &calendar_event->location,
+                                    LP3_PLATFORM_CALENDAR_LOCATION_MAX, 1)) {
+            free(encoder.data);
+            return NULL;
+        }
+        for (attendee_index = 0;
+             attendee_index < calendar_event->attendee_count;
+             ++attendee_index) {
+            const struct lp3_platform_calendar_attendee_v1 *attendee =
+                &calendar_event->attendees[attendee_index];
+            if (attendee->struct_size < sizeof(*attendee) ||
+                (attendee->flags &
+                 ~(LP3_PLATFORM_CALENDAR_ATTENDEE_ORGANIZER |
+                   LP3_PLATFORM_CALENDAR_ATTENDEE_CURRENT_USER)) != 0 ||
+                attendee->role > 3 || attendee->status > 4 ||
+                (attendee->name.size == 0 && attendee->email.size == 0) ||
+                !calendar_append_u32(&encoder, attendee->flags) ||
+                !calendar_append_u32(&encoder, attendee->role) ||
+                !calendar_append_u32(&encoder, attendee->status) ||
+                !calendar_append_string(&encoder, &attendee->name,
+                                        LP3_PLATFORM_CALENDAR_OWNER_MAX, 1) ||
+                !calendar_append_string(&encoder, &attendee->email,
+                                        LP3_PLATFORM_CALENDAR_OWNER_MAX, 1)) {
+                free(encoder.data);
+                return NULL;
+            }
+        }
+        for (reminder_index = 0;
+             reminder_index < calendar_event->reminder_count;
+             ++reminder_index) {
+            int32_t minutes = calendar_event->reminder_minutes[reminder_index];
+            if (minutes < 0 || minutes > 366 * 24 * 60 ||
+                !calendar_append_u32(&encoder, (uint32_t)minutes)) {
+                free(encoder.data);
+                return NULL;
+            }
+        }
+    }
+    *encoded_size = (uint32_t)encoder.size;
+    return encoder.data;
+}
+
+static uint8_t *encode_contact_event(
+    const struct lp3_platform_event_v1 *event, uint32_t *encoded_size) {
+    const struct lp3_platform_contact_snapshot_v1 *snapshot =
+        event->contact_snapshot;
+    struct calendar_encoder encoder;
+    uint32_t kind = 0;
+    uint32_t next_offset = 0;
+    uint32_t contact_count = 0;
+    uint32_t index;
+
+    if (encoded_size == NULL ||
+        event->struct_size <
+            offsetof(struct lp3_platform_event_v1, contact_snapshot) +
+                sizeof(event->contact_snapshot) ||
+        !valid_location_status(event->status)) {
+        return NULL;
+    }
+    if (event->request_id == 0) {
+        if (event->status != LP3_PLATFORM_OK || snapshot != NULL) return NULL;
+    } else if (event->status == LP3_PLATFORM_OK) {
+        if (snapshot == NULL || snapshot->struct_size < sizeof(*snapshot) ||
+            (snapshot->kind != LP3_PLATFORM_CONTACT_QUERY_LIST &&
+             snapshot->kind != LP3_PLATFORM_CONTACT_QUERY_PHONE) ||
+            snapshot->next_offset > 4096 ||
+            snapshot->contact_count > LP3_PLATFORM_CONTACT_PAGE_MAX ||
+            (snapshot->kind == LP3_PLATFORM_CONTACT_QUERY_PHONE &&
+             (snapshot->next_offset != 0 || snapshot->contact_count > 1)) ||
+            (snapshot->contact_count != 0 && snapshot->contacts == NULL)) {
+            return NULL;
+        }
+        kind = snapshot->kind;
+        next_offset = snapshot->next_offset;
+        contact_count = snapshot->contact_count;
+    } else if (snapshot != NULL) {
+        return NULL;
+    }
+
+    encoder.data = (uint8_t *)malloc(LP3_MAX_PAYLOAD_BYTES);
+    encoder.size = 0;
+    if (encoder.data == NULL ||
+        !calendar_append_u64(&encoder, event->request_id) ||
+        !calendar_append_u32(&encoder, (uint32_t)event->status) ||
+        !calendar_append_u32(&encoder, kind) ||
+        !calendar_append_u32(&encoder, next_offset) ||
+        !calendar_append_u32(&encoder, contact_count) ||
+        !calendar_append_u32(&encoder, event->request_id == 0 ? 1 : 0)) {
+        free(encoder.data);
+        return NULL;
+    }
+    for (index = 0; index < contact_count; ++index) {
+        const struct lp3_platform_contact_v1 *contact =
+            &snapshot->contacts[index];
+        if (contact->struct_size < sizeof(*contact) || contact->flags != 0 ||
+            !valid_bytes(&contact->avatar, LP3_PLATFORM_CONTACT_AVATAR_MAX) ||
+            !calendar_append_u32(&encoder, contact->flags) ||
+            !calendar_append_string(&encoder, &contact->id,
+                                    LP3_PLATFORM_CONTACT_ID_MAX, 0) ||
+            !calendar_append_string(&encoder, &contact->display_name,
+                                    LP3_PLATFORM_CONTACT_NAME_MAX, 0) ||
+            !calendar_append_string(&encoder, &contact->phone_number,
+                                    LP3_PLATFORM_CONTACT_NUMBER_MAX, 1) ||
+            !calendar_append_u32(&encoder, contact->avatar.size) ||
+            !calendar_append(&encoder, contact->avatar.data,
+                             contact->avatar.size)) {
+            free(encoder.data);
+            return NULL;
+        }
+    }
+    *encoded_size = (uint32_t)encoder.size;
+    return encoder.data;
+}
+
 static void reset_events(void) {
     lock_event_queues();
     memset(event_queue, 0, sizeof(event_queue));
@@ -675,6 +1015,8 @@ static void reset_events(void) {
     media_event_head = 0;
     media_event_count = 0;
     clear_location_events();
+    clear_calendar_events();
+    clear_contact_events();
     event_failed_domains = 0;
     provider_reset_pending = 0;
     unlock_event_queues();
@@ -712,15 +1054,21 @@ static void provider_event(void *context, const struct lp3_platform_event_v1 *ev
         media_event_head = 0;
         media_event_count = 0;
         clear_location_events();
+        clear_calendar_events();
+        clear_contact_events();
         unlock_event_queues();
         return;
     }
     if (event->type != LP3_PLATFORM_EVENT_LOCATION &&
+        event->type != LP3_PLATFORM_EVENT_CALENDAR &&
+        event->type != LP3_PLATFORM_EVENT_CONTACT &&
         (event->request_id != 0 || event->status != LP3_PLATFORM_OK)) {
         event_failed_domains = LP3_PLATFORM_DOMAIN_ALL;
         event_head = notification_event_head = call_event_head = media_event_head = 0;
         event_count = notification_event_count = call_event_count = media_event_count = 0;
         clear_location_events();
+        clear_calendar_events();
+        clear_contact_events();
         unlock_event_queues();
         return;
     }
@@ -729,7 +1077,8 @@ static void provider_event(void *context, const struct lp3_platform_event_v1 *ev
         if (event->struct_size < offsetof(struct lp3_platform_event_v1, time) +
                 sizeof(event->time) || !valid_time_state(event->time) ||
             event_count + notification_event_count + call_event_count +
-                media_event_count + location_event_count >=
+                media_event_count + location_event_count +
+                calendar_event_count + contact_event_count >=
                 LP3_MAX_QUEUED_EVENTS) {
             event_failed_domains |= LP3_PLATFORM_DOMAIN_TIME;
             event_head = 0;
@@ -753,7 +1102,8 @@ static void provider_event(void *context, const struct lp3_platform_event_v1 *ev
         struct lp3_copied_notification_event *copied;
         if (!valid_notification(event->type, event->notification) ||
             event_count + notification_event_count + call_event_count +
-                media_event_count + location_event_count >=
+                media_event_count + location_event_count +
+                calendar_event_count + contact_event_count >=
                 LP3_MAX_QUEUED_EVENTS) {
             event_failed_domains |= LP3_PLATFORM_DOMAIN_NOTIFICATIONS;
             notification_event_head = 0;
@@ -796,7 +1146,8 @@ static void provider_event(void *context, const struct lp3_platform_event_v1 *ev
         if (event->struct_size < offsetof(struct lp3_platform_event_v1, call) +
                 sizeof(event->call) || !valid_call(event->call) ||
             event_count + notification_event_count + call_event_count +
-                media_event_count + location_event_count >=
+                media_event_count + location_event_count +
+                calendar_event_count + contact_event_count >=
                 LP3_MAX_QUEUED_EVENTS) {
             event_failed_domains |= LP3_PLATFORM_DOMAIN_CALLS;
             call_event_head = 0;
@@ -832,8 +1183,8 @@ static void provider_event(void *context, const struct lp3_platform_event_v1 *ev
         }
         if (media_event_count == 0) {
             if (event_count + notification_event_count + call_event_count +
-                    location_event_count >=
-                    LP3_MAX_QUEUED_EVENTS) {
+                    location_event_count + calendar_event_count +
+                    contact_event_count >= LP3_MAX_QUEUED_EVENTS) {
                 event_failed_domains |= LP3_PLATFORM_DOMAIN_MEDIA;
                 unlock_event_queues();
                 return;
@@ -888,10 +1239,14 @@ static void provider_event(void *context, const struct lp3_platform_event_v1 *ev
         if ((event_failed_domains & LP3_PLATFORM_DOMAIN_LOCATION) != 0 ||
             location_event_count >= LP3_MAX_QUEUED_EVENTS ||
             event_count + notification_event_count + call_event_count +
-                media_event_count + location_event_count >= LP3_MAX_QUEUED_EVENTS) {
+                media_event_count + location_event_count +
+                    calendar_event_count + contact_event_count >=
+                    LP3_MAX_QUEUED_EVENTS) {
             if (location_event_count >= LP3_MAX_QUEUED_EVENTS ||
                 event_count + notification_event_count + call_event_count +
-                    media_event_count + location_event_count >= LP3_MAX_QUEUED_EVENTS) {
+                    media_event_count + location_event_count +
+                        calendar_event_count + contact_event_count >=
+                        LP3_MAX_QUEUED_EVENTS) {
                 event_failed_domains |= LP3_PLATFORM_DOMAIN_LOCATION;
                 clear_location_events();
             }
@@ -912,6 +1267,114 @@ static void provider_event(void *context, const struct lp3_platform_event_v1 *ev
             copied->timestamp_ms = event->location->timestamp_ms;
         }
         ++location_event_count;
+    } else if (event->type == LP3_PLATFORM_EVENT_CALENDAR) {
+        struct lp3_copied_calendar_event *copied;
+        uint8_t *payload;
+        uint32_t payload_size = 0;
+        int outstanding_index = -1;
+        int tombstone_index;
+
+        if (event->request_id != 0) {
+            tombstone_index = location_id_index(
+                calendar_tombstones, calendar_tombstone_count,
+                event->request_id);
+            if (tombstone_index >= 0) {
+                location_remove_id(calendar_tombstones,
+                                   &calendar_tombstone_count,
+                                   (size_t)tombstone_index);
+                unlock_event_queues();
+                return;
+            }
+            outstanding_index = location_id_index(
+                calendar_outstanding, calendar_outstanding_count,
+                event->request_id);
+            if (outstanding_index < 0) {
+                unlock_event_queues();
+                return;
+            }
+        }
+        payload = encode_calendar_event(event, &payload_size);
+        if (payload == NULL ||
+            event_count + notification_event_count + call_event_count +
+                media_event_count + location_event_count +
+                calendar_event_count + contact_event_count >=
+                LP3_MAX_QUEUED_EVENTS) {
+            free(payload);
+            event_failed_domains |= LP3_PLATFORM_DOMAIN_CALENDAR;
+            clear_calendar_events();
+            unlock_event_queues();
+            return;
+        }
+        if ((event_failed_domains & LP3_PLATFORM_DOMAIN_CALENDAR) != 0) {
+            free(payload);
+            unlock_event_queues();
+            return;
+        }
+        if (outstanding_index >= 0) {
+            location_remove_id(calendar_outstanding,
+                               &calendar_outstanding_count,
+                               (size_t)outstanding_index);
+        }
+        copied = &calendar_event_queue[
+            (calendar_event_head + calendar_event_count) %
+                LP3_MAX_QUEUED_EVENTS];
+        copied->payload = payload;
+        copied->size = payload_size;
+        ++calendar_event_count;
+    } else if (event->type == LP3_PLATFORM_EVENT_CONTACT) {
+        struct lp3_copied_contact_event *copied;
+        uint8_t *payload;
+        uint32_t payload_size = 0;
+        int outstanding_index = -1;
+        int tombstone_index;
+
+        if (event->request_id != 0) {
+            tombstone_index = location_id_index(
+                contact_tombstones, contact_tombstone_count,
+                event->request_id);
+            if (tombstone_index >= 0) {
+                location_remove_id(contact_tombstones,
+                                   &contact_tombstone_count,
+                                   (size_t)tombstone_index);
+                unlock_event_queues();
+                return;
+            }
+            outstanding_index = location_id_index(
+                contact_outstanding, contact_outstanding_count,
+                event->request_id);
+            if (outstanding_index < 0) {
+                unlock_event_queues();
+                return;
+            }
+        }
+        payload = encode_contact_event(event, &payload_size);
+        if (payload == NULL ||
+            event_count + notification_event_count + call_event_count +
+                media_event_count + location_event_count +
+                calendar_event_count + contact_event_count >=
+                LP3_MAX_QUEUED_EVENTS) {
+            free(payload);
+            event_failed_domains |= LP3_PLATFORM_DOMAIN_CONTACTS;
+            clear_contact_events();
+            unlock_event_queues();
+            return;
+        }
+        if ((event_failed_domains & LP3_PLATFORM_DOMAIN_CONTACTS) != 0) {
+            free(payload);
+            unlock_event_queues();
+            return;
+        }
+        if (outstanding_index >= 0) {
+            location_remove_id(contact_outstanding,
+                               &contact_outstanding_count,
+                               (size_t)outstanding_index);
+        }
+        copied = &contact_event_queue[
+            (contact_event_head + contact_event_count) %
+                LP3_MAX_QUEUED_EVENTS];
+        copied->payload = payload;
+        copied->size = payload_size;
+        ++contact_event_count;
     } else if (event->type == LP3_PLATFORM_EVENT_PROVIDER_STATUS) {
         if (event->struct_size <
                 offsetof(struct lp3_platform_event_v1, provider_status) +
@@ -937,6 +1400,8 @@ static void provider_event(void *context, const struct lp3_platform_event_v1 *ev
         media_event_head = 0;
         media_event_count = 0;
         clear_location_events();
+        clear_calendar_events();
+        clear_contact_events();
     } else {
         event_failed_domains = LP3_PLATFORM_DOMAIN_ALL;
         provider_reset_pending = 0;
@@ -949,6 +1414,8 @@ static void provider_event(void *context, const struct lp3_platform_event_v1 *ev
         media_event_head = 0;
         media_event_count = 0;
         clear_location_events();
+        clear_calendar_events();
+        clear_contact_events();
     }
     unlock_event_queues();
 }
@@ -985,9 +1452,11 @@ static int api_is_compatible(const struct lp3_platform_api_v1 *api) {
         ((domains & LP3_PLATFORM_DOMAIN_CALLS) != 0 &&
          !API_HAS_MEMBER(api, call_command)) ||
         ((domains & LP3_PLATFORM_DOMAIN_CALENDAR) != 0 &&
-         !API_HAS_MEMBER(api, calendar_query)) ||
+         (api->info.abi_minor < 5 ||
+          !API_HAS_MEMBER(api, calendar_query))) ||
         ((domains & LP3_PLATFORM_DOMAIN_CONTACTS) != 0 &&
-         !API_HAS_MEMBER(api, contact_query)) ||
+         (api->info.abi_minor < 6 ||
+          !API_HAS_MEMBER(api, contact_query))) ||
         ((domains & LP3_PLATFORM_DOMAIN_LOCATION) != 0 &&
          !API_HAS_MEMBER(api, location_query)) ||
         ((domains & LP3_PLATFORM_DOMAIN_TIME) != 0 &&
@@ -1755,6 +2224,377 @@ Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_drainLocationEven
     }
     if (count != 0) {
         (*env)->SetLongArrayRegion(env, result, 0, (jsize)(count * 6), values);
+    }
+    return result;
+}
+
+JNIEXPORT jlongArray JNICALL
+Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_calendarStart(
+    JNIEnv *env, jclass klass, jint kind_value, jint max_records_value,
+    jint offset_value, jlong start_ms_value, jlong end_ms_value,
+    jstring calendar_id_value) {
+    struct lp3_platform_calendar_query_v1 request;
+    char calendar_id[LP3_PLATFORM_CALENDAR_ID_MAX + 1];
+    uint32_t calendar_id_size = 0;
+    jlong values[2];
+    jlongArray result;
+    uint64_t request_id = 0;
+    int32_t status = LP3_PLATFORM_UNAVAILABLE;
+    int command_gate_held = 0;
+    (void)klass;
+
+    if ((kind_value != LP3_PLATFORM_CALENDAR_QUERY_CALENDARS &&
+         kind_value != LP3_PLATFORM_CALENDAR_QUERY_EVENTS) ||
+        max_records_value <= 0 ||
+        max_records_value > (jint)LP3_PLATFORM_CALENDAR_PAGE_MAX ||
+        offset_value < 0 || offset_value > 512 ||
+        !java_string_to_utf8(env, calendar_id_value, calendar_id,
+                            LP3_PLATFORM_CALENDAR_ID_MAX, &calendar_id_size, 1) ||
+        (kind_value == LP3_PLATFORM_CALENDAR_QUERY_CALENDARS &&
+         (start_ms_value != 0 || end_ms_value != 0 ||
+          calendar_id_size != 0)) ||
+        (kind_value == LP3_PLATFORM_CALENDAR_QUERY_EVENTS &&
+         (calendar_id_size == 0 || start_ms_value >= end_ms_value ||
+          (uint64_t)end_ms_value - (uint64_t)start_ms_value >
+              UINT64_C(370) * 24 * 60 * 60 * 1000))) {
+        status = LP3_PLATFORM_INVALID_ARGUMENT;
+        goto done;
+    }
+    pthread_mutex_lock(&loader_lock);
+    command_gate_held = begin_provider_command_dispatch(
+        LP3_PLATFORM_DOMAIN_CALENDAR);
+    if (command_gate_held && loader.api != NULL && loader.instance != NULL &&
+        (loader.api->info.domains & LP3_PLATFORM_DOMAIN_CALENDAR) != 0 &&
+        API_HAS_MEMBER(loader.api, calendar_query) &&
+        loader.next_request_id != 0 &&
+        (loader.next_request_id & (UINT64_C(1) << 63)) == 0) {
+        lock_event_queues();
+        if (calendar_outstanding_count < LP3_MAX_QUEUED_EVENTS) {
+            request_id = loader.next_request_id++;
+            calendar_outstanding[calendar_outstanding_count++] = request_id;
+            unlock_event_queues();
+            memset(&request, 0, sizeof(request));
+            request.struct_size = sizeof(request);
+            request.kind = (uint32_t)kind_value;
+            request.max_records = (uint32_t)max_records_value;
+            request.offset = (uint32_t)offset_value;
+            request.start_ms = (int64_t)start_ms_value;
+            request.end_ms = (int64_t)end_ms_value;
+            request.calendar_id.data = calendar_id_size == 0 ? NULL : calendar_id;
+            request.calendar_id.size = calendar_id_size;
+            status = loader.api->calendar_query(
+                loader.instance, request_id, &request);
+            if (status != LP3_PLATFORM_OK) {
+                int index;
+                lock_event_queues();
+                index = location_id_index(calendar_outstanding,
+                                           calendar_outstanding_count,
+                                           request_id);
+                if (index >= 0) {
+                    location_remove_id(calendar_outstanding,
+                                       &calendar_outstanding_count,
+                                       (size_t)index);
+                }
+                unlock_event_queues();
+                request_id = 0;
+            }
+        } else {
+            unlock_event_queues();
+            status = LP3_PLATFORM_BUSY;
+        }
+    }
+    if (command_gate_held) {
+        end_provider_command_dispatch();
+    }
+    pthread_mutex_unlock(&loader_lock);
+
+done:
+    values[0] = (jlong)status;
+    values[1] = (jlong)request_id;
+    result = (*env)->NewLongArray(env, 2);
+    if (result != NULL) {
+        (*env)->SetLongArrayRegion(env, result, 0, 2, values);
+    }
+    return result;
+}
+
+JNIEXPORT jint JNICALL
+Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_cancelCalendar(
+    JNIEnv *env, jclass klass, jlong request_id_value) {
+    uint64_t request_id;
+    int32_t status = LP3_PLATFORM_UNAVAILABLE;
+    int command_gate_held;
+    (void)env;
+    (void)klass;
+
+    if (request_id_value <= 0 ||
+        ((uint64_t)request_id_value & (UINT64_C(1) << 63)) != 0) {
+        return LP3_PLATFORM_INVALID_ARGUMENT;
+    }
+    request_id = (uint64_t)request_id_value;
+    pthread_mutex_lock(&loader_lock);
+    command_gate_held = begin_provider_command_dispatch(
+        LP3_PLATFORM_DOMAIN_CALENDAR);
+    if (command_gate_held && loader.api != NULL && loader.instance != NULL &&
+        (loader.api->info.domains & LP3_PLATFORM_DOMAIN_CALENDAR) != 0) {
+        int index;
+        lock_event_queues();
+        index = location_id_index(calendar_outstanding,
+                                  calendar_outstanding_count, request_id);
+        if (index < 0) {
+            status = LP3_PLATFORM_INVALID_ARGUMENT;
+        } else {
+            location_remove_id(calendar_outstanding,
+                               &calendar_outstanding_count, (size_t)index);
+            if (calendar_tombstone_count >= LP3_MAX_QUEUED_EVENTS) {
+                location_remove_id(calendar_tombstones,
+                                   &calendar_tombstone_count, 0);
+            }
+            calendar_tombstones[calendar_tombstone_count++] = request_id;
+            status = LP3_PLATFORM_OK;
+        }
+        unlock_event_queues();
+        if (status == LP3_PLATFORM_OK) {
+            status = API_HAS_MEMBER(loader.api, cancel) ?
+                loader.api->cancel(loader.instance, request_id) :
+                LP3_PLATFORM_NOT_SUPPORTED;
+        }
+    }
+    if (command_gate_held) {
+        end_provider_command_dispatch();
+    }
+    pthread_mutex_unlock(&loader_lock);
+    return status;
+}
+
+JNIEXPORT jobjectArray JNICALL
+Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_drainCalendarEvents(
+    JNIEnv *env, jclass klass) {
+    struct lp3_copied_calendar_event copied[LP3_MAX_QUEUED_EVENTS];
+    jclass byte_array_class;
+    jobjectArray result;
+    size_t count;
+    size_t index;
+    (void)klass;
+
+    memset(copied, 0, sizeof(copied));
+    lock_event_queues();
+    count = provider_reset_pending ? 0 : calendar_event_count;
+    for (index = 0; index < count; ++index) {
+        size_t slot = (calendar_event_head + index) % LP3_MAX_QUEUED_EVENTS;
+        copied[index] = calendar_event_queue[slot];
+        memset(&calendar_event_queue[slot], 0,
+               sizeof(calendar_event_queue[slot]));
+    }
+    calendar_event_head = (calendar_event_head + count) %
+        LP3_MAX_QUEUED_EVENTS;
+    calendar_event_count -= count;
+    unlock_event_queues();
+
+    byte_array_class = (*env)->FindClass(env, "[B");
+    if (byte_array_class == NULL) {
+        for (index = 0; index < count; ++index) free(copied[index].payload);
+        return NULL;
+    }
+    result = (*env)->NewObjectArray(env, (jsize)count, byte_array_class, NULL);
+    if (result == NULL) {
+        for (index = 0; index < count; ++index) free(copied[index].payload);
+        return NULL;
+    }
+    for (index = 0; index < count; ++index) {
+        jbyteArray record = (*env)->NewByteArray(env, (jsize)copied[index].size);
+        if (record == NULL) {
+            size_t remaining;
+            for (remaining = index; remaining < count; ++remaining) {
+                free(copied[remaining].payload);
+            }
+            return NULL;
+        }
+        (*env)->SetByteArrayRegion(env, record, 0,
+                                  (jsize)copied[index].size,
+                                  (const jbyte *)copied[index].payload);
+        (*env)->SetObjectArrayElement(env, result, (jsize)index, record);
+        (*env)->DeleteLocalRef(env, record);
+        free(copied[index].payload);
+    }
+    return result;
+}
+
+JNIEXPORT jlongArray JNICALL
+Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_contactStart(
+    JNIEnv *env, jclass klass, jint kind_value, jint max_records_value,
+    jint offset_value, jstring query_value) {
+    struct lp3_platform_contact_query_v1 request;
+    char query[LP3_PLATFORM_CONTACT_NUMBER_MAX + 1];
+    uint32_t query_size = 0;
+    jlong values[2];
+    jlongArray result;
+    uint64_t request_id = 0;
+    int32_t status = LP3_PLATFORM_UNAVAILABLE;
+    int command_gate_held = 0;
+    (void)klass;
+
+    if ((kind_value != LP3_PLATFORM_CONTACT_QUERY_LIST &&
+         kind_value != LP3_PLATFORM_CONTACT_QUERY_PHONE) ||
+        max_records_value <= 0 ||
+        max_records_value > (jint)LP3_PLATFORM_CONTACT_PAGE_MAX ||
+        offset_value < 0 || offset_value > 4096 ||
+        !java_string_to_utf8(env, query_value, query,
+                            LP3_PLATFORM_CONTACT_NUMBER_MAX, &query_size, 1) ||
+        (kind_value == LP3_PLATFORM_CONTACT_QUERY_LIST && query_size != 0) ||
+        (kind_value == LP3_PLATFORM_CONTACT_QUERY_PHONE &&
+         (max_records_value != 1 || offset_value != 0 || query_size == 0))) {
+        status = LP3_PLATFORM_INVALID_ARGUMENT;
+        goto done;
+    }
+    pthread_mutex_lock(&loader_lock);
+    command_gate_held = begin_provider_command_dispatch(
+        LP3_PLATFORM_DOMAIN_CONTACTS);
+    if (command_gate_held && loader.api != NULL && loader.instance != NULL &&
+        (loader.api->info.domains & LP3_PLATFORM_DOMAIN_CONTACTS) != 0 &&
+        API_HAS_MEMBER(loader.api, contact_query) && loader.next_request_id != 0 &&
+        (loader.next_request_id & (UINT64_C(1) << 63)) == 0) {
+        lock_event_queues();
+        if (contact_outstanding_count < LP3_MAX_QUEUED_EVENTS) {
+            request_id = loader.next_request_id++;
+            contact_outstanding[contact_outstanding_count++] = request_id;
+            unlock_event_queues();
+            memset(&request, 0, sizeof(request));
+            request.struct_size = sizeof(request);
+            request.kind = (uint32_t)kind_value;
+            request.max_records = (uint32_t)max_records_value;
+            request.offset = (uint32_t)offset_value;
+            request.query.data = query_size == 0 ? NULL : query;
+            request.query.size = query_size;
+            status = loader.api->contact_query(
+                loader.instance, request_id, &request);
+            if (status != LP3_PLATFORM_OK) {
+                int index;
+                lock_event_queues();
+                index = location_id_index(contact_outstanding,
+                                          contact_outstanding_count,
+                                          request_id);
+                if (index >= 0) {
+                    location_remove_id(contact_outstanding,
+                                       &contact_outstanding_count,
+                                       (size_t)index);
+                }
+                unlock_event_queues();
+                request_id = 0;
+            }
+        } else {
+            unlock_event_queues();
+            status = LP3_PLATFORM_BUSY;
+        }
+    }
+    if (command_gate_held) end_provider_command_dispatch();
+    pthread_mutex_unlock(&loader_lock);
+
+done:
+    values[0] = (jlong)status;
+    values[1] = (jlong)request_id;
+    result = (*env)->NewLongArray(env, 2);
+    if (result != NULL) {
+        (*env)->SetLongArrayRegion(env, result, 0, 2, values);
+    }
+    return result;
+}
+
+JNIEXPORT jint JNICALL
+Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_cancelContact(
+    JNIEnv *env, jclass klass, jlong request_id_value) {
+    uint64_t request_id;
+    int32_t status = LP3_PLATFORM_UNAVAILABLE;
+    int command_gate_held;
+    (void)env;
+    (void)klass;
+
+    if (request_id_value <= 0 ||
+        ((uint64_t)request_id_value & (UINT64_C(1) << 63)) != 0) {
+        return LP3_PLATFORM_INVALID_ARGUMENT;
+    }
+    request_id = (uint64_t)request_id_value;
+    pthread_mutex_lock(&loader_lock);
+    command_gate_held = begin_provider_command_dispatch(
+        LP3_PLATFORM_DOMAIN_CONTACTS);
+    if (command_gate_held && loader.api != NULL && loader.instance != NULL &&
+        (loader.api->info.domains & LP3_PLATFORM_DOMAIN_CONTACTS) != 0) {
+        int index;
+        lock_event_queues();
+        index = location_id_index(contact_outstanding,
+                                  contact_outstanding_count, request_id);
+        if (index < 0) {
+            status = LP3_PLATFORM_INVALID_ARGUMENT;
+        } else {
+            location_remove_id(contact_outstanding,
+                               &contact_outstanding_count, (size_t)index);
+            if (contact_tombstone_count >= LP3_MAX_QUEUED_EVENTS) {
+                location_remove_id(contact_tombstones,
+                                   &contact_tombstone_count, 0);
+            }
+            contact_tombstones[contact_tombstone_count++] = request_id;
+            status = LP3_PLATFORM_OK;
+        }
+        unlock_event_queues();
+        if (status == LP3_PLATFORM_OK) {
+            status = API_HAS_MEMBER(loader.api, cancel) ?
+                loader.api->cancel(loader.instance, request_id) :
+                LP3_PLATFORM_NOT_SUPPORTED;
+        }
+    }
+    if (command_gate_held) end_provider_command_dispatch();
+    pthread_mutex_unlock(&loader_lock);
+    return status;
+}
+
+JNIEXPORT jobjectArray JNICALL
+Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_drainContactEvents(
+    JNIEnv *env, jclass klass) {
+    struct lp3_copied_contact_event copied[LP3_MAX_QUEUED_EVENTS];
+    jclass byte_array_class;
+    jobjectArray result;
+    size_t count;
+    size_t index;
+    (void)klass;
+
+    memset(copied, 0, sizeof(copied));
+    lock_event_queues();
+    count = provider_reset_pending ? 0 : contact_event_count;
+    for (index = 0; index < count; ++index) {
+        size_t slot = (contact_event_head + index) % LP3_MAX_QUEUED_EVENTS;
+        copied[index] = contact_event_queue[slot];
+        memset(&contact_event_queue[slot], 0,
+               sizeof(contact_event_queue[slot]));
+    }
+    contact_event_head = (contact_event_head + count) % LP3_MAX_QUEUED_EVENTS;
+    contact_event_count -= count;
+    unlock_event_queues();
+
+    byte_array_class = (*env)->FindClass(env, "[B");
+    if (byte_array_class == NULL) {
+        for (index = 0; index < count; ++index) free(copied[index].payload);
+        return NULL;
+    }
+    result = (*env)->NewObjectArray(env, (jsize)count, byte_array_class, NULL);
+    if (result == NULL) {
+        for (index = 0; index < count; ++index) free(copied[index].payload);
+        return NULL;
+    }
+    for (index = 0; index < count; ++index) {
+        jbyteArray record = (*env)->NewByteArray(env, (jsize)copied[index].size);
+        if (record == NULL) {
+            size_t remaining;
+            for (remaining = index; remaining < count; ++remaining) {
+                free(copied[remaining].payload);
+            }
+            return NULL;
+        }
+        (*env)->SetByteArrayRegion(env, record, 0,
+                                  (jsize)copied[index].size,
+                                  (const jbyte *)copied[index].payload);
+        (*env)->SetObjectArrayElement(env, result, (jsize)index, record);
+        (*env)->DeleteLocalRef(env, record);
+        free(copied[index].payload);
     }
     return result;
 }

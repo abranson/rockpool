@@ -11,6 +11,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import java.util.ArrayDeque
@@ -152,6 +154,49 @@ class PlatformCallsBackendTest {
         )
 
         assertNull(current.value)
+    }
+
+    @Test
+    fun resolvesMissingCallerNameWithoutDelayingTheInitialCall() = runBlocking {
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+        try {
+            val lookupStarted = CompletableDeferred<Unit>()
+            val releaseLookup = CompletableDeferred<Unit>()
+            val backend = PlatformCallsBackend(
+                controller = PlatformProviderController(),
+                commandScope = scope,
+                lookupContactName = { number ->
+                    assertEquals("+123", number)
+                    lookupStarted.complete(Unit)
+                    releaseLookup.await()
+                    "Alice"
+                },
+            )
+            val current = MutableStateFlow<Call?>(null)
+            backend.init(current)
+
+            backend.providerCall(
+                PlatformCallEvent(
+                    PlatformProviderController.CALL_RINGING,
+                    "call_a",
+                    "",
+                    "+123",
+                )
+            )
+            withTimeout(1_000) { lookupStarted.await() }
+            val unresolved = assertIs<Call.RingingCall>(current.value)
+            assertNull(unresolved.contactName)
+            assertEquals("+123", unresolved.contactNumber)
+
+            releaseLookup.complete(Unit)
+            val resolved = withTimeout(1_000) {
+                current.filterNotNull().first { it.contactName == "Alice" }
+            }
+            assertEquals(unresolved.cookie, resolved.cookie)
+            assertEquals("+123", resolved.contactNumber)
+        } finally {
+            scope.cancel()
+        }
     }
 
     @Test

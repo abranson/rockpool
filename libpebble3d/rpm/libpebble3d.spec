@@ -7,7 +7,7 @@ URL:        https://github.com/abranson/rockpool
 Requires:   systemd-user-session-targets
 Provides:   rockpool-dbus-api = 1
 Provides:   libpebble3d-platform-abi = 1
-Provides:   libpebble3d-platform-abi-minor = 4
+Provides:   libpebble3d-platform-abi-minor = 6
 Provides:   libpebble3d-platform-launcher-abi = 1
 # Temporary migration capability.  It is removed with the isolated
 # org.rockwork adapter in the release after UI cutover.

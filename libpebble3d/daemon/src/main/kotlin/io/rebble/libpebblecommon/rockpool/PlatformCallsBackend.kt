@@ -21,6 +21,7 @@ internal class PlatformCallsBackend(
         CoroutineScope(SupervisorJob() + Dispatchers.IO),
     private val executeCommand: suspend (Int, String, () -> Boolean) -> Int? =
         controller::callCommand,
+    private val lookupContactName: suspend (String) -> String? = { null },
 ) : LegacyPhoneReceiver {
     private data class PendingCommand(
         val command: Int,
@@ -124,6 +125,32 @@ internal class PlatformCallsBackend(
             }
         }
         update.first?.value = update.second
+        if (event.state != PlatformProviderController.CALL_ENDED &&
+            event.name.isEmpty() && event.number.isNotEmpty()) {
+            val lookupId = event.id
+            val lookupNumber = event.number
+            val lookupGeneration = synchronized(stateLock) { currentGeneration }
+            commandScope.launch {
+                val name = try {
+                    lookupContactName(lookupNumber)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    logger.w(e) { "platform caller-name lookup failed" }
+                    null
+                }
+                if (name.isNullOrBlank()) return@launch
+                val refreshed = synchronized(stateLock) {
+                    if (currentId != lookupId || currentGeneration != lookupGeneration ||
+                        currentNumber != lookupNumber || currentName.isNotEmpty()) {
+                        return@synchronized null
+                    }
+                    currentName = name
+                    target to currentCallLocked()
+                }
+                refreshed?.first?.value = refreshed.second
+            }
+        }
     }
 
     private fun currentCallLocked(): Call? {
