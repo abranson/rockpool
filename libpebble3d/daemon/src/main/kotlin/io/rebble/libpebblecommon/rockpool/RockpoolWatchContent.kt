@@ -24,8 +24,6 @@ import java.nio.file.SecureDirectoryStream
 import java.nio.file.StandardOpenOption
 import java.nio.file.attribute.PosixFilePermission
 import java.nio.file.attribute.BasicFileAttributeView
-import java.nio.file.attribute.PosixFileAttributeView
-import java.nio.file.attribute.UserPrincipal
 import java.nio.file.attribute.PosixFilePermissions
 import java.util.UUID
 import java.util.zip.CRC32
@@ -35,6 +33,7 @@ import kotlin.uuid.Uuid
 internal fun rockpoolApplicationRecords(
     applications: List<LockerWrapper>,
     watchType: WatchType,
+    runningApp: Uuid? = null,
 ): List<Map<String, Variant<*>>> = applications
     .filter { rockpoolApplicationIsInstalledOnWatch(it, watchType) }
     .sortedBy { it.properties.order }
@@ -51,6 +50,7 @@ internal fun rockpoolApplicationRecords(
             "hasSettings" to Variant((app as? LockerWrapper.NormalApp)?.configurable ?: false),
             "icon" to Variant(platform.iconImageUrl.orEmpty()),
             "systemApp" to Variant(app is LockerWrapper.SystemApp),
+            "running" to Variant(properties.id == runningApp),
         )
     }
 
@@ -82,6 +82,14 @@ internal fun rockpoolApplicationRemovalEligibility(
 internal fun parseCanonicalApplicationUuid(value: String): Uuid? =
     runCatching { Uuid.parse(value) }.getOrNull()
         ?.takeIf { it.toString().equals(value, ignoreCase = true) }
+
+internal fun validApplicationConfigurationUrl(value: String): Boolean =
+    value.isNotBlank() && '\u0000' !in value &&
+        value.encodeToByteArray().size <= MAX_APPLICATION_CONFIGURATION_URL_BYTES
+
+internal fun validApplicationConfigurationResult(value: String): Boolean =
+    '\u0000' !in value &&
+        value.encodeToByteArray().size <= MAX_APPLICATION_CONFIGURATION_RESULT_BYTES
 
 internal data class RockpoolScreenshotRecord(
     val id: String,
@@ -197,7 +205,7 @@ internal class RockpoolScreenshotStore(
     /**
      * Remove one screenshot previously returned by [list] or [write].
      *
-     * The caller-visible absolute path is accepted for compatibility with org.rockwork, but the
+     * The caller-visible absolute path is accepted for compatibility with org.rockpool, but the
      * deletion itself is resolved through the already-open secure directory and never follows a
      * caller-selected directory or symbolic link.
      */
@@ -236,8 +244,6 @@ internal class RockpoolScreenshotStore(
         require(Files.isDirectory(home, LinkOption.NOFOLLOW_LINKS) && !Files.isSymbolicLink(home)) {
             "user home is unavailable"
         }
-        val expectedOwner = Files.getOwner(home, LinkOption.NOFOLLOW_LINKS)
-        requireDirectoryPermissions(home, expectedOwner)
         val streams = mutableListOf<DirectoryStream<Path>>()
         try {
             val homeStream = Files.newDirectoryStream(home)
@@ -264,10 +270,8 @@ internal class RockpoolScreenshotStore(
                     } catch (_: FileAlreadyExistsException) {
                         // A concurrent creator won. The secure open below validates its entry.
                     }
-                    validateDirectoryEntry(secure, relative, expectedOwner)
                     secure.newDirectoryStream(relative, LinkOption.NOFOLLOW_LINKS)
                 }
-                validateDirectoryEntry(secure, relative, expectedOwner)
                 streams += child
                 secure = child as? SecureDirectoryStream<Path>
                     ?: error("secure directory access is unavailable")
@@ -277,37 +281,6 @@ internal class RockpoolScreenshotStore(
         } catch (e: Exception) {
             streams.asReversed().forEach { runCatching { it.close() } }
             throw e
-        }
-    }
-
-    private fun validateDirectoryEntry(
-        parent: SecureDirectoryStream<Path>,
-        relative: Path,
-        expectedOwner: UserPrincipal,
-    ) {
-        val attributes = parent.getFileAttributeView(
-            relative,
-            PosixFileAttributeView::class.java,
-            LinkOption.NOFOLLOW_LINKS,
-        )?.readAttributes() ?: error("POSIX directory attributes are unavailable")
-        require(attributes.isDirectory && !attributes.isSymbolicLink) {
-            "screenshot directory component is unsafe"
-        }
-        require(attributes.owner() == expectedOwner) { "screenshot directory owner is unsafe" }
-        require(attributes.permissions().none { it in UNSAFE_DIRECTORY_PERMISSIONS }) {
-            "screenshot directory permissions are unsafe"
-        }
-    }
-
-    private fun requireDirectoryPermissions(path: Path, expectedOwner: UserPrincipal) {
-        val attributes = Files.readAttributes(
-            path,
-            java.nio.file.attribute.PosixFileAttributes::class.java,
-            LinkOption.NOFOLLOW_LINKS,
-        )
-        require(attributes.owner() == expectedOwner) { "user home owner is unsafe" }
-        require(attributes.permissions().none { it in UNSAFE_DIRECTORY_PERMISSIONS }) {
-            "user home permissions are unsafe"
         }
     }
 
@@ -328,14 +301,12 @@ internal class RockpoolScreenshotStore(
             return RockpoolScreenshotStore(Paths.get(home).toAbsolutePath().normalize())
         }
 
-        private val SCREENSHOT_DIRECTORY_COMPONENTS = listOf("Pictures", "Screenshots", "Pebble")
+        private const val SAILFISH_PICTURES_DIRECTORY = "Pictures"
+        private val SCREENSHOT_DIRECTORY_COMPONENTS =
+            listOf(SAILFISH_PICTURES_DIRECTORY, "Screenshots", "Pebble")
         private val SCREENSHOT_NAME = Regex("pebble-(\\d{10,17})(?:-[0-9a-f]{32})?\\.png")
         private val RANDOM_ID = Regex("[0-9a-f]{32}")
         private val DIRECTORY_PERMISSIONS = PosixFilePermissions.fromString("rwx------")
-        private val UNSAFE_DIRECTORY_PERMISSIONS = setOf(
-            PosixFilePermission.GROUP_WRITE,
-            PosixFilePermission.OTHERS_WRITE,
-        )
         private val FILE_PERMISSIONS = setOf(
             PosixFilePermission.OWNER_READ,
             PosixFilePermission.OWNER_WRITE,
@@ -431,6 +402,8 @@ private val PNG_SIGNATURE = byteArrayOf(
     0x89.toByte(), 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
 )
 private const val PNG_MIME_TYPE = "image/png"
+private const val MAX_APPLICATION_CONFIGURATION_URL_BYTES = 16 * 1024
+private const val MAX_APPLICATION_CONFIGURATION_RESULT_BYTES = 64 * 1024
 private const val MAX_SCREENSHOT_DIMENSION = 2048
 private const val MAX_SCREENSHOT_PIXELS = 4_194_304L
 private const val MAX_SCREENSHOT_RAW_BYTES = 17L * 1024L * 1024L

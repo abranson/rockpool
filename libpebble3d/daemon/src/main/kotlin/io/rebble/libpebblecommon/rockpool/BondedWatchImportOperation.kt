@@ -8,7 +8,7 @@ import java.io.IOException
 
 /**
  * D-Bus-facing interpretation of the portable importer result.  Keeping this
- * separate from [RockpoolService] makes the commit/cancellation contract
+ * separate from [LibPebble3Service] makes the commit/cancellation contract
  * independently testable without exporting a D-Bus service.
  */
 internal sealed interface BondedWatchImportOperationResult {
@@ -53,6 +53,6 @@ internal suspend fun runBondedWatchImport(
     BondedWatchImportOperationResult.Failed(ERROR_IO, "bond import storage failed")
 }
 
-internal const val ERROR_CANCELLED = "org.rockpool.Error.Cancelled"
-internal const val ERROR_TRANSPORT_FAILED = "org.rockpool.Error.TransportFailed"
-internal const val ERROR_IO = "org.rockpool.Error.IO"
+internal const val ERROR_CANCELLED = "io.rebble.libpebble3.Error.Cancelled"
+internal const val ERROR_TRANSPORT_FAILED = "io.rebble.libpebble3.Error.TransportFailed"
+internal const val ERROR_IO = "io.rebble.libpebble3.Error.IO"

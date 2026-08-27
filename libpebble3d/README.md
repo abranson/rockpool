@@ -1,20 +1,34 @@
 # libpebble3d
 
-The unprivileged Pebble daemon owns the `org.rockpool` session-bus API.  During
-the migration release it additionally exports the isolated `org.rockwork`
-compatibility service on a different D-Bus connection.  The public contract,
-platform ABI, and provider wire protocol are under `api/`, `include/`, and
-`docs/`.
+The unprivileged Pebble daemon owns the `io.rebble.libpebble3` session-bus API.
+It additionally exports the private `org.rockpool` UI facade on a different
+D-Bus connection. The public contract, platform ABI, and provider wire
+protocol are under `api/`, `include/`, and `docs/`.
 
 The canonical platform-provider header remains in this source tree so the
-Native Image JNI loader can compile against it directly.  The Rockpool source
-RPM packages the same file as `libpebble3d-platform-devel`; the daemon RPM
-provides only the matching runtime ABI capability.
+Native Image JNI loader and Sailfish provider can compile against it directly.
+It is a private in-tree build interface and is not installed by the Rockpool
+RPM.
 
-Platform ABI 1.6 adds bounded read-only Sailfish contact snapshots, exact
-phone-number lookup, and change notifications. Platform ABI 1.5 added bounded
-read-only calendar snapshots. The isolated helper reads mkcal on its worker thread, expands
-occurrences only inside the requested window, and returns typed, paginated
+The primary API now exposes addressed application launch/close, live running
+state, bounded PKJS configuration URL/result handoff, firmware discovery,
+recovery state and update progress, plus FD-backed PBW, firmware and language
+installation. The daemon replaces libpebble3's non-FD D-Bus transport at its
+own runtime boundary and stages received regular files privately with explicit
+size limits. The reference-bus JVM round trip is covered; Native Image and
+installed-package verification remain release gates. App ordering remains
+pending until desired locker state can be represented per watch rather than
+globally.
+
+Platform ABI 1.7 adds an explicit bounded outbound-message command used only
+after the daemon authenticates a watch Send Text action against its durable
+favorite-contact projection. The primary `Messaging1` API exposes that same
+bounded projection and sends only through a current stable method ID; callers
+cannot supply an arbitrary destination at dispatch time. Platform ABI 1.6 added bounded read-only Sailfish
+contact snapshots, exact phone-number lookup, and change notifications.
+Platform ABI 1.5 added bounded read-only calendar snapshots. The isolated
+helper reads mkcal on its worker thread, expands occurrences only inside the
+requested window, and returns typed, paginated
 calendar and event records. Platform ABI 1.4 added safe Sailfish notification
 replies: the private helper wire carries only a retained numeric notification
 ID and reply text, and the helper accepts a reply only once for a current
@@ -90,7 +104,7 @@ Rockpool HEAD commit and its pinned mobileapp commit, validates that snapshot,
 and records the complete output-file inventory and SHA-256 digests. Uncommitted
 changes are excluded, and later checkout edits or commits do not invalidate the
 build. Ordinary `build.sh` output is deliberately marked as a
-development build and cannot be reused by `package.sh`.
+development build and cannot be used for a release package.
 
 ### Build stages and duration
 
@@ -117,116 +131,39 @@ Successful builds write, replacing files from any earlier build:
 - `out/libpebble3d-platform-loader.so` — the AArch64 JNI platform-provider
   loader used by the executable.
 
-These are raw packaging inputs, not an installable RPM.  Rockpool's Sailfish
-platform proxy/helper is built and packaged separately.
+These are raw packaging inputs, not an installable RPM. The repository-root
+`build-libpebble3d.sh` command verifies and stages them for a normal Sailfish
+SDK `mb2` build.
 
 ## RPM packaging
 
-The daemon and Sailfish integration deliberately come from separate builds:
-
-- The libpebble3d build packages the prebuilt Native Image daemon and JNI
-  loader.  It does not compile Qt code or package the platform ABI header.
-- The Rockpool Sailfish build packages the Silica UI, the platform ABI header,
-  and the Sailfish proxy/launcher/host.  It does not require Java or GraalVM.
-
-### Create the Rockpool source archive
-
-Create the RPM source archive from the repository root with:
+Native Image construction and RPM construction are separate phases, but the
+daemon, provider, and UI are distributed together in the single `rockpool`
+RPM produced by the repository-root `rpm/rockpool.spec`. The supported
+commands are:
 
 ```sh
-rpm/create-source-archive.sh 2.0
+# Normal host:
+./build-libpebble3d.sh
+
+# Sailfish Platform SDK:
+mb2 -t TARGET --no-vcs-apply build
 ```
 
-The command writes `rockpool-2.0.tar.xz` in the current directory.  It first
-requires every release-contract artifact to match its owning repository's
-committed `HEAD`, verifies that `libpebble3d/mobileapp` matches the committed
-submodule gitlink, then archives those two committed trees only.  It never
-uses working-tree or untracked content.
+Use `./build-libpebble3d.sh --release` for committed, provenance-checked native
+artifacts; the subsequent `mb2` command is unchanged. The root
+[`README.md`](../README.md#building) documents every host and SDK prerequisite,
+test, output, development step, and release step.
+There is no standalone daemon or development RPM flow.
 
-### Package the daemon
+The RPM provides `libpebble3-dbus-api = 1` for the generic daemon API and
+`rockpool-ui-dbus-api = 1` for the private UI facade. The C provider header
+remains an internal build interface and is not installed as a development
+package.
 
-By default, `package.sh` performs a fresh build before packaging:
-
-```sh
-cd libpebble3d
-VER=2.0 ./package.sh
-```
-
-`VER` defaults to `2.0`. After an immediately preceding, verified
-`build.sh --release` run, `--reuse-current-build` explicitly packages that
-output without repeating the long Native Image build. Packaging first requires
-a fully committed release tree. The reuse option verifies the exact Rockpool
-and mobileapp commits, the complete artifact inventory, and every recorded
-SHA-256; it rejects development, incomplete, changed, augmented, or older
-output. The RPM is built with the exact recorded builder-image ID from a
-separately verified read-only artifact snapshot and RPM metadata archived from
-the recorded Rockpool commit; it never consumes mutable packaging inputs from
-the live worktree.
-
-Packaging reuses the `libpebble3d-builder` AArch64 Docker image and therefore
-needs the same Docker and QEMU setup as the binary build.  It writes:
-
-```text
-libpebble3d/RPMS/libpebble3d-<VER>-1.aarch64.rpm
-```
-
-The RPM contains:
-
-- `/usr/libexec/libpebble3d/libpebble3d` and every generated `out/*.so`, owned
-  by `root:root` with mode `0755`;
-- the `/usr/bin/libpebble3d` symlink;
-- the `libpebble3d.service` user unit and its `user-session.target` enablement;
-- the package-owned platform-provider directory; and
-- a system `bluetooth.service` drop-in enabling the experimental BlueZ API
-  needed for explicit LE connections on BlueZ older than 5.79.
-
-Installing or removing the Bluetooth drop-in reloads systemd and restarts
-`bluetooth.service`.  Installing or upgrading the daemon starts or restarts
-its user service and stops/disables the retired `rockpoold.service` when it is
-present.
-
-The daemon RPM provides these package capabilities:
-
-- `rockpool-dbus-api = 1`
-- `libpebble3d-platform-abi = 1`
-- `libpebble3d-platform-abi-minor = 6`
-- `libpebble3d-platform-launcher-abi = 1`
-- `rockwork-dbus-compat = 1` for the temporary UI migration release
-
-The exact Native Image dependency set is intentionally not inferred by RPM;
-the executable and its generated shared libraries are packaged together.
-
-### Package the UI and Sailfish provider
-
-The repository-root `rpm/rockpool.spec` is built with the normal Sailfish SDK
-or OBS workflow.  For a configured local Sailfish OS 5.2 AArch64 target, a
-typical Platform SDK command from the repository root is:
-
-```sh
-mb2 -t aarch64 --no-vcs-apply build
-```
-
-Target names vary between SDK installations; replace `aarch64` with the name
-of the configured Sailfish OS 5.2 AArch64 target.  `--no-vcs-apply` is useful
-for a working tree containing the local changes being tested and can be
-omitted by a clean source-package workflow.  OBS builds the same spec from the
-Rockpool source archive.
-
-The spec cleans each qmake target after regenerating its Makefile.  This is
-intentional: the package version is compiled into the UI and into all three
-provider processes, while make does not otherwise rebuild objects merely
-because a qmake `DEFINES` value changed.  Do not remove those clean steps or an
-incremental package can contain mutually incompatible provider build IDs.
-
-That spec produces three packages:
-
-- `rockpool` — the Silica UI.  It requires `rockpool-dbus-api = 1` and, during
-  the migration release, `rockwork-dbus-compat = 1`.
-- `libpebble3d-platform-devel` — the architecture-independent Apache-2.0 ABI
-  header and pkg-config file, currently versioned as platform SDK `1.6`.  It
-  has no daemon runtime dependency.
-- `libpebble3d-platform-sailfish` — the AArch64 provider package.  It requires
-  both platform ABI capabilities supplied by the daemon RPM.
+The Native Image executable and its generated shared libraries are treated as
+one sealed set, so their exact ELF dependencies are deliberately not inferred
+individually by RPM.
 
 The provider installs these security-sensitive files with exact modes:
 
@@ -240,13 +177,8 @@ Its user-service drop-in replaces the daemon's direct `ExecStart` with the
 small setgid launcher.  Installing, upgrading, or removing the provider
 reloads the user manager and restarts `libpebble3d.service`.
 
-For a functional Sailfish installation, install the `libpebble3d` daemon RPM,
-the matching `libpebble3d-platform-sailfish` RPM, and the `rockpool` UI RPM.
-The `libpebble3d-platform-devel` RPM is needed only when compiling a provider.
-Set the daemon `VER` and Rockpool package version/release deliberately for the
-same release; no tool cross-checks them.  Change the platform SDK version only
-when its ABI changes.  The provider build ID is generated from the Rockpool
-package version and release.
+Installing the `rockpool` RPM installs the complete runtime atomically. The
+provider build ID is generated from the Rockpool package version and release.
 
 
 ## Capability registry
@@ -299,20 +231,20 @@ Bluetooth keys.  `ErrorDetail` is a short, localized-safe diagnostic category.
 
 | Error | Meaning |
 | --- | --- |
-| `org.rockpool.Error.Cancelled` | The caller cancelled the operation. |
-| `org.rockpool.Error.InvalidArgument` | A typed input record was malformed or inconsistent. |
-| `org.rockpool.Error.NotSupported` | The capability is absent for this system or watch. |
-| `org.rockpool.Error.NotFound` | The requested watch, operation, or item no longer exists. |
-| `org.rockpool.Error.Busy` | A conflicting operation is already active. |
-| `org.rockpool.Error.NotConnected` | The operation needs a connected compatible watch. |
-| `org.rockpool.Error.PairingFailed` | Bluetooth pairing or authentication failed. |
-| `org.rockpool.Error.TransportFailed` | BLE, Classic, or RFCOMM transport failed. |
-| `org.rockpool.Error.AuthenticationFailed` | Account authentication was rejected or expired. |
-| `org.rockpool.Error.ProviderUnavailable` | The platform provider is missing, failed, or latched. |
-| `org.rockpool.Error.ProviderProtocol` | The private provider protocol rejected a message. |
-| `org.rockpool.Error.PermissionDenied` | Sailjail or platform policy denied an operation. |
-| `org.rockpool.Error.IO` | A constrained local file-descriptor or fixed log output failed. |
-| `org.rockpool.Error.Internal` | An unexpected failure was sanitized. |
+| `io.rebble.libpebble3.Error.Cancelled` | The caller cancelled the operation. |
+| `io.rebble.libpebble3.Error.InvalidArgument` | A typed input record was malformed or inconsistent. |
+| `io.rebble.libpebble3.Error.NotSupported` | The capability is absent for this system or watch. |
+| `io.rebble.libpebble3.Error.NotFound` | The requested watch, operation, or item no longer exists. |
+| `io.rebble.libpebble3.Error.Busy` | A conflicting operation is already active. |
+| `io.rebble.libpebble3.Error.NotConnected` | The operation needs a connected compatible watch. |
+| `io.rebble.libpebble3.Error.PairingFailed` | Bluetooth pairing or authentication failed. |
+| `io.rebble.libpebble3.Error.TransportFailed` | BLE, Classic, or RFCOMM transport failed. |
+| `io.rebble.libpebble3.Error.AuthenticationFailed` | Account authentication was rejected or expired. |
+| `io.rebble.libpebble3.Error.ProviderUnavailable` | The platform provider is missing, failed, or latched. |
+| `io.rebble.libpebble3.Error.ProviderProtocol` | The private provider protocol rejected a message. |
+| `io.rebble.libpebble3.Error.PermissionDenied` | Sailjail or platform policy denied an operation. |
+| `io.rebble.libpebble3.Error.IO` | A constrained local file-descriptor or fixed log output failed. |
+| `io.rebble.libpebble3.Error.Internal` | An unexpected failure was sanitized. |
 
 Invalid D-Bus signatures and unknown object paths remain normal D-Bus dispatch
 errors.  They are not a replacement for this registry.
@@ -338,6 +270,38 @@ these non-negative aggregate counters. All are `u` (`UInt32`) values.
 
 ### Application records
 
+### Firmware state
+
+`Firmware1` exposes the addressed watch's current firmware state without
+exposing the candidate download URL:
+
+| Property | D-Bus type | Meaning |
+| --- | --- | --- |
+| `FirmwareVersion` | `s` | Installed firmware version, or empty when unknown. |
+| `LanguageVersion` | `s` | Installed language-pack version, or empty when unknown. |
+| `Recovery` | `b` | The watch is connected in recovery mode. |
+| `CheckingForUpdate` | `b` | A firmware catalogue request is active. |
+| `UpdateAvailable` | `b` | A bounded candidate is available. |
+| `CandidateVersion` | `s` | Candidate version, or empty. |
+| `ReleaseNotes` | `s` | Bounded candidate release notes, or empty. |
+| `UpdateState` | `s` | Stable state listed below. |
+| `UpdateProgress` | `d` | Installation progress clamped to `0.0..1.0`. |
+
+`UpdateState` is one of `disconnected`, `idle`, `checking`, `available`,
+`up-to-date`, `check-failed`, `waiting-to-start`, `installing`,
+`waiting-for-reboot`, or `failed`. Nested updater progress changes invalidate
+`UpdateProgress`; connection/update transitions invalidate the complete
+firmware property set.
+
+`Firmware1.CheckForUpdate(force)` joins an already running check or subscribes
+before triggering a new one so a fast checking/terminal transition cannot be
+missed. Success returns `updateAvailable`, `candidateVersion`, `releaseNotes`,
+and `recovery`. Provider failures are sanitized as
+`io.rebble.libpebble3.Error.ProviderUnavailable`. Firmware and language installation
+remain `NotSupported` until the FD transport requirement is met.
+
+### Application records
+
 `Applications1.Applications` is ordered by ascending locker order and scoped to
 the watch object. It contains compatible built-in system applications and the
 compatible account-locker applications selected for synchronization to that
@@ -355,6 +319,7 @@ current per-type synchronization limit or built for another watch platform.
 | `hasSettings` | `b` | The application has a configuration page. |
 | `icon` | `s` | Preferred platform icon URL, or an empty string. |
 | `systemApp` | `b` | Built into PebbleOS and not removable. |
+| `running` | `b` | This is the application currently running on the addressed watch. |
 
 `Applications1.Remove` accepts only the canonical `uuid`. Its successful
 `Operation1.Result` contains that same `uuid` (`s`). Removal is global rather
@@ -362,6 +327,23 @@ than specific to the watch object on which the method was called: it removes
 the application from the shared locker state, updates the remote account
 locker when applicable, and schedules deletion from every watch to which the
 application was synchronized.
+
+`Applications1.Launch` and `Close` address only the watch object on which they
+are called. Both accept a canonical installed application UUID. Launch waits
+for the watch to confirm the running application and returns `uuid` (`s`) plus
+`alreadyRunning` (`b`); Close requires that exact application to be running,
+waits for the stop state, and returns `uuid`. The `Applications` property is
+invalidated when the watch reports a run-state change, including changes made
+outside this API.
+
+For configurable applications, `Applications1.RequestConfiguration` reuses a
+current matching PKJS session or launches the application, then returns `uuid`
+and the bounded opaque `url` (`s`) emitted by the app. The daemon serializes
+requests within the session and does not open the URL itself.
+`SubmitConfiguration` returns a bounded opaque result of at most 64 KiB to the
+same still-active application session. It never launches a replacement session
+or sends the result to a different application. Empty results are allowed for
+cancelled configuration pages; embedded NULs are rejected.
 
 ### Screenshot records
 
@@ -382,11 +364,26 @@ as `Operation1.Result` and then changes the `Screenshots` property.
 
 ### Global watch settings
 
-`Health1.Settings`, primary `Messaging1.CannedResponses`, and
+`Health1.Settings`, primary `Messaging1.CannedResponses`/`Favorites`, and
 `Timeline1.CalendarEnabled` are exposed on every watch object for UI
 convenience, but their backing libpebble3 state is account-global. A successful
 mutation changes the corresponding property on every exported watch object;
 clients must not treat these values as independent per-watch preferences.
+
+A successful `Timeline1.Sync` returns a bounded summary in `Operation1.Result`:
+
+| Key | D-Bus type | Meaning |
+| --- | --- | --- |
+| `calendarCount` | `i` | Calendars in the complete platform snapshot. |
+| `eventCount` | `i` | Event occurrences projected into Timeline pins. |
+| `reminderCount` | `i` | Event reminders represented in the projection. |
+| `calendarEnabled` | `b` | Whether account-global calendar pins were enabled for this reconciliation. |
+
+Success means the durable local projection was replaced atomically. It does
+not claim that an offline watch has acknowledged its BlobDB records; those are
+delivered by the normal per-watch connection flow. An unavailable or failed
+platform source fails with `io.rebble.libpebble3.Error.ProviderUnavailable` and leaves
+the last complete projection intact.
 
 Primary and compatibility notification-filter mutations likewise converge on
 one canonical collection below `notifications.`. Every successful mutation
@@ -424,7 +421,41 @@ periodic retries; a later valid replacement recovers. Compatibility
 `setCannedResponses` validates bounded source-keyed data, filters malformed old
 groups, and atomically merges only the supplied groups: an explicit empty group
 clears that source, while omitted valid sources remain durable. It never changes
-the primary list or libpebble3's generic canned-response configuration.
+the primary list or libpebble3's generic canned-response configuration. An
+explicit empty `com.pebble.sendText` group clears the Send Text response record.
+Compatibility favorite contacts are a complete replacement and are projected
+with that group into the watch Contacts, CannedResponses, and AppConfigs
+databases. The projection admits at most ten methods and requires every
+displayed recipient to map to exactly one bounded Telepathy account/recipient
+route; invalid new data is rejected before persistence, while malformed
+persisted data leaves the last complete Room projection intact.
+
+Each `Messaging1.Favorites` element represents one configured Send Text route:
+
+| Key | D-Bus type | Meaning |
+| --- | --- | --- |
+| `contactId` | `s` | Stable UUID derived from the contact name. |
+| `methodId` | `s` | Stable UUID authorizing this exact account/recipient route. |
+| `name` | `s` | Contact display name. |
+| `account` | `s` | Bounded Telepathy account object path. |
+| `recipient` | `s` | Bounded provider recipient identifier. |
+| `displayRecipient` | `s` | Recipient text projected to the watch; currently equal to `recipient`. |
+
+`Messaging1.SetFavorites` replaces the complete account-global collection.
+Its input requires `name`, `account`, and `recipient`; a client may round-trip
+the other fields, but any supplied IDs or display recipient must match the
+daemon-derived values. At most ten method records are accepted, and every
+displayed recipient and account/recipient route must be unique. An empty array
+durably clears the collection.
+
+`Messaging1.SendText` accepts only a canonical `methodId` from the current
+durable `Favorites` collection and a non-empty UTF-8 message of at most 512
+bytes. It resolves the provider account and recipient inside the daemon and
+never accepts an arbitrary destination at dispatch time. The operation crosses
+its commit boundary immediately before the externally visible send. Its result
+contains the sent `methodId`; stale or unknown methods fail with
+`io.rebble.libpebble3.Error.NotFound`, and an unavailable platform provider fails with
+`io.rebble.libpebble3.Error.ProviderUnavailable`.
 
 Compatibility health records retain the historical `female`/`male` string
 shape. Compatibility writes reject `other` and ordinal `2`, which that record
@@ -437,7 +468,7 @@ bounded account-global history and labels it as shared across the Rockpool
 account. `FetchHealthData` addresses the selected connected watch and waits for
 its incremental-sync acknowledgement; every completed database update emits
 `HealthDataChanged` on all compatibility watch objects. This compatibility view
-does not add historical records to the primary `org.rockpool` API or claim
+does not add historical records to the primary `io.rebble.libpebble3` API or claim
 per-watch provenance.
 
 #### Legacy global-settings migration
@@ -460,22 +491,22 @@ source-scoped and are recorded as preserved rather than flattened.
 
 ## Functional parity matrix
 
-This matrix records the intended replacement for useful Rockwork workflows.
+This matrix records the intended replacement for useful Rockpool workflows.
 It is deliberately not a list of obsolete endpoints to carry forward.
 
-| Legacy workflow | org.rockpool replacement | Owner |
+| Legacy workflow | io.rebble.libpebble3 replacement | Owner |
 | --- | --- | --- |
 | Watch list and status | ObjectManager + `Watch1` properties | libpebble3d |
 | BLE pairing | `Discovery1.Pair` | libpebble3 |
 | Classic pairing/RFCOMM | `Discovery1.Pair` with `transport=classic` | libpebble3 + Sailfish socket bridge |
 | Existing bonded watch | Explicit `ImportBondedWatches` imports existing BlueZ bonds without unpairing | libpebble3 + Rockpool integration |
 | Connect/disconnect/forget | `Watch1` operations; Forget removes all selected-adapter BlueZ aliases before portable state | libpebble3 + Rockpool integration |
-| Apps/watchfaces | `Applications1` FD operations | libpebble3 |
-| Firmware/recovery/language | `Firmware1` FD operations | libpebble3 |
-| Timeline/calendar | Account-global `Timeline1.CalendarEnabled`; a bounded read-only Sailfish `platform.calendar` domain enumerates mkcal notebooks and expanded event occurrences through the isolated helper. The internal phone-calendar reconciliation preserves the last complete local projection on unavailable or failed reads and applies successful replacements atomically. Explicit `Timeline1.Sync` remains pending | libpebble3 + provider |
+| Apps/watchfaces | `Applications1` exposes the compatible per-watch projection, validated shared-locker removal, addressed launch/close with live running state, bounded request-scoped PKJS configuration URL/result handoff, and size-bounded FD-based PBW installation for a sole known watch. Per-watch desired ordering still needs a non-global locker model | libpebble3 |
+| Firmware/recovery/language | `Firmware1` exposes installed versions, recovery mode, bounded update discovery metadata, stable update state, live progress, a race-safe explicit update check, and size-bounded FD-based firmware/language installation | libpebble3 |
+| Timeline/calendar | Account-global `Timeline1.CalendarEnabled`; a bounded read-only Sailfish `platform.calendar` domain enumerates mkcal notebooks and expanded event occurrences through the isolated helper. The internal phone-calendar reconciliation preserves the last complete local projection on unavailable or failed reads and applies successful replacements atomically. `Timeline1.Sync` runs that reconciliation explicitly and returns calendar/event/reminder counts. Operation completion covers the local projection, while normal BlobDB delivery to disconnected watches remains asynchronous | libpebble3 + provider |
 | Notifications/actions/replies | `Notifications1`/`Messaging1`; replies are available only for a live, trusted Sailfish SMS/IM/MMS notification with one narrowly validated input route, and are consumed after one attempt. A `default` action on the same authenticated target separately permits only the fixed `org.sailfishos.Messages.startConversation(ss)` conversation open; notification-provided open D-Bus tuples are never executed, and both actions require the current CommHistory owner. Canonical primary canned groups are account-global and replayed into libpebble3 (including an explicit empty collection), while compatibility groups remain source-scoped and are not reply actions | libpebble3 + provider |
 | Calls/media/location/profile switching | Calls, media, and bounded one-shot/watch location use the independently healthy Sailfish provider; existing connection-driven profile switching remains daemon-owned | libpebble3 + provider |
-| Contacts/outgoing Send Text | A bounded read-only Sailfish `platform.contacts` domain synchronizes QtContacts names/IDs into libpebble3 and resolves caller names by exact phone lookup. Native-Linux notifications do not yet supply participant lookup keys, so contact-specific notification policy remains pending. Compatibility favourites remain configuration-only pending Contacts/AppConfig BlobDB support and a separately authenticated watch-originated send action; notification replies are covered above | provider + pending notification/Send Text actions |
+| Contacts/outgoing Send Text | A bounded read-only Sailfish `platform.contacts` domain synchronizes QtContacts names/IDs into libpebble3 and resolves caller names by exact phone lookup. Primary `Messaging1.Favorites` exposes the same account-global durable favorite projection, `SetFavorites` replaces it, and `SendText` accepts only a current stable method ID rather than an arbitrary destination. Compatibility favorites and `com.pebble.sendText` canned replies are projected transactionally into Contacts, CannedResponses, and AppConfigs BlobDB records. The fixed watch Send Text action likewise requires a unique current projected recipient; both paths resolve the Telepathy route inside the daemon and send through the fixed Sailfish Messages command. Native-Linux notifications still do not supply participant lookup keys, so contact-specific notification policy remains pending | libpebble3 + provider |
 | Health and units | Account-global `Health1` settings projection on every watch; compatibility health strings round-trip only `female`/`male`. The compatibility UI exposes the bounded legacy health dashboard and addressed incremental sync, explicitly labelled as shared account history rather than per-watch provenance | libpebble3d |
 | Weather | Compatibility locations receive keyless automatic forecasts for saved coordinates and still accept validated external injection. Migration imports a single physical legacy saved-location collection, or a unanimous collection from eligible legacy watch directories; conflicting legacy collections are preserved without choosing one. The canonical `n/a` slot resolves through the bounded Sailfish Location provider without persisting coordinates | libpebble3 + libpebble3d + provider |
 | Screenshots | `Screenshots1` | libpebble3 |
@@ -540,7 +571,7 @@ Each `SOCK_SEQPACKET` packet is exactly one little-endian frame:
 ```text
 u32 total_length       // header + payload, 24..65536
 u16 major              // currently 1
-u16 minor              // currently 7
+u16 minor              // currently 8
 u16 type
 u16 flags              // zero unless specified for type
 u64 request_id         // zero for handshake, Health, and Event frames
@@ -687,6 +718,36 @@ thread. Empty-query list reads are paginated to 64 records and capped at 4096
 contacts. Exact phone lookups accept one bounded phone number and return at most
 one record. The operation accepts no contacts-manager name, storage path, or
 arbitrary filter expression.
+
+Minor 8 adds a bounded outbound Send Text request. The daemon accepts this
+operation only after the fixed watch action UUID and exact projected favorite
+recipient resolve to one unique durable account route. The private wire carries
+that resolved route, never a D-Bus destination, object path, interface, member,
+signature, or arbitrary argument list.
+
+```text
+Request MessageSend (request_id != 0)
+    u16 operation = 9
+    u16 reserved = 0
+    u32 account_id_length       // strict UTF-8 Telepathy path, 1..512 bytes
+    u32 recipient_length        // strict UTF-8, 1..512 bytes
+    u32 text_length             // strict UTF-8, 1..512 bytes
+    u8  account_id[account_id_length]
+    u8  recipient[recipient_length]
+    u8  text[text_length]
+
+Complete MessageSendStatus (matching request_id, payload size 8)
+    u16 operation = 9
+    u16 reserved = 0
+    u32 status
+```
+
+Immediately before dispatch, the helper requires the monitored
+`org.nemomobile.CommHistory` owner to remain current. It then issues only the
+fixed empty-reply `org.sailfishos.Messages` `/`
+`org.sailfishos.Messages.sendMessage(sss)` call with the three bounded values.
+Timeouts and owner or connection generation changes fail without retrying the
+externally visible send.
 
 ```text
 Request ContactQuery (request_id != 0)

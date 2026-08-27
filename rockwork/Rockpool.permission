@@ -1,7 +1,0 @@
-# x-sailjail-description = Pebble Smartwatch Interface
-# x-sailjail-long-description = Communicate with Pebble smartwatches
-
-# The migrated UI talks to the primary service.  Keep the old grant for the
-# one-release compatibility UI still installed during the bridge release.
-dbus-user.talk org.rockpool
-dbus-user.talk org.rockwork

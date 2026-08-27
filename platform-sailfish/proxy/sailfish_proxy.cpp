@@ -645,6 +645,7 @@ bool decodeCompletion(uint16_t operation, const std::vector<uint8_t> &payload,
         calendar->events.clear();
     } else if (operation == lp3wire::NotificationCommand ||
                operation == lp3wire::MessageReply ||
+               operation == lp3wire::MessageSend ||
                operation == lp3wire::CallCommand ||
                operation == lp3wire::MediaCommand) {
         if (!lp3wire::decodeStatusReply(payload, operation, &decodedStatus)) {
@@ -1575,6 +1576,87 @@ int32_t replyMessage(lp3_platform_instance *raw, uint64_t requestId,
     return pending->complete ? pending->status : LP3_PLATFORM_UNAVAILABLE;
 }
 
+int32_t sendMessage(lp3_platform_instance *raw, uint64_t requestId,
+                    const lp3_platform_outgoing_message_v1 *message) {
+    SailfishInstance *instance = static_cast<SailfishInstance *>(raw);
+    lp3wire::MessageSendData wireMessage;
+    std::vector<uint8_t> payload;
+    std::vector<uint8_t> frame;
+    std::shared_ptr<Pending> pending(new Pending(lp3wire::MessageSend));
+
+    if (instance == NULL || requestId == 0 ||
+        (requestId & (UINT64_C(1) << 63)) != 0 || message == NULL ||
+        message->struct_size < sizeof(*message) || message->flags != 0 ||
+        message->account_id.size == 0 ||
+        message->account_id.size > LP3_PLATFORM_MESSAGE_ACCOUNT_ID_MAX ||
+        message->account_id.data == NULL || message->recipient.size == 0 ||
+        message->recipient.size > LP3_PLATFORM_MESSAGE_RECIPIENT_MAX ||
+        message->recipient.data == NULL || message->text.size == 0 ||
+        message->text.size > LP3_PLATFORM_MESSAGE_TEXT_MAX ||
+        message->text.data == NULL) {
+        return LP3_PLATFORM_INVALID_ARGUMENT;
+    }
+    wireMessage.accountId.assign(message->account_id.data,
+                                 message->account_id.size);
+    wireMessage.recipient.assign(message->recipient.data,
+                                 message->recipient.size);
+    wireMessage.text.assign(message->text.data, message->text.size);
+    if (!lp3wire::encodeMessageSend(wireMessage, &payload) ||
+        !lp3wire::encodeFrame(lp3wire::Request, requestId,
+                              &payload[0], payload.size(), &frame)) {
+        return LP3_PLATFORM_INVALID_ARGUMENT;
+    }
+
+    std::unique_lock<std::mutex> lock(instance->mutex);
+    if (instance->stopping.load() || instance->socket < 0 ||
+        instance->latched ||
+        (instance->readyDomains & lp3wire::DomainMessaging) == 0) {
+        return LP3_PLATFORM_UNAVAILABLE;
+    }
+    if (instance->pending.size() + instance->tombstones.size() >=
+            kMaximumOutstanding ||
+        instance->outgoing.size() >= kMaximumOutgoing ||
+        instance->pending.count(requestId) != 0 ||
+        instance->tombstones.count(requestId) != 0) {
+        return LP3_PLATFORM_BUSY;
+    }
+    instance->pending[requestId] = pending;
+    instance->outgoing.push_back(frame);
+    wakeWorker(instance);
+
+    if (!pending->condition.wait_for(lock, kRequestTimeout,
+                                     [pending, instance] {
+                                         return pending->complete ||
+                                             instance->stopping.load();
+                                     })) {
+        std::map<uint64_t, std::shared_ptr<Pending> >::iterator current =
+            instance->pending.find(requestId);
+        if (current != instance->pending.end()) {
+            instance->pending.erase(current);
+            if (instance->tombstones.size() >= kMaximumOutstanding ||
+                instance->outgoing.size() >= kMaximumOutgoing) {
+                instance->forceReset = true;
+            } else {
+                Tombstone tombstone;
+                std::vector<uint8_t> cancelFrame;
+                tombstone.operation = lp3wire::MessageSend;
+                tombstone.expires =
+                    std::chrono::steady_clock::now() + kCancellationGrace;
+                instance->tombstones[requestId] = tombstone;
+                if (!lp3wire::encodeFrame(lp3wire::Cancel, requestId,
+                                          NULL, 0, &cancelFrame)) {
+                    instance->forceReset = true;
+                } else {
+                    instance->outgoing.push_back(cancelFrame);
+                }
+            }
+            wakeWorker(instance);
+        }
+        return LP3_PLATFORM_UNAVAILABLE;
+    }
+    return pending->complete ? pending->status : LP3_PLATFORM_UNAVAILABLE;
+}
+
 int32_t callCommand(lp3_platform_instance *raw, uint64_t requestId,
                     const lp3_platform_call_command_v1 *command) {
     SailfishInstance *instance = static_cast<SailfishInstance *>(raw);
@@ -1897,6 +1979,7 @@ const lp3_platform_api_v1 kApi = {
     notSupportedDeviceState,
     getStatus,
     notificationCommand,
+    sendMessage,
 };
 
 } // namespace

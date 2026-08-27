@@ -19,7 +19,7 @@ rootProject.name = "libpebble3d-daemon"
 
 // libpebble3 (the generic-Linux library) — and its whole Kotlin Multiplatform build — lives in the
 // upstream mobileapp checkout, wired in here as a Gradle composite build. This is what lets the
-// Sailfish daemon live in the rockpool repo while depending on an unmodified libpebble3.
+// Sailfish daemon live in the Rockpool repo while depending on its pinned libpebble3 branch.
 //
 // MOBILEAPP overrides the location with a dev checkout; otherwise the pinned submodule at
 // ../mobileapp (i.e. rockpool/libpebble3d/mobileapp) is used. Absolute or relative both work.

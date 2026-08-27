@@ -57,6 +57,8 @@ class RockpoolWatchContentTest {
         assertEquals(true, records[1].getValue("hasSettings"))
         assertEquals("https://example.test/icon.png", records[1].getValue("icon"))
         assertEquals(false, records[1].getValue("systemApp"))
+        assertEquals(false, records[0].getValue("running"))
+        assertEquals(false, records[1].getValue("running"))
         assertEquals(
             setOf(
                 "uuid",
@@ -68,9 +70,46 @@ class RockpoolWatchContentTest {
                 "hasSettings",
                 "icon",
                 "systemApp",
+                "running",
             ),
             records[1].keys,
         )
+    }
+
+    @Test
+    fun `application records identify only the running application`() {
+        val first = systemApp(
+            uuid = "11111111-1111-4111-8111-111111111111",
+            order = 0,
+        )
+        val running = normalApp(
+            uuid = "22222222-2222-4222-8222-222222222222",
+            type = AppType.Watchapp,
+            order = 1,
+            configurable = false,
+            icon = null,
+        )
+
+        val records = rockpoolApplicationRecords(
+            listOf(first, running),
+            WatchType.BASALT,
+            running.properties.id,
+        )
+
+        assertEquals(false, records[0].getValue("running"))
+        assertEquals(true, records[1].getValue("running"))
+    }
+
+    @Test
+    fun `application configuration values are bounded before dispatch`() {
+        assertTrue(validApplicationConfigurationUrl("https://example.test/settings"))
+        assertTrue(validApplicationConfigurationResult(""))
+        assertTrue(validApplicationConfigurationResult("response=accepted"))
+        assertEquals(false, validApplicationConfigurationUrl(""))
+        assertEquals(false, validApplicationConfigurationUrl("bad\u0000url"))
+        assertEquals(false, validApplicationConfigurationUrl("x".repeat(16 * 1024 + 1)))
+        assertEquals(false, validApplicationConfigurationResult("bad\u0000result"))
+        assertEquals(false, validApplicationConfigurationResult("x".repeat(64 * 1024 + 1)))
     }
 
     @Test
@@ -248,6 +287,53 @@ class RockpoolWatchContentTest {
         assertFails { rockpoolScreenshotPixelCount(2048, 2048 + 1) }
         assertFails { encodeRockpoolPngRgba(2, 2, IntArray(3)) }
         assertEquals(4_194_304, rockpoolScreenshotPixelCount(2048, 2048))
+    }
+
+    @Test
+    fun `screenshot store uses writable directories without imposing a permission policy`() {
+        val home = Files.createTempDirectory("rockpool-screenshot-directory-modes-")
+        try {
+            val pebble = Files.createDirectories(home.resolve("Pictures/Screenshots/Pebble"))
+            val directories = listOf(home, home.resolve("Pictures"), pebble.parent, pebble)
+            for (mode in listOf("rwxrwxr-x", "rwxrwxrwx")) {
+                val permissions = PosixFilePermissions.fromString(mode)
+                directories.forEach { Files.setPosixFilePermissions(it, permissions) }
+                val store = RockpoolScreenshotStore(home)
+                val written = store.write(encodeRockpoolPngRgba(1, 1, intArrayOf(0xff102030.toInt())))
+
+                assertEquals(listOf(written), store.list())
+                assertEquals(written, store.remove(written.path))
+                directories.forEach { assertEquals(permissions, Files.getPosixFilePermissions(it)) }
+            }
+        } finally {
+            deleteTree(home)
+        }
+    }
+
+    @Test
+    fun `screenshot store accepts Pictures writable by the owners own group`() {
+        val home = Files.createTempDirectory("rockpool-screenshot-own-group-")
+        try {
+            val pictures = Files.createDirectory(home.resolve("Pictures"))
+            val ownerGroup = home.fileSystem.userPrincipalLookupService
+                .lookupPrincipalByGroupName(Files.getOwner(home).name)
+            Files.getFileAttributeView(
+                pictures,
+                java.nio.file.attribute.PosixFileAttributeView::class.java,
+            ).setGroup(ownerGroup)
+            Files.setPosixFilePermissions(pictures, PosixFilePermissions.fromString("rwxrwxr-x"))
+            val store = RockpoolScreenshotStore(home)
+
+            val written = store.write(encodeRockpoolPngRgba(1, 1, intArrayOf(0xff102030.toInt())))
+
+            assertEquals(listOf(written), store.list())
+            assertEquals(
+                PosixFilePermissions.fromString("rwxrwxr-x"),
+                Files.getPosixFilePermissions(pictures),
+            )
+        } finally {
+            deleteTree(home)
+        }
     }
 
     @Test

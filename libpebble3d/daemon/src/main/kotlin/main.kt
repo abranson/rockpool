@@ -11,7 +11,7 @@ import io.rebble.libpebblecommon.connection.AppContext
 import io.rebble.libpebblecommon.connection.DiscoveredPebbleDevice
 import io.rebble.libpebblecommon.connection.LibPebble
 import io.rebble.libpebblecommon.connection.LibPebble3
-import io.rebble.libpebblecommon.rockpool.RockpoolService
+import io.rebble.libpebblecommon.rockpool.LibPebble3Service
 import io.rebble.libpebblecommon.rockpool.RockpoolSettings
 import io.rebble.libpebblecommon.rockpool.LegacyRockpooldImporter
 import io.rebble.libpebblecommon.rockpool.LegacyGlobalSettingsReconciler
@@ -38,10 +38,12 @@ import io.rebble.libpebblecommon.rockpool.applyMandatoryDaemonConfigPolicy
 import io.rebble.libpebblecommon.rockpool.createBluezBondedWatchForgetCoordinator
 import io.rebble.libpebblecommon.rockpool.SailfishDeviceActivity
 import io.rebble.libpebblecommon.rockpool.SailfishRfcommSocketFactory
+import io.rebble.libpebblecommon.rockpool.SendTextConfigurationCoordinator
+import io.rebble.libpebblecommon.rockpool.PlatformSystemMessaging
 import io.rebble.libpebblecommon.rockpool.loadPlatformNotificationFilters
 import io.rebble.libpebblecommon.rockpool.platformProviderModule
-import io.rebble.libpebblecommon.compat.rockwork.RockworkService
-import io.rebble.libpebblecommon.compat.rockwork.rockworkLogSeverity
+import io.rebble.libpebblecommon.ui.RockpoolUiService
+import io.rebble.libpebblecommon.ui.rockpoolLogSeverity
 import io.rebble.libpebblecommon.linux.web.RebbleBootConfigProvider
 import io.rebble.libpebblecommon.linux.web.RebbleAccountIdentityProvider
 import io.rebble.libpebblecommon.linux.web.RebbleTokenProvider
@@ -59,7 +61,7 @@ import kotlin.time.Duration.Companion.seconds
 
 /**
  * Headless Sailfish daemon entrypoint.  It uses the generic Linux libpebble3
- * services and the org.rockpool D-Bus control surface.  Sailfish-specific
+ * services and the io.rebble.libpebble3 D-Bus control surface.  Sailfish-specific
  * platform access is deliberately supplied only by the external provider.
  */
 fun main() {
@@ -76,12 +78,12 @@ fun main() {
         when {
             System.getenv("LIBPEBBLE3D_VERBOSE") == "1" -> Severity.Verbose
             System.getenv("LIBPEBBLE3D_DEBUG") == "1" -> Severity.Debug
-            else -> rockworkLogSeverity(settings.getInt("logLevel", 1))
+            else -> rockpoolLogSeverity(settings.getInt("logLevel", 1))
         }
     )
     Logger.i { "libpebble3 (Linux desktop) starting" }
 
-    // Shared with RockworkService: setOAuthToken (UI's boot.rebble.io login) lands here and
+    // Shared with RockpoolUiService: setOAuthToken (UI's boot.rebble.io login) lands here and
     // authenticates all Rebble web services.
     val oauthToken = { settings.get("account.oauthToken").ifEmpty { null } }
 
@@ -178,6 +180,12 @@ fun main() {
             )
         },
     )
+    val sendTextConfiguration = SendTextConfigurationCoordinator(
+        replaceConfiguration = libPebble::replaceSendTextConfiguration,
+        systemMessaging = PlatformSystemMessaging(platformProvider),
+        settings = settings,
+        scope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
+    )
     val bondedWatchForget = createBluezBondedWatchForgetCoordinator()
     libPebble.init()
     // Existing libpebble3 config wins for user preferences except the mandatory multi-watch
@@ -225,6 +233,9 @@ fun main() {
         }
         legacyGlobalSettings.reconcileIfNeeded(legacyImporter.isOriginalImportComplete())
         cannedResponses.reconcile()
+        if (!sendTextConfiguration.reconcile()) {
+            Logger.w { "Send Text configuration reconciliation is still pending" }
+        }
         timelineWindow.reloadPersisted()
     }
     // Migration can create notification policy after the backend's constructor snapshot. Start
@@ -272,12 +283,10 @@ fun main() {
     ProfileSwitchCoordinator(libPebble, settings).start()
     Logger.i { "libpebble3 init() complete; idling" }
 
-    // The primary API owns org.rockpool. The profile coordinator is already running so legacy
-    // profile switching does not depend on the migration adapter owning org.rockwork. The adapter
-    // owns org.rockwork on a
+    // The generic API owns io.rebble.libpebble3. The Rockpool UI facade owns org.rockpool on a
     // different non-shared connection and is intentionally best-effort: it must never delay
-    // primary startup when an already installed UI still owns its legacy name.
-    RockpoolService(
+    // generic API startup if another Rockpool process temporarily owns the UI name.
+    LibPebble3Service(
         libPebble,
         concreteLibPebble::requestConnectionImmediately,
         concreteLibPebble::cancelConnectionImmediately,
@@ -291,10 +300,12 @@ fun main() {
         profileSettings,
         healthSettings,
         cannedResponses,
+        sendTextConfiguration,
         rfcommSocketFactory.available,
     ).start()
-    val rockworkService = RockworkService(
+    val rockpoolUiService = RockpoolUiService(
         libPebble,
+        bondedWatchImporter,
         bondedWatchForget,
         settings,
         notificationFilters,
@@ -304,8 +315,9 @@ fun main() {
         timelineWindow,
         rfcommSocketFactory.available,
         configStoragePolicy::canPersist,
+        sendTextConfiguration,
     )
-    rockworkService.start()
+    rockpoolUiService.start()
     accountIdentity.start()
 
     runBlocking {
@@ -321,12 +333,13 @@ fun main() {
                     legacyRetryAttempted = true
                     legacyGlobalSettings.reconcileIfNeeded(legacyImporter.isOriginalImportComplete())
                     timelineWindow.reloadPersisted()
-                    rockworkService.reloadWeatherSettings()
+                    rockpoolUiService.reloadWeatherSettings()
                 }
                 if (legacyRetryAttempted || notificationFilters.needsReconciliation()) {
                     notificationFilters.reconcilePersistedState()
                 }
                 if (!cannedResponses.isComplete()) cannedResponses.reconcile()
+                sendTextConfiguration.reconcile()
                 accountLockerUpgradeReconciler.recoverIfPending {
                     retireAccountLockerUpgradeIfNeeded() != AccountLockerUpgradeResult.FAILED
                 }

@@ -20,7 +20,7 @@
 namespace lp3wire {
 
 static const uint16_t kMajor = 1;
-static const uint16_t kMinor = 7;
+static const uint16_t kMinor = 8;
 static const size_t kHeaderSize = 24;
 static const size_t kMaxFrameSize = 64 * 1024;
 
@@ -45,6 +45,7 @@ enum Operation {
     LocationQuery = 6,
     CalendarQuery = 7,
     ContactQuery = 8,
+    MessageSend = 9,
 };
 
 enum EventType {
@@ -142,6 +143,12 @@ struct NotificationCommandData {
 
 struct MessageReplyData {
     std::string notificationId;
+    std::string text;
+};
+
+struct MessageSendData {
+    std::string accountId;
+    std::string recipient;
     std::string text;
 };
 
@@ -289,6 +296,8 @@ static const size_t kNotificationCategoryMax = 128;
 static const size_t kNotificationIconNameMax = 128;
 static const size_t kMessageConversationIdMax = 64;
 static const size_t kMessageTextMax = 512;
+static const size_t kMessageAccountIdMax = 512;
+static const size_t kMessageRecipientMax = 512;
 static const size_t kCallIdMax = 128;
 static const size_t kCallNameMax = 256;
 static const size_t kCallNumberMax = 256;
@@ -705,6 +714,47 @@ inline bool decodeMessageReply(const std::vector<uint8_t> &payload,
     return true;
 }
 
+inline bool validMessageSend(const MessageSendData &message) {
+    static const char accountPrefix[] =
+        "/org/freedesktop/Telepathy/Account/";
+    return validText(message.accountId, kMessageAccountIdMax, false) &&
+           message.accountId.size() > sizeof(accountPrefix) - 1 &&
+           message.accountId.compare(0, sizeof(accountPrefix) - 1,
+                                     accountPrefix) == 0 &&
+           validText(message.recipient, kMessageRecipientMax, false) &&
+           validText(message.text, kMessageTextMax, false);
+}
+
+inline bool encodeMessageSend(const MessageSendData &message,
+                              std::vector<uint8_t> *payload) {
+    if (payload == NULL || !validMessageSend(message)) return false;
+    payload->assign(16, 0);
+    put16(&(*payload)[0], MessageSend);
+    put32(&(*payload)[4], static_cast<uint32_t>(message.accountId.size()));
+    put32(&(*payload)[8], static_cast<uint32_t>(message.recipient.size()));
+    put32(&(*payload)[12], static_cast<uint32_t>(message.text.size()));
+    appendText(payload, message.accountId);
+    appendText(payload, message.recipient);
+    appendText(payload, message.text);
+    return payload->size() <= kMaxFrameSize - kHeaderSize;
+}
+
+inline bool decodeMessageSend(const std::vector<uint8_t> &payload,
+                              MessageSendData *message) {
+    MessageSendData decoded;
+    size_t offset = 16;
+    if (message == NULL || payload.size() < offset ||
+        get16(&payload[0]) != MessageSend || get16(&payload[2]) != 0 ||
+        !readText(payload, &offset, get32(&payload[4]), &decoded.accountId) ||
+        !readText(payload, &offset, get32(&payload[8]), &decoded.recipient) ||
+        !readText(payload, &offset, get32(&payload[12]), &decoded.text) ||
+        offset != payload.size() || !validMessageSend(decoded)) {
+        return false;
+    }
+    *message = decoded;
+    return true;
+}
+
 inline bool encodeCallChanged(const CallData &call,
                               std::vector<uint8_t> *payload) {
     if (payload == NULL || !validCall(call)) {
@@ -829,6 +879,7 @@ inline bool encodeStatusReply(uint16_t operation, uint32_t status,
                               std::vector<uint8_t> *payload) {
     if (payload == NULL || (operation != NotificationCommand &&
                             operation != MessageReply &&
+                            operation != MessageSend &&
                             operation != CallCommand &&
                             operation != MediaCommand) ||
         !validStatus(status)) {

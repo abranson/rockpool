@@ -1,0 +1,6 @@
+# x-sailjail-description = Pebble Smartwatch Interface
+# x-sailjail-long-description = Communicate with Pebble smartwatches
+
+# The UI facade and the generic libpebble3 daemon API use separate names.
+dbus-user.talk io.rebble.libpebble3
+dbus-user.talk org.rockpool

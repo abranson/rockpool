@@ -11,6 +11,7 @@ class PrimaryWatchCapabilitiesTest {
     fun `implemented watch capabilities are independent of runtime connection state`() {
         assertEquals(
             listOf(
+                "watch.timeline",
                 "watch.notifications",
                 "watch.messaging",
                 "watch.health",

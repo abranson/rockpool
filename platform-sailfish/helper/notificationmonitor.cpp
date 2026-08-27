@@ -683,6 +683,46 @@ public:
         return succeeded ? LP3_PLATFORM_OK : LP3_PLATFORM_IO_ERROR;
     }
 
+    int32_t send(const QString &accountId, const QString &recipient,
+                 const QString &text) {
+        const QByteArray accountBytes = accountId.toUtf8();
+        const QByteArray textBytes = text.toUtf8();
+        if (!validBoundedText(accountId, kMaximumAccountPathBytes) ||
+            !accountId.startsWith(QString::fromLatin1(kAccountPathPrefix)) ||
+            accountId.size() <= static_cast<int>(strlen(kAccountPathPrefix)) ||
+            !dbus_validate_path(accountBytes.constData(), NULL) ||
+            !validBoundedText(recipient, kMaximumRecipientBytes) ||
+            !validBoundedText(
+                text, static_cast<int>(LP3_PLATFORM_MESSAGE_TEXT_MAX))) {
+            return LP3_PLATFORM_INVALID_ARGUMENT;
+        }
+        if (!started || !messagingAvailable || !messagingOwnerCurrent()) {
+            return LP3_PLATFORM_UNAVAILABLE;
+        }
+        ReplyTarget target;
+        target.accountPath = accountId;
+        target.recipient = recipient;
+        DBusMessage *message = createReplyMessage(target, textBytes);
+        if (message == NULL) return LP3_PLATFORM_INTERNAL_ERROR;
+
+        DBusError error = DBUS_ERROR_INIT;
+        DBusMessage *response = dbus_connection_send_with_reply_and_block(
+            connection, message, kCommandTimeoutMs, &error);
+        dbus_message_unref(message);
+        if (response == NULL) {
+            const bool disconnected = !dbus_connection_get_is_connected(connection);
+            dbus_error_free(&error);
+            if (disconnected) busDisconnected();
+            return LP3_PLATFORM_IO_ERROR;
+        }
+        const bool succeeded = dbus_message_get_type(response) ==
+                DBUS_MESSAGE_TYPE_METHOD_RETURN &&
+            dbus_message_get_signature(response)[0] == '\0';
+        dbus_message_unref(response);
+        dbus_error_free(&error);
+        return succeeded ? LP3_PLATFORM_OK : LP3_PLATFORM_IO_ERROR;
+    }
+
 #ifdef LP3_NOTIFICATIONMONITOR_TEST
 public:
 #else
@@ -849,6 +889,18 @@ private:
         if (!ownerCurrent) {
             setCommHistoryOwner(currentOwner);
         }
+        return ownerCurrent;
+    }
+
+    bool messagingOwnerCurrent() {
+        DBusError ownerError = DBUS_ERROR_INIT;
+        QString currentOwner;
+        const bool ownerCurrent = getNameOwner(
+            connection, kCommHistoryService, &currentOwner, &ownerError) &&
+            !dbus_error_is_set(&ownerError) &&
+            !currentOwner.isEmpty() && currentOwner == commHistoryOwner;
+        dbus_error_free(&ownerError);
+        if (!ownerCurrent) setCommHistoryOwner(currentOwner);
         return ownerCurrent;
     }
 
@@ -1243,4 +1295,10 @@ int32_t NotificationMonitor::command(uint32_t commandValue,
 
 int32_t NotificationMonitor::reply(const QString &id, const QString &text) {
     return m_private->reply(id, text);
+}
+
+int32_t NotificationMonitor::send(const QString &accountId,
+                                  const QString &recipient,
+                                  const QString &text) {
+    return m_private->send(accountId, recipient, text);
 }

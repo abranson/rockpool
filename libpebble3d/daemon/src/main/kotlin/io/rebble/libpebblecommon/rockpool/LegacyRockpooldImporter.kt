@@ -4,11 +4,11 @@
 package io.rebble.libpebblecommon.rockpool
 
 import co.touchlab.kermit.Logger
-import io.rebble.libpebblecommon.compat.rockwork.ROCKWORK_WEATHER_SETTINGS_PREFIX
-import io.rebble.libpebblecommon.compat.rockwork.ROCKWORK_MAX_WEATHER_LOCATIONS
-import io.rebble.libpebblecommon.compat.rockwork.RockworkWeatherLocation
-import io.rebble.libpebblecommon.compat.rockwork.encodeRockworkWeatherSettings
-import io.rebble.libpebblecommon.compat.rockwork.parseRockworkWeatherLocations
+import io.rebble.libpebblecommon.ui.ROCKPOOL_WEATHER_SETTINGS_PREFIX
+import io.rebble.libpebblecommon.ui.ROCKPOOL_MAX_WEATHER_LOCATIONS
+import io.rebble.libpebblecommon.ui.RockpoolWeatherLocation
+import io.rebble.libpebblecommon.ui.encodeRockpoolWeatherSettings
+import io.rebble.libpebblecommon.ui.parseRockpoolWeatherLocations
 import io.rebble.libpebblecommon.connection.KnownPebbleDevice
 import io.rebble.libpebblecommon.connection.LibPebble
 import io.rebble.libpebblecommon.connection.bt.ble.bluez.BluezManager
@@ -61,7 +61,7 @@ internal class LegacyRockpooldImporter(
         try {
             if (
                 settings.get(WEATHER_MARKER) != COMPLETE &&
-                settings.entries(ROCKWORK_WEATHER_SETTINGS_PREFIX).isNotEmpty()
+                settings.entries(ROCKPOOL_WEATHER_SETTINGS_PREFIX).isNotEmpty()
             ) {
                 completeWeatherMigration(PRESERVED_CURRENT)
                 if (isComplete()) return
@@ -152,8 +152,8 @@ internal class LegacyRockpooldImporter(
      * when every present, valid collection is identical. Existing canonical state always wins.
      */
     private fun importWeatherLocations(directories: List<Path>): String? {
-        if (settings.entries(ROCKWORK_WEATHER_SETTINGS_PREFIX).isNotEmpty()) return PRESERVED_CURRENT
-        val candidates = mutableListOf<List<RockworkWeatherLocation>>()
+        if (settings.entries(ROCKPOOL_WEATHER_SETTINGS_PREFIX).isNotEmpty()) return PRESERVED_CURRENT
+        val candidates = mutableListOf<List<RockpoolWeatherLocation>>()
         var invalid = false
         directories.forEach { directory ->
             val values = readIni(directory.resolve("appsettings.conf"))
@@ -167,9 +167,9 @@ internal class LegacyRockpooldImporter(
         if (candidates.isEmpty()) return NO_SOURCE
         val distinct = candidates.distinct()
         if (distinct.size != 1) return CONFLICT
-        val encoded = encodeRockworkWeatherSettings(distinct.single())
+        val encoded = encodeRockpoolWeatherSettings(distinct.single())
         var preservedCurrent = false
-        val persisted = settings.updatePrefixChecked(ROCKWORK_WEATHER_SETTINGS_PREFIX) { current ->
+        val persisted = settings.updatePrefixChecked(ROCKPOOL_WEATHER_SETTINGS_PREFIX) { current ->
             if (current.isEmpty()) {
                 encoded
             } else {
@@ -187,9 +187,9 @@ internal class LegacyRockpooldImporter(
 
     private fun decodeLegacyWeatherLocations(
         values: Map<String, String>,
-    ): Result<List<RockworkWeatherLocation>> = runCatching {
+    ): Result<List<RockpoolWeatherLocation>> = runCatching {
         val count = requireNotNull(values["weatherApp/size"]?.toIntOrNull())
-        require(count in 0..ROCKWORK_MAX_WEATHER_LOCATIONS)
+        require(count in 0..ROCKPOOL_MAX_WEATHER_LOCATIONS)
         val variants = (1..count).map { index ->
             Variant(
                 listOf(
@@ -200,7 +200,7 @@ internal class LegacyRockpooldImporter(
                 "as",
             )
         }
-        parseRockworkWeatherLocations(variants)
+        parseRockpoolWeatherLocations(variants)
     }
 
     private fun completeWeatherMigration(outcome: String): Boolean = settings.setAllChecked(

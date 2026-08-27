@@ -196,22 +196,22 @@
   },
   {
     "interfaces": [
-      "io.rebble.libpebblecommon.rockpool.RockpoolManager1",
-      "io.rebble.libpebblecommon.rockpool.RockpoolDiscovery1",
-      "io.rebble.libpebblecommon.rockpool.RockpoolAccount1",
-      "io.rebble.libpebblecommon.rockpool.RockpoolPlatform1",
-      "io.rebble.libpebblecommon.rockpool.RockpoolWatch1",
-      "io.rebble.libpebblecommon.rockpool.RockpoolFirmware1",
-      "io.rebble.libpebblecommon.rockpool.RockpoolApplications1",
-      "io.rebble.libpebblecommon.rockpool.RockpoolTimeline1",
-      "io.rebble.libpebblecommon.rockpool.RockpoolNotifications1",
-      "io.rebble.libpebblecommon.rockpool.RockpoolMessaging1",
-      "io.rebble.libpebblecommon.rockpool.RockpoolHealth1",
-      "io.rebble.libpebblecommon.rockpool.RockpoolProfiles1",
-      "io.rebble.libpebblecommon.rockpool.RockpoolScreenshots1",
-      "io.rebble.libpebblecommon.rockpool.RockpoolLogs1",
-      "io.rebble.libpebblecommon.rockpool.RockpoolDeveloper1",
-      "io.rebble.libpebblecommon.rockpool.RockpoolOperation1"
+      "io.rebble.libpebblecommon.rockpool.LibPebble3Manager1",
+      "io.rebble.libpebblecommon.rockpool.LibPebble3Discovery1",
+      "io.rebble.libpebblecommon.rockpool.LibPebble3Account1",
+      "io.rebble.libpebblecommon.rockpool.LibPebble3Platform1",
+      "io.rebble.libpebblecommon.rockpool.LibPebble3Watch1",
+      "io.rebble.libpebblecommon.rockpool.LibPebble3Firmware1",
+      "io.rebble.libpebblecommon.rockpool.LibPebble3Applications1",
+      "io.rebble.libpebblecommon.rockpool.LibPebble3Timeline1",
+      "io.rebble.libpebblecommon.rockpool.LibPebble3Notifications1",
+      "io.rebble.libpebblecommon.rockpool.LibPebble3Messaging1",
+      "io.rebble.libpebblecommon.rockpool.LibPebble3Health1",
+      "io.rebble.libpebblecommon.rockpool.LibPebble3Profiles1",
+      "io.rebble.libpebblecommon.rockpool.LibPebble3Screenshots1",
+      "io.rebble.libpebblecommon.rockpool.LibPebble3Logs1",
+      "io.rebble.libpebblecommon.rockpool.LibPebble3Developer1",
+      "io.rebble.libpebblecommon.rockpool.LibPebble3Operation1"
     ]
   }
 ]

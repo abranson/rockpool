@@ -1,23 +1,28 @@
 Name:       rockpool
 
-%global lp3_platform_sdk_version 1.6
-
 %{!?qtc_qmake:%define qtc_qmake %qmake}
 %{!?qtc_qmake5:%define qtc_qmake5 %qmake5}
 %{!?qtc_make:%define qtc_make make}
 %{?qtc_builddir:%define _builddir %qtc_builddir}
 Summary:    Support for Pebble watches in SailfishOS
-Version:    2.0
+Version:    2.0.0
 Release:    1
 Group:      Qt/Qt
-License:    GPLv3
+License:    GPLv3 and Apache-2.0
 URL:        http://getpebble.com/
 Source0:    %{name}-%{version}.tar.xz
-# The UI only; the watch daemon is the separately produced libpebble3d package.
-Requires:   rockpool-dbus-api = 1
-# This source tree still builds the one-release legacy UI.  It remains bound
-# to the isolated adapter until its ObjectManager/Operation1 migration lands.
-Requires:   rockwork-dbus-compat = 1
+Requires:   systemd-user-session-targets
+Requires:   qt5-plugin-position-geoclue
+Requires:   geoclue
+Requires:   sailfish-components-webview-qt5
+Provides:   libpebble3-dbus-api = 1
+Provides:   rockpool-ui-dbus-api = 1
+Provides:   libpebble3d-platform-sailfish = %{version}-%{release}
+Obsoletes:  libpebble3d-platform-sailfish < %{version}-%{release}
+Obsoletes:  libpebble3d-platform-devel < %{version}-%{release}
+# Do not infer host-glibc requirements from the sealed GraalVM output. Keep
+# normal dependency generation for the SDK-built UI, provider, host and launcher.
+%global __requires_exclude_from ^%{_libexecdir}/libpebble3d/(libpebble3d|.*[.]so)$
 BuildRequires:  pkgconfig(Qt5DBus)
 BuildRequires:  pkgconfig(Qt5Quick)
 BuildRequires:  pkgconfig(Qt5Qml)
@@ -30,49 +35,33 @@ BuildRequires:  pkgconfig(mlite5)
 BuildRequires:  pkgconfig(libmkcal-qt5)
 BuildRequires:  pkgconfig(KF5CalendarCore)
 BuildRequires:  pkgconfig(sailfishapp) >= 0.0.10
-BuildRequires:  pkgconfig(sailfishwebengine)
-BuildRequires:  pkgconfig(qt5embedwidget)
 BuildRequires:  desktop-file-utils
 BuildRequires:  qt5-qttools-linguist
+BuildRequires:  file
 
 %description
-Support for Pebble watches on SailfishOS devices. This package contains
-the Silica UI; the org.rockpool daemon API is provided by libpebble3d.
-
-%package -n libpebble3d-platform-devel
-Summary:    Development files for the libpebble3d platform-provider ABI
-License:    Apache-2.0
-BuildArch:  noarch
-
-%description -n libpebble3d-platform-devel
-The stable C header and pkg-config module for native libpebble3d platform
-providers.  This package is independent of the libpebble3d daemon runtime.
-
-%package -n libpebble3d-platform-sailfish
-Summary:    Sailfish platform provider for libpebble3d
-License:    Apache-2.0
-Requires:   libpebble3d-platform-abi = 1
-Requires:   libpebble3d-platform-abi-minor >= 6
-Requires:   libpebble3d-platform-launcher-abi = 1
-Requires:   qt5-plugin-position-geoclue
-Requires:   geoclue
-
-%description -n libpebble3d-platform-sailfish
-Unprivileged proxy, session launcher, and Sailfish platform host for
-libpebble3d.  Only the small launcher is setgid; the daemon drops back to its
-session group before startup and only the non-setgid host links Qt and
-Sailfish APIs.
+Support for Pebble watches on Sailfish OS. The package contains the Silica UI,
+the libpebble3 Native Image daemon, and its Sailfish platform provider. Only
+the small provider launcher is setgid; the daemon drops back to its session
+group before startup and only the non-setgid host links Qt and Sailfish APIs.
 
 %prep
 %setup -q -n %{name}-%{version}
 
 %build
+# Populated outside the SDK by build-libpebble3d.sh, then consumed by mb2.
+native_source_mode=any
+if [ ! -d .git ]; then
+    native_source_mode=committed
+fi
+sh rpm/verify-native-artifacts.sh rpm/native "$native_source_mode" >/dev/null
+
 mkdir -p build
 cd build
 %qmake5  \
     DEFINES+=VERSION=\\\'\\\"%{version}-%{release}\\\"\\\' \
     INSTALL_DIR=%{install_dir} \
-    ../rockwork/rockwork.pro
+    ../ui/rockpool.pro
 
 %qtc_make clean
 %qtc_make %{?_smp_mflags}
@@ -101,6 +90,12 @@ else
     # mb2 builds the checked-out source directly instead of running %setup.
     cd %{_builddir}
 fi
+
+native_source_mode=any
+if [ ! -d .git ]; then
+    native_source_mode=committed
+fi
+sh rpm/verify-native-artifacts.sh rpm/native "$native_source_mode" >/dev/null
 
 mkdir -p platform-callmonitor-test-build
 cd platform-callmonitor-test-build
@@ -157,15 +152,23 @@ else
     cd %{_builddir}
 fi
 rm -rf %{buildroot}
-install -D -m 0644 libpebble3d/include/libpebble3d-platform.h \
-    %{buildroot}%{_includedir}/libpebble3d-platform.h
-mkdir -p %{buildroot}%{_datadir}/pkgconfig
-sed \
-    -e 's|@prefix@|%{_prefix}|g' \
-    -e 's|@version@|%{lp3_platform_sdk_version}|g' \
-    libpebble3d/pkgconfig/libpebble3d-platform.pc.in \
-    > %{buildroot}%{_datadir}/pkgconfig/libpebble3d-platform.pc
-chmod 0644 %{buildroot}%{_datadir}/pkgconfig/libpebble3d-platform.pc
+install -D -m 0755 rpm/native/libpebble3d \
+    %{buildroot}%{_libexecdir}/libpebble3d/libpebble3d
+for library in rpm/native/*.so; do
+    install -m 0755 "$library" \
+        %{buildroot}%{_libexecdir}/libpebble3d/"${library##*/}"
+done
+mkdir -p %{buildroot}%{_bindir}
+ln -s ../libexec/libpebble3d/libpebble3d \
+    %{buildroot}%{_bindir}/libpebble3d
+install -D -m 0644 libpebble3d/rpm/libpebble3d.service \
+    %{buildroot}%{_prefix}/lib/systemd/user/libpebble3d.service
+install -D -m 0644 libpebble3d/rpm/bluetooth-experimental.conf \
+    %{buildroot}%{_sysconfdir}/systemd/system/bluetooth.service.d/50-libpebble3d.conf
+mkdir -p %{buildroot}%{_prefix}/lib/systemd/user/user-session.target.wants
+ln -s ../libpebble3d.service \
+    %{buildroot}%{_prefix}/lib/systemd/user/user-session.target.wants/libpebble3d.service
+install -d -m 0755 %{buildroot}%{_libdir}/libpebble3d/platforms
 
 cd build
 %qmake5_install
@@ -192,16 +195,32 @@ desktop-file-install --delete-original       \
   --dir %{buildroot}%{_datadir}/applications             \
    %{buildroot}%{_datadir}/applications/*.desktop
 
+%pre
+systemctl-user stop rockpoold.service || :
+systemctl-user disable rockpoold.service || :
+
 %post
 update-desktop-database
-
-%post -n libpebble3d-platform-sailfish
+systemctl daemon-reload || :
+systemctl try-restart bluetooth.service || :
 systemctl-user daemon-reload || :
-systemctl-user try-restart libpebble3d.service || :
+if [ "$1" = "1" ]; then
+    systemctl-user start libpebble3d.service || :
+else
+    systemctl-user try-restart libpebble3d.service || :
+fi
 
-%postun -n libpebble3d-platform-sailfish
+%preun
+if [ "$1" = "0" ]; then
+    systemctl-user stop libpebble3d.service || :
+fi
+
+%postun
 systemctl-user daemon-reload || :
-systemctl-user try-restart libpebble3d.service || :
+if [ "$1" = "0" ]; then
+    systemctl daemon-reload || :
+    systemctl try-restart bluetooth.service || :
+fi
 
 %files
 %defattr(-,root,root,-)
@@ -215,14 +234,16 @@ systemctl-user try-restart libpebble3d.service || :
 %{_datadir}/icons/hicolor/128x128/apps/%{name}.png
 %{_datadir}/icons/hicolor/256x256/apps/%{name}.png
 %{_sysconfdir}/sailjail/permissions/Rockpool.permission
-
-%files -n libpebble3d-platform-devel
-%defattr(-,root,root,-)
-%{_includedir}/libpebble3d-platform.h
-%{_datadir}/pkgconfig/libpebble3d-platform.pc
-
-%files -n libpebble3d-platform-sailfish
-%defattr(-,root,root,-)
+%dir %{_libexecdir}/libpebble3d
+%attr(0755,root,root) %{_libexecdir}/libpebble3d/libpebble3d
+%attr(0755,root,root) %{_libexecdir}/libpebble3d/*.so
+%{_bindir}/libpebble3d
+%{_prefix}/lib/systemd/user/libpebble3d.service
+%{_prefix}/lib/systemd/user/user-session.target.wants/libpebble3d.service
+%dir %{_sysconfdir}/systemd/system/bluetooth.service.d
+%{_sysconfdir}/systemd/system/bluetooth.service.d/50-libpebble3d.conf
+%attr(0755,root,root) %dir %{_libdir}/libpebble3d
+%attr(0755,root,root) %dir %{_libdir}/libpebble3d/platforms
 %attr(0755,root,root) %{_libdir}/libpebble3d/platforms/libpebble3d-platform-sailfish.so
 %attr(2755,root,privileged) %{_libexecdir}/libpebble3d/libpebble3d-platform-sailfish-launcher
 %attr(0750,root,privileged) %{_libexecdir}/libpebble3d/libpebble3d-platform-sailfish-host

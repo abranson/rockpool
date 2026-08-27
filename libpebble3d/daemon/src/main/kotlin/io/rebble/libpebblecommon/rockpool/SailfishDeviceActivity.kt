@@ -91,9 +91,8 @@ private class DbusMceActivitySource : MceActivitySource {
             val ownerChanged = CompletableDeferred<Unit>()
             connection.addSigHandler(
                 DBus.NameOwnerChanged::class.java,
-                DBUS_SERVICE,
             ) { signal ->
-                if (signal.name == MCE_SERVICE) {
+                if (signal.source == DBUS_SERVICE && signal.name == MCE_SERVICE) {
                     publishInactive(true)
                     ownerChanged.complete(Unit)
                 }
@@ -103,7 +102,7 @@ private class DbusMceActivitySource : MceActivitySource {
             val owner = dbus.GetNameOwner(MCE_SERVICE)
             connection.addSigHandler(
                 MceSignal.SystemInactivityInd::class.java,
-                MCE_SERVICE,
+                owner,
             ) { signal ->
                 if (signal.path == MCE_SIGNAL_PATH && signal.source == owner) {
                     publishInactive(signal.inactive)

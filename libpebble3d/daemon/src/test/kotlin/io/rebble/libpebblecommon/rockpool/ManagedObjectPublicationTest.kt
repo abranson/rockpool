@@ -26,7 +26,7 @@ class ManagedObjectPublicationTest {
         val connectionLock = Any()
         val fakeConnection = FakeConnection()
         var connection: FakeConnection? = null
-        val logicalPaths = listOf("/org/rockpool/watch/one", "/org/rockpool/operation/one")
+        val logicalPaths = listOf("/io/rebble/libpebble3/watch/one", "/io/rebble/libpebble3/operation/one")
         val exportedPaths = mutableListOf<String>()
         val exportEntered = CountDownLatch(1)
         val releaseExport = CountDownLatch(1)

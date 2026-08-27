@@ -16,9 +16,8 @@ import java.util.Properties
 
 /**
  * Small synchronized store for settings that have not yet moved into a
- * libpebble3 database.  It intentionally uses Rockpool naming: the prior
- * rockwork.properties file was unreleased draft state and has no compatibility
- * format.
+ * libpebble3 database. It intentionally uses Rockpool naming because this file
+ * holds settings owned by the UI facade rather than the generic daemon API.
  */
 internal class RockpoolSettings(
     private val file: Path = JvmPaths.dataHome.resolve("rockpool.properties"),
@@ -256,7 +255,7 @@ internal class RockpoolSettings(
         val temporary = Files.createTempFile(file.parent, ".rockpool-", ".properties")
         try {
             Files.newOutputStream(temporary).use {
-                props.store(it, "libpebble3d org.rockpool settings")
+                props.store(it, "libpebble3d io.rebble.libpebble3 settings")
             }
             try {
                 Files.move(

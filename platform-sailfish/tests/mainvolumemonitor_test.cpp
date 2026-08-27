@@ -37,7 +37,7 @@ namespace {
 const char kLookupService[] = "org.PulseAudio1";
 const char kLookupInterface[] = "org.PulseAudio.ServerLookup1";
 const char kPropertiesInterface[] = "org.freedesktop.DBus.Properties";
-const char kTestInterface[] = "org.rockpool.TestMainVolumeControl";
+const char kTestInterface[] = "io.rebble.libpebble3.TestMainVolumeControl";
 
 bool waitFor(const std::function<bool()> &predicate, int timeoutMs = 3000) {
     QElapsedTimer timer;
@@ -93,7 +93,7 @@ private:
 
 class FakeLookup : public QDBusVirtualObject {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "org.rockpool.TestMainVolumeControl")
+    Q_CLASSINFO("D-Bus Interface", "io.rebble.libpebble3.TestMainVolumeControl")
 
 public:
     explicit FakeLookup(FakeMainVolume *volume)

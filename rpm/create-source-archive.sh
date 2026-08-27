@@ -30,6 +30,8 @@ project_dir=$(CDPATH= cd "$script_dir/.." && pwd -P) || \
 checker=$project_dir/libpebble3d/tests/check-contract-artifacts.sh
 mobileapp_dir=$project_dir/libpebble3d/mobileapp
 spec_file=$project_dir/rpm/rockpool.spec
+native_dir=$project_dir/rpm/native
+native_verifier=$project_dir/rpm/verify-native-artifacts.sh
 output_dir=$(pwd -P) || fail "cannot determine output directory"
 archive_name=rockpool-$version.tar.xz
 archive_path=$output_dir/$archive_name
@@ -37,6 +39,9 @@ archive_prefix=rockpool-$version
 
 if [ ! -r "$checker" ]; then
     fail "missing readable release preflight: $checker"
+fi
+if [ ! -x "$native_verifier" ]; then
+    fail "missing executable Native Image verifier: $native_verifier"
 fi
 
 spec_version=$(awk '/^Version:[[:space:]]*/ { print $2; exit }' "$spec_file") || \
@@ -50,6 +55,13 @@ root_commit=$(git -C "$project_dir" rev-parse HEAD) || \
 mobileapp_commit=$(git -C "$mobileapp_dir" rev-parse HEAD) || \
     fail "cannot determine mobileapp HEAD"
 sh "$checker" --require-committed
+sh "$native_verifier" "$native_dir" committed >/dev/null
+grep -F -x -- "rockpool_commit=$root_commit" \
+    "$native_dir/.build-provenance" >/dev/null || \
+    fail "Native Image input does not match Rockpool HEAD"
+grep -F -x -- "mobileapp_commit=$mobileapp_commit" \
+    "$native_dir/.build-provenance" >/dev/null || \
+    fail "Native Image input does not match mobileapp HEAD"
 if [ "$(git -C "$project_dir" rev-parse HEAD)" != "$root_commit" ] || \
     [ "$(git -C "$mobileapp_dir" rev-parse HEAD)" != "$mobileapp_commit" ]; then
     fail "source revisions changed during release preflight"
@@ -81,6 +93,17 @@ git -C "$mobileapp_dir" archive --format=tar \
     > "$temporary_dir/mobileapp.tar" || fail "cannot archive mobileapp HEAD"
 tar -C "$temporary_dir" -xf "$temporary_dir/mobileapp.tar" || \
     fail "cannot unpack mobileapp HEAD"
+mkdir -p "$temporary_dir/$archive_prefix/rpm/native" || \
+    fail "cannot create Native Image archive directory"
+cp -a "$native_dir/." "$temporary_dir/$archive_prefix/rpm/native/" || \
+    fail "cannot add verified Native Image input to source archive"
+sh "$native_verifier" "$temporary_dir/$archive_prefix/rpm/native" committed >/dev/null
+grep -F -x -- "rockpool_commit=$root_commit" \
+    "$temporary_dir/$archive_prefix/rpm/native/.build-provenance" >/dev/null || \
+    fail "archived Native Image input does not match Rockpool HEAD"
+grep -F -x -- "mobileapp_commit=$mobileapp_commit" \
+    "$temporary_dir/$archive_prefix/rpm/native/.build-provenance" >/dev/null || \
+    fail "archived Native Image input does not match mobileapp HEAD"
 tar -C "$temporary_dir" --sort=name --owner=0 --group=0 --numeric-owner \
     --mode='u+rwX,go+rX,go-w' --mtime="@$source_date_epoch" \
     -cJf "$temporary_archive" -- "$archive_prefix" || \
@@ -88,6 +111,7 @@ tar -C "$temporary_dir" --sort=name --owner=0 --group=0 --numeric-owner \
 # Revalidate after constructing the archive so a concurrent checkout/worktree edit cannot make
 # the preflight describe different source than the captured immutable commits.
 sh "$checker" --require-committed
+sh "$native_verifier" "$native_dir" committed >/dev/null
 if [ "$(git -C "$project_dir" rev-parse HEAD)" != "$root_commit" ] || \
     [ "$(git -C "$mobileapp_dir" rev-parse HEAD)" != "$mobileapp_commit" ]; then
     fail "source revisions changed while creating the source archive"

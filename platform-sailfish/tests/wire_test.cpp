@@ -528,6 +528,41 @@ void testMessageReplyCodec() {
         payload, lp3wire::NotificationCommand, &status));
 }
 
+void testMessageSendCodec() {
+    lp3wire::MessageSendData original;
+    lp3wire::MessageSendData decoded;
+    uint32_t status = UINT32_MAX;
+    std::vector<uint8_t> payload;
+
+    original.accountId =
+        "/org/freedesktop/Telepathy/Account/ring/tel/ril_0";
+    original.recipient = "+358123";
+    original.text = "Hello \xf0\x9f\x91\x8b";
+    assert(lp3wire::encodeMessageSend(original, &payload));
+    assert(lp3wire::decodeMessageSend(payload, &decoded));
+    assert(decoded.accountId == original.accountId);
+    assert(decoded.recipient == original.recipient);
+    assert(decoded.text == original.text);
+
+    original.accountId = "/not/an/account";
+    assert(!lp3wire::encodeMessageSend(original, &payload));
+    original.accountId =
+        "/org/freedesktop/Telepathy/Account/ring/tel/ril_0";
+    original.recipient.clear();
+    assert(!lp3wire::encodeMessageSend(original, &payload));
+    original.recipient = "+358123";
+    original.text.assign(lp3wire::kMessageTextMax + 1, 'x');
+    assert(!lp3wire::encodeMessageSend(original, &payload));
+    original.text = "hello";
+    assert(lp3wire::encodeMessageSend(original, &payload));
+    payload.push_back('x');
+    assert(!lp3wire::decodeMessageSend(payload, &decoded));
+
+    assert(lp3wire::encodeStatusReply(lp3wire::MessageSend, 0, &payload));
+    assert(lp3wire::decodeStatusReply(payload, lp3wire::MessageSend, &status));
+    assert(status == 0);
+}
+
 void testCallChangedCodec() {
     const uint32_t states[] = {
         lp3wire::CallRinging,
@@ -901,6 +936,7 @@ int main() {
     testNotificationRejectsInvalidTextAndLengths();
     testNotificationCommandCodec();
     testMessageReplyCodec();
+    testMessageSendCodec();
     testCallChangedCodec();
     testCallChangedRejectsMalformedData();
     testCallCommandCodec();

@@ -716,6 +716,25 @@ private:
         }
     }
 
+    void completeMessageSend(
+        uint64_t requestId, const lp3wire::MessageSendData &message) {
+        if (!m_pending.remove(requestId)) return;
+        const int32_t status = m_notifications.send(
+            QString::fromUtf8(message.accountId.data(),
+                              static_cast<int>(message.accountId.size())),
+            QString::fromUtf8(message.recipient.data(),
+                              static_cast<int>(message.recipient.size())),
+            QString::fromUtf8(message.text.data(),
+                              static_cast<int>(message.text.size())));
+        std::vector<uint8_t> payload;
+        if (!lp3wire::encodeStatusReply(
+                lp3wire::MessageSend, static_cast<uint32_t>(status), &payload) ||
+            !queueFrame(lp3wire::Complete, requestId,
+                        &payload[0], payload.size())) {
+            failClosed();
+        }
+    }
+
     void completeCall(uint64_t requestId,
                       const lp3wire::CallCommandData &command) {
         if (!m_pending.remove(requestId)) {
@@ -853,6 +872,7 @@ private:
         }
         return (operation == lp3wire::NotificationCommand ||
                 operation == lp3wire::MessageReply ||
+                operation == lp3wire::MessageSend ||
                 operation == lp3wire::CallCommand ||
                 operation == lp3wire::MediaCommand) &&
             lp3wire::encodeStatusReply(
@@ -899,6 +919,7 @@ private:
             const uint16_t operation = lp3wire::get16(&frame.payload[0]);
             lp3wire::NotificationCommandData notificationCommand;
             lp3wire::MessageReplyData messageReply;
+            lp3wire::MessageSendData messageSend;
             lp3wire::CallCommandData callCommand;
             lp3wire::MediaCommandData mediaCommand = {};
             lp3wire::LocationQueryData locationQuery = {};
@@ -911,6 +932,8 @@ private:
                      frame.payload, &notificationCommand)) ||
                 (operation == lp3wire::MessageReply &&
                  !lp3wire::decodeMessageReply(frame.payload, &messageReply)) ||
+                (operation == lp3wire::MessageSend &&
+                 !lp3wire::decodeMessageSend(frame.payload, &messageSend)) ||
                 (operation == lp3wire::CallCommand &&
                  !lp3wire::decodeCallCommand(frame.payload, &callCommand)) ||
                 (operation == lp3wire::MediaCommand &&
@@ -924,6 +947,7 @@ private:
                 (operation != lp3wire::TimeGet &&
                  operation != lp3wire::NotificationCommand &&
                  operation != lp3wire::MessageReply &&
+                 operation != lp3wire::MessageSend &&
                  operation != lp3wire::CallCommand &&
                  operation != lp3wire::MediaCommand &&
                  operation != lp3wire::LocationQuery &&
@@ -956,6 +980,12 @@ private:
                     0, this,
                     [this, frame, messageReply]() {
                         completeMessageReply(frame.requestId, messageReply);
+                    });
+            } else if (operation == lp3wire::MessageSend) {
+                QTimer::singleShot(
+                    0, this,
+                    [this, frame, messageSend]() {
+                        completeMessageSend(frame.requestId, messageSend);
                     });
             } else if (operation == lp3wire::CallCommand) {
                 QTimer::singleShot(

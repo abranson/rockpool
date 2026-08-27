@@ -1,7 +1,7 @@
 #!/bin/sh
 # SPDX-License-Identifier: Apache-2.0
 #
-# Validate the public org.rockpool introspection and platform ABI artifacts.
+# Validate the public io.rebble.libpebble3 introspection and platform ABI artifacts.
 
 set -eu
 
@@ -90,6 +90,25 @@ require_fixed()
     fail "missing $description in $file"
 }
 
+reject_fixed()
+{
+    needle=$1
+    file=$2
+    description=$3
+
+    if command -v rg >/dev/null 2>&1; then
+        if rg --fixed-strings --quiet -- "$needle" "$file"; then
+            fail "$description in $file"
+        fi
+    elif command -v grep >/dev/null 2>&1; then
+        if grep -F -q -- "$needle" "$file"; then
+            fail "$description in $file"
+        fi
+    else
+        fail "requires rg or grep to inspect contract artifacts"
+    fi
+}
+
 reject_extended()
 {
     pattern=$1
@@ -136,8 +155,11 @@ project_dir=$(CDPATH= cd "$libpebble3d_dir/.." && pwd -P) || \
     fail "cannot determine project directory"
 contract_checker=$script_dir/check-contract-artifacts.sh
 source_archive_script=$project_dir/rpm/create-source-archive.sh
+native_package_build=$project_dir/build-libpebble3d.sh
+native_stager=$project_dir/rpm/stage-native-artifacts.sh
+native_verifier=$project_dir/rpm/verify-native-artifacts.sh
 gitmodules=$project_dir/.gitmodules
-xml=$libpebble3d_dir/api/org.rockpool.xml
+xml=$libpebble3d_dir/api/io.rebble.libpebble3.xml
 functional_parity=$libpebble3d_dir/README.md
 header=$libpebble3d_dir/include/libpebble3d-platform.h
 launcher_header=$libpebble3d_dir/include/libpebble3d-launcher-wire.h
@@ -147,11 +169,10 @@ rfcomm_socket=$libpebble3d_dir/native/rfcomm_socket.c
 rfcomm_socket_test=$libpebble3d_dir/tests/rfcomm_socket_test.c
 native_build=$libpebble3d_dir/build-native.sh
 daemon_build=$libpebble3d_dir/build.sh
-daemon_package=$libpebble3d_dir/package.sh
 mobileapp_compose_build=$libpebble3d_dir/mobileapp/composeApp/build.gradle.kts
 mobileapp_util_build=$libpebble3d_dir/mobileapp/util/build.gradle.kts
 builder_dockerfile=$libpebble3d_dir/Dockerfile
-primary_service=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockpool/RockpoolService.kt
+primary_service=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockpool/LibPebble3Service.kt
 dbus_namespace_isolation_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebblecommon/rockpool/DBusNamespaceIsolationTest.kt
 managed_object_publication=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockpool/ManagedObjectPublication.kt
 managed_object_publication_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebblecommon/rockpool/ManagedObjectPublicationTest.kt
@@ -178,7 +199,15 @@ primary_settings_mappings_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble
 primary_canned_reconciler=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockpool/PrimaryCannedResponsesReconciler.kt
 primary_canned_reconciler_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebblecommon/rockpool/PrimaryCannedResponsesReconcilerTest.kt
 primary_watch_capabilities_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebblecommon/rockpool/PrimaryWatchCapabilitiesTest.kt
-primary_applications_invalidation_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebblecommon/rockpool/RockpoolApplicationsInvalidationContractTest.kt
+primary_applications_invalidation_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebblecommon/rockpool/LibPebble3ApplicationsInvalidationContractTest.kt
+rockpool_watch_content=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockpool/RockpoolWatchContent.kt
+rockpool_watch_content_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebblecommon/rockpool/RockpoolWatchContentTest.kt
+running_app_observer=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockpool/RunningAppStateObserver.kt
+running_app_observer_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebblecommon/rockpool/RunningAppStateObserverTest.kt
+primary_firmware=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockpool/PrimaryFirmware.kt
+primary_firmware_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebblecommon/rockpool/PrimaryFirmwareTest.kt
+firmware_progress_observer=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockpool/FirmwareProgressObserver.kt
+firmware_progress_observer_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebblecommon/rockpool/FirmwareProgressObserverTest.kt
 platform_provider_controller=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockpool/PlatformProviderController.kt
 platform_provider_controller_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebblecommon/rockpool/PlatformProviderControllerTest.kt
 primary_connection_attempt_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebblecommon/rockpool/PrimaryPairAttemptRegistryTest.kt
@@ -196,23 +225,23 @@ legacy_global_settings=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebb
 legacy_global_settings_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebblecommon/rockpool/LegacyGlobalSettingsReconcilerTest.kt
 rockpool_settings=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockpool/RockpoolSettings.kt
 rockpool_settings_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebblecommon/rockpool/RockpoolSettingsTest.kt
-compat_mutation_signal_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebblecommon/rockwork/RockworkMutationSignalTest.kt
-compat_firmware_status_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebblecommon/rockwork/RockworkFirmwareStatusTest.kt
-compat_service=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockwork/RockworkService.kt
-compat_interfaces=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockwork/RockworkInterfaces.kt
-compat_pebble_object=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockwork/RockworkPebbleObject.kt
-compat_health=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockwork/RockworkHealth.kt
-compat_health_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebblecommon/rockwork/RockworkHealthTest.kt
-compat_health_data=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockwork/RockworkHealthData.kt
-compat_health_data_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebblecommon/rockwork/RockworkHealthDataTest.kt
-compat_notification_sources=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockwork/RockworkNotificationSources.kt
-compat_notification_sources_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebblecommon/rockwork/RockworkNotificationSourcesTest.kt
-compat_notification_appearance=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockwork/RockworkNotificationAppearance.kt
-compat_notification_mutations=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockwork/RockworkNotificationFilterMutations.kt
-compat_weather=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockwork/RockworkWeather.kt
-compat_weather_refresh=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockwork/RockworkWeatherAutoRefresh.kt
-compat_weather_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebblecommon/rockwork/RockworkWeatherTest.kt
-compat_weather_refresh_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebblecommon/rockwork/RockworkWeatherAutoRefreshTest.kt
+compat_mutation_signal_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebblecommon/ui/RockpoolMutationSignalTest.kt
+compat_firmware_status_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebblecommon/ui/RockpoolFirmwareStatusTest.kt
+compat_service=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/ui/RockpoolUiService.kt
+compat_interfaces=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/ui/RockpoolInterfaces.kt
+compat_pebble_object=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/ui/RockpoolPebbleObject.kt
+compat_health=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/ui/RockpoolHealth.kt
+compat_health_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebblecommon/ui/RockpoolHealthTest.kt
+compat_health_data=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/ui/RockpoolHealthData.kt
+compat_health_data_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebblecommon/ui/RockpoolHealthDataTest.kt
+compat_notification_sources=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/ui/RockpoolNotificationSources.kt
+compat_notification_sources_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebblecommon/ui/RockpoolNotificationSourcesTest.kt
+compat_notification_appearance=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/ui/RockpoolNotificationAppearance.kt
+compat_notification_mutations=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/ui/RockpoolNotificationFilterMutations.kt
+compat_weather=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/ui/RockpoolWeather.kt
+compat_weather_refresh=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/ui/RockpoolWeatherAutoRefresh.kt
+compat_weather_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebblecommon/ui/RockpoolWeatherTest.kt
+compat_weather_refresh_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebblecommon/ui/RockpoolWeatherAutoRefreshTest.kt
 proxy_project=$libpebble3d_dir/../platform-sailfish/proxy/proxy.pro
 helper_project=$libpebble3d_dir/../platform-sailfish/helper/helper.pro
 launcher_project=$libpebble3d_dir/../platform-sailfish/launcher/launcher.pro
@@ -243,53 +272,52 @@ wire_test=$libpebble3d_dir/../platform-sailfish/tests/wire_test.cpp
 wire_test_project=$libpebble3d_dir/../platform-sailfish/tests/wire_test.pro
 launcher_source=$libpebble3d_dir/../platform-sailfish/launcher/main.c
 service_dropin=$libpebble3d_dir/../platform-sailfish/libpebble3d-platform-sailfish.service.conf
-package_spec=$libpebble3d_dir/rpm/libpebble3d.spec
 rockpool_spec=$project_dir/rpm/rockpool.spec
-rockwork_project=$project_dir/rockwork/rockwork.pro
-rockpool_account=$project_dir/rockwork/rockpoolaccount.cpp
-rockpool_account_header=$project_dir/rockwork/rockpoolaccount.h
-rockpool_operation=$project_dir/rockwork/rockpooloperation.cpp
-rockpool_operation_header=$project_dir/rockwork/rockpooloperation.h
-rockpool_operation_test=$project_dir/rockwork/tests/rockpooloperation_test.cpp
-rockpool_operation_project=$project_dir/rockwork/tests/rockpooloperation_test.pro
-rockwork_pebble=$project_dir/rockwork/pebble.cpp
-rockwork_pebble_header=$project_dir/rockwork/pebble.h
-rockwork_pebbles=$project_dir/rockwork/pebbles.cpp
-rockwork_pebbles_header=$project_dir/rockwork/pebbles.h
-rockwork_pebbles_async_test=$project_dir/rockwork/tests/pebbles_async_test.cpp
-rockwork_pebbles_async_project=$project_dir/rockwork/tests/pebbles_async_test.pro
-rockwork_pebbles_async_runner=$project_dir/rockwork/tests/run-pebbles-async-test.sh
-rockwork_pebble_async_test=$project_dir/rockwork/tests/pebble_async_test.cpp
-rockwork_pebble_async_project=$project_dir/rockwork/tests/pebble_async_test.pro
-rockwork_servicecontrol_async_test=$project_dir/rockwork/tests/servicecontrol_async_test.cpp
-rockwork_servicecontrol_async_project=$project_dir/rockwork/tests/servicecontrol_async_test.pro
-rockwork_screenshot_model=$project_dir/rockwork/screenshotmodel.cpp
-rockwork_notification_model=$project_dir/rockwork/notificationsourcemodel.cpp
-pair_watch_page=$project_dir/rockwork/qml/pages/PairWatchPage.qml
-settings_page=$project_dir/rockwork/qml/pages/SettingsPage.qml
-app_settings_page=$project_dir/rockwork/qml/pages/AppSettingsPage.qml
-responses_page=$project_dir/rockwork/qml/pages/ResponsesPage.qml
-send_text_settings_dialog=$project_dir/rockwork/qml/pages/SendTextSettingsDialog.qml
-health_settings_dialog=$project_dir/rockwork/qml/pages/HealthSettingsDialog.qml
-health_history_page=$project_dir/rockwork/qml/pages/HealthHistoryPage.qml
-weather_settings_dialog=$project_dir/rockwork/qml/pages/WeatherSettingsDialog.qml
-location_picker=$project_dir/rockwork/qml/pages/LocationPicker.qml
-language_page=$project_dir/rockwork/qml/pages/LanguagePage.qml
-developer_tools_page=$project_dir/rockwork/qml/pages/DeveloperToolsPage.qml
-notifications_page=$project_dir/rockwork/qml/pages/NotificationsPage.qml
-notification_color_page=$project_dir/rockwork/qml/pages/NotificationColorPage.qml
-notification_icon_page=$project_dir/rockwork/qml/pages/NotificationIconPage.qml
-installed_apps_page=$project_dir/rockwork/qml/pages/InstalledAppsPage.qml
-installed_app_delegate=$project_dir/rockwork/qml/pages/InstalledAppDelegate.qml
-app_upgrade_page=$project_dir/rockwork/qml/pages/AppUpgradePage.qml
-app_store_details_page=$project_dir/rockwork/qml/pages/AppStoreDetailsPage.qml
-import_package_page=$project_dir/rockwork/qml/pages/ImportPackagePage.qml
-main_menu_page=$project_dir/rockwork/qml/pages/MainMenuPage.qml
-screenshots_page=$project_dir/rockwork/qml/pages/ScreenshotsPage.qml
-cover_page=$project_dir/rockwork/qml/cover/CoverPage.qml
-rockpool_qml=$project_dir/rockwork/qml/rockpool.qml
-service_control=$project_dir/rockwork/servicecontrol.cpp
-service_control_header=$project_dir/rockwork/servicecontrol.h
+rockpool_project=$project_dir/ui/rockpool.pro
+rockpool_account=$project_dir/ui/rockpoolaccount.cpp
+rockpool_account_header=$project_dir/ui/rockpoolaccount.h
+rockpool_operation=$project_dir/ui/rockpooloperation.cpp
+rockpool_operation_header=$project_dir/ui/rockpooloperation.h
+rockpool_operation_test=$project_dir/ui/tests/rockpooloperation_test.cpp
+rockpool_operation_project=$project_dir/ui/tests/rockpooloperation_test.pro
+rockpool_pebble=$project_dir/ui/pebble.cpp
+rockpool_pebble_header=$project_dir/ui/pebble.h
+rockpool_pebbles=$project_dir/ui/pebbles.cpp
+rockpool_pebbles_header=$project_dir/ui/pebbles.h
+rockpool_pebbles_async_test=$project_dir/ui/tests/pebbles_async_test.cpp
+rockpool_pebbles_async_project=$project_dir/ui/tests/pebbles_async_test.pro
+rockpool_pebbles_async_runner=$project_dir/ui/tests/run-pebbles-async-test.sh
+rockpool_pebble_async_test=$project_dir/ui/tests/pebble_async_test.cpp
+rockpool_pebble_async_project=$project_dir/ui/tests/pebble_async_test.pro
+rockpool_servicecontrol_async_test=$project_dir/ui/tests/servicecontrol_async_test.cpp
+rockpool_servicecontrol_async_project=$project_dir/ui/tests/servicecontrol_async_test.pro
+rockpool_screenshot_model=$project_dir/ui/screenshotmodel.cpp
+rockpool_notification_model=$project_dir/ui/notificationsourcemodel.cpp
+pair_watch_page=$project_dir/ui/qml/pages/PairWatchPage.qml
+settings_page=$project_dir/ui/qml/pages/SettingsPage.qml
+app_settings_page=$project_dir/ui/qml/pages/AppSettingsPage.qml
+responses_page=$project_dir/ui/qml/pages/ResponsesPage.qml
+send_text_settings_dialog=$project_dir/ui/qml/pages/SendTextSettingsDialog.qml
+health_settings_dialog=$project_dir/ui/qml/pages/HealthSettingsDialog.qml
+health_history_page=$project_dir/ui/qml/pages/HealthHistoryPage.qml
+weather_settings_dialog=$project_dir/ui/qml/pages/WeatherSettingsDialog.qml
+location_picker=$project_dir/ui/qml/pages/LocationPicker.qml
+language_page=$project_dir/ui/qml/pages/LanguagePage.qml
+developer_tools_page=$project_dir/ui/qml/pages/DeveloperToolsPage.qml
+notifications_page=$project_dir/ui/qml/pages/NotificationsPage.qml
+notification_color_page=$project_dir/ui/qml/pages/NotificationColorPage.qml
+notification_icon_page=$project_dir/ui/qml/pages/NotificationIconPage.qml
+installed_apps_page=$project_dir/ui/qml/pages/InstalledAppsPage.qml
+installed_app_delegate=$project_dir/ui/qml/pages/InstalledAppDelegate.qml
+app_upgrade_page=$project_dir/ui/qml/pages/AppUpgradePage.qml
+app_store_details_page=$project_dir/ui/qml/pages/AppStoreDetailsPage.qml
+import_package_page=$project_dir/ui/qml/pages/ImportPackagePage.qml
+main_menu_page=$project_dir/ui/qml/pages/MainMenuPage.qml
+screenshots_page=$project_dir/ui/qml/pages/ScreenshotsPage.qml
+cover_page=$project_dir/ui/qml/cover/CoverPage.qml
+rockpool_qml=$project_dir/ui/qml/rockpool.qml
+service_control=$project_dir/ui/servicecontrol.cpp
+service_control_header=$project_dir/ui/servicecontrol.h
 daemon_main=$libpebble3d_dir/daemon/src/main/kotlin/main.kt
 platform_notification_backend=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockpool/PlatformNotificationBackend.kt
 platform_calls_backend=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockpool/PlatformCallsBackend.kt
@@ -301,6 +329,9 @@ platform_system_geolocation=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/li
 platform_system_geolocation_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebblecommon/rockpool/PlatformSystemGeolocationTest.kt
 platform_system_calendar=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockpool/PlatformSystemCalendar.kt
 platform_system_contacts=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockpool/PlatformSystemContacts.kt
+platform_system_messaging=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockpool/PlatformSystemMessaging.kt
+send_text_coordinator=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockpool/SendTextConfigurationCoordinator.kt
+send_text_coordinator_test=$libpebble3d_dir/daemon/src/test/kotlin/io/rebble/libpebblecommon/rockpool/SendTextConfigurationCoordinatorTest.kt
 platform_wire_doc=$libpebble3d_dir/README.md
 sailfish_rfcomm_socket=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockpool/SailfishRfcommSocket.kt
 linux_notification_backend=$libpebble3d_dir/mobileapp/libpebble3/src/jvmMain/kotlin/io/rebble/libpebblecommon/linux/notifications/LinuxNotificationBackend.kt
@@ -309,8 +340,12 @@ linux_volume_control=$libpebble3d_dir/mobileapp/libpebble3/src/jvmMain/kotlin/io
 linux_music_control=$libpebble3d_dir/mobileapp/libpebble3/src/jvmMain/kotlin/io/rebble/libpebblecommon/linux/music/LinuxSystemMusicControl.kt
 linux_pairing=$libpebble3d_dir/mobileapp/libpebble3/src/jvmMain/kotlin/io/rebble/libpebblecommon/connection/bt/Pairing.jvm.kt
 linux_bluez_manager=$libpebble3d_dir/mobileapp/libpebble3/src/jvmMain/kotlin/io/rebble/libpebblecommon/connection/bt/ble/bluez/BluezManager.kt
+linux_ble_scanner=$libpebble3d_dir/mobileapp/libpebble3/src/jvmMain/kotlin/io/rebble/libpebblecommon/connection/bt/ble/transport/impl/BluezBleScanner.kt
+linux_classic_scanner=$libpebble3d_dir/mobileapp/libpebble3/src/jvmMain/kotlin/io/rebble/libpebblecommon/connection/bt/classic/transport/ClassicScanner.jvm.kt
+linux_gatt_client=$libpebble3d_dir/mobileapp/libpebble3/src/jvmMain/kotlin/io/rebble/libpebblecommon/connection/bt/ble/transport/impl/BluezGattClient.kt
 linux_bonded_watch_seeder=$libpebble3d_dir/mobileapp/libpebble3/src/jvmMain/kotlin/io/rebble/libpebblecommon/connection/BondedWatchSeeder.jvm.kt
 linux_classic_connector=$libpebble3d_dir/mobileapp/libpebble3/src/jvmMain/kotlin/io/rebble/libpebblecommon/connection/bt/classic/transport/JvmBtClassicConnector.kt
+sailfish_device_activity=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockpool/SailfishDeviceActivity.kt
 libpebble3_jvm_source=$libpebble3d_dir/mobileapp/libpebble3/src/jvmMain/kotlin
 libpebble3_common_source=$libpebble3d_dir/mobileapp/libpebble3/src/commonMain/kotlin
 libpebble3_health_dao=$libpebble3_common_source/io/rebble/libpebblecommon/database/dao/HealthSettingsRealDao.kt
@@ -323,6 +358,9 @@ libpebble3_notification_api=$libpebble3_common_source/io/rebble/libpebblecommon/
 libpebble3_calendar_syncer=$libpebble3_common_source/io/rebble/libpebblecommon/calendar/PhoneCalendarSyncer.kt
 libpebble3_contact_syncer=$libpebble3_common_source/io/rebble/libpebblecommon/contacts/PhoneContactsSyncer.kt
 libpebble3_calendar_dao=$libpebble3_common_source/io/rebble/libpebblecommon/database/dao/CalendarDao.kt
+libpebble3_send_text_dao=$libpebble3_common_source/io/rebble/libpebblecommon/database/dao/SendTextContactRealDao.kt
+libpebble3_send_text_manager=$libpebble3_common_source/io/rebble/libpebblecommon/messaging/SendTextManager.kt
+libpebble3_timeline_action_manager=$libpebble3_common_source/io/rebble/libpebblecommon/connection/endpointmanager/timeline/TimelineActionManager.kt
 libpebble3_android_calendar=$libpebble3d_dir/mobileapp/libpebble3/src/androidMain/kotlin/io/rebble/libpebblecommon/calendar/AndroidSystemCalendar.kt
 libpebble3_ios_calendar=$libpebble3d_dir/mobileapp/libpebble3/src/iosMain/kotlin/io/rebble/libpebblecommon/calendar/IosSystemCalendar.kt
 libpebble3_health_init_test=$libpebble3d_dir/mobileapp/libpebble3/src/jvmTest/kotlin/io/rebble/libpebblecommon/database/dao/HealthSettingsInitializationJvmTest.kt
@@ -331,6 +369,7 @@ libpebble3_notification_dao_test=$libpebble3d_dir/mobileapp/libpebble3/src/jvmTe
 libpebble3_notification_api_test=$libpebble3d_dir/mobileapp/libpebble3/src/jvmTest/kotlin/io/rebble/libpebblecommon/notification/NotificationApiJvmTest.kt
 libpebble3_watch_manager_test=$libpebble3d_dir/mobileapp/libpebble3/src/jvmTest/kotlin/io/rebble/libpebblecommon/connection/WatchManagerTest.kt
 libpebble3_calendar_syncer_test=$libpebble3d_dir/mobileapp/libpebble3/src/jvmTest/kotlin/io/rebble/libpebblecommon/calendar/PhoneCalendarSyncerJvmTest.kt
+libpebble3_send_text_manager_test=$libpebble3d_dir/mobileapp/libpebble3/src/jvmTest/kotlin/io/rebble/libpebblecommon/messaging/SendTextManagerJvmTest.kt
 libpebble3_open_meteo=$libpebble3_jvm_source/io/rebble/libpebblecommon/linux/weather/OpenMeteoWeatherClient.kt
 libpebble3_open_meteo_test=$libpebble3d_dir/mobileapp/libpebble3/src/jvmTest/kotlin/io/rebble/libpebblecommon/linux/weather/OpenMeteoWeatherClientJvmTest.kt
 sailfish_linux_backend=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockpool/SailfishLinuxBackend.kt
@@ -371,7 +410,7 @@ require_release_trees_clean()
 {
     if git -C "$project_dir" status --porcelain --untracked-files=all -- \
         .gitignore .gitmodules README.md \
-        libpebble3d platform-sailfish rockpool.pro rockwork rpm | grep -q .
+        libpebble3d platform-sailfish rockpool.pro ui rpm | grep -q .
     then
         fail "Rockpool release source paths contain uncommitted or untracked content"
     fi
@@ -382,9 +421,12 @@ require_release_trees_clean()
     fi
 }
 
-require_file "$xml" "org.rockpool introspection XML"
+require_file "$xml" "io.rebble.libpebble3 introspection XML"
 require_file "$contract_checker" "release contract checker"
 require_file "$source_archive_script" "committed release source-archive creator"
+require_file "$native_package_build" "non-Sailfish build and staging driver"
+require_file "$native_stager" "Native Image packaging-input stager"
+require_file "$native_verifier" "Native Image packaging-input verifier"
 require_file "$gitmodules" "mobileapp submodule declaration"
 require_file "$header" "platform ABI header"
 require_file "$launcher_header" "private launcher control header"
@@ -394,7 +436,6 @@ require_file "$rfcomm_socket" "native RFCOMM socket bridge"
 require_file "$rfcomm_socket_test" "native RFCOMM socket regression"
 require_file "$native_build" "Native Image build script"
 require_file "$daemon_build" "Native Image build driver"
-require_file "$daemon_package" "daemon RPM packaging script"
 require_file "$builder_dockerfile" "Native Image builder Dockerfile"
 require_file "$primary_service" "primary D-Bus service"
 require_file "$dbus_namespace_isolation_test" "D-Bus namespace-isolation regression"
@@ -422,6 +463,14 @@ require_file "$primary_settings_mappings" "primary global-settings mappings"
 require_file "$primary_settings_mappings_test" "primary global-settings mapping regressions"
 require_file "$primary_watch_capabilities_test" "primary watch-capability regressions"
 require_file "$primary_applications_invalidation_test" "primary Applications invalidation regression"
+require_file "$rockpool_watch_content" "primary watch-content mappings"
+require_file "$rockpool_watch_content_test" "primary watch-content regressions"
+require_file "$running_app_observer" "primary running-application observer"
+require_file "$running_app_observer_test" "primary running-application observer regression"
+require_file "$primary_firmware" "primary firmware state mappings"
+require_file "$primary_firmware_test" "primary firmware state regressions"
+require_file "$firmware_progress_observer" "primary firmware progress observer"
+require_file "$firmware_progress_observer_test" "primary firmware progress observer regression"
 require_file "$platform_provider_controller" "platform provider controller"
 require_file "$platform_provider_controller_test" "platform provider controller regressions"
 require_file "$primary_connection_attempt_test" "primary connection-attempt regressions"
@@ -452,10 +501,15 @@ require_file "$compat_firmware_status_test" "compatibility firmware metadata reg
 require_file "$libpebble3_health_dao" "libpebble3 health settings DAO"
 require_file "$libpebble3_health" "libpebble3 health service"
 require_file "$libpebble3_calendar_syncer" "libpebble3 phone-calendar reconciler"
+require_file "$libpebble3_send_text_manager" "libpebble3 Send Text manager"
+require_file "$libpebble3_send_text_dao" "libpebble3 Send Text projection DAO"
+require_file "$libpebble3_timeline_action_manager" "libpebble3 timeline action dispatcher"
 require_file "$libpebble3_calendar_dao" "libpebble3 calendar projection DAO"
 require_file "$libpebble3_android_calendar" "libpebble3 Android calendar source"
 require_file "$libpebble3_ios_calendar" "libpebble3 iOS calendar source"
 require_file "$platform_system_calendar" "Sailfish typed calendar source"
+require_file "$platform_system_messaging" "Sailfish typed outbound-message binding"
+require_file "$send_text_coordinator" "compatibility Send Text reconciler"
 require_file "$calendar_monitor" "Sailfish mkcal calendar monitor"
 require_file "$platform_system_contacts" "Sailfish typed contact source"
 require_file "$contact_monitor" "Sailfish QtContacts monitor"
@@ -469,6 +523,8 @@ require_file "$libpebble3_config_test" "libpebble3 config-origin regressions"
 require_file "$libpebble3_notification_dao_test" "libpebble3 notification DAO regressions"
 require_file "$libpebble3_notification_api_test" "libpebble3 notification API regressions"
 require_file "$libpebble3_calendar_syncer_test" "libpebble3 calendar preservation regressions"
+require_file "$libpebble3_send_text_manager_test" "libpebble3 Send Text regressions"
+require_file "$send_text_coordinator_test" "compatibility Send Text identity regression"
 require_file "$functional_parity" "functional parity matrix"
 require_file "$compat_service" "compatibility D-Bus service"
 require_file "$compat_notification_sources" "compatibility notification-source tracker"
@@ -509,53 +565,52 @@ require_file "$wire_test" "Sailfish provider wire regression"
 require_file "$wire_test_project" "Sailfish provider wire test project"
 require_file "$launcher_source" "Sailfish launcher source"
 require_file "$service_dropin" "Sailfish provider service drop-in"
-require_file "$package_spec" "libpebble3d package spec"
 require_file "$rockpool_spec" "Rockpool package spec"
-require_file "$rockwork_project" "Rockwork qmake project"
+require_file "$rockpool_project" "Rockpool qmake project"
 require_file "$rockpool_account" "Rockpool Account1 client"
 require_file "$rockpool_account_header" "Rockpool Account1 client header"
 require_file "$rockpool_operation" "Rockpool Operation1 watcher"
 require_file "$rockpool_operation_header" "Rockpool Operation1 watcher header"
 require_file "$rockpool_operation_test" "Rockpool Operation1 watcher regression test"
 require_file "$rockpool_operation_project" "Rockpool Operation1 watcher test project"
-require_file "$rockwork_pebble" "Rockwork Pebble implementation"
-require_file "$rockwork_pebble_header" "Rockwork Pebble header"
-require_file "$rockwork_pebbles" "Rockwork watch-list model"
-require_file "$rockwork_pebbles_header" "Rockwork watch-list model header"
-require_file "$rockwork_pebbles_async_test" "Rockwork asynchronous manager regression test"
-require_file "$rockwork_pebbles_async_project" "Rockwork asynchronous manager test project"
-require_file "$rockwork_pebbles_async_runner" "Rockwork private-bus test runner"
-require_file "$rockwork_pebble_async_test" "Rockwork asynchronous watch regression test"
-require_file "$rockwork_pebble_async_project" "Rockwork asynchronous watch test project"
-require_file "$rockwork_servicecontrol_async_test" "Rockwork asynchronous service-control regression test"
-require_file "$rockwork_servicecontrol_async_project" "Rockwork asynchronous service-control test project"
-require_file "$rockwork_screenshot_model" "Rockwork screenshot model"
-require_file "$rockwork_notification_model" "Rockwork notification-source model"
-require_file "$pair_watch_page" "Rockwork pairing page"
-require_file "$settings_page" "Rockwork settings page"
-require_file "$app_settings_page" "Rockwork application/OAuth settings page"
-require_file "$responses_page" "Rockwork canned-response editor"
-require_file "$send_text_settings_dialog" "Rockwork Send Text settings dialog"
-require_file "$health_settings_dialog" "Rockwork Health settings dialog"
-require_file "$health_history_page" "Rockwork Health history page"
-require_file "$weather_settings_dialog" "Rockwork weather settings dialog"
-require_file "$location_picker" "Rockwork weather location picker"
-require_file "$language_page" "Rockwork language settings page"
-require_file "$developer_tools_page" "Rockwork developer-tools page"
-require_file "$notifications_page" "Rockwork notifications page"
-require_file "$notification_color_page" "Rockwork notification-colour page"
-require_file "$notification_icon_page" "Rockwork notification-icon page"
-require_file "$installed_apps_page" "Rockwork installed-apps page"
-require_file "$installed_app_delegate" "Rockwork installed-app delegate"
-require_file "$app_upgrade_page" "Rockwork app-upgrade page"
-require_file "$app_store_details_page" "Rockwork app-store details page"
-require_file "$import_package_page" "Rockwork package-import page"
-require_file "$main_menu_page" "Rockwork main-menu page"
-require_file "$screenshots_page" "Rockwork screenshots page"
-require_file "$cover_page" "Rockwork cover page"
-require_file "$rockpool_qml" "Rockwork application window"
-require_file "$service_control" "Rockwork service controller"
-require_file "$service_control_header" "Rockwork service-controller header"
+require_file "$rockpool_pebble" "Rockpool Pebble implementation"
+require_file "$rockpool_pebble_header" "Rockpool Pebble header"
+require_file "$rockpool_pebbles" "Rockpool watch-list model"
+require_file "$rockpool_pebbles_header" "Rockpool watch-list model header"
+require_file "$rockpool_pebbles_async_test" "Rockpool asynchronous manager regression test"
+require_file "$rockpool_pebbles_async_project" "Rockpool asynchronous manager test project"
+require_file "$rockpool_pebbles_async_runner" "Rockpool private-bus test runner"
+require_file "$rockpool_pebble_async_test" "Rockpool asynchronous watch regression test"
+require_file "$rockpool_pebble_async_project" "Rockpool asynchronous watch test project"
+require_file "$rockpool_servicecontrol_async_test" "Rockpool asynchronous service-control regression test"
+require_file "$rockpool_servicecontrol_async_project" "Rockpool asynchronous service-control test project"
+require_file "$rockpool_screenshot_model" "Rockpool screenshot model"
+require_file "$rockpool_notification_model" "Rockpool notification-source model"
+require_file "$pair_watch_page" "Rockpool pairing page"
+require_file "$settings_page" "Rockpool settings page"
+require_file "$app_settings_page" "Rockpool application/OAuth settings page"
+require_file "$responses_page" "Rockpool canned-response editor"
+require_file "$send_text_settings_dialog" "Rockpool Send Text settings dialog"
+require_file "$health_settings_dialog" "Rockpool Health settings dialog"
+require_file "$health_history_page" "Rockpool Health history page"
+require_file "$weather_settings_dialog" "Rockpool weather settings dialog"
+require_file "$location_picker" "Rockpool weather location picker"
+require_file "$language_page" "Rockpool language settings page"
+require_file "$developer_tools_page" "Rockpool developer-tools page"
+require_file "$notifications_page" "Rockpool notifications page"
+require_file "$notification_color_page" "Rockpool notification-colour page"
+require_file "$notification_icon_page" "Rockpool notification-icon page"
+require_file "$installed_apps_page" "Rockpool installed-apps page"
+require_file "$installed_app_delegate" "Rockpool installed-app delegate"
+require_file "$app_upgrade_page" "Rockpool app-upgrade page"
+require_file "$app_store_details_page" "Rockpool app-store details page"
+require_file "$import_package_page" "Rockpool package-import page"
+require_file "$main_menu_page" "Rockpool main-menu page"
+require_file "$screenshots_page" "Rockpool screenshots page"
+require_file "$cover_page" "Rockpool cover page"
+require_file "$rockpool_qml" "Rockpool application window"
+require_file "$service_control" "Rockpool service controller"
+require_file "$service_control_header" "Rockpool service-controller header"
 require_file "$daemon_main" "daemon entrypoint"
 require_file "$platform_notification_backend" "provider notification backend"
 require_file "$platform_calls_backend" "provider calls backend"
@@ -573,8 +628,12 @@ require_file "$linux_volume_control" "native-Linux volume seam"
 require_file "$linux_music_control" "native-Linux MPRIS music control"
 require_file "$linux_pairing" "native-Linux pairing seam"
 require_file "$linux_bluez_manager" "native-Linux BlueZ manager"
+require_file "$linux_ble_scanner" "native-Linux BLE scanner"
+require_file "$linux_classic_scanner" "native-Linux Classic scanner"
+require_file "$linux_gatt_client" "native-Linux GATT client"
 require_file "$linux_bonded_watch_seeder" "native-Linux bonded-watch planner"
 require_file "$linux_classic_connector" "native-Linux Classic connector"
+require_file "$sailfish_device_activity" "Sailfish MCE activity monitor"
 require_file "$sailfish_linux_backend" "Sailfish native-Linux overrides"
 require_file "$reflect_config" "Native Image reflection configuration"
 require_file "$proxy_config" "Native Image proxy configuration"
@@ -607,6 +666,31 @@ require_fixed '--mtime="@$source_date_epoch"' "$source_archive_script" \
     'deterministic source archive timestamp'
 require_fixed 'ln "$temporary_archive" "$archive_path"' "$source_archive_script" \
     'non-overwriting atomic source archive publication'
+require_fixed 'cp -a "$native_dir/."' "$source_archive_script" \
+    'verified Native Image input in the release source archive'
+require_fixed '"$native_dir" committed' "$source_archive_script" \
+    'committed Native Image release-archive gate'
+require_fixed 'usage: $program [--release] [--reuse]' \
+    "$native_package_build" 'documented non-Sailfish build modes'
+require_fixed '"$project_dir/libpebble3d/build.sh" --release' \
+    "$native_package_build" 'committed Native Image build mode'
+require_fixed '"$project_dir/rpm/stage-native-artifacts.sh" --release' \
+    "$native_package_build" 'verified release artifact staging'
+require_fixed 'mb2 -t TARGET --no-vcs-apply build' "$native_package_build" \
+    'normal Sailfish SDK follow-up command'
+require_fixed 'release packaging requires committed Native Image input' \
+    "$native_verifier" \
+    'committed Native Image provenance gate'
+require_fixed "require_line 'format=3'" "$native_verifier" \
+    'versioned Native Image provenance format'
+require_fixed "require_line 'platform_abi=1.7'" "$native_verifier" \
+    'packaged public platform ABI identity'
+require_fixed "require_line 'launcher_abi=1'" "$native_verifier" \
+    'packaged launcher ABI identity'
+require_fixed "require_line 'sailfish_wire=1.8'" "$native_verifier" \
+    'packaged private Sailfish wire identity'
+require_fixed 'mv "$temporary" "$destination"' "$native_stager" \
+    'atomic verified Native Image input staging'
 require_fixed 'OUT_TEMP=$(mktemp -d' "$daemon_build" \
     'fresh temporary Native Image output directory'
 require_fixed '.build-provenance' "$daemon_build" \
@@ -641,6 +725,16 @@ require_fixed 'artifact_sha256=%s %s' "$daemon_build" \
     'complete Native Image artifact inventory digests'
 require_fixed 'builder_image_id=%s' "$daemon_build" \
     'immutable Native Image builder identity provenance'
+require_fixed "printf 'format=3" "$daemon_build" \
+    'versioned Native Image packaging provenance'
+require_fixed "printf 'target_arch=aarch64" "$daemon_build" \
+    'Native Image target architecture provenance'
+require_fixed "printf 'platform_abi=%s.%s" "$daemon_build" \
+    'Native Image platform ABI provenance'
+require_fixed "printf 'launcher_abi=%s" "$daemon_build" \
+    'Native Image launcher ABI provenance'
+require_fixed "printf 'sailfish_wire=%s.%s" "$daemon_build" \
+    'Native Image private-wire provenance'
 require_fixed '"$builder_image_id" sh /work/build-native.sh' "$daemon_build" \
     'Native Image execution by immutable builder identity'
 require_fixed 'sh "$BUILD_HERE/tests/check-contract-artifacts.sh"' "$daemon_build" \
@@ -651,78 +745,44 @@ require_fixed 'PREVIOUS_OUT=' "$daemon_build" \
     'failed Native Image publication rollback state'
 require_fixed 'mv "$OUT_TEMP" "$OUT"' "$daemon_build" \
     'fresh Native Image output publication'
-require_fixed "'')" "$daemon_package" 'fresh-build default daemon packaging mode'
-require_fixed 'sh "$checker" --require-committed' "$daemon_package" \
-    'committed-tree daemon packaging preflight'
-require_fixed '"$HERE/build.sh" --release' "$daemon_package" \
-    'fresh Native Image build before default daemon packaging'
-require_fixed '--reuse-current-build)' "$daemon_package" \
-    'explicit current-build reuse packaging mode'
-require_fixed 'libpebble3d-platform-loader.so' "$daemon_package" \
-    'complete daemon build reuse validation'
-require_fixed '.build-provenance' "$daemon_package" \
-    'current-source daemon build reuse validation'
-require_fixed 'source_mode=committed' "$daemon_package" \
-    'committed release-build manifest validation'
-require_fixed 'artifact_sha256=' "$daemon_package" \
-    'complete build-manifest inventory validation'
-require_fixed 'docker image inspect "$builder_image_id"' "$daemon_package" \
-    'reusable Native Image builder identity validation'
-require_fixed 'package_input=$(mktemp -d' "$daemon_package" \
-    'verified daemon artifact input snapshot'
-require_fixed 'require_current_build "$package_input"' "$daemon_package" \
-    'post-copy daemon artifact snapshot verification'
-require_fixed 'git -C "$HERE/.." archive "$root_commit" libpebble3d/rpm' \
-    "$daemon_package" 'immutable committed daemon RPM metadata snapshot'
-require_fixed '-v "$package_rpm":/rpm:ro' "$daemon_package" \
-    'committed RPM metadata snapshot mount'
-require_fixed '"$builder_image_id" sh -ec' "$daemon_package" \
-    'daemon packaging with the recorded immutable builder image'
-require_fixed 'package_output=$(mktemp -d' "$daemon_package" \
-    'temporary daemon RPM output directory'
-require_fixed 'cp "$1" "$publication_temp"' "$daemon_package" \
-    'user-owned RPM publication staging copy'
-require_fixed 'ln "$publication_temp" "$published_rpm"' "$daemon_package" \
-    'non-overwriting daemon RPM publication'
-
 if command -v xmllint >/dev/null 2>&1; then
     if ! xmllint --noout "$xml"; then
-        fail "malformed org.rockpool introspection XML"
+        fail "malformed io.rebble.libpebble3 introspection XML"
     fi
 fi
 
-# Static nodes represent /org/rockpool and its manager, platform, and dynamic
+# Static nodes represent /io/rebble/libpebble3 and its manager, platform, and dynamic
 # watch/operation collections.  Runtime watches and operations use UUID names
 # below the latter two collections.
-require_fixed '<node name="/org/rockpool">' "$xml" \
-    'root object path /org/rockpool'
+require_fixed '<node name="/io/rebble/libpebble3">' "$xml" \
+    'root object path /io/rebble/libpebble3'
 require_fixed '<node name="Manager">' "$xml" \
-    'object path /org/rockpool/Manager'
+    'object path /io/rebble/libpebble3/Manager'
 require_fixed '<node name="Platform">' "$xml" \
-    'object path /org/rockpool/Platform'
+    'object path /io/rebble/libpebble3/Platform'
 require_fixed '<node name="Watches">' "$xml" \
-    'object path /org/rockpool/Watches'
+    'object path /io/rebble/libpebble3/Watches'
 require_fixed '<node name="Operations">' "$xml" \
-    'object path /org/rockpool/Operations'
+    'object path /io/rebble/libpebble3/Operations'
 
 for interface in \
     org.freedesktop.DBus.ObjectManager \
-    org.rockpool.Manager1 \
-    org.rockpool.Discovery1 \
-    org.rockpool.Account1 \
-    org.rockpool.Platform1 \
-    org.rockpool.Watch1 \
-    org.rockpool.Firmware1 \
-    org.rockpool.Applications1 \
-    org.rockpool.Timeline1 \
-    org.rockpool.Notifications1 \
-    org.rockpool.Messaging1 \
-    org.rockpool.Health1 \
-    org.rockpool.Profiles1 \
-    org.rockpool.Screenshots1 \
-    org.rockpool.Logs1 \
-    org.rockpool.Developer1 \
-    org.rockpool.Operation1
+    io.rebble.libpebble3.Manager1 \
+    io.rebble.libpebble3.Discovery1 \
+    io.rebble.libpebble3.Account1 \
+    io.rebble.libpebble3.Platform1 \
+    io.rebble.libpebble3.Watch1 \
+    io.rebble.libpebble3.Firmware1 \
+    io.rebble.libpebble3.Applications1 \
+    io.rebble.libpebble3.Timeline1 \
+    io.rebble.libpebble3.Notifications1 \
+    io.rebble.libpebble3.Messaging1 \
+    io.rebble.libpebble3.Health1 \
+    io.rebble.libpebble3.Profiles1 \
+    io.rebble.libpebble3.Screenshots1 \
+    io.rebble.libpebble3.Logs1 \
+    io.rebble.libpebble3.Developer1 \
+    io.rebble.libpebble3.Operation1
 do
     require_fixed "<interface name=\"$interface\">" "$xml" \
         "required interface $interface"
@@ -748,31 +808,51 @@ do
 done
 
 # The two well-known names need physically distinct dbus-java connections.
+require_fixed 'private const val BUS_NAME = "io.rebble.libpebble3"' "$primary_service" \
+    'generic libpebble3 well-known bus name'
+require_fixed 'private const val BUS_NAME = "org.rockpool"' "$compat_service" \
+    'private Rockpool UI well-known bus name'
 require_fixed 'withShared(false)' "$primary_service" \
-    'isolated org.rockpool D-Bus connection'
+    'isolated io.rebble.libpebble3 D-Bus connection'
 require_fixed 'withShared(false)' "$compat_service" \
-    'isolated org.rockwork compatibility connection'
+    'isolated org.rockpool UI connection'
 require_fixed 'fun `well known names expose only objects from their physical connection`()' \
     "$dbus_namespace_isolation_test" 'runtime D-Bus namespace-isolation regression'
 require_fixed 'assertNotEquals(primary.uniqueName, compatibility.uniqueName)' \
     "$dbus_namespace_isolation_test" 'distinct physical D-Bus connections assertion'
 require_fixed 'client.probe(PRIMARY_NAME, COMPATIBILITY_PATH).Identity()' \
-    "$dbus_namespace_isolation_test" 'org.rockpool cross-name rejection assertion'
+    "$dbus_namespace_isolation_test" 'io.rebble.libpebble3 cross-name rejection assertion'
 require_fixed 'client.probe(COMPATIBILITY_NAME, PRIMARY_PATH).Identity()' \
-    "$dbus_namespace_isolation_test" 'org.rockwork cross-name rejection assertion'
+    "$dbus_namespace_isolation_test" 'org.rockpool cross-name rejection assertion'
 require_fixed 'assertFailsWith<UnknownObject>' "$dbus_namespace_isolation_test" \
     'exact D-Bus UnknownObject isolation failure'
 require_fixed 'watchBusConnection' "$compat_service" \
     'compatibility session-bus recovery'
 require_fixed 'exported.values.forEach { conn.exportObject' "$compat_service" \
     'compatibility-object re-export after reconnect'
-require_fixed 'RockworkPebble$WeatherLocationsChanged' "$reflect_config" \
-    'legacy weather-location signal reflection metadata'
+require_fixed 'RockpoolPebble$WeatherLocationsChanged' "$reflect_config" \
+    'Rockpool UI weather-location signal reflection metadata'
 for service in "$primary_service" "$compat_service"
 do
     require_fixed 'connectionLock' "$service" \
         'atomic D-Bus connection-loss transition'
 done
+
+require_fixed 'SUBDIRS = ui' "$project_dir/rockpool.pro" \
+    'root qmake UI subdirectory'
+require_fixed 'ui.file = ui/rockpool.pro' "$project_dir/rockpool.pro" \
+    'root qmake UI project path'
+require_fixed '../ui/rockpool.pro' "$rockpool_spec" \
+    'RPM UI project path'
+reject_tree_extended 'rockwork|org\.rockwork|/org/rockwork' \
+    'obsolete Rockwork identity in active source' \
+    "$project_dir/ui" "$libpebble3d_dir/daemon/src" "$project_dir/rockpool.pro" \
+    "$rockpool_spec"
+if find "$project_dir/ui" "$libpebble3d_dir/daemon/src" \
+    -name '*Rockwork*' -print -quit | grep -q .
+then
+    fail "obsolete Rockwork filename in active source"
+fi
 
 # A dynamic path is part of GetManagedObjects only after the object has been
 # exported on the connection backing that snapshot. Removal is the exact
@@ -792,7 +872,7 @@ require_fixed 'publishPublicName: (C) -> Unit = {},' "$managed_object_publicatio
 require_fixed 'publishPublicName(connection)' "$managed_object_publication" \
     'public-name publication inside ObjectManager gate'
 require_fixed 'publishPublicName = { it.requestBusName(BUS_NAME) }' "$primary_service" \
-    'org.rockpool name publication through ObjectManager gate'
+    'io.rebble.libpebble3 name publication through ObjectManager gate'
 require_fixed 'managedObjects.publishConnectionAfterExport(' \
     "$primary_service" 'atomic reconnect ObjectManager snapshot publication'
 if ! awk '
@@ -838,12 +918,43 @@ require_fixed 'propertiesChanged(APPLICATIONS_INTERFACE, setOf("Applications"))'
 require_fixed 'fun `watch refresh republishes Applications1 for a stable watch object`()' \
     "$primary_applications_invalidation_test" \
     'stable-watch Applications1 invalidation regression'
+for application_method in Launch Close RequestConfiguration SubmitConfiguration
+do
+    require_fixed "<method name=\"$application_method\">" "$xml" \
+        "primary Applications1 $application_method operation"
+done
+require_fixed 'connected.currentCompanionAppSessions' "$primary_service" \
+    'addressed current PKJS configuration session'
+require_fixed 'session.triggerOnWebviewClosed(result)' "$primary_service" \
+    'bounded primary PKJS configuration result return'
+require_fixed 'fun `application records identify only the running application`()' \
+    "$rockpool_watch_content_test" 'primary application running-state record regression'
+require_fixed 'fun `application configuration values are bounded before dispatch`()' \
+    "$rockpool_watch_content_test" 'primary PKJS input-bound regression'
+require_fixed 'fun `observer publishes transitions and ignores a retired connection`()' \
+    "$running_app_observer_test" 'primary running-application observer regression'
+require_fixed '<method name="CheckForUpdate">' "$xml" \
+    'primary explicit firmware update check'
+for firmware_property in Recovery CheckingForUpdate UpdateAvailable CandidateVersion \
+    ReleaseNotes UpdateState UpdateProgress
+do
+    require_fixed "<property name=\"$firmware_property\"" "$xml" \
+        "primary Firmware1 $firmware_property property"
+done
+require_fixed 'awaitFirmwareCheck(initial, firmwareCheckStates())' "$primary_service" \
+    'race-safe primary firmware check lifecycle'
+require_fixed 'fun `firmware check observes a fast complete transition after subscribing`()' \
+    "$primary_firmware_test" 'fast primary firmware check regression'
+require_fixed 'fun `candidate metadata and install progress map without exposing download URL`()' \
+    "$primary_firmware_test" 'bounded primary firmware metadata regression'
+require_fixed 'fun `observer publishes progress and rejects a retired update session`()' \
+    "$firmware_progress_observer_test" 'primary firmware progress observer regression'
 
 # Compatibility firmware properties form one visible tuple. A replacement
 # candidate must invalidate the cache even while availability remains true.
-require_fixed 'data class RockworkFirmwareStatus(' "$compat_service" \
+require_fixed 'data class RockpoolFirmwareStatus(' "$compat_service" \
     'complete compatibility firmware metadata status'
-require_fixed 'fun shouldSignalAfter(previous: RockworkFirmwareStatus): Boolean = this != previous' \
+require_fixed 'fun shouldSignalAfter(previous: RockpoolFirmwareStatus): Boolean = this != previous' \
     "$compat_service" 'compatibility firmware tuple change detector'
 require_fixed 'firmwareStatus.shouldSignalAfter(watch.firmwareStatus)' "$compat_service" \
     'compatibility firmware metadata invalidation'
@@ -993,7 +1104,7 @@ done
 require_fixed 'fun `does not recreate notification fallback after empty canonical policy`()' \
     "$legacy_importer_timeline_test" \
     'legacy notification fallback suppression regression'
-require_fixed 'class RockworkNotificationSourcePublisher(' "$compat_notification_sources" \
+require_fixed 'class RockpoolNotificationSourcePublisher(' "$compat_notification_sources" \
     'single-owner compatibility notification-source publisher'
 require_fixed 'Channel<Unit>(Channel.CONFLATED)' "$compat_notification_sources" \
     'conflated compatibility notification-source invalidation queue'
@@ -1202,7 +1313,7 @@ reject_extended '\$settingPrefix\.(canned|calendar\.enabled)' "$primary_service"
 # malformed data, provider failure, or cancellation, and publish a successful
 # replacement as one Room transaction. Sailfish obtains that snapshot only
 # through the bounded provider calendar domain.
-require_fixed 'internal suspend fun syncDeviceCalendarsToDb() = reconciliationMutex.withLock {' \
+require_fixed '): CalendarSyncOutcome = reconciliationMutex.withLock {' \
     "$libpebble3_calendar_syncer" 'serialized phone-calendar reconciliation'
 require_fixed 'if (!systemCalendar.hasPermission()) {' "$libpebble3_calendar_syncer" \
     'permission-loss calendar projection preservation'
@@ -1235,6 +1346,10 @@ require_fixed 'return events.map { event ->' "$libpebble3_ios_calendar" \
 reject_extended 'return events\.mapNotNull' "$libpebble3_ios_calendar" \
     'iOS partial event snapshot'
 for calendar_projection_regression in \
+    explicitSyncReportsTheCompleteProjectionAfterCrossingCommit \
+    explicitSyncReportsUnavailableWithoutCrossingCommitOrMutatingProjection \
+    explicitSyncCancellationBeforeCommitPreservesProjection \
+    disabledCalendarSettingClearsPinsWithoutReadingEvents \
     permissionDenialDoesNotReadEventsOrMutateTheExistingProjection \
     eventFailurePreservesProjectionUntilASuccessfulReconciliation \
     eventCancellationIsRethrownWithoutMutatingTheExistingProjection \
@@ -1253,8 +1368,63 @@ require_fixed 'class PlatformSystemCalendar' "$platform_system_calendar" \
     'Sailfish SystemCalendar binding'
 require_fixed 'CALENDAR_QUERY_EVENTS' "$platform_system_calendar" \
     'typed Sailfish event queries'
-require_fixed 'unavailable("watch.timeline-sync", "timeline sync is not available yet")' \
-    "$primary_service" 'explicit unavailable Timeline1 sync contract'
+require_fixed 'libPebble.syncCalendars(::beginCommit)' \
+    "$primary_service" 'bounded primary Timeline1 sync operation'
+require_fixed 'CalendarSyncOutcome.SourceUnavailable' \
+    "$primary_service" 'explicit unavailable Timeline1 source result'
+require_fixed '"calendarCount" to Variant(outcome.calendarCount)' \
+    "$primary_service" 'useful Timeline1 calendar result'
+require_fixed '"eventCount" to Variant(outcome.eventCount)' \
+    "$primary_service" 'useful Timeline1 event result'
+require_fixed '"reminderCount" to Variant(outcome.reminderCount)' \
+    "$primary_service" 'useful Timeline1 reminder result'
+require_fixed '"calendarEnabled" to Variant(outcome.calendarEnabled)' \
+    "$primary_service" 'Timeline1 enablement result'
+require_fixed '"watch.timeline"' "$primary_service" \
+    'advertised primary timeline capability'
+reject_extended 'timeline sync is not available yet' "$primary_service" \
+    'retired unavailable Timeline1 sync stub'
+
+# Send Text configuration is one durable BlobDB projection. The fixed watch
+# action must authenticate one exact displayed recipient against that current
+# projection before any provider dispatch; compatibility identities remain
+# byte-for-byte stable with the retired backend.
+require_fixed ') = configurationMutex.withLock {' "$libpebble3_send_text_manager" \
+    'serialized Send Text projection and action authorization'
+require_fixed 'if (actionId != 0.toUByte() || attributes.size != 2)' \
+    "$libpebble3_send_text_manager" 'strict fixed Send Text action shape'
+require_fixed '.filter { it.displayRecipient == displayedRecipient }' \
+    "$libpebble3_send_text_manager" 'durable exact-recipient authorization'
+require_fixed 'if (routes.size != 1)' "$libpebble3_send_text_manager" \
+    'unique Send Text route authorization'
+require_fixed 'systemMessaging.sendMessage(route.accountId, route.recipient, text)' \
+    "$libpebble3_send_text_manager" 'resolved-only outbound Send Text dispatch'
+require_fixed 'if (sendTextManager.handles(itemId)) {' \
+    "$libpebble3_timeline_action_manager" 'fixed Send Text action before local overrides'
+require_fixed '@Transaction' "$libpebble3_send_text_dao" \
+    'transactional Send Text BlobDB projection'
+require_fixed 'preserving Send Text projection:' "$send_text_coordinator" \
+    'malformed compatibility Send Text preservation'
+require_fixed 'rockpoolSendTextMethodUuid("$account:$recipient")' \
+    "$send_text_coordinator" 'historical Send Text method identity'
+require_fixed 'class PlatformSystemMessaging' "$platform_system_messaging" \
+    'typed platform outbound-message binding'
+require_fixed 'fun snapshotProjectsFavoritesAndAuthenticatesExactRecipient()' \
+    "$libpebble3_send_text_manager_test" 'Send Text binary/authentication regression'
+require_fixed 'compatibility ids match the historical Send Text projection' \
+    "$send_text_coordinator_test" 'historical Send Text UUID regression'
+require_fixed '<method name="SetFavorites">' "$xml" \
+    'primary bounded Send Text favorites replacement'
+require_fixed '<method name="SendText">' "$xml" \
+    'primary outgoing Send Text operation'
+require_fixed '<property name="Favorites" type="aa{sv}" access="read"/>' "$xml" \
+    'primary Send Text favorites property'
+require_fixed 'sendTextConfiguration.sendText(parsedMethodId, text)' "$primary_service" \
+    'primary configured-method-only Send Text dispatch'
+require_fixed 'fun `primary send resolves only a currently configured method`()' \
+    "$send_text_coordinator_test" 'primary Send Text authorization regression'
+require_fixed 'fun `invalid replacement is rejected before the commit boundary`()' \
+    "$send_text_coordinator_test" 'primary Send Text pre-commit validation regression'
 require_fixed 'fun `serialized mutations preserve fields changed by another caller`()' \
     "$config_mutation_coordinator_test" 'whole-config lost-update regression'
 require_fixed 'fun `global primary canned records ignore obsolete per-watch groups`()' \
@@ -1543,9 +1713,9 @@ done
 # A declared watch interface may fail with Operation1.NotSupported, but must
 # never disappear as UnknownMethod while a client is probing capability.
 for watch_interface in \
-    RockpoolFirmware1 RockpoolApplications1 RockpoolTimeline1 \
-    RockpoolNotifications1 RockpoolMessaging1 RockpoolHealth1 \
-    RockpoolProfiles1 RockpoolScreenshots1 RockpoolLogs1 RockpoolDeveloper1
+    LibPebble3Firmware1 LibPebble3Applications1 LibPebble3Timeline1 \
+    LibPebble3Notifications1 LibPebble3Messaging1 LibPebble3Health1 \
+    LibPebble3Profiles1 LibPebble3Screenshots1 LibPebble3Logs1 LibPebble3Developer1
 do
     require_fixed "$watch_interface" "$primary_service" \
         "implemented watch-domain interface $watch_interface"
@@ -1644,17 +1814,27 @@ require_fixed 'supportsBtClassic = rfcommSocketFactory.available' "$platform_pro
 
 # The loader accepts an exact regular .so and deliberately rejects symlinks.
 # qmake must therefore build the provider as a plugin (not a versioned shared
-# library with an unversioned symlink).  Rockpool owns the ABI development
-# package and compiles its provider against that package's canonical in-tree
-# header, avoiding a self-BuildRequire.
+# library with an unversioned symlink). Rockpool compiles the loader and
+# provider against the canonical private in-tree header, avoiding a
+# self-BuildRequire or public development package.
 require_fixed 'unversioned_libname' "$proxy_project" \
     'unversioned proxy plugin configuration'
-require_fixed '%global lp3_platform_sdk_version 1.6' "$rockpool_spec" \
-    'fixed platform ABI SDK version'
-require_fixed 'BuildArch:  noarch' "$rockpool_spec" \
-    'architecture-neutral platform ABI development package'
-require_fixed '%{_datadir}/pkgconfig/libpebble3d-platform.pc' "$rockpool_spec" \
-    'architecture-neutral platform ABI pkg-config module'
+reject_extended '^%package' "$rockpool_spec" \
+    'split Rockpool runtime or development subpackage'
+require_fixed 'Provides:   libpebble3-dbus-api = 1' "$rockpool_spec" \
+    'public libpebble3 D-Bus API capability'
+require_fixed 'Provides:   rockpool-ui-dbus-api = 1' "$rockpool_spec" \
+    'private Rockpool UI D-Bus API capability'
+require_fixed '%global __requires_exclude_from' "$rockpool_spec" \
+    'path-specific Native Image dependency exclusion'
+require_fixed 'sh rpm/verify-native-artifacts.sh rpm/native "$native_source_mode"' \
+    "$rockpool_spec" 'verified external Native Image packaging input'
+require_fixed '%attr(0755,root,root) %{_libexecdir}/libpebble3d/*.so' \
+    "$rockpool_spec" 'Rockpool-owned Native Image support libraries'
+reject_extended 'libpebble3d-platform\.pc' "$rockpool_spec" \
+    'installed private platform ABI pkg-config module'
+reject_fixed '%{_includedir}/libpebble3d-platform.h' "$rockpool_spec" \
+    'installed private platform ABI header'
 for provider_project in "$launcher_project" "$proxy_project" "$helper_project"
 do
     require_fixed '../../libpebble3d/include' "$provider_project" \
@@ -1664,30 +1844,16 @@ do
 done
 reject_extended '^BuildRequires:[[:space:]]+pkgconfig\(libpebble3d-platform\)' \
     "$rockpool_spec" 'self-referential platform ABI BuildRequires'
-reject_extended '^%package -n libpebble3d-platform-devel' "$package_spec" \
-    'platform development package in Native Image spec'
-require_fixed 'Provides:   rockwork-dbus-compat = 1' "$package_spec" \
-    'temporary Rockwork compatibility virtual provide'
-require_fixed 'Provides:   libpebble3d-platform-launcher-abi = 1' "$package_spec" \
-    'private session-launcher protocol capability'
-require_fixed '#define LP3_PLATFORM_ABI_MINOR 6u' "$header" \
-    'public platform ABI minor 1.6'
-require_fixed '"1.6"' "$loader" \
-    'native platform snapshot ABI version 1.6'
-require_fixed 'val abiVersion: String = "1.6"' "$platform_provider_controller" \
-    'daemon platform snapshot ABI default 1.6'
-require_fixed 'field(3).ifEmpty { "1.6" }' "$platform_provider_controller" \
-    'daemon platform snapshot ABI fallback 1.6'
-require_fixed 'Provides:   libpebble3d-platform-abi-minor = 6' "$package_spec" \
-    'runtime platform ABI minor capability'
+require_fixed '#define LP3_PLATFORM_ABI_MINOR 7u' "$header" \
+    'public platform ABI minor 1.7'
+require_fixed '"1.7"' "$loader" \
+    'native platform snapshot ABI version 1.7'
+require_fixed 'val abiVersion: String = "1.7"' "$platform_provider_controller" \
+    'daemon platform snapshot ABI default 1.7'
+require_fixed 'field(3).ifEmpty { "1.7" }' "$platform_provider_controller" \
+    'daemon platform snapshot ABI fallback 1.7'
 require_fixed 'api->info.abi_minor < 6' "$loader" \
     'Contacts domain ABI-minor admission gate'
-require_fixed '%attr(0755,root,root) /usr/libexec/libpebble3d/*.so' "$package_spec" \
-    'package-owned native-image support libraries'
-require_fixed 'Requires:   libpebble3d-platform-launcher-abi = 1' "$rockpool_spec" \
-    'provider dependency on daemon launcher bootstrap'
-require_fixed 'Requires:   libpebble3d-platform-abi-minor >= 6' "$rockpool_spec" \
-    'provider dependency on runtime platform ABI minor'
 require_fixed 'BuildRequires:  pkgconfig(Qt5Positioning)' "$rockpool_spec" \
     'Sailfish Location build dependency'
 require_fixed 'BuildRequires:  pkgconfig(libmkcal-qt5)' "$rockpool_spec" \
@@ -1702,10 +1868,16 @@ require_fixed 'BuildRequires:  pkgconfig(Qt5Contacts)' "$rockpool_spec" \
     'Sailfish QtContacts build dependency'
 require_fixed 'QT += core dbus positioning contacts' "$helper_project" \
     'Qt Positioning linked only into the privileged Sailfish helper'
-require_fixed 'static const uint16_t kMinor = 7;' "$wire_header" \
-    'private provider wire minor 1.7'
+require_fixed 'static const uint16_t kMinor = 8;' "$wire_header" \
+    'private provider wire minor 1.8'
 require_fixed 'MessageReply = 5,' "$wire_header" \
     'private typed message-reply operation'
+require_fixed 'MessageSend = 9,' "$wire_header" \
+    'private typed outbound-message operation'
+require_fixed 'send_message' "$header" \
+    'public typed outbound-message provider command'
+require_fixed 'validMessageSend' "$wire_header" \
+    'typed outbound-message codec validation'
 require_fixed 'NotificationHasDefaultAction = 1u << 0,' "$wire_header" \
     'notification authenticated-conversation capability flag'
 require_fixed 'NotificationHasReplyAction = 1u << 1,' "$wire_header" \
@@ -2273,12 +2445,24 @@ require_fixed 'fun interface LinuxPairingRequester' "$linux_pairing" \
     'injectable native-Linux pairing requester'
 require_fixed 'fun interface LinuxBluezAdapterSelector' "$linux_bluez_manager" \
     'injectable native-Linux BlueZ adapter selector'
+require_fixed 'getDBusOwnerName(BLUEZ_SERVICE)' "$linux_bluez_manager" \
+    'unique BlueZ signal sender resolution'
+for bluez_signal_client in \
+    "$linux_pairing" "$linux_ble_scanner" "$linux_classic_scanner" "$linux_gatt_client"
+do
+    require_fixed 'addBluezSigHandler' "$bluez_signal_client" \
+        'unique-owner BlueZ signal registration'
+done
+require_fixed 'MceSignal.SystemInactivityInd::class.java,' "$sailfish_device_activity" \
+    'typed MCE inactivity signal registration'
+require_fixed '                owner,' "$sailfish_device_activity" \
+    'unique-owner MCE inactivity sender binding'
 require_fixed 'class SailfishPairingRequester' "$sailfish_linux_backend" \
     'Sailfish pairing requester implementation'
 require_fixed 'class SailfishBluezAdapterSelector' "$sailfish_linux_backend" \
     'Sailfish BlueZ adapter-selection implementation'
 reject_tree_extended \
-    'rockpool|sailfish|libpebble3d|org\.rockwork|org\.rockpool|com\.jolla|x-nemo|alienbt|appsupport|lipstick|mkcal|qtcontacts|nemo' \
+    'rockpool|sailfish|libpebble3d|io\.rebble\.libpebble3|org\.rockpool|com\.jolla|x-nemo|alienbt|appsupport|lipstick|mkcal|qtcontacts|nemo' \
     'product-specific identity or policy in libpebble3 source' \
     "$libpebble3_jvm_source" "$libpebble3_common_source"
 require_fixed 'eavesdrop=' "$notification_monitor" \
@@ -2452,15 +2636,15 @@ require_fixed 'Files.notExists(path, LinkOption.NOFOLLOW_LINKS)' "$legacy_import
     'missing versus unreadable legacy credential distinction'
 require_fixed 'private const val WEATHER_MARKER = "migration.rockpoold.weather-locations.v1"' \
     "$legacy_importer" 'dedicated legacy weather-location migration marker'
-require_fixed 'settings.updatePrefixChecked(ROCKWORK_WEATHER_SETTINGS_PREFIX)' \
+require_fixed 'settings.updatePrefixChecked(ROCKPOOL_WEATHER_SETTINGS_PREFIX)' \
     "$legacy_importer" 'atomic current-state-preserving weather migration install'
-require_fixed 'count in 0..ROCKWORK_MAX_WEATHER_LOCATIONS' "$legacy_importer" \
+require_fixed 'count in 0..ROCKPOOL_MAX_WEATHER_LOCATIONS' "$legacy_importer" \
     'bounded legacy weather array before materialization'
 require_fixed 'legacyGlobalSettings.reconcileIfNeeded(legacyImporter.isOriginalImportComplete())' \
     "$daemon_main" 'legacy global migration independent of weather completion'
 reject_extended 'legacyGlobalSettings\.reconcileIfNeeded\(legacyImporter\.isComplete\(\)\)' \
     "$daemon_main" 'weather migration must not block unrelated global migration'
-require_fixed 'rockworkService.reloadWeatherSettings()' "$daemon_main" \
+require_fixed 'rockpoolUiService.reloadWeatherSettings()' "$daemon_main" \
     'late legacy weather migration reload wiring'
 require_fixed 'if (changed) weatherAutoRefresh.trigger()' "$compat_service" \
     'weather refresh only after a changed persisted snapshot'
@@ -2651,23 +2835,23 @@ require_fixed 'assertEquals(originalNotificationConfig, libPebble.config.value.n
 
 # The old C++ daemon is deliberately deleted. Empty directories may remain in
 # a working tree after deletion, but no source or service file may survive.
-if [ -d "$project_dir/rockworkd" ] && \
-    find "$project_dir/rockworkd" -type f -print -quit | grep -q .
+if [ -d "$project_dir/rockpoold" ] && \
+    find "$project_dir/rockpoold" -type f -print -quit | grep -q .
 then
-    fail "retired rockworkd source remains"
+    fail "retired rockpoold source remains"
 fi
-reject_extended '(^|[[:space:]])rockworkd([[:space:]]|$)' "$project_dir/rockpool.pro" \
-    'stale rockworkd build target'
+reject_extended '(^|[[:space:]])rockpoold([[:space:]]|$)' "$project_dir/rockpool.pro" \
+    'stale rockpoold build target'
 
 # Firmware-update state is emitted asynchronously. The static compatibility
 # proxy must route it to the real refresh member; forwarding it to a nonexistent
 # Qt signal leaves the upgrade spinner/menu stale.
-require_fixed '&RockworkPebbleInterface::UpgradingFirmwareChanged' \
-    "$rockwork_pebble" 'typed firmware-upgrade compatibility signal'
+require_fixed '&RockpoolPebbleInterface::UpgradingFirmwareChanged' \
+    "$rockpool_pebble" 'typed firmware-upgrade compatibility signal'
 require_fixed 'this, &Pebble::refreshFirmwareUpdateInfo' \
-    "$rockwork_pebble" 'firmware-upgrade compatibility refresh member'
+    "$rockpool_pebble" 'firmware-upgrade compatibility refresh member'
 reject_extended 'SIGNAL\(refreshFirmwareUpdateInfo\(\)\)' \
-    "$rockwork_pebble" 'firmware-upgrade refresh routed to a nonexistent signal'
+    "$rockpool_pebble" 'firmware-upgrade refresh routed to a nonexistent signal'
 
 # Keep the supported weather units setting durable. The retired providers were
 # the only source of localized condition strings, so their now-ineffective
@@ -2708,7 +2892,7 @@ require_fixed 'https://api.open-meteo.com/v1/forecast' "$libpebble3_open_meteo" 
     'supported keyless weather forecast endpoint'
 require_fixed 'parameters.append("forecast_days", "2")' "$libpebble3_open_meteo" \
     'bounded two-day weather forecast request'
-require_fixed 'source == RockworkWeatherObservationSource.EXTERNAL' "$compat_weather" \
+require_fixed 'source == RockpoolWeatherObservationSource.EXTERNAL' "$compat_weather" \
     'external weather injection precedence'
 require_fixed 'weatherAutoRefresh.start()' "$compat_service" \
     'automatic weather refresh service lifecycle'
@@ -2815,7 +2999,7 @@ then
 fi
 
 require_fixed 'Q_PROPERTY(QString address READ address NOTIFY identityChanged)' \
-    "$rockwork_pebble_header" 'asynchronously populated watch address exposed to Rockwork QML'
+    "$rockpool_pebble_header" 'asynchronously populated watch address exposed to Rockpool QML'
 require_fixed 'pebble.address.length > 0' "$cover_page" \
     'empty-address reconnect guard'
 require_fixed 'rockPool.connectWatch(pebble.address);' "$cover_page" \
@@ -2890,7 +3074,7 @@ for regression in \
     stopRequestedDuringStartWaitsForStartChain
 do
     require_fixed "void ServiceControlAsyncTest::$regression()" \
-        "$rockwork_servicecontrol_async_test" \
+        "$rockpool_servicecontrol_async_test" \
         "asynchronous service-control regression $regression"
 done
 
@@ -2925,46 +3109,46 @@ reject_extended 'property var app:[[:space:]]*app_model\.get\(app_index\)' \
 
 # latestScreenshot is the first row. Removing it, or clearing a non-empty
 # model, must notify QML so the main-page preview advances or disappears.
-if [ "$(grep -c 'emit latestScreenshotChanged();' "$rockwork_screenshot_model")" -lt 3 ]
+if [ "$(grep -c 'emit latestScreenshotChanged();' "$rockpool_screenshot_model")" -lt 3 ]
 then
-    fail "latest screenshot changes are not notified for every model mutation in $rockwork_screenshot_model"
+    fail "latest screenshot changes are not notified for every model mutation in $rockpool_screenshot_model"
 fi
 require_fixed 'const bool latestChanged = !m_files.isEmpty();' \
-    "$rockwork_screenshot_model" 'non-empty screenshot clear notification'
+    "$rockpool_screenshot_model" 'non-empty screenshot clear notification'
 require_fixed 'const bool latestChanged = idx == 0;' \
-    "$rockwork_screenshot_model" 'latest screenshot removal notification'
+    "$rockpool_screenshot_model" 'latest screenshot removal notification'
 
 # Newly learned notification applications and primary/compatibility filter
-# mutations must update every already-open Rockwork model without reconnecting.
+# mutations must update every already-open Rockpool model without reconnecting.
 require_fixed 'watchNotificationApps()' "$compat_service" \
     'live compatibility notification-app observer'
 require_fixed 'notificationFilters.addListener' "$compat_service" \
     'cross-API notification-filter observer'
-require_fixed 'RockworkNotificationSourceTracker' "$compat_notification_sources" \
+require_fixed 'RockpoolNotificationSourceTracker' "$compat_notification_sources" \
     'notification source addition/change/removal diff'
 require_fixed 'colorName: String?' "$compat_notification_sources" \
     'notification appearance included in source invalidation state'
-require_fixed 'RockworkNotificationAppearanceCoordinator' "$compat_notification_appearance" \
+require_fixed 'RockpoolNotificationAppearanceCoordinator' "$compat_notification_appearance" \
     'serialized combined notification-appearance update'
 require_fixed 'Channel<Request>(Channel.UNLIMITED)' "$compat_notification_mutations" \
     'FIFO compatibility notification-filter mutation queue'
 require_fixed 'notificationFilterMutations = notificationFilterMutations' "$compat_service" \
     'service-wide compatibility notification-filter mutation queue'
-require_fixed 'this, &Pebble::notificationAppearanceReplyFinished' "$rockwork_pebble" \
+require_fixed 'this, &Pebble::notificationAppearanceReplyFinished' "$rockpool_pebble" \
     'notification-appearance asynchronous reply handling'
-require_fixed 'refreshNotificationsAsync();' "$rockwork_pebble" \
+require_fixed 'refreshNotificationsAsync();' "$rockpool_pebble" \
     'authoritative notification-state refresh'
-require_fixed 'm_notifications->setColorName(sourceId, colorName);' "$rockwork_pebble" \
+require_fixed 'm_notifications->setColorName(sourceId, colorName);' "$rockpool_pebble" \
     'non-destructive optimistic notification colour update'
-require_fixed 'm_notifications->setIconCode(sourceId, iconCode);' "$rockwork_pebble" \
+require_fixed 'm_notifications->setIconCode(sourceId, iconCode);' "$rockpool_pebble" \
     'non-destructive optimistic notification icon update'
-require_fixed 'roles.append(RoleName);' "$rockwork_notification_model" \
+require_fixed 'roles.append(RoleName);' "$rockpool_notification_model" \
     'existing notification source name refresh'
-require_fixed 'roles.append(RoleIcon);' "$rockwork_notification_model" \
+require_fixed 'roles.append(RoleIcon);' "$rockpool_notification_model" \
     'existing notification source icon refresh'
-reject_extended 'notificationsFilter\(\)\.value\(sourceId\)' "$rockwork_pebble" \
+reject_extended 'notificationsFilter\(\)\.value\(sourceId\)' "$rockpool_pebble" \
     'synchronous stale notification appearance reread'
-require_fixed 'if (!m_connected) {' "$rockwork_pebble" \
+require_fixed 'if (!m_connected) {' "$rockpool_pebble" \
     'edge-triggered compatibility connection notification'
 if ! awk '
     /void Pebble::pebbleConnected\(\)/ { in_connected = 1 }
@@ -2973,81 +3157,81 @@ if ! awk '
     in_connected && /emit connectedChanged\(\)/ { notified = 1 }
     in_connected && /^}/ { exit !(refreshed && guarded && notified) }
     END { if (!in_connected) exit 1 }
-' "$rockwork_pebble"
+' "$rockpool_pebble"
 then
-    fail "Pebble connected transition can emit duplicate notifications in $rockwork_pebble"
+    fail "Pebble connected transition can emit duplicate notifications in $rockpool_pebble"
 fi
 
 # Sorting the raw pointer list after begin/endInsertRows without a layout/reset
 # signal corrupts QAbstractItemModel row identity. Reorder only through the
 # explicit model-aware helper, including on connection-state changes.
-require_fixed 'void Pebbles::resortPebbles()' "$rockwork_pebbles" \
-    'model-aware Rockwork watch sorting'
-require_fixed 'beginResetModel();' "$rockwork_pebbles" \
+require_fixed 'void Pebbles::resortPebbles()' "$rockpool_pebbles" \
+    'model-aware Rockpool watch sorting'
+require_fixed 'beginResetModel();' "$rockpool_pebbles" \
     'watch-list ordering reset notification'
-require_fixed 'resortPebbles();' "$rockwork_pebbles" \
+require_fixed 'resortPebbles();' "$rockpool_pebbles" \
     'watch-list connection-state resort'
 reject_extended 'std::sort\(m_pebbles\.begin\(\),[[:space:]]*m_pebbles\.end\(\)' \
-    "$rockwork_pebbles" 'unannounced direct watch-list model sort'
+    "$rockpool_pebbles" 'unannounced direct watch-list model sort'
 
 # Manager discovery, scanning and commands run on the GUI thread. Every bus
 # request must be asynchronous, and replies from an older request or daemon
 # owner must not repopulate the model after a restart.
 require_fixed 'QDBusConnection::sessionBus().asyncCall(message)' \
-    "$rockwork_pebbles" 'asynchronous compatibility-manager D-Bus call'
+    "$rockpool_pebbles" 'asynchronous compatibility-manager D-Bus call'
 for epoch in m_serviceEpoch m_watchListEpoch m_versionEpoch m_scanningEpoch m_scanResultsEpoch
 do
-    require_fixed "$epoch" "$rockwork_pebbles_header" \
+    require_fixed "$epoch" "$rockpool_pebbles_header" \
         "compatibility-manager stale-reply epoch $epoch"
 done
 for completion in \
     watchListReplyFinished versionReplyFinished scanningReplyFinished \
     scanResultsReplyFinished managerCommandReplyFinished
 do
-    require_fixed "Pebbles::$completion" "$rockwork_pebbles" \
+    require_fixed "Pebbles::$completion" "$rockpool_pebbles" \
         "asynchronous compatibility-manager completion $completion"
 done
 for command in StartScan StopScan ConnectWatch DisconnectWatch ForgetWatch
 do
     require_fixed "sendManagerCommand(QStringLiteral(\"$command\")" \
-        "$rockwork_pebbles" "asynchronous compatibility-manager command $command"
+        "$rockpool_pebbles" "asynchronous compatibility-manager command $command"
 done
 require_fixed 'serviceEpoch != m_serviceEpoch || requestEpoch != m_watchListEpoch' \
-    "$rockwork_pebbles" 'stale watch-list reply rejection'
+    "$rockpool_pebbles" 'stale watch-list reply rejection'
 require_fixed 'serviceEpoch != m_serviceEpoch || requestEpoch != m_scanResultsEpoch' \
-    "$rockwork_pebbles" 'stale scan-result reply rejection'
-require_fixed '&QDBusServiceWatcher::serviceOwnerChanged' "$rockwork_pebbles" \
+    "$rockpool_pebbles" 'stale scan-result reply rejection'
+require_fixed '&QDBusServiceWatcher::serviceOwnerChanged' "$rockpool_pebbles" \
     'direct compatibility-service owner replacement handling'
 require_fixed 'Q_PROPERTY(QString version READ version NOTIFY versionChanged)' \
-    "$rockwork_pebbles_header" 'asynchronously cached compatibility version'
-reject_extended '\.call\(' "$rockwork_pebbles" \
+    "$rockpool_pebbles_header" 'asynchronously cached compatibility version'
+reject_extended '\.call\(' "$rockpool_pebbles" \
     'blocking compatibility-manager GUI-thread D-Bus call'
-manager_signal_hooks=$(grep -c 'QDBusConnection::sessionBus().connect' "$rockwork_pebbles")
+manager_signal_hooks=$(grep -c 'QDBusConnection::sessionBus().connect' "$rockpool_pebbles")
 if [ "$manager_signal_hooks" -ne 3 ]; then
-    fail "compatibility-manager signals must be installed exactly once in $rockwork_pebbles"
+    fail "compatibility-manager signals must be installed exactly once in $rockpool_pebbles"
 fi
 require_fixed 'QDBusConnectionInterface::ReplaceExistingService' \
-    "$rockwork_pebbles_async_test" 'direct compatibility-service owner replacement regression'
+    "$rockpool_pebbles_async_test" 'direct compatibility-service owner replacement regression'
 require_fixed 'replyPending(QStringLiteral("ScanResults"), 1' \
-    "$rockwork_pebbles_async_test" 'out-of-order scan-result regression'
+    "$rockpool_pebbles_async_test" 'out-of-order scan-result regression'
 require_fixed 'void PebblesAsyncTest::commandsDoNotWaitForReplies()' \
-    "$rockwork_pebbles_async_test" 'nonblocking compatibility-manager command regression'
-require_fixed 'exec dbus-run-session -- "$@"' "$rockwork_pebbles_async_runner" \
-    'isolated Rockwork manager regression bus'
-if [ ! -x "$rockwork_pebbles_async_runner" ]; then
-    fail "Rockwork private-bus test runner is not executable: $rockwork_pebbles_async_runner"
+    "$rockpool_pebbles_async_test" 'nonblocking compatibility-manager command regression'
+require_fixed 'exec dbus-run-session -- "$@"' "$rockpool_pebbles_async_runner" \
+    'isolated Rockpool manager regression bus'
+if [ ! -x "$rockpool_pebbles_async_runner" ]; then
+    fail "Rockpool private-bus test runner is not executable: $rockpool_pebbles_async_runner"
 fi
 
 # A watch object is constructed on the GUI thread for every returned path.
 # Keep its identity, models, screenshots and firmware snapshot asynchronous,
 # reject replies from older requests/owners, and expose late identity through
 # proper property/model notifiers.
-require_fixed 'class RockworkPebbleInterface : public QDBusAbstractInterface' \
-    "$rockwork_pebble_header" 'static non-introspecting compatibility watch proxy'
-reject_extended 'new QDBusInterface' "$rockwork_pebble" \
+require_fixed 'class RockpoolPebbleInterface : public QDBusAbstractInterface' \
+    "$rockpool_pebble_header" 'static non-introspecting compatibility watch proxy'
+reject_extended 'new QDBusInterface' "$rockpool_pebble" \
     'dynamic compatibility proxy introspection on the GUI thread'
 require_fixed 'Q_PROPERTY(QString name READ name NOTIFY identityChanged)' \
-    "$rockwork_pebble_header" 'asynchronously populated watch name'
+    "$rockpool_pebble_header" 'asynchronously populated watch name'
 for epoch in \
     m_serviceEpoch m_connectionEpoch m_appsEpoch m_screenshotsEpoch \
     m_firmwareEpoch m_notificationFiltersEpoch m_weatherLocationsEpoch \
@@ -3056,7 +3240,7 @@ for epoch in \
     m_notificationFilterCommandEpochs \
     m_timelineColorsEpoch m_timelineIconsEpoch
 do
-    require_fixed "$epoch" "$rockwork_pebble_header" \
+    require_fixed "$epoch" "$rockpool_pebble_header" \
         "compatibility-watch stale-reply epoch $epoch"
 done
 for completion in \
@@ -3067,143 +3251,143 @@ for completion in \
     weatherWriteReplyFinished developerWriteReplyFinished \
     dumpLogsReplyFinished timelinePaletteReplyFinished
 do
-    require_fixed "Pebble::$completion" "$rockwork_pebble" \
+    require_fixed "Pebble::$completion" "$rockpool_pebble" \
         "asynchronous compatibility-watch completion $completion"
 done
 for method in InstalledApps NotificationsFilter Screenshots
 do
     require_fixed "m_iface->asyncCall(QStringLiteral(\"$method\"))" \
-        "$rockwork_pebble" "asynchronous compatibility-watch $method snapshot"
+        "$rockpool_pebble" "asynchronous compatibility-watch $method snapshot"
 done
 require_fixed 'foreach (const QString &propertyName, firmwareProperties())' \
-    "$rockwork_pebble" 'atomic asynchronous firmware snapshot'
-require_fixed 'return m_notificationFilters;' "$rockwork_pebble" \
+    "$rockpool_pebble" 'atomic asynchronous firmware snapshot'
+require_fixed 'return m_notificationFilters;' "$rockpool_pebble" \
     'cached nonblocking notification-filter property'
 require_fixed 'Q_PROPERTY(bool weatherSettingsReady READ weatherSettingsReady NOTIFY weatherSettingsReadyChanged)' \
-    "$rockwork_pebble_header" 'atomic asynchronous weather settings readiness'
+    "$rockpool_pebble_header" 'atomic asynchronous weather settings readiness'
 for weather_cache in \
     'return m_weatherLocations;' 'return m_weatherUnits;' \
     'return m_weatherLanguage;' 'return m_weatherAltKey;'
 do
-    require_fixed "$weather_cache" "$rockwork_pebble" \
+    require_fixed "$weather_cache" "$rockpool_pebble" \
         "cached nonblocking weather property $weather_cache"
 done
 require_fixed 'm_iface->asyncCallWithArgumentList(method, QVariantList() << value)' \
-    "$rockwork_pebble" 'asynchronous weather setting write'
+    "$rockpool_pebble" 'asynchronous weather setting write'
 require_fixed 'valueRevision == m_weatherValueRevisions.value(propertyName)' \
-    "$rockwork_pebble" 'weather write failure rollback ordering'
-require_fixed '&RockworkPebbleInterface::WeatherLocationsChanged' \
-    "$rockwork_pebble" 'authoritative weather-location invalidation signal'
+    "$rockpool_pebble" 'weather write failure rollback ordering'
+require_fixed '&RockpoolPebbleInterface::WeatherLocationsChanged' \
+    "$rockpool_pebble" 'authoritative weather-location invalidation signal'
 require_fixed 'Q_PROPERTY(bool developerSettingsReady READ developerSettingsReady NOTIFY developerSettingsReadyChanged)' \
-    "$rockwork_pebble_header" 'atomic asynchronous developer settings readiness'
+    "$rockpool_pebble_header" 'atomic asynchronous developer settings readiness'
 for developer_cache in \
     'return m_devConnEnabled;' 'return m_devConnServerRunning;' \
     'return m_logLevel;'
 do
-    require_fixed "$developer_cache" "$rockwork_pebble" \
+    require_fixed "$developer_cache" "$rockpool_pebble" \
         "cached nonblocking developer property $developer_cache"
 done
 require_fixed 'requestProperty(QString::fromLatin1(DEV_CONNECTION_STATE));' \
-    "$rockwork_pebble" 'authoritative developer-connection signal readback'
+    "$rockpool_pebble" 'authoritative developer-connection signal readback'
 require_fixed 'm_iface->asyncCallWithArgumentList(QStringLiteral("DumpLogs"),' \
-    "$rockwork_pebble" 'asynchronous developer log export request'
-require_fixed 'm_logDumpPending' "$rockwork_pebble_header" \
+    "$rockpool_pebble" 'asynchronous developer log export request'
+require_fixed 'm_logDumpPending' "$rockpool_pebble_header" \
     'single in-flight compatibility log export'
-require_fixed 'logDumpWasPending' "$rockwork_pebble" \
+require_fixed 'logDumpWasPending' "$rockpool_pebble" \
     'service-owner loss releases compatibility log export UI'
 require_fixed 'Q_PROPERTY(QVariantList timelineColors READ timelineColors NOTIFY timelineColorsChanged)' \
-    "$rockwork_pebble_header" 'cached notification colour palette'
+    "$rockpool_pebble_header" 'cached notification colour palette'
 require_fixed 'Q_PROPERTY(QVariantList timelineIcons READ timelineIcons NOTIFY timelineIconsChanged)' \
-    "$rockwork_pebble_header" 'cached notification icon palette'
-require_fixed 'return m_timelineColors;' "$rockwork_pebble" \
+    "$rockpool_pebble_header" 'cached notification icon palette'
+require_fixed 'return m_timelineColors;' "$rockpool_pebble" \
     'nonblocking notification colour-palette getter'
-require_fixed 'return m_timelineIcons;' "$rockwork_pebble" \
+require_fixed 'return m_timelineIcons;' "$rockpool_pebble" \
     'nonblocking notification icon-palette getter'
-require_fixed 'm_iface->asyncCall(method)' "$rockwork_pebble" \
+require_fixed 'm_iface->asyncCall(method)' "$rockpool_pebble" \
     'asynchronous notification palette request'
-require_fixed 'sendNotificationFilterCommand(' "$rockwork_pebble" \
+require_fixed 'sendNotificationFilterCommand(' "$rockpool_pebble" \
     'asynchronous notification filter command'
-require_fixed 'QTimer::singleShot(250, this' "$rockwork_pebble" \
+require_fixed 'QTimer::singleShot(250, this' "$rockpool_pebble" \
     'bounded notification palette retry'
-require_fixed 'm_timelineColorsFailures' "$rockwork_pebble_header" \
+require_fixed 'm_timelineColorsFailures' "$rockpool_pebble_header" \
     'bounded notification colour-palette failure state'
-require_fixed 'm_timelineIconsFailures' "$rockwork_pebble_header" \
+require_fixed 'm_timelineIconsFailures' "$rockpool_pebble_header" \
     'bounded notification icon-palette failure state'
 require_fixed 'Q_PROPERTY(bool settingsPageReady READ settingsPageReady NOTIFY settingsPageReadyChanged)' \
-    "$rockwork_pebble_header" 'atomic asynchronous compatibility settings readiness'
+    "$rockpool_pebble_header" 'atomic asynchronous compatibility settings readiness'
 for settings_cache in \
     'return m_imperialUnits;' 'return m_profileWhenConnected;' \
     'return m_profileWhenDisconnected;' 'return m_calendarSyncEnabled;' \
     'return m_syncAppsFromCloud;'
 do
-    require_fixed "$settings_cache" "$rockwork_pebble" \
+    require_fixed "$settings_cache" "$rockpool_pebble" \
         "cached nonblocking compatibility setting $settings_cache"
 done
-require_fixed 'm_settingsWriteEpochs' "$rockwork_pebble_header" \
+require_fixed 'm_settingsWriteEpochs' "$rockpool_pebble_header" \
     'compatibility settings write ordering'
-require_fixed 'm_settingsAuthoritativeProperties' "$rockwork_pebble_header" \
+require_fixed 'm_settingsAuthoritativeProperties' "$rockpool_pebble_header" \
     'compatibility settings authoritative-value tracking'
 require_fixed 'valueRevision == m_settingsValueRevisions.value(propertyName)' \
-    "$rockwork_pebble" 'compatibility settings write rollback ordering'
-require_fixed 'Pebble::settingsPropertyChangedFromService' "$rockwork_pebble" \
+    "$rockpool_pebble" 'compatibility settings write rollback ordering'
+require_fixed 'Pebble::settingsPropertyChangedFromService' "$rockpool_pebble" \
     'authoritative compatibility settings signal readback'
-require_fixed 'Pebble::settingsPropertyReadFailed' "$rockwork_pebble" \
+require_fixed 'Pebble::settingsPropertyReadFailed' "$rockpool_pebble" \
     'bounded compatibility settings read failure handling'
-require_fixed 'markSettingsPropertyLoaded(propertyName, false)' "$rockwork_pebble" \
+require_fixed 'markSettingsPropertyLoaded(propertyName, false)' "$rockpool_pebble" \
     'usable non-authoritative compatibility settings fallback'
 require_fixed 'Q_PROPERTY(bool cannedResponsesReady READ cannedResponsesReady NOTIFY cannedResponsesReadyChanged)' \
-    "$rockwork_pebble_header" 'asynchronous canned-response readiness'
-require_fixed 'return m_cannedResponses;' "$rockwork_pebble" \
+    "$rockpool_pebble_header" 'asynchronous canned-response readiness'
+require_fixed 'return m_cannedResponses;' "$rockpool_pebble" \
     'cached nonblocking canned-response getter'
 require_fixed 'requestProperty(QString::fromLatin1(CANNED_RESPONSES));' \
-    "$rockwork_pebble" 'asynchronous canned-response readback'
-require_fixed 'm_iface->asyncCallWithArgumentList(' "$rockwork_pebble" \
+    "$rockpool_pebble" 'asynchronous canned-response readback'
+require_fixed 'm_iface->asyncCallWithArgumentList(' "$rockpool_pebble" \
     'asynchronous compatibility map write'
 require_fixed 'QStringLiteral("setCannedResponses"), QVariantList() << normalized' \
-    "$rockwork_pebble" 'partial canned-response map write'
-require_fixed 'm_cannedResponsesWriteEpoch' "$rockwork_pebble_header" \
+    "$rockpool_pebble" 'partial canned-response map write'
+require_fixed 'm_cannedResponsesWriteEpoch' "$rockpool_pebble_header" \
     'canned-response write ordering'
-require_fixed 'm_cannedResponsesAuthoritative' "$rockwork_pebble_header" \
+require_fixed 'm_cannedResponsesAuthoritative' "$rockpool_pebble_header" \
     'canned-response fallback writeability'
-require_fixed 'normalized.insert(it.key(), strings);' "$rockwork_pebble" \
+require_fixed 'normalized.insert(it.key(), strings);' "$rockpool_pebble" \
     'explicit empty canned-response list retention'
 require_fixed 'Q_PROPERTY(bool cannedContactsReady READ cannedContactsReady NOTIFY cannedContactsReadyChanged)' \
-    "$rockwork_pebble_header" 'asynchronous favorite-contact readiness'
-require_fixed 'return m_cannedContacts;' "$rockwork_pebble" \
+    "$rockpool_pebble_header" 'asynchronous favorite-contact readiness'
+require_fixed 'return m_cannedContacts;' "$rockpool_pebble" \
     'cached nonblocking favorite-contact getter'
-require_fixed 'QString::fromLatin1(FAVORITE_CONTACTS),' "$rockwork_pebble" \
+require_fixed 'QString::fromLatin1(FAVORITE_CONTACTS),' "$rockpool_pebble" \
     'asynchronous full favorite-contact read'
-require_fixed 'QStringLiteral("setFavoriteContacts"),' "$rockwork_pebble" \
+require_fixed 'QStringLiteral("setFavoriteContacts"),' "$rockpool_pebble" \
     'asynchronous full favorite-contact replacement'
-require_fixed 'm_cannedContactsRequestEpoch' "$rockwork_pebble_header" \
+require_fixed 'm_cannedContactsRequestEpoch' "$rockpool_pebble_header" \
     'favorite-contact read ordering'
-require_fixed 'm_cannedContactsWriteEpoch' "$rockwork_pebble_header" \
+require_fixed 'm_cannedContactsWriteEpoch' "$rockpool_pebble_header" \
     'favorite-contact write ordering'
-require_fixed 'm_cannedContactsAuthoritative' "$rockwork_pebble_header" \
+require_fixed 'm_cannedContactsAuthoritative' "$rockpool_pebble_header" \
     'favorite-contact fallback writeability'
 # Health settings are opened from a built-in app configuration action.  The
 # dialog must never synchronously obtain its map or edit the Pebble cache in
 # place: it loads a detached snapshot only after the lazy cache is ready.
 require_fixed 'Q_PROPERTY(bool healthParamsReady READ healthParamsReady NOTIFY healthParamsReadyChanged)' \
-    "$rockwork_pebble_header" 'asynchronous health-settings readiness'
-require_fixed 'return m_healthParams;' "$rockwork_pebble" \
+    "$rockpool_pebble_header" 'asynchronous health-settings readiness'
+require_fixed 'return m_healthParams;' "$rockpool_pebble" \
     'cached nonblocking health-settings getter'
-require_fixed 'void Pebble::refreshHealthParams()' "$rockwork_pebble" \
+require_fixed 'void Pebble::refreshHealthParams()' "$rockpool_pebble" \
     'lazy health-settings refresh'
-require_fixed 'requestProperty(QString::fromLatin1(HEALTH_PARAMS));' "$rockwork_pebble" \
+require_fixed 'requestProperty(QString::fromLatin1(HEALTH_PARAMS));' "$rockpool_pebble" \
     'asynchronous health-settings read and readback'
-require_fixed 'QStringLiteral("SetHealthParams")' "$rockwork_pebble" \
+require_fixed 'QStringLiteral("SetHealthParams")' "$rockpool_pebble" \
     'asynchronous health-settings write method'
-require_fixed 'm_iface->asyncCallWithArgumentList(' "$rockwork_pebble" \
+require_fixed 'm_iface->asyncCallWithArgumentList(' "$rockpool_pebble" \
     'asynchronous health-settings write transport'
 for health_state in \
     m_healthParamsRequested m_healthParamsAuthoritative m_healthParamsValid \
     m_healthParamsWriteEpoch m_healthParamsValueRevision
 do
-    require_fixed "$health_state" "$rockwork_pebble_header" \
+    require_fixed "$health_state" "$rockpool_pebble_header" \
         "health-settings owner/read/write state $health_state"
 done
-require_fixed 'this, &Pebble::healthParamsChangedFromService' "$rockwork_pebble" \
+require_fixed 'this, &Pebble::healthParamsChangedFromService' "$rockpool_pebble" \
     'health-settings signal invalidation handler'
 require_fixed 'pebble.refreshHealthParams()' "$health_settings_dialog" \
     'lazy asynchronous Health dialog refresh'
@@ -3229,7 +3413,7 @@ require_fixed 'pebble.healthParams = updated;' "$health_settings_dialog" \
 reject_extended 'healthParams:[[:space:]]*pebble\.healthParams' "$installed_apps_page" \
     'Health dialog passed the live cached map directly'
 reject_extended 'fetchVarMap\("HealthParams"\)|m_iface->call\("(HealthParams|SetHealthParams)"\)' \
-    "$rockwork_pebble" 'blocking compatibility health-settings call'
+    "$rockpool_pebble" 'blocking compatibility health-settings call'
 
 # Historical health is account-wide in libpebble3. Restore the old dashboard and an
 # addressed-watch sync request without assigning those shared rows to the selected watch.
@@ -3239,11 +3423,11 @@ require_fixed 'fun FetchHealthData()' "$compat_interfaces" \
     'legacy health-fetch D-Bus method'
 require_fixed 'class HealthDataChanged(path: String) : DBusSignal(path)' \
     "$compat_interfaces" 'legacy health-data change signal'
-require_fixed 'private val healthData = RockworkHealthDataCoordinator(libPebble)' \
+require_fixed 'private val healthData = RockpoolHealthDataCoordinator(libPebble)' \
     "$compat_service" 'shared account-global health-history projection'
 require_fixed 'libPebble.healthDataUpdated.collect {' "$compat_service" \
     'health-history database observer'
-require_fixed 'RockworkPebble.HealthDataChanged(targetPath)' "$compat_service" \
+require_fixed 'RockpoolPebble.HealthDataChanged(targetPath)' "$compat_service" \
     'health-history global signal fanout'
 require_fixed 'withTimeout(HEALTH_OVERVIEW_TIMEOUT) { healthData.healthOverview() }' \
     "$compat_pebble_object" 'bounded compatibility health overview'
@@ -3261,18 +3445,18 @@ require_fixed 'fun `health sync rejects disconnected and unacknowledged requests
     "$compat_mutation_signal_test" 'truthful Health sync failure regression'
 
 require_fixed 'Q_PROPERTY(QVariantMap healthOverview READ healthOverview NOTIFY healthOverviewChanged)' \
-    "$rockwork_pebble_header" 'cached health-overview property'
+    "$rockpool_pebble_header" 'cached health-overview property'
 require_fixed 'Q_PROPERTY(bool healthOverviewReady READ healthOverviewReady NOTIFY healthOverviewReadyChanged)' \
-    "$rockwork_pebble_header" 'asynchronous health-overview readiness'
+    "$rockpool_pebble_header" 'asynchronous health-overview readiness'
 require_fixed 'Q_PROPERTY(bool healthSyncing READ healthSyncing NOTIFY healthSyncingChanged)' \
-    "$rockwork_pebble_header" 'asynchronous health-sync state'
-require_fixed 'm_iface->asyncCall(QStringLiteral("HealthOverview"))' "$rockwork_pebble" \
+    "$rockpool_pebble_header" 'asynchronous health-sync state'
+require_fixed 'm_iface->asyncCall(QStringLiteral("HealthOverview"))' "$rockpool_pebble" \
     'nonblocking health-overview transport'
-require_fixed 'm_iface->asyncCall(QStringLiteral("FetchHealthData"))' "$rockwork_pebble" \
+require_fixed 'm_iface->asyncCall(QStringLiteral("FetchHealthData"))' "$rockpool_pebble" \
     'nonblocking health-sync transport'
-require_fixed 'this, &Pebble::healthDataChangedFromService' "$rockwork_pebble" \
+require_fixed 'this, &Pebble::healthDataChangedFromService' "$rockpool_pebble" \
     'health-data signal refresh handler'
-reject_extended 'm_iface->call\("(HealthOverview|FetchHealthData)"\)' "$rockwork_pebble" \
+reject_extended 'm_iface->call\("(HealthOverview|FetchHealthData)"\)' "$rockpool_pebble" \
     'blocking compatibility health-history call'
 
 require_fixed 'title: qsTr("Health history")' "$health_history_page" \
@@ -3297,9 +3481,9 @@ require_fixed 'page: "HealthHistoryPage.qml"' "$main_menu_page" \
 # The reusable client must install signal listeners before its authoritative
 # GetAll, reject reordered snapshots and old service owners, and never infer a
 # terminal state from the acknowledgement-only Cancel reply.
-require_fixed 'rockpooloperation.h' "$rockwork_project" \
+require_fixed 'rockpooloperation.h' "$rockpool_project" \
     'Rockpool Operation1 watcher in the UI build'
-require_fixed 'rockpooloperation.cpp' "$rockwork_project" \
+require_fixed 'rockpooloperation.cpp' "$rockpool_project" \
     'Rockpool Operation1 watcher implementation in the UI build'
 require_fixed 'connect(m_operation, &RockpoolOperationInterface::Completed' "$rockpool_operation" \
     'Operation1 completion listener installed before snapshot'
@@ -3341,37 +3525,37 @@ done
 # must share the watcher-based void-command transport, retain owner identity
 # until completion, and never fall back to a synchronous D-Bus call.
 require_fixed 'void Pebble::sendVoidCommand(const QString &method, const QVariantList &arguments)' \
-    "$rockwork_pebble" 'shared asynchronous compatibility void-command sender'
+    "$rockpool_pebble" 'shared asynchronous compatibility void-command sender'
 require_fixed 'm_iface->asyncCallWithArgumentList(method, arguments)' \
-    "$rockwork_pebble" 'asynchronous compatibility void-command transport'
-require_fixed 'watcher->setProperty("serviceEpoch"' "$rockwork_pebble" \
+    "$rockpool_pebble" 'asynchronous compatibility void-command transport'
+require_fixed 'watcher->setProperty("serviceEpoch"' "$rockpool_pebble" \
     'compatibility void-command owner epoch capture'
 require_fixed 'void Pebble::voidCommandReplyFinished(QDBusPendingCallWatcher *watcher)' \
-    "$rockwork_pebble" 'compatibility void-command completion handler'
-require_fixed 'watcher->deleteLater();' "$rockwork_pebble" \
+    "$rockpool_pebble" 'compatibility void-command completion handler'
+require_fixed 'watcher->deleteLater();' "$rockpool_pebble" \
     'compatibility void-command watcher cleanup'
-require_fixed 'serviceEpoch != m_serviceEpoch' "$rockwork_pebble" \
+require_fixed 'serviceEpoch != m_serviceEpoch' "$rockpool_pebble" \
     'compatibility void-command stale-owner rejection'
 for command in \
     LoadLanguagePack ConfigurationClosed LaunchApp ConfigurationURL RemoveApp \
     InstallApp SideloadApp SetAppOrder RequestScreenshot RemoveScreenshot \
     PerformFirmwareUpgrade
 do
-    require_fixed "sendVoidCommand(QStringLiteral(\"$command\")" "$rockwork_pebble" \
+    require_fixed "sendVoidCommand(QStringLiteral(\"$command\")" "$rockpool_pebble" \
         "asynchronous compatibility command $command"
 done
 # Timeline reset is an acknowledgement-only void command.  The window is a
 # separate asynchronous, serialized write/readback state machine: it must
 # preserve the legacy signed wire tuple and only publish a canonical snapshot.
-reject_extended '\.call\(' "$rockwork_pebble" \
+reject_extended '\.call\(' "$rockpool_pebble" \
     'blocking compatibility watch GUI-thread D-Bus call'
-require_fixed 'sendVoidCommand(QStringLiteral("resetTimeline"))' "$rockwork_pebble" \
+require_fixed 'sendVoidCommand(QStringLiteral("resetTimeline"))' "$rockpool_pebble" \
     'asynchronous compatibility Timeline reset command'
-require_fixed 'm_iface->asyncCallWithArgumentList(' "$rockwork_pebble" \
+require_fixed 'm_iface->asyncCallWithArgumentList(' "$rockpool_pebble" \
     'asynchronous compatibility Timeline window write transport'
-require_fixed 'QStringLiteral("setTimelineWindow")' "$rockwork_pebble" \
+require_fixed 'QStringLiteral("setTimelineWindow")' "$rockpool_pebble" \
     'compatibility Timeline window write method'
-require_fixed 'QVariantList() << -start << -fade << end' "$rockwork_pebble" \
+require_fixed 'QVariantList() << -start << -fade << end' "$rockpool_pebble" \
     'legacy signed Timeline window write tuple'
 for timeline_property in \
     'Q_PROPERTY(int timelineWindowStart READ timelineWindowStart NOTIFY timelineWindowChanged)' \
@@ -3379,7 +3563,7 @@ for timeline_property in \
     'Q_PROPERTY(int timelineWindowEnd READ timelineWindowEnd NOTIFY timelineWindowChanged)' \
     'Q_PROPERTY(bool timelineWindowReady READ timelineWindowReady NOTIFY timelineWindowReadyChanged)'
 do
-    require_fixed "$timeline_property" "$rockwork_pebble_header" \
+    require_fixed "$timeline_property" "$rockpool_pebble_header" \
         'read-only asynchronous compatibility Timeline-window property'
 done
 for timeline_state in \
@@ -3389,32 +3573,32 @@ for timeline_state in \
     m_timelineWindowHasSnapshot m_timelineWindowReadFailures \
     m_pendingTimelineWindowValues m_pendingTimelineWindowReplies
 do
-    require_fixed "$timeline_state" "$rockwork_pebble_header" \
+    require_fixed "$timeline_state" "$rockpool_pebble_header" \
         "compatibility Timeline-window asynchronous state $timeline_state"
 done
-require_fixed 'watcher->setProperty("serviceEpoch"' "$rockwork_pebble" \
+require_fixed 'watcher->setProperty("serviceEpoch"' "$rockpool_pebble" \
     'Timeline-window request/write service epoch capture'
-require_fixed 'watcher->setProperty("requestEpoch"' "$rockwork_pebble" \
+require_fixed 'watcher->setProperty("requestEpoch"' "$rockpool_pebble" \
     'Timeline-window snapshot request epoch capture'
-require_fixed 'watcher->setProperty("writeEpoch"' "$rockwork_pebble" \
+require_fixed 'watcher->setProperty("writeEpoch"' "$rockpool_pebble" \
     'Timeline-window write epoch capture'
-require_fixed 'if (m_timelineWindowWriteInFlight) {' "$rockwork_pebble" \
+require_fixed 'if (m_timelineWindowWriteInFlight) {' "$rockpool_pebble" \
     'Timeline-window refresh deferred during write'
-require_fixed 'if (m_timelineWindowWriteQueued) {' "$rockwork_pebble" \
+require_fixed 'if (m_timelineWindowWriteQueued) {' "$rockpool_pebble" \
     'Timeline-window latest queued write dispatch'
-require_fixed 'm_timelineWindowWriteQueued = true;' "$rockwork_pebble" \
+require_fixed 'm_timelineWindowWriteQueued = true;' "$rockpool_pebble" \
     'Timeline-window one queued latest write'
-require_fixed 'foreach (const QString &propertyName, timelineWindowProperties())' "$rockwork_pebble" \
+require_fixed 'foreach (const QString &propertyName, timelineWindowProperties())' "$rockpool_pebble" \
     'three-property canonical Timeline-window readback'
 require_fixed 'm_pendingTimelineWindowValues.count() != timelineWindowProperties().count()' \
-    "$rockwork_pebble" 'complete canonical Timeline-window readback required'
-require_fixed 'm_timelineWindowHasSnapshot = false;' "$rockwork_pebble" \
+    "$rockpool_pebble" 'complete canonical Timeline-window readback required'
+require_fixed 'm_timelineWindowHasSnapshot = false;' "$rockpool_pebble" \
     'service-owner loss clears Timeline-window snapshot fallback'
 require_fixed 'void Pebble::timelineWindowWriteReplyFinished(QDBusPendingCallWatcher *watcher)' \
-    "$rockwork_pebble" 'Timeline-window write completion handler'
+    "$rockpool_pebble" 'Timeline-window write completion handler'
 require_fixed 'serviceEpoch != m_serviceEpoch || !m_timelineWindowWriteInFlight' \
-    "$rockwork_pebble" 'stale Timeline-window write reply rejection'
-require_fixed 'QTimer::singleShot(250, this' "$rockwork_pebble" \
+    "$rockpool_pebble" 'stale Timeline-window write reply rejection'
+require_fixed 'QTimer::singleShot(250, this' "$rockpool_pebble" \
     'bounded Timeline-window snapshot retry'
 
 # The Timeline editor owns drafts in QML.  It refreshes a read-only, canonical
@@ -3469,15 +3653,15 @@ for timeline_regression in \
     oldOwnerTimelineActionRepliesAreIgnored
 do
     require_fixed "void PebbleAsyncTest::$timeline_regression()" \
-        "$rockwork_pebble_async_test" \
+        "$rockpool_pebble_async_test" \
         "asynchronous Timeline-window regression $timeline_regression"
 done
-# Account1 is account-global and independently owned by org.rockpool.  The
+# Account1 is account-global and independently owned by io.rebble.libpebble3.  The
 # Pebbles model owns one client across compatibility-watch destruction; each
 # Pebble is only a forwarding facade for existing QML call sites.
 require_fixed 'class RockpoolAccount : public QObject' "$rockpool_account_header" \
     'shared primary Account1 client'
-require_fixed 'const char ROCKPOOL_SERVICE[] = "org.rockpool";' "$rockpool_account" \
+require_fixed 'const char ROCKPOOL_SERVICE[] = "io.rebble.libpebble3";' "$rockpool_account" \
     'independent primary account service name'
 require_fixed 'm_interface->asyncCall(QStringLiteral("SetOAuthToken"), token)' \
     "$rockpool_account" 'primary Account1 OAuth operation request'
@@ -3511,26 +3695,26 @@ require_fixed '++m_ownerEpoch;' "$rockpool_account" \
     'primary account owner-change invalidation'
 require_fixed 'resetInterfaces();' "$rockpool_account" \
     'primary account owner-change proxy recreation'
-require_fixed 'm_account = new RockpoolAccount(this);' "$rockwork_pebbles" \
+require_fixed 'm_account = new RockpoolAccount(this);' "$rockpool_pebbles" \
     'model-owned global Account1 client'
-require_fixed 'new Pebble(p, this, m_account);' "$rockwork_pebbles" \
+require_fixed 'new Pebble(p, this, m_account);' "$rockpool_pebbles" \
     'shared Account1 client watch-facade injection'
-require_fixed 'RockpoolAccount *m_account;' "$rockwork_pebbles_header" \
+require_fixed 'RockpoolAccount *m_account;' "$rockpool_pebbles_header" \
     'model-owned Account1 lifetime state'
-require_fixed 'RockpoolAccount *m_account;' "$rockwork_pebble_header" \
+require_fixed 'RockpoolAccount *m_account;' "$rockpool_pebble_header" \
     'Account1 forwarding facade state'
-require_fixed 'm_account->setOAuthToken(token);' "$rockwork_pebble" \
+require_fixed 'm_account->setOAuthToken(token);' "$rockpool_pebble" \
     'Account1 forwarding facade write'
-require_fixed 'rockpoolaccount.cpp' "$rockwork_project" \
-    'Rockwork Account1 client build source'
-require_fixed '../rockpoolaccount.cpp' "$rockwork_pebble_async_project" \
+require_fixed 'rockpoolaccount.cpp' "$rockpool_project" \
+    'Rockpool Account1 client build source'
+require_fixed '../rockpoolaccount.cpp' "$rockpool_pebble_async_project" \
     'Account1 client private-bus test source'
-require_fixed '../rockpooloperation.cpp' "$rockwork_pebble_async_project" \
+require_fixed '../rockpooloperation.cpp' "$rockpool_pebble_async_project" \
     'Operation1 watcher private-bus test source'
 reject_extended 'm_account(TokenEpoch|OwnerEpoch|PropertiesEpoch|TokenOperations)|Rockpool(Account|Properties)Interface' \
-    "$rockwork_pebble_header" 'per-watch primary Account1 state'
+    "$rockpool_pebble_header" 'per-watch primary Account1 state'
 reject_extended 'm_iface[^;]*([Ss]etOAuthToken|SetOAuthToken)|asyncCall[^;]*SetOAuthToken' \
-    "$rockwork_pebble" 'legacy or per-watch OAuth transport'
+    "$rockpool_pebble" 'legacy or per-watch OAuth transport'
 if ! awk '
     /void RockpoolAccount::serviceOwnerChanged\(/ { in_handler = 1 }
     in_handler && /if \(!newOwner\.isEmpty\(\)\)/ { acquiring = 1 }
@@ -3556,7 +3740,7 @@ require_fixed 'pebble.accountTokenPending' "$app_settings_page" \
 require_fixed 'pebble.accountTokenError' "$app_settings_page" \
     'OAuth operation error UI'
 require_fixed 'RockpoolAccount::oauthTokenFromCallback(callbackUrl)' \
-    "$rockwork_pebble" 'C++ OAuth callback-token parser use'
+    "$rockpool_pebble" 'C++ OAuth callback-token parser use'
 require_fixed 'validPercentEncoding' "$rockpool_account" \
     'strict OAuth callback percent-encoding validation'
 require_fixed 'QUrl::fromPercentEncoding(encoded.toUtf8())' "$rockpool_account" \
@@ -3574,11 +3758,11 @@ for oauth_parser_case in \
     malformed-nonhex-percent empty-token wrong-scheme wrong-action
 do
     require_fixed "QTest::newRow(\"$oauth_parser_case\")" \
-        "$rockwork_pebble_async_test" \
+        "$rockpool_pebble_async_test" \
         "opaque OAuth callback parser regression $oauth_parser_case"
 done
 reject_extended 'm_iface->call\("(LoadLanguagePack|ConfigurationClosed|LaunchApp|ConfigurationURL|RemoveApp|InstallApp|SideloadApp|SetAppOrder|RequestScreenshot|RemoveScreenshot|PerformFirmwareUpgrade)"\)' \
-    "$rockwork_pebble" 'blocking converted compatibility command'
+    "$rockpool_pebble" 'blocking converted compatibility command'
 require_fixed 'enabled: pebble && pebble.connected && languages.length > 0' \
     "$language_page" 'connected-watch language-pack submission gate'
 require_fixed 'enabled: pebble && pebble.connected' "$settings_page" \
@@ -3591,31 +3775,31 @@ require_fixed 'if (root.pebble && root.pebble.connected' \
     "$developer_tools_page" 'developer-connection click guard'
 require_fixed 'text: qsTr("Send watch logs")' "$developer_tools_page" \
     'watch-log action label'
-reject_extended 'fetchProperty' "$rockwork_pebble" \
+reject_extended 'fetchProperty' "$rockpool_pebble" \
     'dead blocking compatibility property fetch helper'
-require_fixed 'connect(pebble, &Pebble::identityChanged' "$rockwork_pebbles" \
+require_fixed 'connect(pebble, &Pebble::identityChanged' "$rockpool_pebbles" \
     'late watch identity model update'
-require_fixed 'void Pebbles::pebbleIdentityChanged()' "$rockwork_pebbles" \
+require_fixed 'void Pebbles::pebbleIdentityChanged()' "$rockpool_pebbles" \
     'late watch identity sorting and role notification'
-require_fixed 'const int row = m_pebbles.indexOf(pebble);' "$rockwork_pebbles" \
+require_fixed 'const int row = m_pebbles.indexOf(pebble);' "$rockpool_pebbles" \
     'pointer-safe watch row lookup before asynchronous identity arrives'
 reject_extended 'm_iface->call\("InstalledApps"\)|fetchVarMap\("NotificationsFilter"\)|fetchProperty\("Screenshots"\)|fetchProperty\("FirmwareUpgradeAvailable"\)' \
-    "$rockwork_pebble" 'blocking compatibility-watch bootstrap snapshot'
+    "$rockpool_pebble" 'blocking compatibility-watch bootstrap snapshot'
 reject_extended 'm_iface->call\("(WeatherLocations|SetWeatherLocations|setWeatherUnits|setWeatherLanguage|setWeatherAltKey)"\)|fetchProperty\("Weather(Units|Language|AltKey)"\)' \
-    "$rockwork_pebble" 'blocking compatibility weather setting call'
+    "$rockpool_pebble" 'blocking compatibility weather setting call'
 reject_extended 'm_iface->call\("(DevConnectionEnabled|DevConnectionState|getLogLevel|SetDevConnEnabled|setLogLevel|DumpLogs)"\)|fetchProperty\("(DevConnectionEnabled|DevConnectionState|getLogLevel)"\)' \
-    "$rockwork_pebble" 'blocking compatibility developer-tools call'
+    "$rockpool_pebble" 'blocking compatibility developer-tools call'
 reject_extended 'fetchVariantList|m_iface->call\("Timeline(Colors|Icons)"\)' \
-    "$rockwork_pebble" 'blocking compatibility notification-palette call'
+    "$rockpool_pebble" 'blocking compatibility notification-palette call'
 reject_extended 'm_iface->call\("(SetNotificationFilter|ForgetNotificationFilter)"\)' \
-    "$rockwork_pebble" 'blocking compatibility notification-filter command'
+    "$rockpool_pebble" 'blocking compatibility notification-filter command'
 reject_extended 'm_iface->call\("(SetImperialUnits|SetProfileWhenConnected|SetProfileWhenDisconnected|SetCalendarSyncEnabled|setSyncAppsFromCloud)"\)|fetchProperty\("(ImperialUnits|ProfileWhenConnected|ProfileWhenDisconnected|CalendarSyncEnabled|syncAppsFromCloud)"\)' \
-    "$rockwork_pebble" 'blocking compatibility settings call'
+    "$rockpool_pebble" 'blocking compatibility settings call'
 reject_extended 'fetchVarMap\("(cannedResponses|getCannedResponses)"|sendVarMap\("setCannedResponses"|m_iface->call\("setCannedResponses"' \
-    "$rockwork_pebble" 'blocking compatibility canned-response call'
+    "$rockpool_pebble" 'blocking compatibility canned-response call'
 reject_extended 'fetchVarMap\("getFavoriteContacts"|sendVarMap\("setFavoriteContacts"|m_iface->call\("(getFavoriteContacts|setFavoriteContacts)"' \
-    "$rockwork_pebble" 'blocking compatibility favorite-contact call'
-reject_extended 'QDBusConnection::sessionBus\(\)\.connect' "$rockwork_pebble" \
+    "$rockpool_pebble" 'blocking compatibility favorite-contact call'
+reject_extended 'QDBusConnection::sessionBus\(\)\.connect' "$rockpool_pebble" \
     'string-based compatibility-watch D-Bus signal hook'
 for regression in \
     constructorQueuesHeldBootstrapCalls newestAppsReplyWins \
@@ -3686,7 +3870,7 @@ for regression in \
     staleCannedContactsWriteErrorIsIgnored \
     failedCannedContactsReadFallsBackAndRemainsWritable
 do
-    require_fixed "void PebbleAsyncTest::$regression()" "$rockwork_pebble_async_test" \
+    require_fixed "void PebbleAsyncTest::$regression()" "$rockpool_pebble_async_test" \
         "asynchronous compatibility-watch regression $regression"
 done
 
@@ -3751,24 +3935,24 @@ require_fixed 'id: stackReloadTimer' "$rockpool_qml" \
     'deferred compatibility stack transition timer'
 require_fixed 'onTriggered: rockPool.loadStack()' "$rockpool_qml" \
     'deferred compatibility stack transition'
-require_fixed 'void pebbleIdentityAvailable(const QString &address);' "$rockwork_pebbles_header" \
+require_fixed 'void pebbleIdentityAvailable(const QString &address);' "$rockpool_pebbles_header" \
     'address-bearing compatibility watch identity signal'
-require_fixed 'emit pebbleIdentityAvailable(pebble->address());' "$rockwork_pebbles" \
+require_fixed 'emit pebbleIdentityAvailable(pebble->address());' "$rockpool_pebbles" \
     'nonempty asynchronous compatibility watch identity publication'
-require_fixed 'if (!pebble->address().isEmpty()' "$rockwork_pebbles" \
+require_fixed 'if (!pebble->address().isEmpty()' "$rockpool_pebbles" \
     'empty compatibility watch identity suppression'
-require_fixed '!m_pebblesWithIdentity.contains(pebble)' "$rockwork_pebbles" \
+require_fixed '!m_pebblesWithIdentity.contains(pebble)' "$rockpool_pebbles" \
     'one-shot compatibility watch identity publication'
 require_fixed 'void Pebble::scheduleAddressRetry(quint64 requestEpoch, quint64 serviceEpoch)' \
-    "$rockwork_pebble" 'bounded compatibility watch address retry'
-require_fixed 'QTimer::singleShot(delayMs, this' "$rockwork_pebble" \
+    "$rockpool_pebble" 'bounded compatibility watch address retry'
+require_fixed 'QTimer::singleShot(delayMs, this' "$rockpool_pebble" \
     'nonblocking compatibility watch address retry timer'
 require_fixed 'requestEpoch == m_propertyEpochs.value(QStringLiteral("Address"))' \
-    "$rockwork_pebble" 'current-request compatibility watch address retry gate'
-require_fixed 'value.type() != QVariant::String' "$rockwork_pebble" \
+    "$rockpool_pebble" 'current-request compatibility watch address retry gate'
+require_fixed 'value.type() != QVariant::String' "$rockpool_pebble" \
     'malformed compatibility watch address rejection'
 require_fixed 'void PebbleAsyncTest::addressBootstrapRetriesAfterInvalidReplies()' \
-    "$rockwork_pebble_async_test" 'invalid compatibility watch address retry regression'
+    "$rockpool_pebble_async_test" 'invalid compatibility watch address retry regression'
 require_fixed 'if (pebbles.count < rockPool.knownPebbleCount)' "$rockpool_qml" \
     'watch removal stack reload'
 require_fixed 'if (rockPool.waitingForPebbleIdentity' "$rockpool_qml" \
@@ -3844,9 +4028,9 @@ if ! awk '
             i18n < load_i18n && qm_override && copies_translations &&
             releases_translations && !updates_translations)
     }
-' "$rockwork_project"
+' "$rockpool_project"
 then
-    fail "Rockwork translation declaration or RPM qmake rule is unsafe in $rockwork_project"
+    fail "Rockpool translation declaration or RPM qmake rule is unsafe in $rockpool_project"
 fi
 
 # Token material must never be observable through this public API.  Setters

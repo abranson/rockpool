@@ -459,8 +459,9 @@ CalendarMonitor::CalendarMonitor(const CompletedCallback &completed,
     });
     QObject::connect(this, &CalendarMonitor::stopRequested,
                      m_worker, &CalendarWorker::stop);
+    // The main thread waits in the destructor, so quit must run in the worker thread.
     QObject::connect(m_worker, &CalendarWorker::stopped,
-                     &m_thread, &QThread::quit);
+                     &m_thread, &QThread::quit, Qt::DirectConnection);
 }
 
 CalendarMonitor::~CalendarMonitor() {

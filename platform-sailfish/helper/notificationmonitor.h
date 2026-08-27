@@ -46,6 +46,8 @@ public:
     bool start();
     int32_t command(uint32_t command, const QString &id);
     int32_t reply(const QString &id, const QString &text);
+    int32_t send(const QString &accountId, const QString &recipient,
+                 const QString &text);
 
 private:
     NotificationMonitorPrivate *m_private;

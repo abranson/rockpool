@@ -354,7 +354,7 @@ static void set_literal(char *destination, size_t destination_size,
 static void set_snapshot_state(const char *state, const char *error) {
     memset(&loader.snapshot, 0, sizeof(loader.snapshot));
     set_literal(loader.snapshot.state, sizeof(loader.snapshot.state), state);
-    set_literal(loader.snapshot.abi_version, sizeof(loader.snapshot.abi_version), "1.6");
+    set_literal(loader.snapshot.abi_version, sizeof(loader.snapshot.abi_version), "1.7");
     set_literal(loader.snapshot.domains, sizeof(loader.snapshot.domains), "0");
     set_literal(loader.snapshot.helper_pid, sizeof(loader.snapshot.helper_pid), "0");
     set_literal(loader.snapshot.supported_domains,
@@ -2734,6 +2734,63 @@ Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_replyMessage(
 
 done_reply:
     (*env)->ReleaseStringUTFChars(env, id_value, id);
+    return result;
+}
+
+JNIEXPORT jint JNICALL
+Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_sendMessage(
+    JNIEnv *env, jclass klass, jstring account_value,
+    jstring recipient_value, jstring text_value) {
+    static const char account_prefix[] =
+        "/org/freedesktop/Telepathy/Account/";
+    char account[LP3_PLATFORM_MESSAGE_ACCOUNT_ID_MAX + 1];
+    char recipient[LP3_PLATFORM_MESSAGE_RECIPIENT_MAX + 1];
+    char text[LP3_PLATFORM_MESSAGE_TEXT_MAX + 1];
+    uint32_t account_size = 0;
+    uint32_t recipient_size = 0;
+    uint32_t text_size = 0;
+    struct lp3_platform_outgoing_message_v1 message;
+    uint64_t request_id;
+    int32_t result = LP3_PLATFORM_UNAVAILABLE;
+    int command_gate_held;
+    (void)klass;
+
+    if (!java_string_to_utf8(env, account_value, account,
+                             LP3_PLATFORM_MESSAGE_ACCOUNT_ID_MAX,
+                             &account_size, 0) ||
+        !java_string_to_utf8(env, recipient_value, recipient,
+                             LP3_PLATFORM_MESSAGE_RECIPIENT_MAX,
+                             &recipient_size, 0) ||
+        !java_string_to_utf8(env, text_value, text,
+                             LP3_PLATFORM_MESSAGE_TEXT_MAX,
+                             &text_size, 0) ||
+        account_size <= sizeof(account_prefix) - 1 ||
+        memcmp(account, account_prefix, sizeof(account_prefix) - 1) != 0) {
+        return (*env)->ExceptionCheck(env) ?
+            LP3_PLATFORM_INTERNAL_ERROR : LP3_PLATFORM_INVALID_ARGUMENT;
+    }
+
+    pthread_mutex_lock(&loader_lock);
+    command_gate_held = begin_provider_command_dispatch(
+        LP3_PLATFORM_DOMAIN_MESSAGING);
+    if (command_gate_held && loader.api != NULL && loader.instance != NULL &&
+        (loader.api->info.domains & LP3_PLATFORM_DOMAIN_MESSAGING) != 0 &&
+        API_HAS_MEMBER(loader.api, send_message) &&
+        loader.next_request_id != 0 &&
+        (loader.next_request_id & (UINT64_C(1) << 63)) == 0) {
+        request_id = loader.next_request_id++;
+        memset(&message, 0, sizeof(message));
+        message.struct_size = sizeof(message);
+        message.account_id.data = account;
+        message.account_id.size = account_size;
+        message.recipient.data = recipient;
+        message.recipient.size = recipient_size;
+        message.text.data = text;
+        message.text.size = text_size;
+        result = loader.api->send_message(loader.instance, request_id, &message);
+    }
+    if (command_gate_held) end_provider_command_dispatch();
+    pthread_mutex_unlock(&loader_lock);
     return result;
 }
 

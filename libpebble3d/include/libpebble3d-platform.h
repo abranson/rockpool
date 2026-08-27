@@ -21,7 +21,7 @@ extern "C" {
 #endif
 
 #define LP3_PLATFORM_ABI_MAJOR 1u
-#define LP3_PLATFORM_ABI_MINOR 6u
+#define LP3_PLATFORM_ABI_MINOR 7u
 
 #define LP3_PLATFORM_NOTIFICATION_ID_MAX 64u
 #define LP3_PLATFORM_NOTIFICATION_APPLICATION_ID_MAX 256u
@@ -32,6 +32,8 @@ extern "C" {
 #define LP3_PLATFORM_NOTIFICATION_ICON_NAME_MAX 128u
 #define LP3_PLATFORM_MESSAGE_CONVERSATION_ID_MAX 64u
 #define LP3_PLATFORM_MESSAGE_TEXT_MAX 512u
+#define LP3_PLATFORM_MESSAGE_ACCOUNT_ID_MAX 512u
+#define LP3_PLATFORM_MESSAGE_RECIPIENT_MAX 512u
 #define LP3_PLATFORM_CALL_ID_MAX 128u
 #define LP3_PLATFORM_CALL_NAME_MAX 256u
 #define LP3_PLATFORM_CALL_NUMBER_MAX 256u
@@ -183,6 +185,15 @@ struct lp3_platform_message_v1 {
     uint32_t struct_size;
     uint32_t flags;
     struct lp3_platform_string conversation_id;
+    struct lp3_platform_string recipient;
+    struct lp3_platform_string text;
+};
+
+/* Added in ABI 1.7. The provider executes only its fixed messaging route. */
+struct lp3_platform_outgoing_message_v1 {
+    uint32_t struct_size;
+    uint32_t flags;
+    struct lp3_platform_string account_id;
     struct lp3_platform_string recipient;
     struct lp3_platform_string text;
 };
@@ -477,6 +488,11 @@ struct lp3_platform_api_v1 {
         struct lp3_platform_instance *instance,
         uint64_t request_id,
         const struct lp3_platform_notification_command_v1 *command);
+    /* Added in ABI 1.7. */
+    int32_t (*send_message)(
+        struct lp3_platform_instance *instance,
+        uint64_t request_id,
+        const struct lp3_platform_outgoing_message_v1 *message);
 };
 
 int32_t lp3_platform_get_api(uint32_t host_abi_major,

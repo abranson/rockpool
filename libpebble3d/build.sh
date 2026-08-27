@@ -182,11 +182,40 @@ if find "$OUT_TEMP" -mindepth 1 -maxdepth 1 ! -type f -print | grep -q .; then
     exit 1
 fi
 {
-    printf 'format=2\n'
+    platform_abi_major=$(sed -n \
+        's/^#define LP3_PLATFORM_ABI_MAJOR \([0-9][0-9]*\)u$/\1/p' \
+        "$BUILD_HERE/include/libpebble3d-platform.h")
+    platform_abi_minor=$(sed -n \
+        's/^#define LP3_PLATFORM_ABI_MINOR \([0-9][0-9]*\)u$/\1/p' \
+        "$BUILD_HERE/include/libpebble3d-platform.h")
+    launcher_abi=$(sed -n \
+        's/^#define LP3_LAUNCHER_VERSION UINT16_C(\([0-9][0-9]*\))$/\1/p' \
+        "$BUILD_HERE/include/libpebble3d-launcher-wire.h")
+    wire_major=$(sed -n \
+        's/^static const uint16_t kMajor = \([0-9][0-9]*\);$/\1/p' \
+        "$BUILD_HERE/../platform-sailfish/common/wire.h")
+    wire_minor=$(sed -n \
+        's/^static const uint16_t kMinor = \([0-9][0-9]*\);$/\1/p' \
+        "$BUILD_HERE/../platform-sailfish/common/wire.h")
+    for value in "$platform_abi_major" "$platform_abi_minor" "$launcher_abi" \
+        "$wire_major" "$wire_minor"; do
+        case $value in
+            ''|*[!0-9]*)
+                echo "error: cannot determine packaged ABI versions" >&2
+                exit 1
+                ;;
+        esac
+    done
+
+    printf 'format=3\n'
     printf 'source_mode=%s\n' "$source_mode"
+    printf 'target_arch=aarch64\n'
     printf 'rockpool_commit=%s\n' "$root_commit"
     printf 'mobileapp_commit=%s\n' "$mobileapp_commit"
     printf 'builder_image_id=%s\n' "$builder_image_id"
+    printf 'platform_abi=%s.%s\n' "$platform_abi_major" "$platform_abi_minor"
+    printf 'launcher_abi=%s\n' "$launcher_abi"
+    printf 'sailfish_wire=%s.%s\n' "$wire_major" "$wire_minor"
     printf '%s\n' "$artifact_names" | while IFS= read -r artifact; do
         case $artifact in
             ''|*[!0-9A-Za-z._+-]*)

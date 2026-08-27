@@ -111,7 +111,8 @@ public slots:
         QMap<QString, QString> parameters;
         parameters.insert(QStringLiteral("mergePresenceChanges"),
                           QStringLiteral("false"));
-        m_manager = new QContactManager(QString(), parameters, this);
+        m_manager = new QContactManager(
+            QStringLiteral("org.nemomobile.contacts.sqlite"), parameters, this);
         if (m_manager->error() != QContactManager::NoError) {
             delete m_manager;
             m_manager = 0;
@@ -281,8 +282,9 @@ ContactMonitor::ContactMonitor(const CompletedCallback &completed,
                 m_ready = ready;
                 m_health(ready);
             });
+    // The main thread waits in the destructor, so quit must run in the worker thread.
     connect(m_worker, &ContactWorker::stopped,
-            &m_thread, &QThread::quit);
+            &m_thread, &QThread::quit, Qt::DirectConnection);
 }
 
 ContactMonitor::~ContactMonitor() {

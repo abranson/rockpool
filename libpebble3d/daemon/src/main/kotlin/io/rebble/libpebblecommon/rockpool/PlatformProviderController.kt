@@ -29,7 +29,7 @@ import kotlin.time.Duration.Companion.seconds
 internal data class PlatformProviderSnapshot(
     val state: String,
     val provider: String = "",
-    val abiVersion: String = "1.6",
+    val abiVersion: String = "1.7",
     val buildId: String = "",
     val domains: Long = 0,
     val supportedDomains: Long = 0,
@@ -47,7 +47,7 @@ internal fun failedProviderStatusSnapshot(
     degradedDomains = 0,
     failedDomains = current.supportedDomains,
     helperPid = 0,
-    error = "org.rockpool.Error.ProviderUnavailable",
+    error = "io.rebble.libpebble3.Error.ProviderUnavailable",
 )
 
 internal fun PlatformProviderSnapshot.isRestartOperational(): Boolean =
@@ -206,7 +206,7 @@ private sealed interface PlatformContactNativeEvent {
 internal class PlatformProviderController(
     initialSnapshot: PlatformProviderSnapshot = PlatformProviderSnapshot(
         state = "starting",
-        error = "org.rockpool.Error.ProviderUnavailable",
+        error = "io.rebble.libpebble3.Error.ProviderUnavailable",
     ),
     private val locationNativeAvailable: () -> Boolean = { nativeLibraryLoaded },
     private val locationStartNative: (Int, Int) -> LongArray =
@@ -390,6 +390,23 @@ internal class PlatformProviderController(
                     }
             }
         }
+
+    suspend fun sendMessage(
+        accountId: String,
+        recipient: String,
+        text: String,
+    ): Int = withContext(Dispatchers.IO) {
+        lifecycleLock.withLock {
+            if (!nativeLibraryLoaded || current.domains and MESSAGING_DOMAIN == 0L) {
+                return@withLock STATUS_UNAVAILABLE
+            }
+            runCatching { PlatformProviderNative.sendMessage(accountId, recipient, text) }
+                .getOrElse {
+                    logger.w { "platform message send failed: ${it.message}" }
+                    STATUS_UNAVAILABLE
+                }
+        }
+    }
 
     suspend fun callCommand(
         command: Int,
@@ -682,7 +699,7 @@ internal class PlatformProviderController(
                 degradedDomains = current.supportedDomains,
                 failedDomains = 0,
                 helperPid = 0,
-                error = "org.rockpool.Error.ProviderUnavailable",
+                error = "io.rebble.libpebble3.Error.ProviderUnavailable",
             ),
         )
     }
@@ -691,14 +708,14 @@ internal class PlatformProviderController(
         if (!loadNativeLibrary()) {
             return PlatformProviderSnapshot(
                 state = if (File(NATIVE_LOADER_PATH).isFile) "failed" else "missing",
-                error = "org.rockpool.Error.ProviderUnavailable",
+                error = "io.rebble.libpebble3.Error.ProviderUnavailable",
             )
         }
         return runCatching { decode(PlatformProviderNative.start()) }.getOrElse {
             logger.w { "platform loader start failed: ${it.message}" }
             PlatformProviderSnapshot(
                 state = "failed",
-                error = "org.rockpool.Error.ProviderUnavailable",
+                error = "io.rebble.libpebble3.Error.ProviderUnavailable",
             )
         }
     }
@@ -1304,7 +1321,7 @@ internal class PlatformProviderController(
             state = field(0).ifEmpty { "failed" },
             provider = field(1),
             buildId = field(2),
-            abiVersion = field(3).ifEmpty { "1.6" },
+            abiVersion = field(3).ifEmpty { "1.7" },
             domains = field(4).toLongOrNull() ?: 0,
             helperPid = field(5).toLongOrNull() ?: 0,
             error = field(6),
@@ -1552,6 +1569,9 @@ internal object PlatformProviderNative {
 
     @JvmStatic
     external fun replyMessage(id: String, text: String): Int
+
+    @JvmStatic
+    external fun sendMessage(accountId: String, recipient: String, text: String): Int
 
     @JvmStatic
     external fun callCommand(command: Int, id: String): Int

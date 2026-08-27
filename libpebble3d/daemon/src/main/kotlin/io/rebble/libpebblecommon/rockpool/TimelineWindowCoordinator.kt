@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap
 /**
  * The legacy Timeline window is a per-watch preference.  Keep its durable
  * state separate from the compatibility D-Bus object so a reconnecting watch
- * sees the same window even when org.rockwork is not currently exported.
+ * sees the same window even when org.rockpool is not currently exported.
  */
 internal class TimelineWindowCoordinator(
     private val settings: RockpoolSettings,

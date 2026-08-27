@@ -3,9 +3,9 @@
  */
 package io.rebble.libpebblecommon.rockpool
 
-import io.rebble.libpebblecommon.compat.rockwork.decodeRockworkWeatherSettings
-import io.rebble.libpebblecommon.compat.rockwork.encodeRockworkWeatherSettings
-import io.rebble.libpebblecommon.compat.rockwork.parseRockworkWeatherLocations
+import io.rebble.libpebblecommon.ui.decodeRockpoolWeatherSettings
+import io.rebble.libpebblecommon.ui.encodeRockpoolWeatherSettings
+import io.rebble.libpebblecommon.ui.parseRockpoolWeatherLocations
 import io.rebble.libpebblecommon.connection.FakeLibPebble
 import kotlinx.coroutines.runBlocking
 import org.freedesktop.dbus.types.Variant
@@ -63,7 +63,7 @@ class LegacyRockpooldImporterWeatherTest {
 
             importer.importIfNeeded(FakeLibPebble())
 
-            val locations = decodeRockworkWeatherSettings(settings.entries(WEATHER_PREFIX)).getOrThrow()
+            val locations = decodeRockpoolWeatherSettings(settings.entries(WEATHER_PREFIX)).getOrThrow()
             assertEquals(1, locations.size)
             assertEquals("München+Nord", locations.single().name)
             assertEquals("48.1351", locations.single().latitude)
@@ -86,7 +86,7 @@ class LegacyRockpooldImporterWeatherTest {
 
             importer.importIfNeeded(FakeLibPebble())
 
-            val locations = decodeRockworkWeatherSettings(settings.entries(WEATHER_PREFIX)).getOrThrow()
+            val locations = decodeRockpoolWeatherSettings(settings.entries(WEATHER_PREFIX)).getOrThrow()
             assertEquals(1, locations.size)
             assertEquals("London", locations.single().name)
             assertEquals(COMPLETE, settings.get(WEATHER_MARKER))
@@ -128,7 +128,7 @@ class LegacyRockpooldImporterWeatherTest {
 
             importer.importIfNeeded(FakeLibPebble())
 
-            assertEquals(emptyList(), decodeRockworkWeatherSettings(settings.entries(WEATHER_PREFIX)).getOrThrow())
+            assertEquals(emptyList(), decodeRockpoolWeatherSettings(settings.entries(WEATHER_PREFIX)).getOrThrow())
             assertEquals(COMPLETE, settings.get(WEATHER_MARKER))
             assertTrue(importer.isComplete())
         }
@@ -159,7 +159,7 @@ class LegacyRockpooldImporterWeatherTest {
 
             assertEquals(
                 "London",
-                decodeRockworkWeatherSettings(settings.entries(WEATHER_PREFIX)).getOrThrow().single().name,
+                decodeRockpoolWeatherSettings(settings.entries(WEATHER_PREFIX)).getOrThrow().single().name,
             )
             assertEquals(COMPLETE, settings.get(WEATHER_MARKER))
             assertTrue(importer.isComplete())
@@ -219,7 +219,7 @@ class LegacyRockpooldImporterWeatherTest {
 
             assertEquals(
                 "London",
-                decodeRockworkWeatherSettings(settings.entries(WEATHER_PREFIX)).getOrThrow().single().name,
+                decodeRockpoolWeatherSettings(settings.entries(WEATHER_PREFIX)).getOrThrow().single().name,
             )
             assertEquals(COMPLETE, settings.get(WEATHER_MARKER))
             assertTrue(importer.isComplete())
@@ -242,7 +242,7 @@ class LegacyRockpooldImporterWeatherTest {
 
             importer.importIfNeeded(FakeLibPebble())
 
-            val locations = decodeRockworkWeatherSettings(settings.entries(WEATHER_PREFIX)).getOrThrow()
+            val locations = decodeRockpoolWeatherSettings(settings.entries(WEATHER_PREFIX)).getOrThrow()
             assertEquals("London", locations.single().name)
             assertEquals(COMPLETE, settings.get(WEATHER_MARKER))
             assertTrue(importer.isComplete())
@@ -261,8 +261,8 @@ class LegacyRockpooldImporterWeatherTest {
         name: String,
         latitude: String,
         longitude: String,
-    ): Map<String, String> = encodeRockworkWeatherSettings(
-        parseRockworkWeatherLocations(
+    ): Map<String, String> = encodeRockpoolWeatherSettings(
+        parseRockpoolWeatherLocations(
             listOf(Variant(listOf(name, latitude, longitude), "as")),
         ),
     )

@@ -9,6 +9,9 @@ qrc_*.cpp
 /platform-helper-build/
 /platform-launcher-build/
 /platform-proxy-build/
+/platform-*-test-build/
+/rpm/native/
+/rockpool-*.tar.xz
 
 # Build outputs / debug artifacts
 /RPMS/

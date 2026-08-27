@@ -8,7 +8,7 @@ package io.rebble.libpebblecommon.rockpool
  * ObjectManager.GetManagedObjects.
  *
  * The connection lock is always nested inside the object-map lock, matching
- * RockpoolService's reconnect path. A failed connection mutation detaches that
+ * LibPebble3Service's reconnect path. A failed connection mutation detaches that
  * connection but still commits the logical map mutation so the next connection
  * can export the authoritative snapshot.
  */

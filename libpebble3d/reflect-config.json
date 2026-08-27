@@ -269,272 +269,272 @@
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.compat.rockwork.RockworkManager",
+    "name": "io.rebble.libpebblecommon.ui.RockpoolManager",
     "allDeclaredMethods": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.compat.rockwork.RockworkManager$PebblesChanged",
+    "name": "io.rebble.libpebblecommon.ui.RockpoolManager$PebblesChanged",
     "allDeclaredConstructors": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.compat.rockwork.RockworkManager$ScanningChanged",
+    "name": "io.rebble.libpebblecommon.ui.RockpoolManager$ScanningChanged",
     "allDeclaredConstructors": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.compat.rockwork.RockworkManager$ScanResultsChanged",
+    "name": "io.rebble.libpebblecommon.ui.RockpoolManager$ScanResultsChanged",
     "allDeclaredConstructors": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.compat.rockwork.RockworkPebble",
+    "name": "io.rebble.libpebblecommon.ui.RockpoolPebble",
     "allDeclaredMethods": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.compat.rockwork.RockworkService$ManagerObject",
+    "name": "io.rebble.libpebblecommon.ui.RockpoolUiService$ManagerObject",
     "allDeclaredMethods": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.compat.rockwork.RockworkPebbleObject",
+    "name": "io.rebble.libpebblecommon.ui.RockpoolPebbleObject",
     "allDeclaredMethods": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.compat.rockwork.RockworkPebble$Connected",
+    "name": "io.rebble.libpebblecommon.ui.RockpoolPebble$Connected",
     "allDeclaredConstructors": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.compat.rockwork.RockworkPebble$Disconnected",
+    "name": "io.rebble.libpebblecommon.ui.RockpoolPebble$Disconnected",
     "allDeclaredConstructors": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.compat.rockwork.RockworkPebble$ConnectionStateChanged",
+    "name": "io.rebble.libpebblecommon.ui.RockpoolPebble$ConnectionStateChanged",
     "allDeclaredConstructors": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.compat.rockwork.RockworkPebble$InstalledAppsChanged",
+    "name": "io.rebble.libpebblecommon.ui.RockpoolPebble$InstalledAppsChanged",
     "allDeclaredConstructors": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.compat.rockwork.RockworkPebble$WeatherLocationsChanged",
+    "name": "io.rebble.libpebblecommon.ui.RockpoolPebble$WeatherLocationsChanged",
     "allDeclaredConstructors": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.compat.rockwork.RockworkPebble$OpenURL",
+    "name": "io.rebble.libpebblecommon.ui.RockpoolPebble$OpenURL",
     "allDeclaredConstructors": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.compat.rockwork.RockworkPebble$NotificationFilterChanged",
+    "name": "io.rebble.libpebblecommon.ui.RockpoolPebble$NotificationFilterChanged",
     "allDeclaredConstructors": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.compat.rockwork.RockworkPebble$ScreenshotAdded",
+    "name": "io.rebble.libpebblecommon.ui.RockpoolPebble$ScreenshotAdded",
     "allDeclaredConstructors": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.compat.rockwork.RockworkPebble$ScreenshotRemoved",
+    "name": "io.rebble.libpebblecommon.ui.RockpoolPebble$ScreenshotRemoved",
     "allDeclaredConstructors": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.compat.rockwork.RockworkPebble$FirmwareUpgradeAvailableChanged",
+    "name": "io.rebble.libpebblecommon.ui.RockpoolPebble$FirmwareUpgradeAvailableChanged",
     "allDeclaredConstructors": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.compat.rockwork.RockworkPebble$UpgradingFirmwareChanged",
+    "name": "io.rebble.libpebblecommon.ui.RockpoolPebble$UpgradingFirmwareChanged",
     "allDeclaredConstructors": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.compat.rockwork.RockworkPebble$LanguageVersionChanged",
+    "name": "io.rebble.libpebblecommon.ui.RockpoolPebble$LanguageVersionChanged",
     "allDeclaredConstructors": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.compat.rockwork.RockworkPebble$LogsDumped",
+    "name": "io.rebble.libpebblecommon.ui.RockpoolPebble$LogsDumped",
     "allDeclaredConstructors": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.compat.rockwork.RockworkPebble$CalendarSyncEnabledChanged",
+    "name": "io.rebble.libpebblecommon.ui.RockpoolPebble$CalendarSyncEnabledChanged",
     "allDeclaredConstructors": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.compat.rockwork.RockworkPebble$ImperialUnitsChanged",
+    "name": "io.rebble.libpebblecommon.ui.RockpoolPebble$ImperialUnitsChanged",
     "allDeclaredConstructors": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.compat.rockwork.RockworkPebble$ProfileWhenConnectedChanged",
+    "name": "io.rebble.libpebblecommon.ui.RockpoolPebble$ProfileWhenConnectedChanged",
     "allDeclaredConstructors": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.compat.rockwork.RockworkPebble$ProfileWhenDisconnectedChanged",
+    "name": "io.rebble.libpebblecommon.ui.RockpoolPebble$ProfileWhenDisconnectedChanged",
     "allDeclaredConstructors": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.compat.rockwork.RockworkPebble$HealthParamsChanged",
+    "name": "io.rebble.libpebblecommon.ui.RockpoolPebble$HealthParamsChanged",
     "allDeclaredConstructors": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.compat.rockwork.RockworkPebble$DevConnectionChanged",
+    "name": "io.rebble.libpebblecommon.ui.RockpoolPebble$DevConnectionChanged",
     "allDeclaredConstructors": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.compat.rockwork.RockworkPebble$DevConnCloudChanged",
+    "name": "io.rebble.libpebblecommon.ui.RockpoolPebble$DevConnCloudChanged",
     "allDeclaredConstructors": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.rockpool.RockpoolManager1",
+    "name": "io.rebble.libpebblecommon.rockpool.LibPebble3Manager1",
     "allDeclaredMethods": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.rockpool.RockpoolDiscovery1",
+    "name": "io.rebble.libpebblecommon.rockpool.LibPebble3Discovery1",
     "allDeclaredMethods": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.rockpool.RockpoolDiscovery1$PairingPrompt",
+    "name": "io.rebble.libpebblecommon.rockpool.LibPebble3Discovery1$PairingPrompt",
     "allDeclaredConstructors": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.rockpool.RockpoolAccount1",
+    "name": "io.rebble.libpebblecommon.rockpool.LibPebble3Account1",
     "allDeclaredMethods": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.rockpool.RockpoolPlatform1",
+    "name": "io.rebble.libpebblecommon.rockpool.LibPebble3Platform1",
     "allDeclaredMethods": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.rockpool.RockpoolWatch1",
+    "name": "io.rebble.libpebblecommon.rockpool.LibPebble3Watch1",
     "allDeclaredMethods": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.rockpool.RockpoolFirmware1",
+    "name": "io.rebble.libpebblecommon.rockpool.LibPebble3Firmware1",
     "allDeclaredMethods": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.rockpool.RockpoolApplications1",
+    "name": "io.rebble.libpebblecommon.rockpool.LibPebble3Applications1",
     "allDeclaredMethods": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.rockpool.RockpoolTimeline1",
+    "name": "io.rebble.libpebblecommon.rockpool.LibPebble3Timeline1",
     "allDeclaredMethods": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.rockpool.RockpoolNotifications1",
+    "name": "io.rebble.libpebblecommon.rockpool.LibPebble3Notifications1",
     "allDeclaredMethods": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.rockpool.RockpoolMessaging1",
+    "name": "io.rebble.libpebblecommon.rockpool.LibPebble3Messaging1",
     "allDeclaredMethods": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.rockpool.RockpoolHealth1",
+    "name": "io.rebble.libpebblecommon.rockpool.LibPebble3Health1",
     "allDeclaredMethods": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.rockpool.RockpoolProfiles1",
+    "name": "io.rebble.libpebblecommon.rockpool.LibPebble3Profiles1",
     "allDeclaredMethods": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.rockpool.RockpoolScreenshots1",
+    "name": "io.rebble.libpebblecommon.rockpool.LibPebble3Screenshots1",
     "allDeclaredMethods": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.rockpool.RockpoolLogs1",
+    "name": "io.rebble.libpebblecommon.rockpool.LibPebble3Logs1",
     "allDeclaredMethods": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.rockpool.RockpoolDeveloper1",
+    "name": "io.rebble.libpebblecommon.rockpool.LibPebble3Developer1",
     "allDeclaredMethods": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.rockpool.RockpoolOperation1",
+    "name": "io.rebble.libpebblecommon.rockpool.LibPebble3Operation1",
     "allDeclaredMethods": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.rockpool.RockpoolOperation1$Completed",
+    "name": "io.rebble.libpebblecommon.rockpool.LibPebble3Operation1$Completed",
     "allDeclaredConstructors": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.rockpool.RockpoolService$RootObject",
+    "name": "io.rebble.libpebblecommon.rockpool.LibPebble3Service$RootObject",
     "allDeclaredMethods": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.rockpool.RockpoolService$ManagerObject",
+    "name": "io.rebble.libpebblecommon.rockpool.LibPebble3Service$ManagerObject",
     "allDeclaredMethods": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.rockpool.RockpoolService$PlatformObject",
+    "name": "io.rebble.libpebblecommon.rockpool.LibPebble3Service$PlatformObject",
     "allDeclaredMethods": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.rockpool.RockpoolService$RockpoolWatchObject",
+    "name": "io.rebble.libpebblecommon.rockpool.LibPebble3Service$LibPebble3WatchObject",
     "allDeclaredMethods": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.rockpool.RockpoolService$RockpoolOperationObject",
+    "name": "io.rebble.libpebblecommon.rockpool.LibPebble3Service$LibPebble3OperationObject",
     "allDeclaredMethods": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.rockpool.RockpoolObjectPathList",
+    "name": "io.rebble.libpebblecommon.rockpool.LibPebble3ObjectPathList",
     "allDeclaredConstructors": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.rockpool.RockpoolStringList",
+    "name": "io.rebble.libpebblecommon.rockpool.LibPebble3StringList",
     "allDeclaredConstructors": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.rockpool.RockpoolRecordList",
+    "name": "io.rebble.libpebblecommon.rockpool.LibPebble3RecordList",
     "allDeclaredConstructors": true,
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.rockpool.RockpoolVariantMap",
+    "name": "io.rebble.libpebblecommon.rockpool.LibPebble3VariantMap",
     "allDeclaredConstructors": true,
     "allPublicMethods": true
   }

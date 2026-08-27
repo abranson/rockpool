@@ -16,7 +16,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotEquals
 
-@DBusInterfaceName("org.rockpool.tests.NamespaceProbe1")
+@DBusInterfaceName("io.rebble.libpebble3.tests.NamespaceProbe1")
 internal interface NamespaceIsolationProbe : DBusInterface {
     fun Identity(): String
 }
@@ -85,9 +85,9 @@ class DBusNamespaceIsolationTest {
         getRemoteObject(name, path, NamespaceIsolationProbe::class.java, false)
 
     private companion object {
-        const val PRIMARY_NAME = "org.rockpool"
-        const val PRIMARY_PATH = "/org/rockpool/IsolationProbe"
-        const val COMPATIBILITY_NAME = "org.rockwork"
-        const val COMPATIBILITY_PATH = "/org/rockwork/IsolationProbe"
+        const val PRIMARY_NAME = "io.rebble.libpebble3"
+        const val PRIMARY_PATH = "/io/rebble/libpebble3/IsolationProbe"
+        const val COMPATIBILITY_NAME = "org.rockpool"
+        const val COMPATIBILITY_PATH = "/org/rockpool/IsolationProbe"
     }
 }

@@ -21,6 +21,7 @@ static void enqueue_location(uint64_t request_id, int32_t status,
 
 static unsigned int notification_command_count;
 static unsigned int reply_message_count;
+static unsigned int send_message_count;
 static unsigned int call_command_count;
 static unsigned int media_command_count;
 static unsigned int location_query_count;
@@ -159,6 +160,23 @@ static int32_t test_reply_message(
     return LP3_PLATFORM_OK;
 }
 
+static int32_t test_send_message(
+    struct lp3_platform_instance *instance, uint64_t request_id,
+    const struct lp3_platform_outgoing_message_v1 *message) {
+    static const char account[] =
+        "/org/freedesktop/Telepathy/Account/ring/tel/ril_0";
+    (void)instance;
+    assert(request_id != 0 && message->flags == 0);
+    assert(message->account_id.size == sizeof(account) - 1);
+    assert(memcmp(message->account_id.data, account, sizeof(account) - 1) == 0);
+    assert(message->recipient.size == 7);
+    assert(memcmp(message->recipient.data, "+358123", 7) == 0);
+    assert(message->text.size == 5);
+    assert(memcmp(message->text.data, "Hello", 5) == 0);
+    ++send_message_count;
+    return LP3_PLATFORM_OK;
+}
+
 static int32_t test_call_command(
     struct lp3_platform_instance *instance, uint64_t request_id,
     const struct lp3_platform_call_command_v1 *command) {
@@ -224,6 +242,7 @@ static void set_up_command_provider(void) {
         LP3_PLATFORM_DOMAIN_MEDIA | LP3_PLATFORM_DOMAIN_LOCATION;
     command_api.notification_command = test_notification_command;
     command_api.reply_message = test_reply_message;
+    command_api.send_message = test_send_message;
     command_api.call_command = test_call_command;
     command_api.media_command = test_media_command;
     command_api.location_query = test_location_query;
@@ -234,6 +253,7 @@ static void set_up_command_provider(void) {
     loader.next_request_id = 1;
     notification_command_count = 0;
     reply_message_count = 0;
+    send_message_count = 0;
     call_command_count = 0;
     media_command_count = 0;
     location_query_count = 0;
@@ -324,7 +344,7 @@ static void enqueue_reset(void) {
     status.struct_size = sizeof(status);
     status.state = LP3_PLATFORM_PROVIDER_DEGRADED;
     status.degraded_domains = LP3_PLATFORM_DOMAIN_ALL;
-    status.error = string("org.rockpool.Error.ProviderUnavailable");
+    status.error = string("io.rebble.libpebble3.Error.ProviderUnavailable");
     memset(&event, 0, sizeof(event));
     event.struct_size = sizeof(event);
     event.type = LP3_PLATFORM_EVENT_PROVIDER_STATUS;
@@ -344,6 +364,16 @@ int main(void) {
         'O', 'n', ' ', 'm', 'y', ' ', 'w', 'a', 'y', ' ',
         0xd83d, 0xde00, 0,
     };
+    static const jchar send_account[] = {
+        '/', 'o', 'r', 'g', '/', 'f', 'r', 'e', 'e', 'd', 'e', 's', 'k', 't',
+        'o', 'p', '/', 'T', 'e', 'l', 'e', 'p', 'a', 't', 'h', 'y', '/', 'A',
+        'c', 'c', 'o', 'u', 'n', 't', '/', 'r', 'i', 'n', 'g', '/', 't', 'e',
+        'l', '/', 'r', 'i', 'l', '_', '0', 0
+    };
+    static const jchar send_recipient[] = {
+        '+', '3', '5', '8', '1', '2', '3', 0
+    };
+    static const jchar send_text[] = { 'H', 'e', 'l', 'l', 'o', 0 };
     static const jchar invalid_reply_text[] = { 0xd83d, 0 };
     static const jchar invalid_low_surrogate[] = { 0xdc00, 0 };
 
@@ -458,6 +488,9 @@ int main(void) {
     assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_replyMessage(
         &test_env, NULL, (jstring)"42", (jstring)reply_text) ==
         LP3_PLATFORM_OK);
+    assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_sendMessage(
+        &test_env, NULL, (jstring)send_account, (jstring)send_recipient,
+        (jstring)send_text) == LP3_PLATFORM_OK);
     assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_callCommand(
         &test_env, NULL, LP3_PLATFORM_CALL_ANSWER, (jstring)"call_1") ==
         LP3_PLATFORM_OK);
@@ -465,6 +498,7 @@ int main(void) {
         &test_env, NULL, LP3_PLATFORM_MEDIA_VOLUME_UP) == LP3_PLATFORM_OK);
     assert(notification_command_count == 2);
     assert(reply_message_count == 1);
+    assert(send_message_count == 1);
     assert(call_command_count == 1);
     assert(media_command_count == 1);
     assert(media_event_count == 1);
@@ -634,10 +668,14 @@ int main(void) {
     assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_replyMessage(
         &test_env, NULL, (jstring)"42", (jstring)reply_text) ==
         LP3_PLATFORM_UNAVAILABLE);
+    assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_sendMessage(
+        &test_env, NULL, (jstring)send_account, (jstring)send_recipient,
+        (jstring)send_text) == LP3_PLATFORM_UNAVAILABLE);
     assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_mediaCommand(
         &test_env, NULL, LP3_PLATFORM_MEDIA_VOLUME_UP) == LP3_PLATFORM_OK);
     assert(notification_command_count == 3);
     assert(reply_message_count == 1);
+    assert(send_message_count == 1);
     assert(call_command_count == 1);
     assert(media_command_count == 2);
     reset_events();
