@@ -95,6 +95,10 @@
         "parameterTypes": ["int"]
       },
       {
+        "name": "removePebbleBond",
+        "parameterTypes": ["int", "java.lang.String"]
+      },
+      {
         "name": "rfcommCreate",
         "parameterTypes": ["java.lang.String", "int"]
       },

@@ -20,7 +20,7 @@
 namespace lp3wire {
 
 static const uint16_t kMajor = 1;
-static const uint16_t kMinor = 8;
+static const uint16_t kMinor = 9;
 static const size_t kHeaderSize = 24;
 static const size_t kMaxFrameSize = 64 * 1024;
 
@@ -46,6 +46,7 @@ enum Operation {
     CalendarQuery = 7,
     ContactQuery = 8,
     MessageSend = 9,
+    PebbleBondRemove = 10,
 };
 
 enum EventType {
@@ -150,6 +151,11 @@ struct MessageSendData {
     std::string accountId;
     std::string recipient;
     std::string text;
+};
+
+struct PebbleBondRemoveData {
+    uint32_t adapterIndex;
+    uint8_t address[6];
 };
 
 struct CallData {
@@ -755,6 +761,45 @@ inline bool decodeMessageSend(const std::vector<uint8_t> &payload,
     return true;
 }
 
+inline bool validPebbleBondRemove(const PebbleBondRemoveData &request) {
+    bool anyNonzero = false;
+    bool anyNotBroadcast = false;
+    for (size_t index = 0; index < sizeof(request.address); ++index) {
+        anyNonzero = anyNonzero || request.address[index] != 0;
+        anyNotBroadcast = anyNotBroadcast || request.address[index] != 0xff;
+    }
+    return anyNonzero && anyNotBroadcast;
+}
+
+inline bool encodePebbleBondRemove(const PebbleBondRemoveData &request,
+                                   std::vector<uint8_t> *payload) {
+    if (payload == NULL || !validPebbleBondRemove(request)) {
+        return false;
+    }
+    payload->assign(16, 0);
+    put16(&(*payload)[0], PebbleBondRemove);
+    put32(&(*payload)[4], request.adapterIndex);
+    memcpy(&(*payload)[8], request.address, sizeof(request.address));
+    return true;
+}
+
+inline bool decodePebbleBondRemove(const std::vector<uint8_t> &payload,
+                                   PebbleBondRemoveData *request) {
+    PebbleBondRemoveData decoded = {};
+    if (request == NULL || payload.size() != 16 ||
+        get16(&payload[0]) != PebbleBondRemove || get16(&payload[2]) != 0 ||
+        payload[14] != 0 || payload[15] != 0) {
+        return false;
+    }
+    decoded.adapterIndex = get32(&payload[4]);
+    memcpy(decoded.address, &payload[8], sizeof(decoded.address));
+    if (!validPebbleBondRemove(decoded)) {
+        return false;
+    }
+    *request = decoded;
+    return true;
+}
+
 inline bool encodeCallChanged(const CallData &call,
                               std::vector<uint8_t> *payload) {
     if (payload == NULL || !validCall(call)) {
@@ -881,7 +926,8 @@ inline bool encodeStatusReply(uint16_t operation, uint32_t status,
                             operation != MessageReply &&
                             operation != MessageSend &&
                             operation != CallCommand &&
-                            operation != MediaCommand) ||
+                            operation != MediaCommand &&
+                            operation != PebbleBondRemove) ||
         !validStatus(status)) {
         return false;
     }

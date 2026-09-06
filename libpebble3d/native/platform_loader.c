@@ -354,7 +354,7 @@ static void set_literal(char *destination, size_t destination_size,
 static void set_snapshot_state(const char *state, const char *error) {
     memset(&loader.snapshot, 0, sizeof(loader.snapshot));
     set_literal(loader.snapshot.state, sizeof(loader.snapshot.state), state);
-    set_literal(loader.snapshot.abi_version, sizeof(loader.snapshot.abi_version), "1.7");
+    set_literal(loader.snapshot.abi_version, sizeof(loader.snapshot.abi_version), "1.8");
     set_literal(loader.snapshot.domains, sizeof(loader.snapshot.domains), "0");
     set_literal(loader.snapshot.helper_pid, sizeof(loader.snapshot.helper_pid), "0");
     set_literal(loader.snapshot.supported_domains,
@@ -587,6 +587,42 @@ static int java_string_to_utf8(JNIEnv *env, jstring value, char *output,
     output[written] = '\0';
     *output_size = written;
     return allow_empty || written != 0;
+}
+
+static int hex_nibble(char value) {
+    if (value >= '0' && value <= '9') {
+        return value - '0';
+    }
+    if (value >= 'A' && value <= 'F') {
+        return value - 'A' + 10;
+    }
+    if (value >= 'a' && value <= 'f') {
+        return value - 'a' + 10;
+    }
+    return -1;
+}
+
+static int parse_bluetooth_address(const char *value, uint32_t size,
+                                   uint8_t address[6]) {
+    size_t index;
+    int any_nonzero = 0;
+    int any_not_broadcast = 0;
+    if (value == NULL || address == NULL || size != 17) {
+        return 0;
+    }
+    for (index = 0; index < 6; ++index) {
+        const size_t offset = index * 3;
+        const int high = hex_nibble(value[offset]);
+        const int low = hex_nibble(value[offset + 1]);
+        if (high < 0 || low < 0 ||
+            (index != 5 && value[offset + 2] != ':')) {
+            return 0;
+        }
+        address[index] = (uint8_t)((high << 4) | low);
+        any_nonzero = any_nonzero || address[index] != 0;
+        any_not_broadcast = any_not_broadcast || address[index] != 0xff;
+    }
+    return any_nonzero && any_not_broadcast;
 }
 
 static int valid_string(const struct lp3_platform_string *value,
@@ -1438,7 +1474,9 @@ static int api_is_compatible(const struct lp3_platform_api_v1 *api) {
         !API_HAS_MEMBER(api, probe) || !API_HAS_MEMBER(api, create) ||
         !API_HAS_MEMBER(api, start) || !API_HAS_MEMBER(api, cancel) ||
         !API_HAS_MEMBER(api, request_stop) || !API_HAS_MEMBER(api, destroy) ||
-        !API_HAS_MEMBER(api, get_status)) {
+        !API_HAS_MEMBER(api, get_status) ||
+        (api->info.abi_minor >= 8 &&
+         !API_HAS_MEMBER(api, remove_pebble_bond))) {
         return 0;
     }
     domains = api->info.domains;
@@ -2886,6 +2924,50 @@ Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_mediaCommand(
         request_id = loader.next_request_id++;
         result = loader.api->media_command(
             loader.instance, request_id, (uint32_t)command_value);
+    }
+    if (command_gate_held) {
+        end_provider_command_dispatch();
+    }
+    pthread_mutex_unlock(&loader_lock);
+    return result;
+}
+
+JNIEXPORT jint JNICALL
+Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_removePebbleBond(
+    JNIEnv *env, jclass klass, jint adapter_value, jstring address_value) {
+    char address_text[18];
+    uint32_t address_size = 0;
+    struct lp3_platform_pebble_bond_v1 bond;
+    uint64_t request_id;
+    int32_t result = LP3_PLATFORM_UNAVAILABLE;
+    int command_gate_held;
+    (void)klass;
+
+    if (adapter_value < 0 ||
+        !java_string_to_utf8(env, address_value, address_text, 17,
+                             &address_size, 0)) {
+        return (*env)->ExceptionCheck(env) ?
+            LP3_PLATFORM_INTERNAL_ERROR : LP3_PLATFORM_INVALID_ARGUMENT;
+    }
+    memset(&bond, 0, sizeof(bond));
+    bond.struct_size = sizeof(bond);
+    bond.adapter_index = (uint32_t)adapter_value;
+    if (!parse_bluetooth_address(address_text, address_size, bond.address)) {
+        return LP3_PLATFORM_INVALID_ARGUMENT;
+    }
+
+    pthread_mutex_lock(&loader_lock);
+    command_gate_held = begin_provider_command_dispatch(0);
+    if (command_gate_held && loader.api != NULL && loader.instance != NULL) {
+        if (loader.api->info.abi_minor < 8 ||
+            !API_HAS_MEMBER(loader.api, remove_pebble_bond)) {
+            result = LP3_PLATFORM_NOT_SUPPORTED;
+        } else if (loader.next_request_id != 0 &&
+                   (loader.next_request_id & (UINT64_C(1) << 63)) == 0) {
+            request_id = loader.next_request_id++;
+            result = loader.api->remove_pebble_bond(
+                loader.instance, request_id, &bond);
+        }
     }
     if (command_gate_held) {
         end_provider_command_dispatch();

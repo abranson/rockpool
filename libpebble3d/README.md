@@ -749,6 +749,33 @@ fixed empty-reply `org.sailfishos.Messages` `/`
 Timeouts and owner or connection generation changes fail without retrying the
 externally visible send.
 
+Minor 9 adds one idempotent Pebble-bond removal request. It carries only a
+numeric BlueZ adapter index and six address octets; no D-Bus destination,
+object path, interface, member, or caller-supplied device name crosses the
+private protocol.
+
+```text
+Request PebbleBondRemove (request_id != 0, payload size 16)
+    u16 operation = 10
+    u16 reserved = 0
+    u32 adapter_index
+    u8  address[6]
+    u16 reserved = 0
+
+Complete PebbleBondRemoveStatus (matching request_id, payload size 8)
+    u16 operation = 10
+    u16 reserved = 0
+    u32 status
+```
+
+The privileged helper derives the fixed BlueZ adapter and device paths. Before
+calling `Adapter1.RemoveDevice`, it reads that exact `Device1` object and
+requires the strict supported Pebble name form plus either a recognized Pebble
+service UUID, the existing Classic-device class evidence, or the legacy
+`Pebble Time Le XXXX` identity. Missing or already-unbonded objects succeed
+without mutation. A non-Pebble object is rejected with
+`LP3_PLATFORM_INVALID_ARGUMENT`.
+
 ```text
 Request ContactQuery (request_id != 0)
     u16 operation = 8

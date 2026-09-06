@@ -186,7 +186,15 @@ fun main() {
         settings = settings,
         scope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
     )
-    val bondedWatchForget = createBluezBondedWatchForgetCoordinator()
+    val bondedWatchForget = createBluezBondedWatchForgetCoordinator(
+        removePebbleBond = if (
+            System.getenv("LIBPEBBLE3_BLUEZ_PAIRING_BROKER") == "sailfish-lipstick"
+        ) {
+            platformProvider::removePebbleBond
+        } else {
+            null
+        },
+    )
     libPebble.init()
     // Existing libpebble3 config wins for user preferences except the mandatory multi-watch
     // policy and the compatibility API's fixed local developer transport.  In particular, do

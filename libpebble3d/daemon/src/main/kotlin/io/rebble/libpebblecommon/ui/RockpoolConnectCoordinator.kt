@@ -3,11 +3,25 @@
  */
 package io.rebble.libpebblecommon.ui
 
+import io.rebble.libpebblecommon.connection.KnownPebbleDevice
+import io.rebble.libpebblecommon.connection.PebbleDevice
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.launch
+
+internal suspend fun connectRockpoolWatch(
+    address: String,
+    devices: List<PebbleDevice>,
+    connectCandidate: suspend (String) -> Unit,
+) {
+    // Saved watches need no scan result; they are deliberately hidden from discovery.
+    val known = devices.filterIsInstance<KnownPebbleDevice>().firstOrNull {
+        it.identifier.asString.equals(address, ignoreCase = true)
+    }
+    if (known != null) known.connect() else connectCandidate(address)
+}
 
 /**
  * Gives the newest legacy ConnectWatch request exclusive ownership of transport rediscovery.

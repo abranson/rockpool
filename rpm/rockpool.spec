@@ -144,6 +144,14 @@ cd platform-wire-test-build
 %qtc_make %{?_smp_mflags}
 ./wire_test
 
+cd ..
+mkdir -p platform-pebblebondremover-test-build
+cd platform-pebblebondremover-test-build
+%qmake5 ../platform-sailfish/tests/pebblebondremover_test.pro
+%qtc_make clean
+%qtc_make %{?_smp_mflags}
+./pebblebondremover_test
+
 %install
 if [ -d %{_builddir}/%{name}-%{version} ]; then
     cd %{_builddir}/%{name}-%{version}

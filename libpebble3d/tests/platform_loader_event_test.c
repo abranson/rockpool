@@ -24,6 +24,7 @@ static unsigned int reply_message_count;
 static unsigned int send_message_count;
 static unsigned int call_command_count;
 static unsigned int media_command_count;
+static unsigned int remove_pebble_bond_count;
 static unsigned int location_query_count;
 static unsigned int location_cancel_count;
 static int location_query_synchronous;
@@ -204,6 +205,23 @@ static int32_t test_media_command(struct lp3_platform_instance *instance,
     return LP3_PLATFORM_OK;
 }
 
+static int32_t test_remove_pebble_bond(
+    struct lp3_platform_instance *instance, uint64_t request_id,
+    const struct lp3_platform_pebble_bond_v1 *bond) {
+    static const uint8_t expected[] = { 0xd0, 0x81, 0x0a, 0xd4, 0xd7, 0xcd };
+    (void)instance;
+    pthread_mutex_lock(&event_lock);
+    assert(provider_command_dispatches == 1);
+    pthread_mutex_unlock(&event_lock);
+    assert(request_id != 0);
+    assert(bond->struct_size == sizeof(*bond));
+    assert(bond->adapter_index == 0);
+    assert(bond->reserved[0] == 0 && bond->reserved[1] == 0);
+    assert(memcmp(bond->address, expected, sizeof(expected)) == 0);
+    ++remove_pebble_bond_count;
+    return LP3_PLATFORM_OK;
+}
+
 static int32_t test_location_query(
     struct lp3_platform_instance *instance, uint64_t request_id,
     const struct lp3_platform_location_request_v1 *request) {
@@ -237,6 +255,7 @@ static int32_t test_location_cancel(struct lp3_platform_instance *instance,
 static void set_up_command_provider(void) {
     memset(&command_api, 0, sizeof(command_api));
     command_api.struct_size = sizeof(command_api);
+    command_api.info.abi_minor = LP3_PLATFORM_ABI_MINOR;
     command_api.info.domains = LP3_PLATFORM_DOMAIN_NOTIFICATIONS |
         LP3_PLATFORM_DOMAIN_MESSAGING | LP3_PLATFORM_DOMAIN_CALLS |
         LP3_PLATFORM_DOMAIN_MEDIA | LP3_PLATFORM_DOMAIN_LOCATION;
@@ -245,6 +264,7 @@ static void set_up_command_provider(void) {
     command_api.send_message = test_send_message;
     command_api.call_command = test_call_command;
     command_api.media_command = test_media_command;
+    command_api.remove_pebble_bond = test_remove_pebble_bond;
     command_api.location_query = test_location_query;
     command_api.cancel = test_location_cancel;
     memset(&loader, 0, sizeof(loader));
@@ -256,6 +276,7 @@ static void set_up_command_provider(void) {
     send_message_count = 0;
     call_command_count = 0;
     media_command_count = 0;
+    remove_pebble_bond_count = 0;
     location_query_count = 0;
     location_cancel_count = 0;
     location_query_synchronous = 0;
@@ -374,6 +395,10 @@ int main(void) {
         '+', '3', '5', '8', '1', '2', '3', 0
     };
     static const jchar send_text[] = { 'H', 'e', 'l', 'l', 'o', 0 };
+    static const jchar pebble_address[] = {
+        'D', '0', ':', '8', '1', ':', '0', 'A', ':', 'D', '4', ':', 'D', '7',
+        ':', 'C', 'D', 0
+    };
     static const jchar invalid_reply_text[] = { 0xd83d, 0 };
     static const jchar invalid_low_surrogate[] = { 0xdc00, 0 };
 
@@ -496,11 +521,14 @@ int main(void) {
         LP3_PLATFORM_OK);
     assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_mediaCommand(
         &test_env, NULL, LP3_PLATFORM_MEDIA_VOLUME_UP) == LP3_PLATFORM_OK);
+    assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_removePebbleBond(
+        &test_env, NULL, 0, (jstring)pebble_address) == LP3_PLATFORM_OK);
     assert(notification_command_count == 2);
     assert(reply_message_count == 1);
     assert(send_message_count == 1);
     assert(call_command_count == 1);
     assert(media_command_count == 1);
+    assert(remove_pebble_bond_count == 1);
     assert(media_event_count == 1);
     assert(media_event_queue[media_event_head].volume_percent == 55);
 
@@ -673,11 +701,14 @@ int main(void) {
         (jstring)send_text) == LP3_PLATFORM_UNAVAILABLE);
     assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_mediaCommand(
         &test_env, NULL, LP3_PLATFORM_MEDIA_VOLUME_UP) == LP3_PLATFORM_OK);
+    assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_removePebbleBond(
+        &test_env, NULL, 0, (jstring)pebble_address) == LP3_PLATFORM_OK);
     assert(notification_command_count == 3);
     assert(reply_message_count == 1);
     assert(send_message_count == 1);
     assert(call_command_count == 1);
     assert(media_command_count == 2);
+    assert(remove_pebble_bond_count == 2);
     reset_events();
 
     /* Java UTF-16 is converted to strict bounded UTF-8 before provider use. */
@@ -714,10 +745,14 @@ int main(void) {
     assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_mediaCommand(
         &test_env, NULL, LP3_PLATFORM_MEDIA_VOLUME_UP) ==
         LP3_PLATFORM_UNAVAILABLE);
+    assert(Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_removePebbleBond(
+        &test_env, NULL, 0, (jstring)pebble_address) ==
+        LP3_PLATFORM_UNAVAILABLE);
     assert(notification_command_count == 3);
     assert(reply_message_count == 2);
     assert(call_command_count == 1);
     assert(media_command_count == 2);
+    assert(remove_pebble_bond_count == 2);
     assert(pthread_mutex_trylock(&event_lock) == 0);
     pthread_mutex_unlock(&event_lock);
 

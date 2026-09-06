@@ -29,7 +29,7 @@ import kotlin.time.Duration.Companion.seconds
 internal data class PlatformProviderSnapshot(
     val state: String,
     val provider: String = "",
-    val abiVersion: String = "1.7",
+    val abiVersion: String = "1.8",
     val buildId: String = "",
     val domains: Long = 0,
     val supportedDomains: Long = 0,
@@ -229,6 +229,9 @@ internal class PlatformProviderController(
         PlatformProviderNative::cancelContact,
     private val contactDrainNative: () -> Array<ByteArray> =
         PlatformProviderNative::drainContactEvents,
+    private val removePebbleBondNativeAvailable: () -> Boolean = { nativeLibraryLoaded },
+    private val removePebbleBondNative: (Int, String) -> Int =
+        PlatformProviderNative::removePebbleBond,
 ) {
     private val logger = Logger.withTag("PlatformProvider")
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -437,6 +440,20 @@ internal class PlatformProviderController(
                 runCatching { PlatformProviderNative.mediaCommand(command) }
                     .getOrElse {
                         logger.w { "platform media command failed: ${it.message}" }
+                        STATUS_UNAVAILABLE
+                    }
+            }
+        }
+
+    suspend fun removePebbleBond(adapterIndex: Int, address: String): Int =
+        withContext(Dispatchers.IO) {
+            lifecycleLock.withLock {
+                if (!removePebbleBondNativeAvailable()) {
+                    return@withLock STATUS_UNAVAILABLE
+                }
+                runCatching { removePebbleBondNative(adapterIndex, address) }
+                    .getOrElse {
+                        logger.w { "platform Pebble bond removal failed: ${it.message}" }
                         STATUS_UNAVAILABLE
                     }
             }
@@ -1321,7 +1338,7 @@ internal class PlatformProviderController(
             state = field(0).ifEmpty { "failed" },
             provider = field(1),
             buildId = field(2),
-            abiVersion = field(3).ifEmpty { "1.7" },
+            abiVersion = field(3).ifEmpty { "1.8" },
             domains = field(4).toLongOrNull() ?: 0,
             helperPid = field(5).toLongOrNull() ?: 0,
             error = field(6),
@@ -1578,6 +1595,9 @@ internal object PlatformProviderNative {
 
     @JvmStatic
     external fun mediaCommand(command: Int): Int
+
+    @JvmStatic
+    external fun removePebbleBond(adapterIndex: Int, address: String): Int
 
     @JvmStatic
     external fun rfcommCreate(address: String, channel: Int): Long

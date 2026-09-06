@@ -227,7 +227,9 @@ internal class RockpoolUiService(
         onScanFailure = { operation, error -> logger.e(operation, error) },
     )
 
-    private val connectCoordinator = RockpoolConnectCoordinator(scope, ::connectCandidate)
+    private val connectCoordinator = RockpoolConnectCoordinator(scope) { address ->
+        connectRockpoolWatch(address, libPebble.watches.value, ::connectCandidate)
+    }
 
     private suspend fun reconcileBondedWatches(beginCommit: () -> Boolean) {
         when (val outcome = importBondedWatches(beginCommit)) {

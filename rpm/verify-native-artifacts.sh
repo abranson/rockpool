@@ -36,9 +36,9 @@ require_line()
 
 require_line 'format=3'
 require_line 'target_arch=aarch64'
-require_line 'platform_abi=1.7'
+require_line 'platform_abi=1.8'
 require_line 'launcher_abi=1'
-require_line 'sailfish_wire=1.8'
+require_line 'sailfish_wire=1.9'
 
 for field in format source_mode target_arch rockpool_commit mobileapp_commit \
     builder_image_id platform_abi launcher_abi sailfish_wire; do
@@ -58,7 +58,7 @@ if [ "$required_mode" = committed ] && [ "$source_mode" != committed ]; then
     fail "release packaging requires committed Native Image input"
 fi
 
-if grep -E -v '^(format=3|source_mode=(committed|development)|target_arch=aarch64|rockpool_commit=[0-9a-f]{40}|mobileapp_commit=[0-9a-f]{40}|builder_image_id=sha256:[0-9a-f]{64}|platform_abi=1\.7|launcher_abi=1|sailfish_wire=1\.8|artifact_sha256=[0-9a-f]{64} [0-9A-Za-z._+-]+)$' \
+if grep -E -v '^(format=3|source_mode=(committed|development)|target_arch=aarch64|rockpool_commit=[0-9a-f]{40}|mobileapp_commit=[0-9a-f]{40}|builder_image_id=sha256:[0-9a-f]{64}|platform_abi=1\.8|launcher_abi=1|sailfish_wire=1\.9|artifact_sha256=[0-9a-f]{64} [0-9A-Za-z._+-]+)$' \
         "$manifest" | grep -q .; then
     fail "provenance contains an invalid field"
 fi

@@ -15,14 +15,18 @@ internal class SailfishPairingRequester : LinuxPairingRequester {
 
     override fun requestPairing(address: String): Boolean = try {
         RawSessionConnection.connect()?.use { connection ->
-            connection.callWithReply(
+            // Lipstick exposes this through a QML adaptor signal: it starts pairing
+            // but does not send a method reply. Waiting here prevents libpebble3
+            // from observing the bond and starting the Pebble protocol handshake.
+            connection.call(
                 "com.jolla.lipstick",
                 "/bluetooth",
                 "com.jolla.lipstick",
                 "pairWithDevice",
                 "s",
                 address,
-            ) != null
+            )
+            true
         } ?: false
     } catch (e: Throwable) {
         logger.e("Sailfish pairing request failed for $address", e)

@@ -21,7 +21,8 @@ SOURCES += main.cpp \
     contactmonitor.cpp \
     locationmonitor.cpp \
     mainvolumemonitor.cpp \
-    notificationmonitor.cpp
+    notificationmonitor.cpp \
+    pebblebondremover.cpp
 HEADERS += ../common/wire.h \
     ../../libpebble3d/include/libpebble3d-launcher-wire.h \
     calendarmonitor.h \
@@ -29,7 +30,8 @@ HEADERS += ../common/wire.h \
     contactmonitor.h \
     locationmonitor.h \
     mainvolumemonitor.h \
-    notificationmonitor.h
+    notificationmonitor.h \
+    pebblebondremover.h
 
 isEmpty(LP3_LIBEXECDIR): LP3_LIBEXECDIR = /usr/libexec
 !isEmpty(LP3_BUILD_ID): DEFINES += LP3_PLATFORM_BUILD_ID=\\\"$$LP3_BUILD_ID\\\"

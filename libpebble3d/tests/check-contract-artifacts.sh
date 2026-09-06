@@ -270,6 +270,10 @@ stop_handshake_test=$libpebble3d_dir/../platform-sailfish/tests/stop_handshake_t
 stop_handshake_test_project=$libpebble3d_dir/../platform-sailfish/tests/stop_handshake_test.pro
 wire_test=$libpebble3d_dir/../platform-sailfish/tests/wire_test.cpp
 wire_test_project=$libpebble3d_dir/../platform-sailfish/tests/wire_test.pro
+pebble_bond_remover=$libpebble3d_dir/../platform-sailfish/helper/pebblebondremover.cpp
+pebble_bond_remover_header=$libpebble3d_dir/../platform-sailfish/helper/pebblebondremover.h
+pebble_bond_remover_test=$libpebble3d_dir/../platform-sailfish/tests/pebblebondremover_test.cpp
+pebble_bond_remover_test_project=$libpebble3d_dir/../platform-sailfish/tests/pebblebondremover_test.pro
 launcher_source=$libpebble3d_dir/../platform-sailfish/launcher/main.c
 service_dropin=$libpebble3d_dir/../platform-sailfish/libpebble3d-platform-sailfish.service.conf
 rockpool_spec=$project_dir/rpm/rockpool.spec
@@ -563,6 +567,10 @@ require_file "$stop_handshake_test" "Sailfish STOP_HOST regression"
 require_file "$stop_handshake_test_project" "Sailfish STOP_HOST test project"
 require_file "$wire_test" "Sailfish provider wire regression"
 require_file "$wire_test_project" "Sailfish provider wire test project"
+require_file "$pebble_bond_remover" "restricted Sailfish Pebble bond remover"
+require_file "$pebble_bond_remover_header" "restricted Sailfish Pebble bond remover header"
+require_file "$pebble_bond_remover_test" "Sailfish Pebble bond-removal regression"
+require_file "$pebble_bond_remover_test_project" "Sailfish Pebble bond-removal test project"
 require_file "$launcher_source" "Sailfish launcher source"
 require_file "$service_dropin" "Sailfish provider service drop-in"
 require_file "$rockpool_spec" "Rockpool package spec"
@@ -683,11 +691,11 @@ require_fixed 'release packaging requires committed Native Image input' \
     'committed Native Image provenance gate'
 require_fixed "require_line 'format=3'" "$native_verifier" \
     'versioned Native Image provenance format'
-require_fixed "require_line 'platform_abi=1.7'" "$native_verifier" \
+require_fixed "require_line 'platform_abi=1.8'" "$native_verifier" \
     'packaged public platform ABI identity'
 require_fixed "require_line 'launcher_abi=1'" "$native_verifier" \
     'packaged launcher ABI identity'
-require_fixed "require_line 'sailfish_wire=1.8'" "$native_verifier" \
+require_fixed "require_line 'sailfish_wire=1.9'" "$native_verifier" \
     'packaged private Sailfish wire identity'
 require_fixed 'mv "$temporary" "$destination"' "$native_stager" \
     'atomic verified Native Image input staging'
@@ -1669,8 +1677,10 @@ reject_extended 'bond import awaits upstream libpebble3 support' "$primary_servi
 # Forget is one logical-watch transaction across the compatibility and primary
 # APIs.  Resolve every selected-adapter transport alias before retiring the
 # portable record, and let Connect supersede the operation until commit begins.
-require_fixed 'val bondedWatchForget = createBluezBondedWatchForgetCoordinator()' \
+require_fixed 'val bondedWatchForget = createBluezBondedWatchForgetCoordinator(' \
     "$daemon_main" 'one shared bonded-watch Forget coordinator'
+require_fixed 'platformProvider::removePebbleBond' "$daemon_main" \
+    'Sailfish privileged Pebble-only bond removal'
 require_fixed 'BluezManager.prepareBondRemoval(address, name)' \
     "$bond_forget_coordinator" 'selected-adapter alias-removal snapshot'
 require_fixed 'connectionsWhilePreparing' "$bond_forget_coordinator" \
@@ -1844,16 +1854,18 @@ do
 done
 reject_extended '^BuildRequires:[[:space:]]+pkgconfig\(libpebble3d-platform\)' \
     "$rockpool_spec" 'self-referential platform ABI BuildRequires'
-require_fixed '#define LP3_PLATFORM_ABI_MINOR 7u' "$header" \
-    'public platform ABI minor 1.7'
-require_fixed '"1.7"' "$loader" \
-    'native platform snapshot ABI version 1.7'
-require_fixed 'val abiVersion: String = "1.7"' "$platform_provider_controller" \
-    'daemon platform snapshot ABI default 1.7'
-require_fixed 'field(3).ifEmpty { "1.7" }' "$platform_provider_controller" \
-    'daemon platform snapshot ABI fallback 1.7'
+require_fixed '#define LP3_PLATFORM_ABI_MINOR 8u' "$header" \
+    'public platform ABI minor 1.8'
+require_fixed '"1.8"' "$loader" \
+    'native platform snapshot ABI version 1.8'
+require_fixed 'val abiVersion: String = "1.8"' "$platform_provider_controller" \
+    'daemon platform snapshot ABI default 1.8'
+require_fixed 'field(3).ifEmpty { "1.8" }' "$platform_provider_controller" \
+    'daemon platform snapshot ABI fallback 1.8'
 require_fixed 'api->info.abi_minor < 6' "$loader" \
     'Contacts domain ABI-minor admission gate'
+require_fixed 'api->info.abi_minor >= 8' "$loader" \
+    'Pebble-bond command ABI-minor admission gate'
 require_fixed 'BuildRequires:  pkgconfig(Qt5Positioning)' "$rockpool_spec" \
     'Sailfish Location build dependency'
 require_fixed 'BuildRequires:  pkgconfig(libmkcal-qt5)' "$rockpool_spec" \
@@ -1868,14 +1880,26 @@ require_fixed 'BuildRequires:  pkgconfig(Qt5Contacts)' "$rockpool_spec" \
     'Sailfish QtContacts build dependency'
 require_fixed 'QT += core dbus positioning contacts' "$helper_project" \
     'Qt Positioning linked only into the privileged Sailfish helper'
-require_fixed 'static const uint16_t kMinor = 8;' "$wire_header" \
-    'private provider wire minor 1.8'
+require_fixed 'static const uint16_t kMinor = 9;' "$wire_header" \
+    'private provider wire minor 1.9'
 require_fixed 'MessageReply = 5,' "$wire_header" \
     'private typed message-reply operation'
 require_fixed 'MessageSend = 9,' "$wire_header" \
     'private typed outbound-message operation'
 require_fixed 'send_message' "$header" \
     'public typed outbound-message provider command'
+require_fixed 'remove_pebble_bond' "$header" \
+    'public restricted Pebble-bond provider command'
+require_fixed 'PebbleBondRemove = 10,' "$wire_header" \
+    'private typed Pebble-bond removal operation'
+require_fixed 'validPebbleBondRemove' "$wire_header" \
+    'typed Pebble-bond request validation'
+require_fixed 'isRecognizedPebbleDevice' "$pebble_bond_remover" \
+    'helper-side Pebble identity validation before bond removal'
+require_fixed 'QStringLiteral("RemoveDevice")' "$pebble_bond_remover" \
+    'fixed BlueZ bond-removal method'
+reject_extended 'destination|interface|member|method' "$pebble_bond_remover_header" \
+    'generic D-Bus authority in the Pebble bond-removal interface'
 require_fixed 'validMessageSend' "$wire_header" \
     'typed outbound-message codec validation'
 require_fixed 'NotificationHasDefaultAction = 1u << 0,' "$wire_header" \
@@ -2290,14 +2314,14 @@ require_fixed 'LP3_PLATFORM_MEDIA_VOLUME_DOWN' "$main_volume_monitor" \
 require_fixed '%check' "$rockpool_spec" 'Rockpool package test phase'
 for helper_test_project in \
     callmonitor_test.pro mainvolumemonitor_test.pro notificationmonitor_test.pro \
-    stop_handshake_test.pro wire_test.pro
+    pebblebondremover_test.pro stop_handshake_test.pro wire_test.pro
 do
     require_fixed "../platform-sailfish/tests/$helper_test_project" "$rockpool_spec" \
         "packaged Sailfish helper regression project $helper_test_project"
 done
 for helper_test_binary in \
     callmonitor_test mainvolumemonitor_test notificationmonitor_test \
-    stop_handshake_test wire_test
+    pebblebondremover_test stop_handshake_test wire_test
 do
     require_fixed "./$helper_test_binary" "$rockpool_spec" \
         "executed Sailfish helper regression $helper_test_binary"
@@ -2342,6 +2366,12 @@ require_fixed 'SOURCES += wire_test.cpp' "$wire_test_project" \
     'provider wire regression source wiring'
 require_fixed '../common/wire.h' "$wire_test_project" \
     'provider wire implementation under test'
+require_fixed '../helper/pebblebondremover.cpp' "$pebble_bond_remover_test_project" \
+    'Pebble bond-removal implementation under test'
+require_fixed 'Pebble Index 1234' "$pebble_bond_remover_test" \
+    'non-watch Pebble product rejection regression'
+require_fixed 'Headphones 1234' "$pebble_bond_remover_test" \
+    'non-Pebble Bluetooth-device rejection regression'
 for stop_regression in \
     testStopReplyIsConsumedWhileStopping \
     testRegularReplyWaitRemainsInterruptible \

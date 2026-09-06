@@ -21,7 +21,7 @@ extern "C" {
 #endif
 
 #define LP3_PLATFORM_ABI_MAJOR 1u
-#define LP3_PLATFORM_ABI_MINOR 7u
+#define LP3_PLATFORM_ABI_MINOR 8u
 
 #define LP3_PLATFORM_NOTIFICATION_ID_MAX 64u
 #define LP3_PLATFORM_NOTIFICATION_APPLICATION_ID_MAX 256u
@@ -196,6 +196,14 @@ struct lp3_platform_outgoing_message_v1 {
     struct lp3_platform_string account_id;
     struct lp3_platform_string recipient;
     struct lp3_platform_string text;
+};
+
+/* The provider must independently verify that this BlueZ object is a Pebble. */
+struct lp3_platform_pebble_bond_v1 {
+    uint32_t struct_size;
+    uint32_t adapter_index;
+    uint8_t address[6];
+    uint8_t reserved[2];
 };
 
 struct lp3_platform_call_command_v1 {
@@ -493,6 +501,11 @@ struct lp3_platform_api_v1 {
         struct lp3_platform_instance *instance,
         uint64_t request_id,
         const struct lp3_platform_outgoing_message_v1 *message);
+    /* Added in ABI 1.8. Synchronous, idempotent and restricted to Pebbles. */
+    int32_t (*remove_pebble_bond)(
+        struct lp3_platform_instance *instance,
+        uint64_t request_id,
+        const struct lp3_platform_pebble_bond_v1 *bond);
 };
 
 int32_t lp3_platform_get_api(uint32_t host_abi_major,

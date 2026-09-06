@@ -52,6 +52,7 @@
 #include "locationmonitor.h"
 #include "mainvolumemonitor.h"
 #include "notificationmonitor.h"
+#include "pebblebondremover.h"
 #include "wire.h"
 
 #ifndef LP3_PLATFORM_BUILD_ID
@@ -767,6 +768,23 @@ private:
         }
     }
 
+    void completePebbleBondRemove(
+        uint64_t requestId,
+        const lp3wire::PebbleBondRemoveData &request) {
+        if (!m_pending.remove(requestId)) {
+            return;
+        }
+        const int status = sailfishplatform::removePebbleBond(request);
+        std::vector<uint8_t> payload;
+        if (!lp3wire::encodeStatusReply(
+                lp3wire::PebbleBondRemove,
+                static_cast<uint32_t>(status), &payload) ||
+            !queueFrame(lp3wire::Complete, requestId,
+                        &payload[0], payload.size())) {
+            failClosed();
+        }
+    }
+
     void completeLocation(uint64_t requestId, int32_t status,
                           const LocationMonitor::Fix &fix) {
         if (!m_pending.remove(requestId)) {
@@ -874,7 +892,8 @@ private:
                 operation == lp3wire::MessageReply ||
                 operation == lp3wire::MessageSend ||
                 operation == lp3wire::CallCommand ||
-                operation == lp3wire::MediaCommand) &&
+                operation == lp3wire::MediaCommand ||
+                operation == lp3wire::PebbleBondRemove) &&
             lp3wire::encodeStatusReply(
                 operation, LP3_PLATFORM_BUSY, &payload) &&
             queueFrame(lp3wire::Complete, requestId,
@@ -925,6 +944,7 @@ private:
             lp3wire::LocationQueryData locationQuery = {};
             lp3wire::CalendarQueryData calendarQuery = {};
             lp3wire::ContactQueryData contactQuery = {};
+            lp3wire::PebbleBondRemoveData pebbleBondRemove = {};
             if ((operation == lp3wire::TimeGet &&
                  !lp3wire::decodeTimeGet(frame.payload)) ||
                 (operation == lp3wire::NotificationCommand &&
@@ -944,6 +964,9 @@ private:
                  !lp3wire::decodeCalendarQuery(frame.payload, &calendarQuery)) ||
                 (operation == lp3wire::ContactQuery &&
                  !lp3wire::decodeContactQuery(frame.payload, &contactQuery)) ||
+                (operation == lp3wire::PebbleBondRemove &&
+                 !lp3wire::decodePebbleBondRemove(
+                     frame.payload, &pebbleBondRemove)) ||
                 (operation != lp3wire::TimeGet &&
                  operation != lp3wire::NotificationCommand &&
                  operation != lp3wire::MessageReply &&
@@ -952,7 +975,8 @@ private:
                  operation != lp3wire::MediaCommand &&
                  operation != lp3wire::LocationQuery &&
                  operation != lp3wire::CalendarQuery &&
-                 operation != lp3wire::ContactQuery)) {
+                 operation != lp3wire::ContactQuery &&
+                 operation != lp3wire::PebbleBondRemove)) {
                 return false;
             }
             if (m_pending.size() >= kMaximumPending) {
@@ -1007,9 +1031,16 @@ private:
             } else if (operation == lp3wire::CalendarQuery) {
                 m_calendarPending.insert(frame.requestId);
                 m_calendar.query(frame.requestId, calendarQuery);
-            } else {
+            } else if (operation == lp3wire::ContactQuery) {
                 m_contactPending.insert(frame.requestId);
                 m_contacts.query(frame.requestId, contactQuery);
+            } else {
+                QTimer::singleShot(
+                    0, this,
+                    [this, frame, pebbleBondRemove]() {
+                        completePebbleBondRemove(
+                            frame.requestId, pebbleBondRemove);
+                    });
             }
             return true;
         }

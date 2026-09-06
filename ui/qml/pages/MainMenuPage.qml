@@ -56,6 +56,21 @@ Page {
                                    })
                 }
             }
+            MenuItem {
+                text: qsTr("Connect")
+                visible: root.pebble
+                         && (root.pebble.connectionState === 0
+                             || root.pebble.connectionState === 4)
+                onClicked: pebbles.connectWatch(root.pebble.address)
+            }
+            MenuItem {
+                text: qsTr("Disconnect")
+                visible: root.pebble
+                         && (root.pebble.connectionState === 1
+                             || root.pebble.connectionState === 2
+                             || root.pebble.connectionState === 3)
+                onClicked: pebbles.disconnectWatch(root.pebble.address)
+            }
         }
         anchors.fill: parent
         Column {
@@ -336,7 +351,7 @@ Page {
                                  page: "NotificationsPage.qml"
                              })
         mainMenuModel.append({
-                                 icon: "icon-m-favorite",
+                                 icon: "icon-l-diagnostic",
                                  text: qsTr("Health history"),
                                  page: "HealthHistoryPage.qml"
                              })

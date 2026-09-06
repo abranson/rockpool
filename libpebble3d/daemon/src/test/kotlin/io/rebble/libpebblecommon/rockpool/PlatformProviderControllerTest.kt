@@ -1000,6 +1000,42 @@ class PlatformProviderControllerTest {
         )
     }
 
+    @Test
+    fun pebbleBondRemovalUsesThePlatformProviderWithoutAContentDomain() = runBlocking {
+        val calls = mutableListOf<Pair<Int, String>>()
+        val bondController = PlatformProviderController(
+            removePebbleBondNativeAvailable = { true },
+            removePebbleBondNative = { adapter, address ->
+                calls += adapter to address
+                PlatformProviderController.STATUS_OK
+            },
+        )
+
+        assertEquals(
+            PlatformProviderController.STATUS_OK,
+            bondController.removePebbleBond(0, "02:11:22:33:12:34"),
+        )
+        assertEquals(listOf(0 to "02:11:22:33:12:34"), calls)
+    }
+
+    @Test
+    fun pebbleBondRemovalReportsUnavailableWithoutANativeProvider() = runBlocking {
+        var called = false
+        val bondController = PlatformProviderController(
+            removePebbleBondNativeAvailable = { false },
+            removePebbleBondNative = { _, _ ->
+                called = true
+                PlatformProviderController.STATUS_OK
+            },
+        )
+
+        assertEquals(
+            PlatformProviderController.STATUS_UNAVAILABLE,
+            bondController.removePebbleBond(0, "02:11:22:33:12:34"),
+        )
+        assertFalse(called)
+    }
+
     private fun locationController(
         start: (Int, Int) -> LongArray,
         cancel: (Long) -> Int = { 0 },

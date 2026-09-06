@@ -563,6 +563,40 @@ void testMessageSendCodec() {
     assert(status == 0);
 }
 
+void testPebbleBondRemoveCodec() {
+    lp3wire::PebbleBondRemoveData original = {};
+    lp3wire::PebbleBondRemoveData decoded = {};
+    uint32_t status = UINT32_MAX;
+    std::vector<uint8_t> payload;
+    const uint8_t address[] = { 0xd0, 0x81, 0x0a, 0xd4, 0xd7, 0xcd };
+
+    original.adapterIndex = 3;
+    memcpy(original.address, address, sizeof(address));
+    assert(lp3wire::encodePebbleBondRemove(original, &payload));
+    assert(payload.size() == 16);
+    assert(lp3wire::decodePebbleBondRemove(payload, &decoded));
+    assert(decoded.adapterIndex == original.adapterIndex);
+    assert(memcmp(decoded.address, original.address,
+                  sizeof(original.address)) == 0);
+
+    payload[14] = 1;
+    assert(!lp3wire::decodePebbleBondRemove(payload, &decoded));
+    payload[14] = 0;
+    payload.resize(15);
+    assert(!lp3wire::decodePebbleBondRemove(payload, &decoded));
+
+    memset(original.address, 0, sizeof(original.address));
+    assert(!lp3wire::encodePebbleBondRemove(original, &payload));
+    memset(original.address, 0xff, sizeof(original.address));
+    assert(!lp3wire::encodePebbleBondRemove(original, &payload));
+
+    assert(lp3wire::encodeStatusReply(
+        lp3wire::PebbleBondRemove, 0, &payload));
+    assert(lp3wire::decodeStatusReply(
+        payload, lp3wire::PebbleBondRemove, &status));
+    assert(status == 0);
+}
+
 void testCallChangedCodec() {
     const uint32_t states[] = {
         lp3wire::CallRinging,
@@ -937,6 +971,7 @@ int main() {
     testNotificationCommandCodec();
     testMessageReplyCodec();
     testMessageSendCodec();
+    testPebbleBondRemoveCodec();
     testCallChangedCodec();
     testCallChangedRejectsMalformedData();
     testCallCommandCodec();

@@ -168,13 +168,33 @@ internal class BondedWatchForgetCoordinator(
     }
 }
 
-internal fun createBluezBondedWatchForgetCoordinator(): BondedWatchForgetCoordinator =
+internal fun createBluezBondedWatchForgetCoordinator(
+    removePebbleBond: (suspend (adapterIndex: Int, address: String) -> Int)? = null,
+): BondedWatchForgetCoordinator =
     BondedWatchForgetCoordinator(
         prepareRemoval = { address, name ->
             withContext(Dispatchers.IO) {
                 BluezManager.prepareBondRemoval(address, name)?.let { plan ->
                     PreparedBondRemoval(plan.addresses) {
-                        withContext(Dispatchers.IO) { plan.removeAll() }
+                        if (removePebbleBond == null) {
+                            withContext(Dispatchers.IO) { plan.removeAll() }
+                        } else {
+                            val adapterIndex = plan.adapterIndex
+                            if (adapterIndex == null) {
+                                false
+                            } else {
+                                var complete = true
+                                for (alias in plan.addresses) {
+                                    if (removePebbleBond(adapterIndex, alias) !=
+                                        PlatformProviderController.STATUS_OK
+                                    ) {
+                                        complete = false
+                                        break
+                                    }
+                                }
+                                complete
+                            }
+                        }
                     }
                 }
             }
