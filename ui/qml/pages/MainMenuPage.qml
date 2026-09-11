@@ -185,15 +185,29 @@ Page {
                             horizontalAlignment: Text.AlignHCenter
                             wrapMode: Text.Wrap
                         }
-                        Image {
-                            source: "image://theme/icon-lock-application-update"
+                        MouseArea {
+                            width: firmwareAvailableContent.width
+                            height: firmwareAvailableContent.height
                             anchors.horizontalCenter: parent.horizontalCenter
                             visible: root.pebble.connected && root.pebble.firmwareUpgradeAvailable && !root.pebble.upgradingFirmware
-                        }
-                        Label {
-                            text: qsTr("Update Available")
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            visible: root.pebble.connected && root.pebble.firmwareUpgradeAvailable && !root.pebble.upgradingFirmware
+                            onClicked: pageStack.push(Qt.resolvedUrl("FirmwareUpgradePage.qml"), {
+                                                          pebble: root.pebble
+                                                      })
+
+                            Column {
+                                id: firmwareAvailableContent
+
+                                spacing: Theme.paddingSmall
+
+                                Image {
+                                    source: "image://theme/icon-lock-application-update"
+                                    anchors.horizontalCenter: parent.horizontalCenter
+                                }
+                                Label {
+                                    text: qsTr("Update Available")
+                                    anchors.horizontalCenter: parent.horizontalCenter
+                                }
+                            }
                         }
 
                         Image {
