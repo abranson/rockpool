@@ -60,6 +60,7 @@ internal data class RockpoolWeatherFetchTarget(
 internal data class RockpoolWeatherCoordinates(
     val latitude: Double,
     val longitude: Double,
+    val horizontalAccuracy: Double? = null,
 )
 
 /**
@@ -173,6 +174,7 @@ internal class RockpoolWeatherCoordinator(
     fun applyAutomaticObservation(
         target: RockpoolWeatherFetchTarget,
         observation: RockpoolWeatherObservation,
+        resolvedName: String? = null,
     ): Boolean {
         val index = state.indexOfFirst {
             it.key == target.key && it.name == target.name &&
@@ -181,8 +183,16 @@ internal class RockpoolWeatherCoordinator(
         if (index < 0 || state[index].observation?.source == RockpoolWeatherObservationSource.EXTERNAL) {
             return false
         }
+        val locationName = resolvedName?.takeIf { candidate ->
+            runCatching {
+                requireWeatherString(candidate, MAX_LOCATION_NAME_BYTES, "Weather location name")
+            }.isSuccess && state.withIndex().none { (otherIndex, location) ->
+                otherIndex != index && location.name == candidate
+            }
+        } ?: state[index].name
         val replacement = state.toMutableList().also {
             it[index] = it[index].copy(
+                name = locationName,
                 observation = observation.copy(source = RockpoolWeatherObservationSource.AUTOMATIC),
             )
         }

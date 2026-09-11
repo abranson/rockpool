@@ -15,6 +15,7 @@ Requires:   systemd-user-session-targets
 Requires:   qt5-plugin-position-geoclue
 Requires:   geoclue
 Requires:   sailfish-components-webview-qt5
+Recommends: geoclue-provider-geonames-offline
 Provides:   libpebble3-dbus-api = 1
 Provides:   rockpool-ui-dbus-api = 1
 Provides:   libpebble3d-platform-sailfish = %{version}-%{release}

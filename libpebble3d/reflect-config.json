@@ -269,6 +269,28 @@
     "allPublicMethods": true
   },
   {
+    "name": "io.rebble.libpebblecommon.ui.GeoClueReverseGeocode",
+    "allDeclaredMethods": true,
+    "allPublicMethods": true
+  },
+  {
+    "name": "io.rebble.libpebblecommon.ui.GeoClueClientLifecycle",
+    "allDeclaredMethods": true,
+    "allPublicMethods": true
+  },
+  {
+    "name": "io.rebble.libpebblecommon.ui.GeoClueAccuracy",
+    "allDeclaredConstructors": true,
+    "allDeclaredFields": true,
+    "allPublicMethods": true
+  },
+  {
+    "name": "io.rebble.libpebblecommon.ui.GeoClueReverseAddressReply",
+    "allDeclaredConstructors": true,
+    "allDeclaredFields": true,
+    "allPublicMethods": true
+  },
+  {
     "name": "io.rebble.libpebblecommon.ui.RockpoolManager",
     "allDeclaredMethods": true,
     "allPublicMethods": true

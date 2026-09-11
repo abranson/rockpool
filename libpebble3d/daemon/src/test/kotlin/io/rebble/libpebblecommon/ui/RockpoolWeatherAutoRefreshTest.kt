@@ -185,6 +185,71 @@ class RockpoolWeatherAutoRefreshTest {
     }
 
     @Test
+    fun `current location uses an available geoclue town name`() = runBlocking {
+        var settings = emptyMap<String, String>()
+        val updates = mutableListOf<List<WeatherLocationData>>()
+        val coordinator = coordinator(
+            settings = { settings },
+            replace = { settings = it },
+            updates = updates,
+        )
+        assertTrue(coordinator.setLocations(listOf(location("Current Location", "n/a", "n/a"))))
+        var locationAcquisitions = 0
+        val refresh = RockpoolWeatherAutoRefresh(
+            scope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined),
+            coordinator = coordinator,
+            units = { "m" },
+            fetch = { _, _, _ -> observation("Automatic", 14) },
+            resolveCurrentLocation = {
+                locationAcquisitions++
+                RockpoolWeatherCoordinates(48.85, 2.34, 23.0)
+            },
+            resolveCurrentLocationName = { coordinates ->
+                assertEquals(RockpoolWeatherCoordinates(48.85, 2.34, 23.0), coordinates)
+                "Paris"
+            },
+        )
+
+        refresh.refreshOnce()
+
+        val stored = decodeRockpoolWeatherSettings(settings).getOrThrow().single()
+        assertEquals("Paris", stored.name)
+        assertEquals("n/a", stored.latitude)
+        assertEquals("n/a", stored.longitude)
+        val weather = assertIs<WeatherLocationData.WeatherLocationDataPopulated>(updates.last().single())
+        assertEquals("Paris", weather.locationName)
+        assertTrue(weather.isCurrentLocation)
+        assertEquals(1, locationAcquisitions)
+    }
+
+    @Test
+    fun `current town name does not duplicate another configured location`() = runBlocking {
+        var settings = emptyMap<String, String>()
+        val coordinator = coordinator(settings = { settings }, replace = { settings = it })
+        assertTrue(
+            coordinator.setLocations(
+                listOf(
+                    location("Current Location", "n/a", "n/a"),
+                    location("Paris", "48.85", "2.34"),
+                ),
+            ),
+        )
+        val refresh = RockpoolWeatherAutoRefresh(
+            scope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined),
+            coordinator = coordinator,
+            units = { "m" },
+            fetch = { _, _, _ -> observation("Automatic", 14) },
+            resolveCurrentLocation = { RockpoolWeatherCoordinates(48.85, 2.34) },
+            resolveCurrentLocationName = { "Paris" },
+        )
+
+        refresh.refreshOnce()
+
+        val stored = decodeRockpoolWeatherSettings(settings).getOrThrow()
+        assertEquals(listOf("Current Location", "Paris"), stored.map { it.name })
+    }
+
+    @Test
     fun `current location errors and invalid coordinates retain prior observation`() = runBlocking {
         var settings = emptyMap<String, String>()
         val coordinator = coordinator(settings = { settings }, replace = { settings = it })

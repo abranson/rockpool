@@ -28,6 +28,7 @@ internal class RockpoolWeatherAutoRefresh(
         String,
     ) -> RockpoolWeatherObservation?,
     private val resolveCurrentLocation: suspend () -> RockpoolWeatherCoordinates? = { null },
+    private val resolveCurrentLocationName: suspend (RockpoolWeatherCoordinates) -> String? = { null },
     private val refreshIntervalMillis: Long = DEFAULT_REFRESH_INTERVAL.inWholeMilliseconds,
     private val onFailure: (Throwable) -> Unit = {},
 ) {
@@ -58,8 +59,13 @@ internal class RockpoolWeatherAutoRefresh(
                 } else {
                     target.coordinates
                 }?.takeIf(::validCoordinates) ?: return@forEach
+                val resolvedName = if (target.currentLocation) {
+                    resolveCurrentLocationName(coordinates)
+                } else {
+                    null
+                }
                 fetch(target, coordinates, selectedUnits)?.let { observation ->
-                    coordinator.applyAutomaticObservation(target, observation)
+                    coordinator.applyAutomaticObservation(target, observation, resolvedName)
                 }
             } catch (e: CancellationException) {
                 throw e

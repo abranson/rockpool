@@ -840,6 +840,17 @@ require_fixed 'exported.values.forEach { conn.exportObject' "$compat_service" \
     'compatibility-object re-export after reconnect'
 require_fixed 'RockpoolPebble$WeatherLocationsChanged' "$reflect_config" \
     'Rockpool UI weather-location signal reflection metadata'
+for geoclue_interface in GeoClueReverseGeocode GeoClueClientLifecycle
+do
+    require_fixed "io.rebble.libpebblecommon.ui.$geoclue_interface" "$reflect_config" \
+        "GeoClue $geoclue_interface reflection metadata"
+    require_fixed "io.rebble.libpebblecommon.ui.$geoclue_interface" "$proxy_config" \
+        "GeoClue $geoclue_interface proxy metadata"
+done
+require_fixed 'io.rebble.libpebblecommon.ui.GeoClueAccuracy' "$reflect_config" \
+    'GeoClue accuracy reflection metadata'
+require_fixed 'io.rebble.libpebblecommon.ui.GeoClueReverseAddressReply' "$reflect_config" \
+    'GeoClue reverse-address-reply reflection metadata'
 for service in "$primary_service" "$compat_service"
 do
     require_fixed 'connectionLock' "$service" \

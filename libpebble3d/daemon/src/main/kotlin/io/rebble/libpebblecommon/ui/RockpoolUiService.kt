@@ -99,6 +99,7 @@ internal class RockpoolUiService(
     // object therefore shares this read-only projection and receives the same update signal.
     private val healthData = RockpoolHealthDataCoordinator(libPebble)
     private val weatherClient = OpenMeteoWeatherClient()
+    private val weatherLocationNameResolver = GeoClueCurrentLocationNameResolver()
     private val weatherAutoRefresh = RockpoolWeatherAutoRefresh(
         scope = scope,
         coordinator = weatherCoordinator,
@@ -114,11 +115,18 @@ internal class RockpoolUiService(
             (libPebble.getCurrentPosition(
                 maximumAge = SystemGeolocation.DEFAULT_MAX_AGE,
                 timeout = SystemGeolocation.DEFAULT_TIMEOUT,
-                highAccuracy = false,
+                // Sailfish maps a coarse request to non-satellite-only positioning. Request all
+                // methods so BeaconDB/network fixes remain eligible while GPS can act as fallback.
+                highAccuracy = true,
             ) as? GeolocationPositionResult.Success)?.let { position ->
-                RockpoolWeatherCoordinates(position.latitude, position.longitude)
+                RockpoolWeatherCoordinates(
+                    latitude = position.latitude,
+                    longitude = position.longitude,
+                    horizontalAccuracy = position.accuracy,
+                )
             }
         },
+        resolveCurrentLocationName = weatherLocationNameResolver::resolve,
         onFailure = { logger.w { "automatic weather refresh failed" } },
     )
     private val notificationAppearance = RockpoolNotificationAppearanceCoordinator(libPebble)

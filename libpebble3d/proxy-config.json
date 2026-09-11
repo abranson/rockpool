@@ -196,6 +196,16 @@
   },
   {
     "interfaces": [
+      "io.rebble.libpebblecommon.ui.GeoClueReverseGeocode"
+    ]
+  },
+  {
+    "interfaces": [
+      "io.rebble.libpebblecommon.ui.GeoClueClientLifecycle"
+    ]
+  },
+  {
+    "interfaces": [
       "io.rebble.libpebblecommon.rockpool.LibPebble3Manager1",
       "io.rebble.libpebblecommon.rockpool.LibPebble3Discovery1",
       "io.rebble.libpebblecommon.rockpool.LibPebble3Account1",
