@@ -42,7 +42,7 @@ ListItem {
         }
         MenuItem {
             text: qsTr("Settings")
-            visible: root.hasSettings
+            visible: root.hasSettings || root.offlineSettingsAvailable
             enabled: root.watchConnected || root.offlineSettingsAvailable
             onClicked: root.configureApp()
         }

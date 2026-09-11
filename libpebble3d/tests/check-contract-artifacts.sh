@@ -313,6 +313,8 @@ notification_color_page=$project_dir/ui/qml/pages/NotificationColorPage.qml
 notification_icon_page=$project_dir/ui/qml/pages/NotificationIconPage.qml
 installed_apps_page=$project_dir/ui/qml/pages/InstalledAppsPage.qml
 installed_app_delegate=$project_dir/ui/qml/pages/InstalledAppDelegate.qml
+system_app_icon=$project_dir/ui/qml/pages/SystemAppIcon.qml
+workout_icon=$project_dir/ui/qml/pages/icon-m-workout.png
 app_upgrade_page=$project_dir/ui/qml/pages/AppUpgradePage.qml
 app_store_details_page=$project_dir/ui/qml/pages/AppStoreDetailsPage.qml
 import_package_page=$project_dir/ui/qml/pages/ImportPackagePage.qml
@@ -610,6 +612,8 @@ require_file "$notification_color_page" "Rockpool notification-colour page"
 require_file "$notification_icon_page" "Rockpool notification-icon page"
 require_file "$installed_apps_page" "Rockpool installed-apps page"
 require_file "$installed_app_delegate" "Rockpool installed-app delegate"
+require_file "$system_app_icon" "Rockpool system-app icon mapping"
+require_file "$workout_icon" "Rockpool Workout icon"
 require_file "$app_upgrade_page" "Rockpool app-upgrade page"
 require_file "$app_store_details_page" "Rockpool app-store details page"
 require_file "$import_package_page" "Rockpool package-import page"
@@ -3961,8 +3965,16 @@ require_fixed 'onConfigureApp: root.configureApp(model.uuid)' "$installed_apps_p
     'watch-addressed app configuration control'
 require_fixed 'enabled: root.watchConnected' "$installed_app_delegate" \
     'connected-watch app launch gate'
+require_fixed 'visible: root.hasSettings || root.offlineSettingsAvailable' \
+    "$installed_app_delegate" 'native application-settings visibility'
 require_fixed 'enabled: root.watchConnected || root.offlineSettingsAvailable' \
     "$installed_app_delegate" 'connected-watch PKJS configuration gate'
+require_fixed 'case "{fef82c82-7176-4e22-88de-35a3fc18d43f}":' \
+    "$system_app_icon" 'Workout system-app icon mapping'
+require_fixed 'return Qt.resolvedUrl("icon-m-workout.png");' \
+    "$system_app_icon" 'project Workout icon source'
+require_fixed 'case "{426ccd53-b380-4d83-8d06-9893de3477ce}":' \
+    "$system_app_icon" 'Timeline system-app icon mapping'
 require_fixed 'if (!appSettings.oauthBootFlow && !appSettings.pebble.connected)' \
     "$app_settings_page" 'disconnected PKJS configuration retirement'
 

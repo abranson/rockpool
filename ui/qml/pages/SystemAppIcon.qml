@@ -1,4 +1,4 @@
-import QtQuick 2.2
+import QtQuick 2.6
 import Sailfish.Silica 1.0
 
 Item {
@@ -8,6 +8,9 @@ Item {
 
     Image {
         anchors.verticalCenter: parent.verticalCenter
+        width: parent.width
+        height: parent.height
+        fillMode: Image.PreserveAspectFit
         visible: parent.isSystemApp
         source: {
             var icon = "";
@@ -33,8 +36,15 @@ Item {
             case "{8f3c8686-31a1-4f5f-91f5-01600c9bdc59}":
                 icon = "clock";
                 break;
+            case "{3af858c3-16cb-4561-91e7-f1ad2df8725f}":
+                return Qt.resolvedUrl("kickstart.png");
             case "{61b22bc8-1e29-460d-a236-3fe409a439ff}":
                 icon = "day";
+                break;
+            case "{fef82c82-7176-4e22-88de-35a3fc18d43f}":
+                return Qt.resolvedUrl("icon-m-workout.png");
+            case "{426ccd53-b380-4d83-8d06-9893de3477ce}":
+                icon = "events";
                 break;
             case "{0863fc6a-66c5-4f62-ab8a-82ed00a98b5d}":
                 icon = "chat";
@@ -49,8 +59,19 @@ Item {
     }
 
     Image {
-        source: parent.isSystemApp ? "" : "file://" + parent.iconSource
+        id: appIcon
+
+        source: parent.isSystemApp ? ""
+                : parent.iconSource.charAt(0) === "/" ? "file://" + parent.iconSource
+                : parent.iconSource
         anchors.fill: parent
+        fillMode: Image.PreserveAspectFit
         visible: !parent.isSystemApp
+    }
+
+    Image {
+        anchors.centerIn: parent
+        source: "image://theme/icon-m-other"
+        visible: !parent.isSystemApp && (appIcon.status === Image.Null || appIcon.status === Image.Error)
     }
 }

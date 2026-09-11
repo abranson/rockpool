@@ -51,7 +51,7 @@ Dialog {
             weightField.text = String(params["weight"]);
         }
         if (!dirtyFields["gender"]) {
-            genderSelector.value = params["gender"] === "male" ? 1 : 0;
+            genderSelector.currentIndex = params["gender"] === "male" ? 1 : 0;
         }
         if (!dirtyFields["moreActive"]) {
             moreActiveSwitch.checked = !!params["moreActive"];
@@ -126,17 +126,22 @@ Dialog {
             EnterKey.iconSource: "image://theme/icon-m-enter-next"
         }
 
-        Slider {
+        ComboBox {
             id: genderSelector
 
             width: parent.width
             label: qsTr("Gender")
-            valueText: [qsTr("Female"), qsTr("Male")][value]
             enabled: root.settingsReady
-            minimumValue: 0
-            maximumValue: 1
-            stepSize: 1
-            onDownChanged: if (down) root.markDirty("gender")
+            menu: ContextMenu {
+                MenuItem {
+                    text: qsTr("Female")
+                    onClicked: root.markDirty("gender")
+                }
+                MenuItem {
+                    text: qsTr("Male")
+                    onClicked: root.markDirty("gender")
+                }
+            }
         }
 
         TextSwitch {
@@ -177,7 +182,7 @@ Dialog {
         if (result === DialogResult.Accepted && settingsReady) {
             var updated = cloneParams(healthParams);
             updated["enabled"] = enabledSwitch.checked;
-            updated["gender"] = genderSelector.value === 0 ? "female" : "male";
+            updated["gender"] = genderSelector.currentIndex === 0 ? "female" : "male";
             updated["age"] = ageField.text;
             updated["height"] = heightField.text;
             updated["weight"] = weightField.text;

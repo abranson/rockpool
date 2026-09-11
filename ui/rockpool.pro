@@ -54,6 +54,11 @@ OTHER_FILES += $${QML_FILES} \
 qml.path = /usr/share/rockpool/qml
 qml.files += $${QML_FILES}
 
+# Reuse the official mobile app's bundled system-watchface preview.
+kickstart.files = $$PWD/../libpebble3d/mobileapp/pebble/src/commonMain/composeResources/drawable/kickstart.png
+kickstart.path = /usr/share/rockpool/qml/pages
+INSTALLS += kickstart
+
 # Default rules for deployment.
 target.path = /usr/bin
 
