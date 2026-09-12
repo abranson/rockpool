@@ -49,6 +49,16 @@ previously staged native binaries and RPMs must be rebuilt before deployment.
 and runs an AArch64 Docker image containing GraalVM Native Image.  GraalVM does
 not need to be installed on the host.
 
+The standalone native file-descriptor probe is cached in the Docker volume
+`rockpool-native-fd-probe-cache`. Its first build still compiles the probe;
+subsequent builds with matching probe source, dependency JARs, build recipe,
+architecture and immutable builder image reuse the executable. The native
+round-trip test runs every time, including cache hits. Failed builds are never
+cached, and a damaged cache entry is rebuilt. Worker-count changes and unrelated
+daemon changes do not invalidate this cache. Daemon tracing and native compilation
+still run in full. To clear the probe cache when no build is using it, run
+`docker volume rm rockpool-native-fd-probe-cache`.
+
 ### Prerequisites
 
 - Git with submodule support.
@@ -60,9 +70,9 @@ not need to be installed on the host.
   `sdk.dir` entry.  `build.sh` also looks in `$HOME/Android/Sdk` and
   `$HOME/Library/Android/sdk`.
 - Docker with permission to use the Docker daemon.
-- Roughly 8 GiB of memory available to Docker.  Native Image can fail
-  or stall under a substantially lower limit; the build caps compilation at
-  four worker threads to stay within this budget.
+- Sufficient memory available to Docker for Native Image. The normal build
+  defaults to four worker threads. Override with `NI_THREADS` if needed;
+  more workers can increase peak memory usage.
 - AArch64 container support.  The generated executable is AArch64-only because
   Native Image cannot cross-compile it.
 

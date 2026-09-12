@@ -68,36 +68,8 @@ if [ ! -s "$AGENT_DIR/reachability-metadata.json" ]; then
     exit 1
 fi
 
-# Prove that the exact dbus-java + junixsocket stack can negotiate and transfer
-# SCM_RIGHTS descriptors in an AArch64 Native Image.  A JVM pass alone is not
-# enough: the native executable also needs the junixsocket JNI and reflection
-# metadata to survive closed-world analysis.
-FD_PROBE_CLASSES=/tmp/native-fd-probe-classes
-FD_PROBE_AGENT=/tmp/native-fd-probe-agent
-FD_PROBE_CP=$(find /dist/libs -maxdepth 1 -type f \( \
-  -name 'dbus-java-*.jar' -o \
-  -name 'junixsocket-*.jar' -o \
-  -name 'slf4j-*.jar' \
-  \) | sort | tr '\n' ':')
-mkdir -p "$FD_PROBE_CLASSES" "$FD_PROBE_AGENT"
-javac -cp "$FD_PROBE_CP" -d "$FD_PROBE_CLASSES" \
-  /work/tests/NativeFileDescriptorProbe.java
-java -agentlib:native-image-agent=config-output-dir="$FD_PROBE_AGENT" \
-  -cp "$FD_PROBE_CLASSES:$FD_PROBE_CP" NativeFileDescriptorProbe
-if [ ! -s "$FD_PROBE_AGENT/reachability-metadata.json" ]; then
-    echo "error: descriptor probe produced no Native Image metadata" >&2
-    exit 1
-fi
-native-image \
-  -H:ConfigurationFileDirectories="$FD_PROBE_AGENT" \
-  -H:NumberOfThreads="${NI_THREADS:-4}" \
-  -J-XX:MaxRAMPercentage=75 \
-  -cp "$FD_PROBE_CLASSES:$FD_PROBE_CP" \
-  -o /tmp/native-fd-probe \
-  --no-fallback \
-  -H:+ReportExceptionStackTraces \
-  NativeFileDescriptorProbe
-/tmp/native-fd-probe
+# Build or reuse the descriptor probe, then run its native round trip every time.
+sh /work/build-fd-probe.sh
 
 # Docker Desktop caps this VM near 7.75GB and peak RSS sits right at it. The default
 # all-cores parallelism holds one method graph per thread and oversubscribes the CPU, so the

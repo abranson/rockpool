@@ -153,6 +153,9 @@ echo "== trace + native-image"
 OUT_TEMP=$(mktemp -d "$HERE/.out.XXXXXX")
 docker run --rm --platform linux/arm64 \
     -e NI_THREADS="${NI_THREADS:-4}" \
+    -e FD_PROBE_BUILDER_ID="$builder_image_id" \
+    -e FD_PROBE_CACHE=/probe-cache \
+    -v rockpool-native-fd-probe-cache:/probe-cache \
     -v "$BUILD_HERE/daemon/build/jvmDist":/dist:ro \
     -v "$BUILD_HERE":/work:ro \
     -v "$OUT_TEMP":/out \
