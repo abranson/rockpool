@@ -5,6 +5,14 @@
 #include "notificationmonitor.h"
 
 #include <QByteArray>
+#include <QBuffer>
+#include <QFile>
+#include <QImage>
+#include <QImageReader>
+#include <QUrl>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include <QDateTime>
 #include <QDataStream>
 #include <QHash>
@@ -38,9 +46,11 @@ const int kMaximumPending = 64;
 const int kMaximumActive = 32;
 const int kMaximumActions = 64;
 const int kMaximumHints = 64;
-const size_t kMaximumHintName = 64;
 const size_t kMaximumRemoteAction = 4096;
 const int kMaximumActionText = 256;
+// Android action keys include intent names; Sailfish prefixes those in hints.
+const size_t kMaximumHintName =
+    kMaximumActionText + sizeof("x-nemo-remote-action-input-") - 1;
 const int kMaximumEncodedArgument = 2048;
 const int kMaximumAccountPathBytes = 512;
 const int kMaximumRecipientBytes = 512;
@@ -52,6 +62,7 @@ struct PendingNotification {
     QString appName;
     uint32_t replacesId;
     QString appIcon;
+    QByteArray image;
     QString summary;
     QString body;
     QHash<QString, QVariant> hints;
@@ -194,7 +205,99 @@ QVariant readVariant(DBusMessageIter *variant, size_t maximumString) {
     }
 }
 
+// Keep image decoding in the isolated provider. Only bounded RGB thumbnails cross
+// the private wire; arbitrary paths and encoded images never reach the daemon.
+QByteArray notificationThumbnail(const QImage &source) {
+    if (source.isNull()) return QByteArray();
+    const QImage scaled = source.scaled(128, 128, Qt::KeepAspectRatio, Qt::SmoothTransformation)
+        .convertToFormat(QImage::Format_ARGB32);
+    QByteArray bytes(4 + scaled.width() * scaled.height() * 3, 0);
+    lp3wire::put16(reinterpret_cast<uint8_t *>(bytes.data()), scaled.width());
+    lp3wire::put16(reinterpret_cast<uint8_t *>(bytes.data()) + 2, scaled.height());
+    int offset = 4;
+    for (int y = 0; y < scaled.height(); ++y) {
+        for (int x = 0; x < scaled.width(); ++x) {
+            const QRgb pixel = scaled.pixel(x, y);
+            const int alpha = qAlpha(pixel);
+            bytes[offset++] = static_cast<char>((qRed(pixel) * alpha + 255 * (255 - alpha)) / 255);
+            bytes[offset++] = static_cast<char>((qGreen(pixel) * alpha + 255 * (255 - alpha)) / 255);
+            bytes[offset++] = static_cast<char>((qBlue(pixel) * alpha + 255 * (255 - alpha)) / 255);
+        }
+    }
+    return bytes;
+}
+
+QByteArray notificationImageFile(const QString &value) {
+    const QUrl url(value);
+    const QString path = url.isLocalFile() ? url.toLocalFile() :
+        (url.scheme().isEmpty() && value.startsWith('/') ? value : QString());
+    if (path.isEmpty()) return QByteArray();
+    const int fd = ::open(QFile::encodeName(path).constData(), O_RDONLY | O_CLOEXEC | O_NOFOLLOW | O_NONBLOCK);
+    if (fd < 0) return QByteArray();
+    struct stat info;
+    if (fstat(fd, &info) != 0 || !S_ISREG(info.st_mode) || info.st_uid != geteuid() ||
+        info.st_size <= 0 || info.st_size > 8 * 1024 * 1024) {
+        ::close(fd);
+        return QByteArray();
+    }
+    QFile file;
+    if (!file.open(fd, QIODevice::ReadOnly, QFileDevice::AutoCloseHandle)) {
+        ::close(fd);
+        return QByteArray();
+    }
+    QByteArray encoded = file.read(8 * 1024 * 1024 + 1);
+    if (encoded.size() > 8 * 1024 * 1024) return QByteArray();
+    QBuffer buffer(&encoded);
+    buffer.open(QIODevice::ReadOnly);
+    QImageReader reader(&buffer);
+    const QSize size = reader.size();
+    if (!size.isValid() || size.width() <= 0 || size.height() <= 0 ||
+        size.width() > 4096 || size.height() > 4096 ||
+        static_cast<qint64>(size.width()) * size.height() > 4 * 1024 * 1024) return QByteArray();
+    reader.setScaledSize(size.scaled(128, 128, Qt::KeepAspectRatio));
+    return notificationThumbnail(reader.read());
+}
+
+QByteArray notificationImageData(DBusMessageIter *variant) {
+    DBusMessageIter structure;
+    dbus_message_iter_recurse(variant, &structure);
+    char *signature = dbus_message_iter_get_signature(&structure);
+    const bool matches = signature && strcmp(signature, "(iiibiiay)") == 0;
+    dbus_free(signature);
+    if (!matches) return QByteArray();
+    DBusMessageIter fields;
+    dbus_message_iter_recurse(&structure, &fields);
+    int width, height, stride, bits, channels;
+    dbus_bool_t alpha;
+    dbus_message_iter_get_basic(&fields, &width); dbus_message_iter_next(&fields);
+    dbus_message_iter_get_basic(&fields, &height); dbus_message_iter_next(&fields);
+    dbus_message_iter_get_basic(&fields, &stride); dbus_message_iter_next(&fields);
+    dbus_message_iter_get_basic(&fields, &alpha); dbus_message_iter_next(&fields);
+    dbus_message_iter_get_basic(&fields, &bits); dbus_message_iter_next(&fields);
+    dbus_message_iter_get_basic(&fields, &channels); dbus_message_iter_next(&fields);
+    if (width <= 0 || height <= 0 || width > 4096 || height > 4096 || bits != 8 ||
+        channels != (alpha ? 4 : 3) || stride < width * channels ||
+        static_cast<qint64>(stride) * height > 8 * 1024 * 1024) return QByteArray();
+    DBusMessageIter array;
+    dbus_message_iter_recurse(&fields, &array);
+    const unsigned char *pixels = NULL;
+    int length = 0;
+    dbus_message_iter_get_fixed_array(&array, &pixels, &length);
+    if (!pixels || length < static_cast<qint64>(height - 1) * stride + width * channels) return QByteArray();
+    QImage image(width, height, QImage::Format_ARGB32);
+    if (image.isNull()) return QByteArray();
+    for (int y = 0; y < height; ++y) {
+        QRgb *row = reinterpret_cast<QRgb *>(image.scanLine(y));
+        for (int x = 0; x < width; ++x) {
+            const unsigned char *pixel = pixels + y * stride + x * channels;
+            row[x] = qRgba(pixel[0], pixel[1], pixel[2], alpha ? pixel[3] : 255);
+        }
+    }
+    return notificationThumbnail(image);
+}
+
 size_t maximumHintString(const QString &name) {
+    if (name == QStringLiteral("x-nemo-image-preview-path")) return 4096;
     if (name == QStringLiteral("x-nemo-origin-package") ||
         name == QStringLiteral("x-nemo-owner") ||
         name == QStringLiteral("desktop-entry")) {
@@ -1117,6 +1220,9 @@ private:
                 dbus_message_iter_get_arg_type(&entry) != DBUS_TYPE_VARIANT) {
                 return false;
             }
+            if (key == QStringLiteral("x-nemo-image-preview-data") && pending->image.isEmpty()) {
+                pending->image = notificationImageData(&entry);
+            }
             size_t maximum = maximumHintString(key);
             bool dynamicActionHint = false;
             if (maximum == 0) {
@@ -1180,6 +1286,11 @@ private:
         notification.title = pendingNotification.summary;
         notification.body = pendingNotification.body;
         notification.category = category;
+        notification.image = pendingNotification.image;
+        if (notification.image.isEmpty()) {
+            const QString path = stringHint(pendingNotification.hints, "x-nemo-image-preview-path");
+            notification.image = notificationImageFile(path);
+        }
         if (canReply) {
             notification.flags |= LP3_PLATFORM_NOTIFICATION_HAS_REPLY_ACTION;
         }

@@ -895,6 +895,7 @@ class PebbleAsyncTest : public QObject
     Q_OBJECT
 
 private slots:
+    void notificationIconsResolveInstalledApplications();
     void constructorQueuesHeldBootstrapCalls();
     void addressBootstrapRetriesAfterInvalidReplies();
     void newestAppsReplyWins();
@@ -5244,6 +5245,50 @@ void PebbleAsyncTest::oldOwnerTimelineActionRepliesAreIgnored()
     QTRY_COMPARE(pebble.timelineWindowEnd(), 7);
     QVERIFY(secondConnection.interface()->unregisterService(QString::fromLatin1(serviceName)).isValid());
 }
+}
+
+void PebbleAsyncTest::notificationIconsResolveInstalledApplications()
+{
+    QTemporaryDir directory;
+    QVERIFY(directory.isValid());
+    const QString applications = directory.path() + QStringLiteral("/applications");
+    QVERIFY(QDir().mkpath(applications));
+    const auto writeDesktop = [&](const QString &id, const QByteArray &contents) {
+        QFile file(applications + QLatin1Char('/') + id + QStringLiteral(".desktop"));
+        return file.open(QIODevice::WriteOnly) && file.write(contents) == contents.size();
+    };
+    QVERIFY(writeDesktop(QStringLiteral("harbour-example"),
+                         "[Desktop Entry]\nName=Example App\nIcon=example-icon\n"));
+    QVERIFY(writeDesktop(QStringLiteral("android-launcher"),
+                         "[Desktop Entry]\nName=Android App\nX-apkd-packageName=com.example.android\n"
+                         "Icon=/home/test/android-icon.png\n"));
+    QVERIFY(writeDesktop(QStringLiteral("jolla-messages"),
+                         "[Desktop Entry]\nName=Messages\nIcon=icon-launcher-messaging\n"));
+    QVERIFY(writeDesktop(QStringLiteral("hidden-app"),
+                         "[Desktop Entry]\nName=Hidden\nIcon=hidden-icon\nHidden=true\n"));
+
+    const QByteArray oldHome = qgetenv("XDG_DATA_HOME");
+    const QByteArray oldDirs = qgetenv("XDG_DATA_DIRS");
+    qputenv("XDG_DATA_HOME", directory.path().toUtf8());
+    qputenv("XDG_DATA_DIRS", directory.path().toUtf8());
+    NotificationSourceModel model;
+    model.insert(QStringLiteral("example"), QString(), QString(), 2);
+    model.insert(QStringLiteral("com.example.android"), QString(), QString(), 2);
+    model.insert(QStringLiteral("commhistoryd"), QString(), QString(), 2);
+    model.insert(QStringLiteral("other-service"), QStringLiteral("Example App"), QString(), 2);
+    model.insert(QStringLiteral("hidden-app"), QString(), QString(), 2);
+    if (oldHome.isNull()) qunsetenv("XDG_DATA_HOME"); else qputenv("XDG_DATA_HOME", oldHome);
+    if (oldDirs.isNull()) qunsetenv("XDG_DATA_DIRS"); else qputenv("XDG_DATA_DIRS", oldDirs);
+
+    QCOMPARE(model.data(model.index(0), NotificationSourceModel::RoleIcon).toString(), QStringLiteral("example-icon"));
+    QCOMPARE(model.data(model.index(1), NotificationSourceModel::RoleIcon).toString(), QStringLiteral("/home/test/android-icon.png"));
+    QCOMPARE(model.data(model.index(2), NotificationSourceModel::RoleIcon).toString(), QStringLiteral("icon-launcher-messaging"));
+    QCOMPARE(model.data(model.index(3), NotificationSourceModel::RoleIcon).toString(), QStringLiteral("example-icon"));
+    QCOMPARE(model.data(model.index(4), NotificationSourceModel::RoleIcon).toString(), QStringLiteral("icon-lock-information"));
+    model.insert(QStringLiteral("example"), QString(), QStringLiteral("provided-icon"), 2);
+    QCOMPARE(model.data(model.index(0), NotificationSourceModel::RoleIcon).toString(), QStringLiteral("provided-icon"));
+    model.insert(QStringLiteral("example"), QString(), QString(), 2);
+    QCOMPARE(model.data(model.index(0), NotificationSourceModel::RoleIcon).toString(), QStringLiteral("example-icon"));
 }
 
 QTEST_MAIN(PebbleAsyncTest)

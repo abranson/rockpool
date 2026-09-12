@@ -6,6 +6,7 @@
 #define LIBPEBBLE3D_SAILFISH_NOTIFICATION_MONITOR_H
 
 #include <QObject>
+#include <QByteArray>
 #include <QString>
 
 #include <stdint.h>
@@ -28,6 +29,7 @@ public:
         QString body;
         QString category;
         QString iconName;
+        QByteArray image;
 
         Notification();
     };

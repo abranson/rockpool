@@ -5,6 +5,7 @@ package io.rebble.libpebblecommon.rockpool
 
 import io.rebble.libpebblecommon.linux.notifications.LinuxNotificationEvent
 import io.rebble.libpebblecommon.linux.notifications.LinuxNotificationCommand
+import io.rebble.libpebblecommon.packets.blobdb.TimelineIcon
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitCancellation
@@ -57,6 +58,19 @@ class PlatformProviderControllerTest {
         assertNull(controller.decodeMedia(listOf(1, -1)))
         assertNull(controller.decodeMedia(listOf(1, 101)))
         assertNull(controller.decodeMedia(listOf(1, 50, 0)))
+    }
+
+    @Test
+    fun notificationThumbnailSurvivesProviderMapping() {
+        val base = record(type = 2, strings = arrayOf("42", "", "camera", "Camera", "Photo", "", "", ""))
+        val image = byteArrayOf(1, 0, 1, 0, -1, 0, 0)
+        val posted = assertIs<PlatformNotificationEvent.Posted>(controller.decodeNotification(base + image))
+        val mapped = assertIs<LinuxNotificationEvent.Posted>(mapPlatformNotificationEvent(posted, emptyMap()))
+        assertEquals(posted.image, mapped.notification.image)
+        assertEquals(1, mapped.notification.image?.width)
+        assertNull(controller.decodeNotification(base + image.dropLast(1)))
+        val closed = record(type = 3, strings = arrayOf("42", "", "", "", "", "", "", ""))
+        assertNull(controller.decodeNotification(closed + image))
     }
 
     @Test
@@ -298,6 +312,29 @@ class PlatformProviderControllerTest {
             )
         )
         assertEquals("40", close.id)
+    }
+
+    @Test
+    fun sourceAliasesSupplyDefaultIconsWithoutChangingNotificationIdentity() {
+        val event = postedEvent().copy(applicationId = "harbour-whisperfish")
+        val posted = assertIs<LinuxNotificationEvent.Posted>(
+            mapPlatformNotificationEvent(event, emptyMap())
+        )
+        assertEquals(event.applicationId, posted.notification.content.packageName)
+        assertEquals(TimelineIcon.NotificationSignal, posted.notification.content.defaultIcon)
+    }
+
+    @Test
+    fun sourceFilterIconAliasSuppliesPlatformDefault() {
+        val posted = assertIs<LinuxNotificationEvent.Posted>(
+            mapPlatformNotificationEvent(
+                postedEvent(),
+                mapOf("org.example.mail" to PlatformNotificationFilter(
+                    enabled = true, name = "", icon = "harbour-sailtrix",
+                )),
+            )
+        )
+        assertEquals(TimelineIcon.NotificationElement, posted.notification.content.defaultIcon)
     }
 
     @Test

@@ -4,3 +4,7 @@
 # The UI facade and the generic libpebble3 daemon API use separate names.
 dbus-user.talk io.rebble.libpebble3
 dbus-user.talk org.rockpool
+
+# Android launcher artwork used by the notification application list.
+whitelist ${HOME}/.local/share/apkd-bridge/launcherIcon
+read-only ${HOME}/.local/share/apkd-bridge/launcherIcon

@@ -51,10 +51,13 @@ signals:
     void countChanged();
 
 private:
+    QString resolveIcon(const QString &sourceId, const QString &name, const QString &icon);
     NotificationSourceItem createNotificationItem(const QString &sourceId, const QString &name, const QString &icon);
 
 private:
     QList<NotificationSourceItem> m_sources;
+    QHash<QString, QString> m_applicationIcons;
+    bool m_applicationIconsLoaded = false;
 };
 
 #endif // NOTIFICATIONSOURCEMODEL_H

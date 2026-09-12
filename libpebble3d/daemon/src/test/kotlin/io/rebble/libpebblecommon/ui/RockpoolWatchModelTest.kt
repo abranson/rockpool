@@ -22,9 +22,9 @@ class RockpoolWatchModelTest {
     @Test
     fun `connected watch protocol colour takes precedence`() {
         assertEquals(
-            WatchColor.PebbleRound2Gold14.protocolNumber,
+            WatchColor.PebbleRound2Gold.protocolNumber,
             rockpoolWatchModel(
-                connectedColor = WatchColor.PebbleRound2Gold14,
+                connectedColor = WatchColor.PebbleRound2Gold,
                 knownColor = WatchColor.ClassicBlack,
             ),
         )

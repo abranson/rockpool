@@ -2,7 +2,7 @@ TEMPLATE = app
 TARGET = libpebble3d-platform-sailfish-host
 
 QT += core dbus positioning contacts
-QT -= gui
+QT += gui
 PKGCONFIG += dbus-1 mlite5 libmkcal-qt5 KF5CalendarCore
 CONFIG += console c++11 link_pkgconfig
 DEFINES += _GNU_SOURCE

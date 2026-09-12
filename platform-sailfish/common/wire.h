@@ -20,7 +20,8 @@
 namespace lp3wire {
 
 static const uint16_t kMajor = 1;
-static const uint16_t kMinor = 9;
+static const uint16_t kMinor = 10;
+static const size_t kNotificationImageMax = 4 + 128 * 128 * 3;
 static const size_t kHeaderSize = 24;
 static const size_t kMaxFrameSize = 64 * 1024;
 
@@ -135,6 +136,7 @@ struct NotificationData {
     std::string body;
     std::string category;
     std::string iconName;
+    std::vector<uint8_t> image;
 };
 
 struct NotificationCommandData {
@@ -539,9 +541,18 @@ inline bool validMediaCommand(const MediaCommandData &command) {
     return command.command == MediaVolumeUp || command.command == MediaVolumeDown;
 }
 
+inline bool validNotificationImage(const std::vector<uint8_t> &image) {
+    if (image.empty()) return true;
+    if (image.size() < 7 || image.size() > kNotificationImageMax) return false;
+    const uint32_t width = get16(&image[0]);
+    const uint32_t height = get16(&image[2]);
+    return width > 0 && width <= 128 && height > 0 && height <= 128 &&
+           image.size() == 4 + width * height * 3;
+}
+
 inline bool validNotification(uint16_t eventType,
                               const NotificationData &notification) {
-    if (!validNotificationId(notification.id)) {
+    if (!validNotificationId(notification.id) || !validNotificationImage(notification.image)) {
         return false;
     }
     if (eventType == NotificationClosed) {
@@ -550,7 +561,7 @@ inline bool validNotification(uint16_t eventType,
                notification.applicationId.empty() &&
                notification.applicationName.empty() && notification.title.empty() &&
                notification.body.empty() && notification.category.empty() &&
-               notification.iconName.empty();
+               notification.iconName.empty() && notification.image.empty();
     }
     return eventType == NotificationPosted && notification.closeReason == 0 &&
            (notification.flags & ~(NotificationHasDefaultAction |
@@ -614,6 +625,7 @@ inline bool encodeNotificationEvent(uint16_t eventType,
     appendText(payload, notification.body);
     appendText(payload, notification.category);
     appendText(payload, notification.iconName);
+    payload->insert(payload->end(), notification.image.begin(), notification.image.end());
     return payload->size() <= kMaxFrameSize - kHeaderSize;
 }
 
@@ -640,9 +652,11 @@ inline bool decodeNotificationEvent(const std::vector<uint8_t> &payload,
         !readText(payload, &offset, get32(&payload[40]), &decoded.body) ||
         !readText(payload, &offset, get32(&payload[44]), &decoded.category) ||
         !readText(payload, &offset, get32(&payload[48]), &decoded.iconName) ||
-        offset != payload.size() || !validNotification(decodedEvent, decoded)) {
+        offset > payload.size()) {
         return false;
     }
+    decoded.image.assign(payload.begin() + offset, payload.end());
+    if (!validNotification(decodedEvent, decoded)) return false;
     *eventType = decodedEvent;
     *notification = decoded;
     return true;

@@ -117,9 +117,12 @@ internal fun mapPlatformNotificationEvent(
                 LinuxNotificationEvent.Closed(it)
             }
         } else {
+            val iconName = filter?.icon?.ifEmpty { null }
+                ?: event.iconName.ifEmpty { null }
             LinuxNotificationEvent.Posted(
                 LinuxNotification(
                     id = event.id,
+                    image = event.image,
                     replacesId = event.replacesId.ifEmpty { null },
                     timestamp = event.timestampMs.takeIf { it > 0 }
                         ?.let(Instant::fromEpochMilliseconds),
@@ -133,8 +136,8 @@ internal fun mapPlatformNotificationEvent(
                         category = event.category
                             .removePrefix(SAILFISH_CATEGORY_PREFIX)
                             .ifEmpty { null },
-                        iconName = filter?.icon?.ifEmpty { null }
-                            ?: event.iconName.ifEmpty { null },
+                        iconName = iconName,
+                        defaultIcon = sailfishNotificationIcon(event.applicationId, iconName),
                     ),
                     hasDefaultAction = event.flags and
                         PlatformProviderController.NOTIFICATION_HAS_DEFAULT_ACTION != 0,

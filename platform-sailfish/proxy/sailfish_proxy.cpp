@@ -810,6 +810,8 @@ bool dispatchFrame(SailfishInstance *instance, const lp3wire::Frame &frame) {
             abiNotification.replaces_id = abiString(notification.replacesId);
             abiNotification.category = abiString(notification.category);
             abiNotification.icon_name = abiString(notification.iconName);
+            abiNotification.image.data = notification.image.empty() ? NULL : &notification.image[0];
+            abiNotification.image.size = static_cast<uint32_t>(notification.image.size());
             event.type = eventType == lp3wire::NotificationPosted ?
                 LP3_PLATFORM_EVENT_NOTIFICATION :
                 LP3_PLATFORM_EVENT_NOTIFICATION_CLOSED;

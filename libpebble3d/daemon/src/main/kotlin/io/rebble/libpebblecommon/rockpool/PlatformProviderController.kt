@@ -29,7 +29,7 @@ import kotlin.time.Duration.Companion.seconds
 internal data class PlatformProviderSnapshot(
     val state: String,
     val provider: String = "",
-    val abiVersion: String = "1.8",
+    val abiVersion: String = "1.9",
     val buildId: String = "",
     val domains: Long = 0,
     val supportedDomains: Long = 0,
@@ -94,6 +94,7 @@ internal sealed interface PlatformNotificationEvent {
         val body: String,
         val category: String,
         val iconName: String,
+        val image: io.rebble.libpebblecommon.linux.notifications.LinuxNotificationImage? = null,
     ) : PlatformNotificationEvent
 
     data class Closed(val id: String, val reason: Int) : PlatformNotificationEvent
@@ -907,7 +908,9 @@ internal class PlatformProviderController(
             values += text
             offset += length.toInt()
         }
-        if (offset != record.size) return null
+        val image = if (offset == record.size) null else
+            io.rebble.libpebblecommon.linux.notifications.LinuxNotificationImage.decode(record.copyOfRange(offset, record.size))
+                ?: return null
         val id = values[0]
         if (!validNotificationId(id, allowEmpty = false)) {
             return null
@@ -930,10 +933,11 @@ internal class PlatformProviderController(
                     body = values[5],
                     category = values[6],
                     iconName = values[7],
+                    image = image,
                 )
             }
             NOTIFICATION_CLOSED_EVENT -> {
-                if (flags != 0 || timestampMs != 0L || closeReason !in 0..4 ||
+                if (image != null || flags != 0 || timestampMs != 0L || closeReason !in 0..4 ||
                     values.drop(1).any { it.isNotEmpty() }) {
                     return null
                 }
@@ -1338,7 +1342,7 @@ internal class PlatformProviderController(
             state = field(0).ifEmpty { "failed" },
             provider = field(1),
             buildId = field(2),
-            abiVersion = field(3).ifEmpty { "1.8" },
+            abiVersion = field(3).ifEmpty { "1.9" },
             domains = field(4).toLongOrNull() ?: 0,
             helperPid = field(5).toLongOrNull() ?: 0,
             error = field(6),

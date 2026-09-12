@@ -169,7 +169,7 @@ rfcomm_socket=$libpebble3d_dir/native/rfcomm_socket.c
 rfcomm_socket_test=$libpebble3d_dir/tests/rfcomm_socket_test.c
 native_build=$libpebble3d_dir/build-native.sh
 daemon_build=$libpebble3d_dir/build.sh
-mobileapp_compose_build=$libpebble3d_dir/mobileapp/composeApp/build.gradle.kts
+mobileapp_compose_build=$libpebble3d_dir/mobileapp/androidApp/build.gradle.kts
 mobileapp_util_build=$libpebble3d_dir/mobileapp/util/build.gradle.kts
 builder_dockerfile=$libpebble3d_dir/Dockerfile
 primary_service=$libpebble3d_dir/daemon/src/main/kotlin/io/rebble/libpebblecommon/rockpool/LibPebble3Service.kt
@@ -695,11 +695,11 @@ require_fixed 'release packaging requires committed Native Image input' \
     'committed Native Image provenance gate'
 require_fixed "require_line 'format=3'" "$native_verifier" \
     'versioned Native Image provenance format'
-require_fixed "require_line 'platform_abi=1.8'" "$native_verifier" \
+require_fixed "require_line 'platform_abi=1.9'" "$native_verifier" \
     'packaged public platform ABI identity'
 require_fixed "require_line 'launcher_abi=1'" "$native_verifier" \
     'packaged launcher ABI identity'
-require_fixed "require_line 'sailfish_wire=1.9'" "$native_verifier" \
+require_fixed "require_line 'sailfish_wire=1.10'" "$native_verifier" \
     'packaged private Sailfish wire identity'
 require_fixed 'mv "$temporary" "$destination"' "$native_stager" \
     'atomic verified Native Image input staging'
@@ -723,7 +723,7 @@ require_fixed 'git -C "$MOBILEAPP" describe --always "$mobileapp_commit"' \
     "$daemon_build" 'captured mobileapp archive source identity'
 require_fixed 'LIBPEBBLE3_ARCHIVE_GIT_HASH="$mobileapp_git_hash"' \
     "$daemon_build" 'archive-safe Gradle source-identity injection'
-require_fixed 'versionCode = archivedVersionCode ?: versioning.getVersionCode()' \
+require_fixed 'val gitVersionCode = archivedVersionCode.orElse(gitVersionName.map' \
     "$mobileapp_compose_build" 'mobileapp archive version-code fallback'
 require_fixed 'providers.environmentVariable("LIBPEBBLE3_ARCHIVE_GIT_HASH")' \
     "$mobileapp_util_build" 'mobileapp archive source-identity fallback'
@@ -1869,14 +1869,14 @@ do
 done
 reject_extended '^BuildRequires:[[:space:]]+pkgconfig\(libpebble3d-platform\)' \
     "$rockpool_spec" 'self-referential platform ABI BuildRequires'
-require_fixed '#define LP3_PLATFORM_ABI_MINOR 8u' "$header" \
-    'public platform ABI minor 1.8'
-require_fixed '"1.8"' "$loader" \
-    'native platform snapshot ABI version 1.8'
-require_fixed 'val abiVersion: String = "1.8"' "$platform_provider_controller" \
-    'daemon platform snapshot ABI default 1.8'
-require_fixed 'field(3).ifEmpty { "1.8" }' "$platform_provider_controller" \
-    'daemon platform snapshot ABI fallback 1.8'
+require_fixed '#define LP3_PLATFORM_ABI_MINOR 9u' "$header" \
+    'public platform ABI minor 1.9'
+require_fixed '"1.9"' "$loader" \
+    'native platform snapshot ABI version 1.9'
+require_fixed 'val abiVersion: String = "1.9"' "$platform_provider_controller" \
+    'daemon platform snapshot ABI default 1.9'
+require_fixed 'field(3).ifEmpty { "1.9" }' "$platform_provider_controller" \
+    'daemon platform snapshot ABI fallback 1.9'
 require_fixed 'api->info.abi_minor < 6' "$loader" \
     'Contacts domain ABI-minor admission gate'
 require_fixed 'api->info.abi_minor >= 8' "$loader" \
@@ -1895,8 +1895,8 @@ require_fixed 'BuildRequires:  pkgconfig(Qt5Contacts)' "$rockpool_spec" \
     'Sailfish QtContacts build dependency'
 require_fixed 'QT += core dbus positioning contacts' "$helper_project" \
     'Qt Positioning linked only into the privileged Sailfish helper'
-require_fixed 'static const uint16_t kMinor = 9;' "$wire_header" \
-    'private provider wire minor 1.9'
+require_fixed 'static const uint16_t kMinor = 10;' "$wire_header" \
+    'private provider wire minor 1.10'
 require_fixed 'MessageReply = 5,' "$wire_header" \
     'private typed message-reply operation'
 require_fixed 'MessageSend = 9,' "$wire_header" \
@@ -2139,7 +2139,7 @@ require_fixed 'class PlatformSystemGeolocation' "$platform_system_geolocation" \
 require_fixed 'single { PlatformSystemGeolocation(controller::queryLocation) } bind SystemGeolocation::class' \
     "$platform_provider_module" 'provider-backed SystemGeolocation DI'
 for system_geolocation_regression in \
-    cacheUsesDefaultAndExplicitMaximumAge \
+    freshDefaultAndExplicitCacheMaximumAge \
     queryMapsAccuracyTimeoutAndNullableFields \
     staleProviderFailureFallsBackToCacheThenMapsError \
     cancellationPropagatesToCaller \

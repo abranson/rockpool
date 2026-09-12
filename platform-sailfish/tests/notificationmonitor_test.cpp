@@ -6,6 +6,7 @@
 
 #include <QDataStream>
 #include <QVariant>
+#include <QTemporaryDir>
 
 #include "../helper/notificationmonitor.cpp"
 
@@ -45,6 +46,79 @@ PendingNotification validPending() {
             QString::fromLatin1(kReplyAction),
         QStringLiteral("input"));
     return pending;
+}
+
+DBusMessage *androidNotification(const QByteArray &action, const QString &imagePath) {
+    DBusMessage *message = dbus_message_new_method_call(
+        kNotificationsService, kNotificationsPath, kNotificationsInterface, "Notify");
+    assert(message != NULL);
+    const char *app = "WhatsApp", *icon = "", *title = "Image test", *body = "Photo";
+    dbus_uint32_t replaces = 0;
+    assert(dbus_message_append_args(message,
+        DBUS_TYPE_STRING, &app, DBUS_TYPE_UINT32, &replaces,
+        DBUS_TYPE_STRING, &icon, DBUS_TYPE_STRING, &title,
+        DBUS_TYPE_STRING, &body, DBUS_TYPE_INVALID));
+    DBusMessageIter args, actions, hints;
+    dbus_message_iter_init_append(message, &args);
+    assert(dbus_message_iter_open_container(&args, DBUS_TYPE_ARRAY, "s", &actions));
+    const char *actionKey = action.constData(), *label = "Reply";
+    assert(dbus_message_iter_append_basic(&actions, DBUS_TYPE_STRING, &actionKey));
+    assert(dbus_message_iter_append_basic(&actions, DBUS_TYPE_STRING, &label));
+    assert(dbus_message_iter_close_container(&args, &actions));
+    assert(dbus_message_iter_open_container(&args, DBUS_TYPE_ARRAY, "{sv}", &hints));
+    QMap<QByteArray, QByteArray> values;
+    values.insert("category", "chat");
+    values.insert("x-nemo-origin-package", "com.whatsapp");
+    values.insert("x-nemo-image-preview-path", imagePath.toUtf8());
+    values.insert("x-nemo-remote-action-" + action, "org.example.Test / org.example.Test Reply");
+    values.insert("x-nemo-remote-action-type-" + action, "input");
+    values.insert("x-nemo-remote-action-input-" + action, "reply");
+    for (auto it = values.constBegin(); it != values.constEnd(); ++it) {
+        DBusMessageIter entry, variant;
+        const char *key = it.key().constData(), *value = it.value().constData();
+        assert(dbus_message_iter_open_container(&hints, DBUS_TYPE_DICT_ENTRY, NULL, &entry));
+        assert(dbus_message_iter_append_basic(&entry, DBUS_TYPE_STRING, &key));
+        assert(dbus_message_iter_open_container(&entry, DBUS_TYPE_VARIANT, "s", &variant));
+        assert(dbus_message_iter_append_basic(&variant, DBUS_TYPE_STRING, &value));
+        assert(dbus_message_iter_close_container(&entry, &variant));
+        assert(dbus_message_iter_close_container(&hints, &entry));
+    }
+    assert(dbus_message_iter_close_container(&args, &hints));
+    dbus_int32_t timeout = -1;
+    assert(dbus_message_iter_append_basic(&args, DBUS_TYPE_INT32, &timeout));
+    return message;
+}
+
+void testAndroidActionHintsWithImage() {
+    QTemporaryDir directory;
+    assert(directory.isValid());
+    const QString path = directory.path() + QStringLiteral("/photo.png");
+    QImage image(32, 32, QImage::Format_RGB32);
+    image.fill(Qt::blue);
+    assert(image.save(path));
+    QList<NotificationMonitor::Notification> posted;
+    NotificationMonitorPrivate monitor(NULL,
+        [&posted](const NotificationMonitor::Notification &notification) {
+            posted.append(notification);
+        }, [](const NotificationMonitor::Notification &) {}, [](bool) {}, [](bool) {});
+    // Android embeds its intent name in each action hint, exceeding 64 bytes.
+    const QByteArray whatsappAction("Reply|com.whatsapp.intent.action.DIRECT_REPLY_FROM_MESSAGE");
+    const QList<QByteArray> actions = {whatsappAction, QByteArray(kMaximumActionText, 'a')};
+    for (const QByteArray &action : actions) {
+        DBusMessage *message = androidNotification(action, path);
+        PendingNotification pending;
+        assert(monitor.parseNotify(message, &pending));
+        monitor.post(1, pending);
+        assert(posted.last().applicationId == QStringLiteral("com.whatsapp"));
+        assert(posted.last().body == QStringLiteral("Photo"));
+        assert(!posted.last().image.isEmpty());
+        assert(!(posted.last().flags & LP3_PLATFORM_NOTIFICATION_HAS_REPLY_ACTION));
+        dbus_message_unref(message);
+    }
+    DBusMessage *oversized = androidNotification(QByteArray(kMaximumActionText + 1, 'a'), path);
+    PendingNotification pending;
+    assert(!monitor.parseNotify(oversized, &pending));
+    dbus_message_unref(oversized);
 }
 
 void testExactReplyCapability() {
@@ -328,7 +402,94 @@ void testConversationTargetAuthorityAndRetirement() {
 
 } // namespace
 
+void testPreviewImageHints() {
+    QTemporaryDir directory;
+    assert(directory.isValid());
+    const QString path = directory.path() + QStringLiteral("/preview.png");
+    QImage image(32, 32, QImage::Format_RGB32);
+    image.fill(Qt::blue);
+    assert(image.save(path));
+    QList<NotificationMonitor::Notification> posted;
+    NotificationMonitorPrivate monitor(NULL,
+        [&posted](const NotificationMonitor::Notification &notification) {
+            posted.append(notification);
+        }, [](const NotificationMonitor::Notification &) {}, [](bool) {}, [](bool) {});
+    PendingNotification pending;
+    pending.summary = QStringLiteral("Photo");
+    pending.hints.insert(QStringLiteral("image-path"), path);
+    pending.hints.insert(QStringLiteral("image_path"), path);
+    monitor.post(1, pending);
+    assert(posted.last().image.isEmpty());
+    pending.hints.insert(QStringLiteral("x-nemo-image-preview-path"),
+                         QUrl::fromLocalFile(path).toString());
+    monitor.post(2, pending);
+    assert(!posted.last().image.isEmpty());
+}
+
+void testNotificationImages() {
+    QImage original(256, 128, QImage::Format_ARGB32);
+    original.fill(qRgba(255, 0, 0, 255));
+    const QByteArray thumbnail = notificationThumbnail(original);
+    assert(thumbnail.size() == 4 + 128 * 64 * 3);
+    assert(static_cast<unsigned char>(thumbnail[0]) == 128);
+    assert(static_cast<unsigned char>(thumbnail[2]) == 64);
+    assert(static_cast<unsigned char>(thumbnail[4]) == 255);
+    assert(thumbnail[5] == 0 && thumbnail[6] == 0);
+    original.fill(qRgba(0, 0, 0, 0));
+    const QByteArray transparent = notificationThumbnail(original);
+    assert(static_cast<unsigned char>(transparent[4]) == 255);
+    assert(static_cast<unsigned char>(transparent[5]) == 255);
+    assert(notificationThumbnail(QImage()).isEmpty());
+    assert(notificationImageFile(QStringLiteral("https://example.com/image.png")).isEmpty());
+    assert(notificationImageFile(QStringLiteral("relative.png")).isEmpty());
+
+    QTemporaryDir directory;
+    assert(directory.isValid());
+    const QString path = directory.path() + QStringLiteral("/image.png");
+    assert(original.save(path, "PNG"));
+    assert(notificationImageFile(path) == transparent);
+    assert(notificationImageFile(QUrl::fromLocalFile(path).toString()) == transparent);
+    const QString link = directory.path() + QStringLiteral("/link.png");
+    assert(QFile::link(path, link));
+    assert(notificationImageFile(link).isEmpty());
+    QFile corrupt(path);
+    assert(corrupt.open(QIODevice::WriteOnly | QIODevice::Truncate));
+    corrupt.write("not an image");
+    corrupt.close();
+    assert(notificationImageFile(path).isEmpty());
+
+    DBusMessage *message = dbus_message_new_signal("/test", "org.example.Test", "Image");
+    DBusMessageIter args, variant, structure, array;
+    dbus_message_iter_init_append(message, &args);
+    assert(dbus_message_iter_open_container(&args, DBUS_TYPE_VARIANT, "(iiibiiay)", &variant));
+    assert(dbus_message_iter_open_container(&variant, DBUS_TYPE_STRUCT, NULL, &structure));
+    int width = 1, height = 1, stride = 4, bits = 8, channels = 4;
+    dbus_bool_t alpha = true;
+    dbus_message_iter_append_basic(&structure, DBUS_TYPE_INT32, &width);
+    dbus_message_iter_append_basic(&structure, DBUS_TYPE_INT32, &height);
+    dbus_message_iter_append_basic(&structure, DBUS_TYPE_INT32, &stride);
+    dbus_message_iter_append_basic(&structure, DBUS_TYPE_BOOLEAN, &alpha);
+    dbus_message_iter_append_basic(&structure, DBUS_TYPE_INT32, &bits);
+    dbus_message_iter_append_basic(&structure, DBUS_TYPE_INT32, &channels);
+    assert(dbus_message_iter_open_container(&structure, DBUS_TYPE_ARRAY, "y", &array));
+    const unsigned char red[] = {255, 0, 0, 255};
+    const unsigned char *pixels = red;
+    dbus_message_iter_append_fixed_array(&array, DBUS_TYPE_BYTE, &pixels, 4);
+    dbus_message_iter_close_container(&structure, &array);
+    dbus_message_iter_close_container(&variant, &structure);
+    dbus_message_iter_close_container(&args, &variant);
+    dbus_message_iter_init(message, &args);
+    const QByteArray raw = notificationImageData(&args);
+    // A tiny source is scaled consistently with other image sources.
+    assert(!raw.isEmpty());
+    assert(static_cast<unsigned char>(raw[4]) == 255 && raw[5] == 0);
+    dbus_message_unref(message);
+}
+
 int main() {
+    testNotificationImages();
+    testPreviewImageHints();
+    testAndroidActionHintsWithImage();
     testExactReplyCapability();
     testExactOpenMessage();
     testRejectsForgedOrReplacedOwner();

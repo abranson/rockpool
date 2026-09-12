@@ -619,6 +619,7 @@ private:
             notification.category, lp3wire::kNotificationCategoryMax);
         data.iconName = boundedUtf8(
             notification.iconName, lp3wire::kNotificationIconNameMax);
+        data.image.assign(notification.image.constData(), notification.image.constData() + notification.image.size());
         std::vector<uint8_t> payload;
         if (!lp3wire::encodeNotificationEvent(eventType, data, &payload) ||
             !queueFrame(lp3wire::Event, 0, &payload[0], payload.size())) {

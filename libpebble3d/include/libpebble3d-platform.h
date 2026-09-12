@@ -21,8 +21,9 @@ extern "C" {
 #endif
 
 #define LP3_PLATFORM_ABI_MAJOR 1u
-#define LP3_PLATFORM_ABI_MINOR 8u
+#define LP3_PLATFORM_ABI_MINOR 9u
 
+#define LP3_PLATFORM_NOTIFICATION_IMAGE_MAX (4u + 128u * 128u * 3u)
 #define LP3_PLATFORM_NOTIFICATION_ID_MAX 64u
 #define LP3_PLATFORM_NOTIFICATION_APPLICATION_ID_MAX 256u
 #define LP3_PLATFORM_NOTIFICATION_APPLICATION_NAME_MAX 256u
@@ -173,6 +174,8 @@ struct lp3_platform_notification_v1 {
     struct lp3_platform_string replaces_id;
     struct lp3_platform_string category;
     struct lp3_platform_string icon_name;
+    /* ABI 1.9: optional little-endian u16 width/height and packed RGB thumbnail. */
+    struct lp3_platform_bytes image;
 };
 
 struct lp3_platform_notification_command_v1 {

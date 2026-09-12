@@ -23,7 +23,7 @@ import kotlin.time.Duration.Companion.seconds
 
 class PlatformSystemGeolocationTest {
     @Test
-    fun cacheUsesDefaultAndExplicitMaximumAge() = runBlocking {
+    fun freshDefaultAndExplicitCacheMaximumAge() = runBlocking {
         var now = 1_000L
         var queries = 0
         val geolocation = PlatformSystemGeolocation(
@@ -32,12 +32,15 @@ class PlatformSystemGeolocationTest {
         )
 
         geolocation.getCurrentPosition()
-        now += SystemGeolocation.DEFAULT_MAX_AGE.inWholeMilliseconds - 1
+        now += 10
         geolocation.getCurrentPosition()
-        assertEquals(1, queries)
-
-        geolocation.getCurrentPosition(maximumAge = 1.milliseconds)
         assertEquals(2, queries)
+
+        geolocation.getCurrentPosition(maximumAge = 1.seconds)
+        assertEquals(2, queries)
+        now += 2
+        geolocation.getCurrentPosition(maximumAge = 1.milliseconds)
+        assertEquals(3, queries)
     }
 
     @Test

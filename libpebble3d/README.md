@@ -35,6 +35,14 @@ ID and reply text, and the helper accepts a reply only once for a current
 `org.nemomobile.CommHistory` SMS/IM/MMS notification whose input action
 resolves to the fixed Sailfish Messages `sendMessage` API.
 
+## Notification images
+
+The Sailfish provider forwards bounded thumbnails from notification image hints.
+The Linux pipeline caches them and answers upstream's notification image-fetch
+protocol on capable watches. Unsupported watches and invalid/missing images
+retain text notifications. This requires platform ABI 1.9 and provider wire 1.10;
+previously staged native binaries and RPMs must be rebuilt before deployment.
+
 ## Build
 
 `build.sh` first builds the daemon JVM distribution on the host, then builds
@@ -827,6 +835,10 @@ Event NotificationPosted/NotificationClosed (request_id = 0)
     u32 category_length
     u32 icon_name_length
     u8  strings[...]            // concatenated in the order above
+    // Wire 1.10: optional trailing thumbnail, posted events only:
+    u16 image_width             // 1..128, little-endian
+    u16 image_height            // 1..128, little-endian
+    u8  rgb[width * height * 3]  // packed opaque RGB, no row padding
 
 Request NotificationCommand (request_id != 0)
     u16 operation = 2
@@ -847,6 +859,22 @@ and name are at most 256 bytes, title 512, body 4096, and category/icon name
 body. A closed event has only ID and close reason; all other fields are zero or
 empty. The helper drops transient, hidden, group-summary, and empty
 notifications before encoding.
+
+Image-free events retain the original layout. A thumbnail suffix must be
+complete and at most 49156 bytes. The provider captures `image-data` (including
+legacy `image_data`/`icon_data`) or local `image-path`/`image_path` hints, bounds
+input sizes, and scales to 128 pixels on the longest side. File images must be
+regular files owned by the session UID; final symlinks and network URLs are
+rejected. Transparent pixels are composited onto white. Invalid images fall
+back to the existing text notification.
+
+Platform ABI 1.9 appends an optional `image` byte buffer to the notification
+record. The loader copies it before returning from the provider callback and
+bounds queued storage. The daemon passes the thumbnail to the generic Linux
+notification pipeline. Up to 32 images are cached by timeline UUID, so watch
+fetches survive daemon restarts. Image metadata is advertised only after a
+successful cache write and when global/per-app image preferences allow it;
+upstream filters that metadata using the watch's notification-image capability.
 
 The command contains no D-Bus destination, object path, interface, method,
 arguments, file path, or generic payload. Dismissal always targets the fixed

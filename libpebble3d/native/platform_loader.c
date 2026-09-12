@@ -91,6 +91,8 @@ struct lp3_copied_notification_event {
     char body[LP3_PLATFORM_NOTIFICATION_BODY_MAX + 1];
     char category[LP3_PLATFORM_NOTIFICATION_CATEGORY_MAX + 1];
     char icon_name[LP3_PLATFORM_NOTIFICATION_ICON_NAME_MAX + 1];
+    uint32_t image_size;
+    uint8_t image[LP3_PLATFORM_NOTIFICATION_IMAGE_MAX];
 };
 
 struct lp3_copied_call_event {
@@ -354,7 +356,7 @@ static void set_literal(char *destination, size_t destination_size,
 static void set_snapshot_state(const char *state, const char *error) {
     memset(&loader.snapshot, 0, sizeof(loader.snapshot));
     set_literal(loader.snapshot.state, sizeof(loader.snapshot.state), state);
-    set_literal(loader.snapshot.abi_version, sizeof(loader.snapshot.abi_version), "1.8");
+    set_literal(loader.snapshot.abi_version, sizeof(loader.snapshot.abi_version), "1.9");
     set_literal(loader.snapshot.domains, sizeof(loader.snapshot.domains), "0");
     set_literal(loader.snapshot.helper_pid, sizeof(loader.snapshot.helper_pid), "0");
     set_literal(loader.snapshot.supported_domains,
@@ -642,19 +644,36 @@ static int string_empty(const struct lp3_platform_string *value) {
     return value != NULL && value->size == 0;
 }
 
+static int valid_notification_image(const struct lp3_platform_notification_v1 *notification) {
+    uint32_t width, height;
+    if (notification->struct_size < sizeof(*notification) ||
+        notification->image.size == 0) {
+        return 1;
+    }
+    if (notification->image.data == NULL || notification->image.size < 7 ||
+        notification->image.size > LP3_PLATFORM_NOTIFICATION_IMAGE_MAX) {
+        return 0;
+    }
+    width = (notification->image.data[0] | ((uint32_t)notification->image.data[1] << 8));
+    height = (notification->image.data[2] | ((uint32_t)notification->image.data[3] << 8));
+    return width > 0 && width <= 128 && height > 0 && height <= 128 &&
+           notification->image.size == 4 + width * height * 3;
+}
+
 static int valid_notification(
     uint32_t event_type,
     const struct lp3_platform_notification_v1 *notification) {
     if (notification == NULL ||
-        notification->struct_size < sizeof(*notification) ||
+        notification->struct_size < offsetof(struct lp3_platform_notification_v1, image) ||
         notification->reserved != 0 ||
         !valid_string(&notification->id,
                       LP3_PLATFORM_NOTIFICATION_ID_MAX, 0) ||
-        notification->icon.size != 0) {
+        notification->icon.size != 0 || !valid_notification_image(notification)) {
         return 0;
     }
     if (event_type == LP3_PLATFORM_EVENT_NOTIFICATION_CLOSED) {
-        return notification->flags == 0 && notification->timestamp_ms == 0 &&
+        return (notification->struct_size < sizeof(*notification) || notification->image.size == 0) &&
+               notification->flags == 0 && notification->timestamp_ms == 0 &&
                notification->close_reason <= 4 &&
                string_empty(&notification->replaces_id) &&
                string_empty(&notification->application_id) &&
@@ -1176,6 +1195,10 @@ static void provider_event(void *context, const struct lp3_platform_event_v1 *ev
                     &event->notification->category);
         copy_string(copied->icon_name, sizeof(copied->icon_name),
                     &event->notification->icon_name);
+        if (event->notification->struct_size >= sizeof(*event->notification)) {
+            copied->image_size = event->notification->image.size;
+            if (copied->image_size) memcpy(copied->image, event->notification->image.data, copied->image_size);
+        }
         ++notification_event_count;
     } else if (event->type == LP3_PLATFORM_EVENT_CALL) {
         struct lp3_copied_call_event *copied;
@@ -1912,7 +1935,7 @@ static size_t encode_notification_event(
         event->icon_name,
     };
     uint32_t lengths[8];
-    size_t total = 52;
+    size_t total = 52 + event->image_size;
     size_t offset;
     size_t index;
 
@@ -1935,13 +1958,15 @@ static size_t encode_notification_event(
     for (index = 0; index < 8; ++index) {
         append_copied_string(payload, &offset, values[index]);
     }
+    if (event->image_size) memcpy(payload + offset, event->image, event->image_size);
+    offset += event->image_size;
     return offset == total ? total : 0;
 }
 
 JNIEXPORT jobjectArray JNICALL
 Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_drainNotificationEvents(
     JNIEnv *env, jclass klass) {
-    struct lp3_copied_notification_event copied[LP3_MAX_QUEUED_EVENTS];
+    struct lp3_copied_notification_event *copied;
     uint8_t payload[52 + LP3_PLATFORM_NOTIFICATION_ID_MAX +
         LP3_PLATFORM_NOTIFICATION_ID_MAX +
         LP3_PLATFORM_NOTIFICATION_APPLICATION_ID_MAX +
@@ -1949,7 +1974,7 @@ Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_drainNotification
         LP3_PLATFORM_NOTIFICATION_TITLE_MAX +
         LP3_PLATFORM_NOTIFICATION_BODY_MAX +
         LP3_PLATFORM_NOTIFICATION_CATEGORY_MAX +
-        LP3_PLATFORM_NOTIFICATION_ICON_NAME_MAX];
+        LP3_PLATFORM_NOTIFICATION_ICON_NAME_MAX + LP3_PLATFORM_NOTIFICATION_IMAGE_MAX];
     jclass byte_array_class;
     jobjectArray result;
     size_t count;
@@ -1959,6 +1984,11 @@ Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_drainNotification
     lock_event_queues();
     /* A reset marker must cross JNI before any replacement-helper event. */
     count = provider_reset_pending ? 0 : notification_event_count;
+    copied = count != 0 ? malloc(count * sizeof(*copied)) : NULL;
+    if (count != 0 && copied == NULL) {
+        unlock_event_queues();
+        return NULL;
+    }
     for (index = 0; index < count; ++index) {
         copied[index] = notification_event_queue[
             (notification_event_head + index) % LP3_MAX_QUEUED_EVENTS];
@@ -1970,10 +2000,12 @@ Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_drainNotification
 
     byte_array_class = (*env)->FindClass(env, "[B");
     if (byte_array_class == NULL) {
+        free(copied);
         return NULL;
     }
     result = (*env)->NewObjectArray(env, (jsize)count, byte_array_class, NULL);
     if (result == NULL) {
+        free(copied);
         return NULL;
     }
     for (index = 0; index < count; ++index) {
@@ -1981,10 +2013,12 @@ Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_drainNotification
             &copied[index], payload, sizeof(payload));
         jbyteArray record;
         if (encoded == 0 || encoded > INT_MAX) {
+            free(copied);
             return NULL;
         }
         record = (*env)->NewByteArray(env, (jsize)encoded);
         if (record == NULL) {
+            free(copied);
             return NULL;
         }
         (*env)->SetByteArrayRegion(env, record, 0, (jsize)encoded,
@@ -1992,6 +2026,7 @@ Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_drainNotification
         (*env)->SetObjectArrayElement(env, result, (jsize)index, record);
         (*env)->DeleteLocalRef(env, record);
     }
+    free(copied);
     return result;
 }
 

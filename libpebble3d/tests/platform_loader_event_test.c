@@ -374,7 +374,38 @@ static void enqueue_reset(void) {
     provider_event(NULL, &event);
 }
 
+static void test_notification_image_copy(void) {
+    uint8_t rgb[] = {1, 0, 1, 0, 255, 0, 0};
+    uint8_t payload[256];
+    struct lp3_platform_notification_v1 notification = {0};
+    struct lp3_platform_event_v1 event = {0};
+    notification.struct_size = sizeof(notification);
+    notification.id = string("42");
+    notification.application_id = string("camera");
+    notification.title = string("Photo");
+    notification.image.data = rgb;
+    notification.image.size = sizeof(rgb);
+    assert(valid_notification(LP3_PLATFORM_EVENT_NOTIFICATION, &notification));
+    reset_events();
+    event.struct_size = sizeof(event);
+    event.type = LP3_PLATFORM_EVENT_NOTIFICATION;
+    event.notification = &notification;
+    provider_event(NULL, &event);
+    assert(notification_event_count == 1);
+    rgb[4] = 0;
+    assert(notification_event_queue[notification_event_head].image[4] == 255);
+    const size_t size = encode_notification_event(&notification_event_queue[notification_event_head], payload, sizeof(payload));
+    assert(size > 7 && payload[size - 3] == 255);
+    assert(encode_notification_event(&notification_event_queue[notification_event_head], payload, 52) == 0);
+    notification.image.size--;
+    assert(!valid_notification(LP3_PLATFORM_EVENT_NOTIFICATION, &notification));
+    notification.struct_size = offsetof(struct lp3_platform_notification_v1, image);
+    assert(valid_notification(LP3_PLATFORM_EVENT_NOTIFICATION, &notification));
+    reset_events();
+}
+
 int main(void) {
+    test_notification_image_copy();
     unsigned int index;
     uint64_t evicted_location_request_id = 0;
     uint64_t location_request_id;

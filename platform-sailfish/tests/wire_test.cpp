@@ -955,7 +955,26 @@ void testRejectsPassedDescriptors() {
 
 } // namespace
 
+void testNotificationImagePayload() {
+    lp3wire::NotificationData notification = {};
+    notification.id = "10";
+    notification.applicationId = "org.example.camera";
+    notification.title = "Picture";
+    notification.image = {1, 0, 1, 0, 255, 0, 0};
+    std::vector<uint8_t> payload;
+    assert(lp3wire::encodeNotificationEvent(lp3wire::NotificationPosted, notification, &payload));
+    lp3wire::NotificationData decoded;
+    uint16_t type;
+    assert(lp3wire::decodeNotificationEvent(payload, &type, &decoded));
+    assert(decoded.image == notification.image);
+    payload.pop_back();
+    assert(!lp3wire::decodeNotificationEvent(payload, &type, &decoded));
+    notification.image[0] = 129;
+    assert(!lp3wire::encodeNotificationEvent(lp3wire::NotificationPosted, notification, &payload));
+}
+
 int main() {
+    testNotificationImagePayload();
     testValidFrame();
     testInvalidSendArguments();
     testTimeGetCodec();
