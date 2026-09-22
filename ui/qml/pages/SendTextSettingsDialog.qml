@@ -1,4 +1,4 @@
-import QtQuick 2.2
+import QtQuick 2.6
 import Sailfish.Silica 1.0
 import Sailfish.Contacts 1.0
 import Sailfish.Telephony 1.0
@@ -11,13 +11,21 @@ Dialog {
     property var contacts: {}
     property var newCtx: {}
     property string msgKey: "com.pebble.sendText"
-    property string modem: "/ril_0"
+    property string modem: simSelector.activeModem
     property string telePhone: "/org/freedesktop/Telepathy/Account/ring/tel"
     property bool cannedResponsesReady: pebble && pebble.cannedResponsesReady
     property bool cannedContactsReady: pebble && pebble.cannedContactsReady
     property bool contactsDirty
 
     canAccept: cannedContactsReady && contactsDirty
+               && (newContacts.selectedContacts.count === 0
+                   || Object.keys(newCtx).length > 0)
+
+    onModemChanged: {
+        if (newContacts && newContacts.selectedContacts) {
+            newContacts.updateContacts();
+        }
+    }
 
     function cloneContacts(source) {
         var result = {};
@@ -156,6 +164,9 @@ Dialog {
                 enabled: root.cannedContactsReady
                 //multipleAllowed: false
                 requiredProperty: (PeopleModel.AccountUriRequired | PeopleModel.PhoneNumberRequired )
+                contactSearchModel: PeopleModel {
+                    filterType: PeopleModel.FilterAll
+                }
                 showLabel: false
                 onLastFieldExited: {
                     console.log("Last",selectedContacts)
@@ -169,6 +180,10 @@ Dialog {
                     for(var i=0;i<selectedContacts.count;i++) {
                         var item = selectedContacts.get(i);
                         if(!item || !item.person) break;
+                        if (item.propertyType !== "accountUri" && !root.modem) {
+                            root.newCtx = {};
+                            return;
+                        }
                         var name = item.person.displayLabel;
                         var value = ((item.propertyType==="accountUri")?item.property['path']+":"+item.property['uri']:root.telePhone+root.modem+":"+item.property['number']);
                         if(!(name in root.newCtx)) {
@@ -222,7 +237,6 @@ Dialog {
     Component.onCompleted: {
         pebble.refreshCannedResponses();
         pebble.refreshCannedContacts();
-        root.modem = simSelector.activeModem;
         rebuildContacts();
     }
 

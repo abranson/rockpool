@@ -175,6 +175,36 @@ void testExactReplyCapability() {
     dbus_message_unref(message);
 }
 
+void testSendTextUsesTelepathyDispatcher() {
+    const QString account = QStringLiteral(
+        "/org/freedesktop/Telepathy/Account/ring/tel/ril_0");
+    const QDBusMessage message = createSendMessage(
+        account, QStringLiteral("123"), QStringLiteral("Hello"));
+    assert(message.service() == QStringLiteral("org.freedesktop.Telepathy.ChannelDispatcher"));
+    assert(message.path() == QStringLiteral("/org/freedesktop/Telepathy/ChannelDispatcher"));
+    assert(message.interface() == QStringLiteral(
+        "org.freedesktop.Telepathy.ChannelDispatcher.Interface.Messages.DRAFT"));
+    assert(message.member() == QStringLiteral("SendMessage"));
+    const QList<QVariant> args = message.arguments();
+    assert(args.size() == 4);
+    assert(args.at(0).value<QDBusObjectPath>().path() == account);
+    assert(args.at(1).toString() == QStringLiteral("123"));
+    const QList<QVariantMap> parts = args.at(2).value<QList<QVariantMap> >();
+    assert(parts.size() == 2);
+    assert(parts.at(0).value(QStringLiteral("message-type")).type() == QVariant::UInt);
+    assert(parts.at(0).value(QStringLiteral("message-type")).toUInt() == 0);
+    assert(parts.at(1).value(QStringLiteral("content-type")) == QStringLiteral("text/plain"));
+    assert(parts.at(1).value(QStringLiteral("content")) == QStringLiteral("Hello"));
+    assert(args.at(3).type() == QVariant::UInt && args.at(3).toUInt() == 0);
+
+    assert(messageSendSucceeded(message.createReply(QVariantList() << QStringLiteral("token"))));
+    assert(!messageSendSucceeded(message.createReply(QVariantList() << QString())));
+    assert(!messageSendSucceeded(message.createReply()));
+    assert(!messageSendSucceeded(message.createReply(QVariantList() << 1)));
+    assert(!messageSendSucceeded(message.createErrorReply(
+        QStringLiteral("org.freedesktop.DBus.Error.AccessDenied"), QStringLiteral("Denied"))));
+}
+
 void testExactOpenMessage() {
     ReplyTarget target;
     assert(replyTarget(validPending(), QStringLiteral("x-nemo.messaging.sms"),
@@ -492,6 +522,7 @@ int main() {
     testAndroidActionHintsWithImage();
     testExactReplyCapability();
     testExactOpenMessage();
+    testSendTextUsesTelepathyDispatcher();
     testRejectsForgedOrReplacedOwner();
     testRejectsInvalidCapability();
     testRejectsNonCanonicalSerializedArguments();

@@ -5,4 +5,4 @@ Icon=rockpool
 Type=Application
 
 [X-Sailjail]
-Permissions=Rockpool;UserDirs;AppLaunch;WebView;Internet
+Permissions=Rockpool;UserDirs;AppLaunch;WebView;Internet;Contacts;Privileged

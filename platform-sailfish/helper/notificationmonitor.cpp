@@ -15,6 +15,10 @@
 #include <unistd.h>
 #include <QDateTime>
 #include <QDataStream>
+#include <QDBusConnection>
+#include <QDBusMessage>
+#include <QDBusMetaType>
+#include <QDBusObjectPath>
 #include <QHash>
 #include <QList>
 #include <QMap>
@@ -506,6 +510,33 @@ DBusMessage *createReplyMessage(const ReplyTarget &target,
     return message;
 }
 
+QDBusMessage createSendMessage(const QString &account, const QString &recipient,
+                               const QString &text) {
+    qDBusRegisterMetaType<QList<QVariantMap> >();
+    QVariantMap header;
+    header.insert(QStringLiteral("message-type"), QVariant::fromValue(uint(0)));
+    QVariantMap body;
+    body.insert(QStringLiteral("content-type"), QStringLiteral("text/plain"));
+    body.insert(QStringLiteral("content"), text);
+    QList<QVariantMap> parts;
+    parts << header << body;
+    QDBusMessage message = QDBusMessage::createMethodCall(
+        QStringLiteral("org.freedesktop.Telepathy.ChannelDispatcher"),
+        QStringLiteral("/org/freedesktop/Telepathy/ChannelDispatcher"),
+        QStringLiteral("org.freedesktop.Telepathy.ChannelDispatcher.Interface.Messages.DRAFT"),
+        QStringLiteral("SendMessage"));
+    message << QVariant::fromValue(QDBusObjectPath(account)) << recipient
+            << QVariant::fromValue(parts) << QVariant::fromValue(uint(0));
+    return message;
+}
+
+bool messageSendSucceeded(const QDBusMessage &response) {
+    const QList<QVariant> arguments = response.arguments();
+    return response.type() == QDBusMessage::ReplyMessage &&
+        arguments.size() == 1 && arguments.first().type() == QVariant::String &&
+        !arguments.first().toString().isEmpty();
+}
+
 DBusMessage *createOpenMessage(const ReplyTarget &target) {
     const QByteArray account = target.accountPath.toUtf8();
     const QByteArray recipient = target.recipient.toUtf8();
@@ -789,7 +820,6 @@ public:
     int32_t send(const QString &accountId, const QString &recipient,
                  const QString &text) {
         const QByteArray accountBytes = accountId.toUtf8();
-        const QByteArray textBytes = text.toUtf8();
         if (!validBoundedText(accountId, kMaximumAccountPathBytes) ||
             !accountId.startsWith(QString::fromLatin1(kAccountPathPrefix)) ||
             accountId.size() <= static_cast<int>(strlen(kAccountPathPrefix)) ||
@@ -802,28 +832,13 @@ public:
         if (!started || !messagingAvailable || !messagingOwnerCurrent()) {
             return LP3_PLATFORM_UNAVAILABLE;
         }
-        ReplyTarget target;
-        target.accountPath = accountId;
-        target.recipient = recipient;
-        DBusMessage *message = createReplyMessage(target, textBytes);
-        if (message == NULL) return LP3_PLATFORM_INTERNAL_ERROR;
-
-        DBusError error = DBUS_ERROR_INIT;
-        DBusMessage *response = dbus_connection_send_with_reply_and_block(
-            connection, message, kCommandTimeoutMs, &error);
-        dbus_message_unref(message);
-        if (response == NULL) {
-            const bool disconnected = !dbus_connection_get_is_connected(connection);
-            dbus_error_free(&error);
-            if (disconnected) busDisconnected();
-            return LP3_PLATFORM_IO_ERROR;
-        }
-        const bool succeeded = dbus_message_get_type(response) ==
-                DBUS_MESSAGE_TYPE_METHOD_RETURN &&
-            dbus_message_get_signature(response)[0] == '\0';
-        dbus_message_unref(response);
-        dbus_error_free(&error);
-        return succeeded ? LP3_PLATFORM_OK : LP3_PLATFORM_IO_ERROR;
+        // Use the Telepathy dispatcher, as the original Rockpool sender did.
+        // The Messages UI's caller-PID trust check cannot inspect this host
+        // from inside its private PID namespace.
+        const QDBusMessage response = QDBusConnection::sessionBus().call(
+            createSendMessage(accountId, recipient, text),
+            QDBus::Block, kCommandTimeoutMs);
+        return messageSendSucceeded(response) ? LP3_PLATFORM_OK : LP3_PLATFORM_IO_ERROR;
     }
 
 #ifdef LP3_NOTIFICATIONMONITOR_TEST

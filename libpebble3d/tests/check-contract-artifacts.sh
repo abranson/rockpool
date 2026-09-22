@@ -2603,8 +2603,26 @@ require_fixed 'LP3_PLATFORM_NOTIFICATION_HAS_DEFAULT_ACTION' "$notification_moni
     'notification conversation-capability publication'
 require_fixed 'LP3_PLATFORM_MESSAGE_TEXT_MAX' "$notification_monitor" \
     'helper reply-text bound'
-reject_extended 'ChannelDispatcher|\.DRAFT|setArguments' "$notification_monitor" \
-    'legacy or arbitrary notification route execution'
+reject_extended 'setArguments' "$notification_monitor" \
+    'arbitrary notification route arguments'
+# Explicit Send Text routes use the fixed Telepathy dispatcher. Notification
+# actions must still use their authenticated, one-shot Messages capability.
+if awk '
+    /^QDBusMessage createSendMessage\(/ { in_send_builder = 1 }
+    in_send_builder && /^}/ { in_send_builder = 0; next }
+    !in_send_builder { print }
+' "$notification_monitor" | grep -Eq 'ChannelDispatcher|\.DRAFT'; then
+    fail "Telepathy dispatcher route outside fixed Send Text builder"
+fi
+if awk '
+    /^    int32_t reply\(/ { in_reply = 1 }
+    in_reply { print }
+    in_reply && /^    }/ { exit }
+' "$notification_monitor" | grep -Eq 'createSendMessage|sessionBus'; then
+    fail "notification reply bypasses its fixed Messages capability"
+fi
+require_fixed 'void testSendTextUsesTelepathyDispatcher()' "$notification_monitor_test" \
+    'typed Send Text dispatcher request and response regression'
 for reply_test_contract in testExactReplyCapability testRejectsInvalidCapability \
     testRejectsNonCanonicalSerializedArguments testExactOpenMessage \
     testConversationTargetAuthorityAndRetirement
