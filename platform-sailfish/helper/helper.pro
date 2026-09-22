@@ -31,7 +31,8 @@ HEADERS += ../common/wire.h \
     locationmonitor.h \
     mainvolumemonitor.h \
     notificationmonitor.h \
-    pebblebondremover.h
+    pebblebondremover.h \
+    timeinterface.h
 
 isEmpty(LP3_LIBEXECDIR): LP3_LIBEXECDIR = /usr/libexec
 !isEmpty(LP3_BUILD_ID): DEFINES += LP3_PLATFORM_BUILD_ID=\\\"$$LP3_BUILD_ID\\\"

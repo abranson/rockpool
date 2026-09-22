@@ -20,14 +20,23 @@ import io.rebble.libpebblecommon.util.SystemGeolocation
 import org.koin.core.module.Module
 import org.koin.dsl.bind
 import org.koin.dsl.module
+import java.util.TimeZone
 
 /** Linux-only time-change signal; libpebble3 continues to read its portable clock. */
 internal class PlatformTimeChanged(
     private val controller: PlatformProviderController,
 ) : TimeChanged {
     override fun registerForTimeChanges(onChanged: () -> Unit) {
-        controller.addTimeChangedListener(onChanged)
+        controller.addTimeChangedListener { platformTimeChanged(onChanged) }
     }
+}
+
+internal fun platformTimeChanged(onChanged: () -> Unit) {
+    // The JVM caches both the default TimeZone and its ID in user.timezone.
+    // Drop both before libpebble3 reads the system zone for the next SetUTC.
+    System.clearProperty("user.timezone")
+    TimeZone.setDefault(null)
+    onChanged()
 }
 
 internal fun platformProviderModule(

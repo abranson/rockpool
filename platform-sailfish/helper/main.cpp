@@ -12,7 +12,6 @@
 #include <QByteArray>
 #include <QCoreApplication>
 #include <QDateTime>
-#include <QElapsedTimer>
 #include <QSet>
 #include <QSocketNotifier>
 #include <QString>
@@ -53,6 +52,7 @@
 #include "mainvolumemonitor.h"
 #include "notificationmonitor.h"
 #include "pebblebondremover.h"
+#include "timeinterface.h"
 #include "wire.h"
 
 #ifndef LP3_PLATFORM_BUILD_ID
@@ -337,14 +337,12 @@ public:
         QObject::connect(&m_timeFormat, &MDConfItem::valueChanged, this, [this]() {
             emitTimeChanged();
         });
-        m_changeTimer.setInterval(5000);
-        QObject::connect(&m_changeTimer, &QTimer::timeout, this, [this]() {
-            checkTimeChanged();
+        SailfishTimeInterface *time =
+            new SailfishTimeInterface(QDBusConnection::systemBus(), this);
+        QObject::connect(time, &SailfishTimeInterface::settings_changed,
+                         this, [this]() {
+            emitTimeChanged();
         });
-        m_lastWallMs = QDateTime::currentMSecsSinceEpoch();
-        m_elapsed.start();
-        m_lastOffsetSeconds = QDateTime::currentDateTime().offsetFromUtc();
-        m_changeTimer.start();
     }
 
 private:
@@ -1112,20 +1110,6 @@ private:
         }
     }
 
-    void checkTimeChanged() {
-        const qint64 wallMs = QDateTime::currentMSecsSinceEpoch();
-        const qint64 expectedWallMs = m_lastWallMs + m_elapsed.elapsed();
-        const int offsetSeconds = QDateTime::currentDateTime().offsetFromUtc();
-        const qint64 driftMs = wallMs > expectedWallMs ?
-            wallMs - expectedWallMs : expectedWallMs - wallMs;
-        if (driftMs > 2000 || offsetSeconds != m_lastOffsetSeconds) {
-            emitTimeChanged();
-        }
-        m_lastWallMs = wallMs;
-        m_lastOffsetSeconds = offsetSeconds;
-        m_elapsed.restart();
-    }
-
     enum Phase {
         AwaitHello,
         AwaitReady,
@@ -1152,10 +1136,6 @@ private:
     bool m_calendarReady;
     ContactMonitor m_contacts;
     bool m_contactsReady;
-    QTimer m_changeTimer;
-    QElapsedTimer m_elapsed;
-    qint64 m_lastWallMs;
-    int m_lastOffsetSeconds;
     QSet<quint64> m_pending;
     QSet<quint64> m_calendarPending;
     QSet<quint64> m_contactPending;

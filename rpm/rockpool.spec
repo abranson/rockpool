@@ -154,6 +154,14 @@ cd platform-pebblebondremover-test-build
 %qtc_make %{?_smp_mflags}
 ./pebblebondremover_test
 
+cd ..
+mkdir -p platform-timeinterface-test-build
+cd platform-timeinterface-test-build
+%qmake5 ../platform-sailfish/tests/timeinterface_test.pro
+%qtc_make clean
+%qtc_make %{?_smp_mflags}
+./timeinterface_test
+
 %install
 if [ -d %{_builddir}/%{name}-%{version} ]; then
     cd %{_builddir}/%{name}-%{version}
