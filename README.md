@@ -1,94 +1,117 @@
-# Rockpool, Pebble support for Sailfish
+# Rockpool
 
-[TMO thread](http://talk.maemo.org/showthread.php?t=96490) [Openrepos](https://openrepos.net/content/abranson/rockpool)
+Pebble watch support for SailfishOS.
 
-Rockpool provides the Sailfish UI and platform integration for Pebble watches.
-Since version 2.0, its watch daemon is the bundled `libpebble3d` service;
-Rockpool communicates with it through the `io.rebble.libpebble3` D-Bus API.
+Rockpool combines a Sailfish Silica app with a background watch service and
+native Sailfish integration. It handles pairing, apps and watchfaces,
+notifications, and the phone services that make a Pebble useful day to day.
 
-## Features
+[Community discussion](http://talk.maemo.org/showthread.php?t=96490) ·
+[OpenRepos listing](https://openrepos.net/content/abranson/rockpool)
 
-Rockpool provides watch discovery, pairing and connection management; app and
-watchface management; notifications; calls and media controls; screenshots;
-watch firmware and language workflows; health, profile and timeline settings;
-keyless forecasts for saved weather locations; developer tools; and Rebble
-account integration. Availability is reported at runtime because several
-workflows depend on the connected watch, the installed platform provider, or
-transport support.
+## Using Rockpool
 
-See the [capability registry](libpebble3d/README.md#capability-registry) for the runtime
-contract and the [functional parity matrix](libpebble3d/README.md#functional-parity-matrix)
-for implemented and intentionally pending replacement workflows. In
-particular, clients must not assume that calendar sync, contacts, location,
-message replies, or Unix-FD installation are available when their capability
-is absent.
+Install a `rockpool` RPM built for your device architecture and SailfishOS
+release, using the device package manager so runtime dependencies are resolved.
+The current source build produces AArch64 packages. The UI, watch daemon and
+Sailfish provider ship together in one RPM.
+
+Enable Bluetooth, open Rockpool, and use watch discovery to pair your Pebble.
+Rockpool can also import existing Bluetooth bonds. Sign in to Rebble for
+account-backed services. The background service maintains watch integration
+independently of the app window.
+
+Available workflows include:
+
+- Watch discovery, pairing, connection management and screenshots.
+- Apps and watchfaces, app configuration, and firmware and language installation.
+- Notification forwarding, supported actions and message replies.
+- Call and media controls, contacts, and favorite-contact Send Text actions.
+- Calendar integration, timeline settings and saved-location weather forecasts.
+- Health history and settings, profile switching and developer tools.
+
+Availability depends on the watch, transport and healthy platform services.
+Health history and several settings are shared across the account; they do not
+represent independent per-watch data. Per-watch app ordering remains pending.
+Message replies are restricted to supported Sailfish Messages notifications;
+an arbitrary application's notification does not automatically support replies.
+
+Image previews require the notification producer to supply
+`x-nemo-image-preview-path` or `x-nemo-image-preview-data`. App icons and large
+icons are not treated as preview images. Images are bounded and forwarded only
+where the watch supports them; text notifications remain available otherwise.
+
+The [functional parity matrix](libpebble3d/README.md#functional-parity-matrix) records
+implemented workflows and remaining gaps. The
+[capability registry](libpebble3d/README.md#capability-registry) describes how clients
+discover availability at runtime.
+
+## How it fits together
+
+Since version 2.0, the bundled `libpebble3d` service owns watch communication.
+It embeds the Kotlin libpebble3 library and is compiled to a native executable
+with GraalVM; the phone does not need a Java runtime.
+
+The Silica UI talks to the daemon's private `org.rockpool` compatibility
+interface. The daemon also exposes the generic `io.rebble.libpebble3` session-bus
+API. Sailfish integration lives in Rockpool's platform provider and isolated
+helper, including notifications, contacts, calendars, calls and location.
+
+| Source | Purpose |
+| --- | --- |
+| [ui/](ui/) | Silica UI and its C++ D-Bus client |
+| [libpebble3d/daemon/](libpebble3d/daemon/) | Daemon, public API and Rockpool compatibility layer |
+| [libpebble3d/mobileapp/](libpebble3d/mobileapp/) | Pinned libpebble3 submodule |
+| [platform-sailfish/](platform-sailfish/) | Sailfish provider, helper and launcher |
+| [libpebble3d/api/](libpebble3d/api/) | Public D-Bus contract and capabilities |
+| [libpebble3d/README.md#sailfish-platform-launcher-and-host-wire-protocols](libpebble3d/README.md#sailfish-platform-launcher-and-host-wire-protocols) | Provider/helper protocol |
+| [rpm/rockpool.spec](rpm/rockpool.spec) | Unified package, dependencies and SDK checks |
+
+See the [daemon documentation](libpebble3d/README.md) for native build internals
+and platform ABI details. Sailfish C++ and QML must remain compatible with
+Qt 5.6.
 
 ## Building
 
-Rockpool has a two-phase build because GraalVM Native Image cannot
-cross-compile and does not belong in a Sailfish SDK target:
+There are two build stages:
 
-1. On the normal host, build the AArch64 `libpebble3d` executable and JNI
-   loader in the pinned AArch64 Docker/GraalVM environment.
-2. Inside the Sailfish Platform SDK, build the UI and platform provider and
-   package those prebuilt native artifacts in the same RPM transaction.
+1. **Normal host:** build the AArch64 daemon and JNI loader using Gradle and
+   the repository's Docker/GraalVM builder.
+2. **Sailfish Platform SDK:** compile the UI and Sailfish provider, run their
+   checks, and package everything in a single `rockpool` RPM.
 
-The repository-root
-[`build-libpebble3d.sh`](build-libpebble3d.sh) handles only the first phase.
-After it succeeds, use `mb2` normally for the entire Sailfish build. Do not use
-any separate daemon packaging step; the Sailfish SDK is the sole RPM builder.
+Native Image cannot cross-compile. On an x86-64 host, the first stage therefore
+requires working ARM64 container emulation. GraalVM does not belong inside the
+Sailfish SDK target.
 
-### Prerequisites
+### Prepare the host
 
-Clone with submodules, or initialize the pinned libpebble3 checkout after an
-existing clone:
+Initialize the pinned library checkout from the repository root:
 
 ```sh
 git submodule update --init libpebble3d/mobileapp
 ```
 
-The normal host needs:
+Install these prerequisites:
 
-- a POSIX shell and the usual Git/build utilities: Git, `awk`, `sed`, `find`,
-  `tar`, `xz`, `sha256sum`, and `file`;
-- JDK 17 for Gradle (set `JAVA_HOME` when it is not the default Java);
-- an Android SDK with Android SDK Platform 36 installed and its licenses
-  accepted, because the Android Gradle plugin configures the shared libpebble3
-  project even for JVM-only tasks (set `ANDROID_HOME`, or add `sdk.dir` to
-  `libpebble3d/mobileapp/local.properties`);
-- Docker, permission to use its daemon, network access for the first Gradle
-  and image build, and approximately 15 GiB of free disk space; and
-- an AArch64 Docker runtime. On x86-64, install binfmt/QEMU support once and
-  verify it:
+- JDK 17 for the host Gradle build.
+- An Android SDK with the platform selected by
+  [the pinned version catalog](libpebble3d/mobileapp/gradle/libs.versions.toml)
+  (currently API 37) and accepted SDK licenses. The shared project's Android
+  Gradle plugin is configured even for JVM builds.
+- Docker with permission to use its daemon and an AArch64 container runtime.
+  On x86-64, configure QEMU/binfmt support before building.
+- Git and standard build utilities, including `awk`, `sed`, `find`, `tar`,
+  `xz`, `sha256sum` and `file`. Initial dependency downloads need network access.
 
-```sh
-docker run --privileged --rm tonistiigi/binfmt --install arm64
-docker run --rm --platform linux/arm64 arm64v8/debian:bookworm uname -m
-```
+Allow at least 8 GiB of memory for Docker, preferably 12 GiB, and about 15 GiB
+of free disk space. Emulated Native Image builds can take well over an hour.
+The build defaults to four compiler workers; `NI_THREADS` overrides that count.
+More workers can increase memory use.
 
-Allow at least 8 GiB of memory for Docker; 12 GiB is recommended. An emulated
-x86-64 Native Image build commonly takes 60–90 minutes, while a native AArch64
-host should be faster. GraalVM itself, an AArch64 compiler, and the native
-Linux libraries are pinned in `libpebble3d/Dockerfile` and are not host
-prerequisites.
+### Build and stage the daemon
 
-The packaging phase needs a current Sailfish Platform SDK, `mb2`, and a clean,
-project-specific AArch64 target created from the Sailfish release being
-targeted. Do not install project packages into a base, shared, or default SDK
-target. The complete SDK build dependency list is authoritative in
-[`rpm/rockpool.spec`](rpm/rockpool.spec): Qt 5 Core, DBus, QML, Quick, Network,
-Positioning and Contacts; `dbus-1`; `mlite5`; `libmkcal-qt5`;
-`KF5CalendarCore`; `sailfishapp` 0.0.10 or newer; `desktop-file-utils`;
-`qt5-qttools-linguist`; and `file`. The package requires
-`sailfish-components-webview-qt5` at runtime. Rockpool uses its QML plugin and
-does not link directly to the browser-generation-specific `qt5embedwidget`
-library.
-Missing packages must be made available to that disposable target rather than
-added to the SDK base.
-
-### Development build
-
-From the repository root on the normal host:
+Run on the normal host, from the repository root:
 
 ```sh
 export JAVA_HOME=/path/to/jdk-17
@@ -96,57 +119,110 @@ export ANDROID_HOME=/path/to/Android/Sdk
 ./build-libpebble3d.sh
 ```
 
-The GraalVM build first creates `libpebble3d/out/libpebble3d` and
-`libpebble3d/out/libpebble3d-platform-loader.so`. The script verifies them and
-stages the spec inputs as `rpm/native/libpebble3d`,
-`rpm/native/libpebble3d-platform-loader.so`, and
-`rpm/native/.build-provenance`. The entire `rpm/native/` directory is ignored
-by Git. To restage an already completed and verified `libpebble3d/out/` build,
-use `./build-libpebble3d.sh --reuse`.
+The script builds native output in `libpebble3d/out/`, verifies it, and stages
+it under `rpm/native/` with a `.build-provenance` manifest. Both output
+directories are generated build inputs, not packages to install on a phone.
+The builder and native dependencies are defined in
+[libpebble3d/Dockerfile](libpebble3d/Dockerfile).
 
-Open the same checkout inside the Sailfish Platform SDK and run:
+### Build the Sailfish RPM
+
+Use a current Sailfish Platform SDK with a dedicated, disposable AArch64 target
+for the intended Sailfish release. Keep SDK base and shared targets pristine;
+resolve project dependencies in the project target. The authoritative
+`BuildRequires` and runtime dependencies are in
+[rpm/rockpool.spec](rpm/rockpool.spec).
+
+Open the same checkout inside the SDK and run:
 
 ```sh
-mb2 -t TARGET --no-vcs-apply build
+mb2 -t TARGET --no-vcs-apply --no-fix-version build
 ```
 
-Replace `TARGET` with the exact name reported by the SDK, for example
-`aarch64`. No Rockpool wrapper is involved in the Sailfish phase.
+Replace `TARGET` with your project target's exact name. `--no-fix-version`
+preserves the version in the spec rather than deriving one from older Git tags.
+The resulting RPM is written below `RPMS/`. Install that RPM through the device
+package manager before testing the packaged application.
 
-The SDK build produces one `rockpool` RPM containing the Silica UI, Native
-Image daemon and JNI loader, Sailfish provider, launcher and helper, service
-files, and BlueZ drop-in. The development RPM is written below `RPMS/` by `mb2`.
-Runtime dependencies such as `systemd-user-session-targets`, Geoclue, and Qt
-libraries are recorded in the RPM metadata and should be resolved by the
-device package manager.
+### Which stage needs rebuilding?
 
-### Release build
+| Changed code | Required build |
+| --- | --- |
+| Daemon Kotlin, libpebble3, JNI loader or native build inputs | Native stage, then SDK RPM |
+| Sailfish UI or provider implementation, with unchanged ABI | SDK RPM using compatible staged native output |
+| Provider ABI or wire contract | Rebuild both stages together |
+| Documentation only | No runtime rebuild |
 
-A release requires the Rockpool tree and `libpebble3d/mobileapp` submodule to
-be clean and committed, with the submodule gitlink matching its checkout.
-Build the immutable Native Image input on the host after the release commits:
+To restage a previously completed native build:
+
+```sh
+./build-libpebble3d.sh --reuse
+```
+
+`--reuse` verifies and copies existing output; it does **not** compile source
+changes. Use it only when that native build is still appropriate for the
+changes being packaged. Never use it to pick up new Kotlin or JNI code.
+
+### Release builds
+
+Commit any source changes that should be included first. The release build
+snapshots Rockpool HEAD and its pinned mobileapp commit; uncommitted changes
+are excluded. On the normal host:
 
 ```sh
 ./build-libpebble3d.sh --release
 ```
 
-Then, in the Sailfish Platform SDK:
+This validates and builds the captured source snapshot, recording source
+commits, builder identity, ABI versions, the output inventory and SHA-256
+digests. Later checkout edits or commits do not invalidate the native build.
+Then run the same SDK `mb2` command above.
+Development native output cannot substitute for release-verified artifacts.
+
+To create a source archive containing verified release native inputs, use the
+version from the spec; for the current version:
 
 ```sh
-mb2 -t TARGET --no-vcs-apply build
+rpm/create-source-archive.sh 2.0.0
 ```
 
-`--release` rejects development or stale native artifacts and verifies their
-source commits, builder image, ABI versions, complete file inventory, and
-SHA-256 digests. `mb2` writes the resulting package below `RPMS/`. If a
-reproducible source archive is also required, run
-`rpm/create-source-archive.sh 2.0` after the release native build; the archive
-contains the same verified native input.
+## Validation and troubleshooting
 
-More detail about the Native Image stages and platform ABI is in
-[`libpebble3d/README.md`](libpebble3d/README.md).
+From the repository root, check the public contract and build-artifact rules:
 
-## The thanks
+```sh
+sh libpebble3d/tests/check-contract-artifacts.sh
+```
+
+Add `--require-committed` when validating committed release source. For daemon
+JVM tests, with the same JDK and Android SDK environment as the build:
+
+```sh
+cd libpebble3d/daemon
+./gradlew test
+```
+
+The SDK RPM build runs the provider's Qt tests in its `%check` section. Host
+JVM tests do not replace an AArch64 Native Image build or device testing.
+After installing an RPM, exercise pairing/reconnection, notification delivery,
+and whichever platform workflows changed.
+
+Run these commands as the logged-in Sailfish user to inspect the daemon:
+
+```sh
+systemctl --user status libpebble3d.service
+journalctl --user -u libpebble3d.service -b
+```
+
+For reports, include the installed RPM version, SailfishOS version, watch and
+firmware, transport, reproduction steps and relevant log excerpt. Remove
+personal notification, contact and account information before sharing logs.
+
+If a native build stops with `exec format error`, check ARM64 container
+emulation. If packaging rejects staged artifacts, inspect the provenance error
+and rebuild the required stage; do not bypass artifact verification.
+
+## Thanks
 
 * Ruslan N. Marchenko - Sailfish UI, Developer mode and much more
 * Javispedro - Contributor to Pebbled, author of Saltoq and libwatchfish.
