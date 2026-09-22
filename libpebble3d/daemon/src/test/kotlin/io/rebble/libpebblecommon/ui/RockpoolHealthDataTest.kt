@@ -5,6 +5,7 @@ package io.rebble.libpebblecommon.ui
 
 import io.rebble.libpebblecommon.connection.FakeLibPebble
 import io.rebble.libpebblecommon.connection.HealthDataApi
+import io.rebble.libpebblecommon.database.dao.DailyMovementAggregate
 import io.rebble.libpebblecommon.database.entity.HealthDataEntity
 import io.rebble.libpebblecommon.database.entity.OverlayDataEntity
 import io.rebble.libpebblecommon.health.OverlayType
@@ -15,6 +16,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
+import kotlinx.datetime.toLocalDateTime
 import org.freedesktop.dbus.types.Variant
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -174,6 +176,62 @@ class RockpoolHealthDataTest {
     }
 
     @Test
+    fun `history covers ninety local dates without changing thirty day averages`() = runBlocking {
+        val today = LocalDate(2024, 4, 1)
+        val zone = TimeZone.of("Europe/Paris")
+        val first = today.minus(DatePeriod(days = 89))
+        val yesterday = today.minus(DatePeriod(days = 1))
+        val fake = FakeHealthData(
+            movement = listOf(
+                movement(first.minus(DatePeriod(days = 1)).atStartOfDayIn(zone).epochSeconds,
+                    steps = 9999, heartRate = 100),
+                movement(first.atStartOfDayIn(zone).epochSeconds, steps = 700, heartRate = 90),
+                movement(yesterday.atStartOfDayIn(zone).epochSeconds, steps = 0, heartRate = 60),
+                movement(today.atStartOfDayIn(zone).epochSeconds, steps = 200, heartRate = 70),
+                movement(today.plus(DatePeriod(days = 1)).atStartOfDayIn(zone).epochSeconds,
+                    steps = 9999, heartRate = 100),
+            ),
+            overlays = buildList { addSleepDay(first, zone, totalHours = 8, deepHours = 2) },
+            zone = zone,
+        )
+        val coordinator = RockpoolHealthDataCoordinator(
+            health = fake,
+            now = { Instant.parse("2024-04-01T12:00:00Z") },
+            timeZone = { zone },
+        )
+
+        val actual = coordinator.healthOverview()
+        val plain = unwrap(actual) as Map<*, *>
+        val history = plain["history"] as List<*>
+        assertEquals(90, history.size)
+        assertEquals("av", actual.getValue("history").sig)
+        assertTrue(variantRecords(actual.getValue("history")).all { it.sig == "a{sv}" })
+        assertEquals(
+            mapOf("date" to first.toString(), "steps" to 700,
+                "sleepDuration" to 8 * 3600, "deepSleepDuration" to 2 * 3600,
+                "hasMovement" to 1, "hasSleep" to 1),
+            history.first(),
+        )
+        assertEquals(0, (history[1] as Map<*, *>)["hasMovement"])
+        assertEquals(0, (history[1] as Map<*, *>)["hasSleep"])
+        val zeroDay = history[88] as Map<*, *>
+        assertEquals(yesterday.toString(), zeroDay["date"])
+        assertEquals(1, zeroDay["hasMovement"])
+        assertEquals(0, zeroDay["steps"])
+        assertEquals(today.toString(), (history.last() as Map<*, *>)["date"])
+        assertEquals(200, (history.last() as Map<*, *>)["steps"])
+        assertEquals(0, plain["averageStepsPerDay"])
+        assertEquals(60, plain["averageHeartRate30Days"])
+        assertEquals(1, fake.movementCalls.size)
+        val averageStart = today.minus(DatePeriod(days = 30)).atStartOfDayIn(zone).epochSeconds
+        assertEquals(averageStart, fake.movementCalls.single().first)
+        assertEquals(listOf(first.atStartOfDayIn(zone).epochSeconds to averageStart), fake.aggregateCalls)
+        assertEquals(today.plus(DatePeriod(days = 1)).atStartOfDayIn(zone).epochSeconds,
+            fake.movementCalls.single().second)
+        assertEquals(1, fake.sleepCalls.size)
+    }
+
+    @Test
     fun `sleep and overlay methods preserve legacy session and record semantics`() = runBlocking {
         val date = LocalDate(2024, 3, 1)
         val zone = TimeZone.UTC
@@ -294,12 +352,24 @@ private class FakeHealthData(
     private val movement: List<HealthDataEntity> = emptyList(),
     private val overlays: List<OverlayDataEntity> = emptyList(),
     private val latestTimestamp: Long? = movement.maxOfOrNull { it.timestamp },
+    private val zone: TimeZone = TimeZone.UTC,
 ) : HealthDataApi by FakeLibPebble() {
     val movementCalls = mutableListOf<Pair<Long, Long>>()
     val sleepCalls = mutableListOf<Pair<Long, Long>>()
     val activityCalls = mutableListOf<Pair<Long, Long>>()
+    val aggregateCalls = mutableListOf<Pair<Long, Long>>()
 
     override suspend fun getLatestTimestamp(): Long? = latestTimestamp
+
+    override suspend fun getDailyAggregates(start: Long, end: Long): List<DailyMovementAggregate> {
+        aggregateCalls += start to end
+        return movement.filter { it.timestamp >= start && it.timestamp < end }
+            .groupBy { Instant.fromEpochSeconds(it.timestamp).toLocalDateTime(zone).date }
+            .map { (date, rows) ->
+                DailyMovementAggregate(date.toString(), rows.sumOf { it.steps.toLong() },
+                    0L, 0L, 0L, 0L)
+            }
+    }
 
     override suspend fun getHealthDataForRange(start: Long, end: Long): List<HealthDataEntity> {
         movementCalls += start to end

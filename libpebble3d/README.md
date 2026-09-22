@@ -489,6 +489,16 @@ its incremental-sync acknowledgement; every completed database update emits
 does not add historical records to the primary `io.rebble.libpebble3` API or claim
 per-watch provenance.
 
+The optional `history` field in `HealthOverview` contains 90 consecutive local
+calendar dates ending today, as `av` records with `date`, `steps`,
+`sleepDuration`, `deepSleepDuration`, `hasMovement`, and `hasSleep`. Durations
+are seconds and presence flags are integer 0/1, so missing data is distinct
+from recorded zero activity. The UI browses these days horizontally and groups
+them into Monday-based weeks: steps are summed, while sleep and deep sleep are
+averaged over recorded nights. Partial weeks use only the available data.
+The existing seven-day fields and preceding-30-day summary averages retain
+their semantics. Older daemons without `history` retain the seven-day view.
+
 #### Legacy global-settings migration
 
 The one-time reconciliation waits until v1 per-watch import is complete. Config

@@ -11,6 +11,7 @@
 #include <QDBusServiceWatcher>
 #include <QDBusVariant>
 #include <QDebug>
+#include <QDate>
 #include <QTimer>
 
 namespace {
@@ -267,6 +268,40 @@ bool decodeHealthOverview(const QDBusMessage &message, QVariantMap *overview)
     }
     overview->insert(QStringLiteral("stepsWeek"), stepsWeek);
     overview->insert(QStringLiteral("sleepWeek"), sleepWeek);
+    // Optional for compatibility with an older daemon. Reject malformed history rather than
+    // publishing a partly decoded snapshot to QML.
+    if (overview->contains(QStringLiteral("history"))) {
+        QVariantList history;
+        if (!decodeVariantMapListValue(overview->value(QStringLiteral("history")), &history)
+                || history.isEmpty() || history.size() > 90) {
+            return false;
+        }
+        QDate previous;
+        foreach (const QVariant &entry, history) {
+            const QVariantMap record = entry.toMap();
+            const QString dateText = record.value(QStringLiteral("date")).toString();
+            const QDate date = QDate::fromString(dateText, Qt::ISODate);
+            if (!date.isValid() || date.toString(Qt::ISODate) != dateText
+                    || (previous.isValid() && previous.addDays(1) != date)) {
+                return false;
+            }
+            previous = date;
+            const QStringList keys = QStringList() << QStringLiteral("steps")
+                << QStringLiteral("sleepDuration") << QStringLiteral("deepSleepDuration")
+                << QStringLiteral("hasMovement") << QStringLiteral("hasSleep");
+            foreach (const QString &key, keys) {
+                if (!record.contains(key) || !isIntegerValue(record.value(key))
+                        || record.value(key).toLongLong() < 0) {
+                    return false;
+                }
+            }
+            if (record.value(QStringLiteral("hasMovement")).toLongLong() > 1
+                    || record.value(QStringLiteral("hasSleep")).toLongLong() > 1) {
+                return false;
+            }
+        }
+        overview->insert(QStringLiteral("history"), history);
+    }
     return true;
 }
 

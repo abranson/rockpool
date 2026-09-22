@@ -1,5 +1,6 @@
-import QtQuick 2.2
+import QtQuick 2.6
 import Sailfish.Silica 1.0
+import "HealthHistory.js" as History
 
 Page {
     id: root
@@ -16,7 +17,45 @@ Page {
     property color deepSleepColor: "#14507f"
     property color heartColor: "#d26363"
 
+    property bool weeklyView
+    property var chartEntries: []
+    property real historyPosition
+    property int recordedDays
+    readonly property int visibleBars: 7
+
     allowedOrientations: Orientation.All
+
+    function rebuildHistory() {
+        var atLatest = historyPosition >= chartEntries.length - visibleBars - 0.5
+        var lastVisible = chartEntries[Math.min(chartEntries.length - 1,
+                                               Math.floor(historyPosition) + visibleBars - 1)]
+        var days = History.dailyRecords(overview)
+        var count = 0
+        for (var i = 0; i < days.length; ++i) {
+            if (days[i].movementDays || days[i].sleepDays)
+                count++
+        }
+        recordedDays = count
+        chartEntries = weeklyView ? History.weeklyRecords(days) : days
+        historyPosition = atLatest || !lastVisible
+                ? Math.max(0, chartEntries.length - visibleBars)
+                : History.positionForDate(chartEntries, lastVisible.endDate, visibleBars)
+    }
+
+    function visibleDateRange() {
+        if (!chartEntries.length)
+            return ""
+        var first = chartEntries[Math.max(0, Math.min(chartEntries.length - 1,
+                                                      Math.floor(historyPosition)))]
+        var last = chartEntries[Math.min(chartEntries.length - 1,
+                                         Math.ceil(historyPosition) + visibleBars - 1)]
+        return Qt.formatDate(History.localDate(first.date), "d MMM yyyy") + " – "
+                + Qt.formatDate(History.localDate(last.endDate), "d MMM yyyy")
+    }
+
+    onOverviewChanged: rebuildHistory()
+    onWeeklyViewChanged: rebuildHistory()
+    Component.onCompleted: rebuildHistory()
 
     function refreshOverview() {
         if (!pebble) {
@@ -62,24 +101,6 @@ Page {
         }
         return qsTr("Last updated %1").arg(
                     Qt.formatDateTime(new Date(timestamp * 1000), "ddd hh:mm"))
-    }
-
-    function maxValue(list, key) {
-        var maximum = 0
-        if (!list) {
-            return 1
-        }
-        for (var i = 0; i < list.length; ++i) {
-            maximum = Math.max(maximum, Number(list[i][key]))
-        }
-        return Math.max(maximum, 1)
-    }
-
-    function barHeight(value, maximum, availableHeight) {
-        if (value <= 0 || maximum <= 0) {
-            return 0
-        }
-        return Math.max(8, Math.round((value / maximum) * availableHeight))
     }
 
     onStatusChanged: {
@@ -223,6 +244,45 @@ Page {
                 spacing: Theme.paddingLarge
                 visible: root.hasOverview
 
+                ComboBox {
+                    width: parent.width
+                    label: qsTr("Graph view")
+                    currentIndex: root.weeklyView ? 1 : 0
+                    onCurrentIndexChanged: root.weeklyView = currentIndex === 1
+                    menu: ContextMenu {
+                        MenuItem { text: qsTr("Daily") }
+                        MenuItem { text: qsTr("Weekly") }
+                    }
+                }
+
+                Label {
+                    width: parent.width - 2 * Theme.horizontalPageMargin
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    text: root.visibleDateRange()
+                    horizontalAlignment: Text.AlignHCenter
+                    wrapMode: Text.Wrap
+                }
+
+                Label {
+                    width: parent.width - 2 * Theme.horizontalPageMargin
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    text: root.weeklyView
+                          ? qsTr("Weeks start on Monday. Steps are weekly totals; sleep is the average "
+                                 + "per recorded night. Incomplete weeks use available data.")
+                          : qsTr("Each bar shows one day. Swipe the graphs to browse history.")
+                    color: Theme.secondaryColor
+                    font.pixelSize: Theme.fontSizeSmall
+                    horizontalAlignment: Text.AlignHCenter
+                    wrapMode: Text.Wrap
+                }
+
+                Button {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    text: qsTr("Latest")
+                    enabled: root.historyPosition < root.chartEntries.length - root.visibleBars - 0.5
+                    onClicked: root.historyPosition = Math.max(0, root.chartEntries.length - root.visibleBars)
+                }
+
                 Rectangle {
                     width: parent.width - 2 * Theme.horizontalPageMargin
                     anchors.horizontalCenter: parent.horizontalCenter
@@ -254,52 +314,14 @@ Page {
                                           root.overview["averageStepsPerDay"])))
                             wrapMode: Text.Wrap
                         }
-                        Row {
-                            id: stepsRow
-
+                        HealthHistoryChart {
                             width: parent.width
-                            spacing: Theme.paddingSmall
-
-                            Repeater {
-                                model: root.overview["stepsWeek"] || []
-
-                                delegate: Column {
-                                    width: (stepsRow.width - stepsRow.spacing * 6) / 7
-                                    spacing: Theme.paddingSmall / 2
-
-                                    Label {
-                                        width: parent.width
-                                        color: Theme.secondaryColor
-                                        font.pixelSize: Theme.fontSizeTiny
-                                        horizontalAlignment: Text.AlignHCenter
-                                        text: root.formatCount(Number(modelData["steps"]))
-                                    }
-                                    Item {
-                                        width: parent.width
-                                        height: Theme.itemSizeMedium
-
-                                        Rectangle {
-                                            width: Theme.paddingLarge
-                                            height: root.barHeight(
-                                                        Number(modelData["steps"]),
-                                                        root.maxValue(
-                                                            root.overview["stepsWeek"],
-                                                            "steps"), parent.height)
-                                            anchors.horizontalCenter: parent.horizontalCenter
-                                            anchors.bottom: parent.bottom
-                                            radius: Theme.paddingSmall
-                                            color: root.stepsColor
-                                        }
-                                    }
-                                    Label {
-                                        width: parent.width
-                                        color: Theme.secondaryColor
-                                        font.pixelSize: Theme.fontSizeTiny
-                                        horizontalAlignment: Text.AlignHCenter
-                                        text: modelData["label"]
-                                    }
-                                }
-                            }
+                            entries: root.chartEntries
+                            position: root.historyPosition
+                            visibleCount: root.visibleBars
+                            barColor: root.stepsColor
+                            secondaryColor: root.stepsColor
+                            onScrolled: root.historyPosition = position
                         }
                     }
                 }
@@ -357,67 +379,18 @@ Page {
                                 }
                             }
                         }
-                        Row {
-                            id: sleepRow
-
+                        HealthHistoryChart {
                             width: parent.width
-                            spacing: Theme.paddingSmall
-
-                            Repeater {
-                                model: root.overview["sleepWeek"] || []
-
-                                delegate: Column {
-                                    width: (sleepRow.width - sleepRow.spacing * 6) / 7
-                                    spacing: Theme.paddingSmall / 2
-
-                                    Label {
-                                        width: parent.width
-                                        color: Theme.secondaryColor
-                                        font.pixelSize: Theme.fontSizeTiny
-                                        horizontalAlignment: Text.AlignHCenter
-                                        text: Number(modelData["sleepDuration"]) > 0
-                                              ? (Number(modelData["sleepDuration"]) / 3600).toFixed(1)
-                                              : "0.0"
-                                    }
-                                    Item {
-                                        width: parent.width
-                                        height: Theme.itemSizeMedium
-
-                                        Rectangle {
-                                            width: Theme.paddingLarge
-                                            height: root.barHeight(
-                                                        Number(modelData["sleepDuration"]),
-                                                        root.maxValue(
-                                                            root.overview["sleepWeek"],
-                                                            "sleepDuration"), parent.height)
-                                            anchors.horizontalCenter: parent.horizontalCenter
-                                            anchors.bottom: parent.bottom
-                                            radius: Theme.paddingSmall
-                                            color: root.sleepColor
-                                        }
-                                        Rectangle {
-                                            width: Theme.paddingLarge
-                                            height: root.barHeight(
-                                                        Number(modelData[
-                                                            "deepSleepDuration"]),
-                                                        root.maxValue(
-                                                            root.overview["sleepWeek"],
-                                                            "sleepDuration"), parent.height)
-                                            anchors.horizontalCenter: parent.horizontalCenter
-                                            anchors.bottom: parent.bottom
-                                            radius: Theme.paddingSmall
-                                            color: root.deepSleepColor
-                                        }
-                                    }
-                                    Label {
-                                        width: parent.width
-                                        color: Theme.secondaryColor
-                                        font.pixelSize: Theme.fontSizeTiny
-                                        horizontalAlignment: Text.AlignHCenter
-                                        text: modelData["label"]
-                                    }
-                                }
-                            }
+                            entries: root.chartEntries
+                            position: root.historyPosition
+                            visibleCount: root.visibleBars
+                            valueKey: "sleepDuration"
+                            secondaryKey: "deepSleepDuration"
+                            presenceKey: "sleepDays"
+                            hours: true
+                            barColor: root.sleepColor
+                            secondaryColor: root.deepSleepColor
+                            onScrolled: root.historyPosition = position
                         }
                     }
                 }
@@ -480,11 +453,14 @@ Page {
                     width: parent.width - 2 * Theme.horizontalPageMargin
                     anchors.horizontalCenter: parent.horizontalCenter
                     color: Theme.secondaryColor
-                    visible: Number(root.overview["daysOfData"]) > 0
+                    visible: root.recordedDays > 0
                     horizontalAlignment: Text.AlignHCenter
                     wrapMode: Text.Wrap
-                    text: qsTr("%1 days of health data available.").arg(
-                              Number(root.overview["daysOfData"]))
+                    text: root.overview["history"]
+                          ? qsTr("%1 recorded days in the last 90 days. Missing data is shown as —.")
+                            .arg(root.recordedDays)
+                          : qsTr("%1 days of health data available.").arg(
+                                Number(root.overview["daysOfData"]))
                 }
             }
         }

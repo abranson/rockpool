@@ -33,6 +33,7 @@ RESOURCES += rockpool.qrc
 
 QML_FILES += $$files(qml/*.qml,true)
 QML_FILES += $$files(qml/pages/*.qml,true)
+QML_FILES += $$files(qml/pages/*.js,true)
 QML_FILES += $$files(qml/cover/*.qml,true)
 
 CONF_FILES +=  rockpool.png \

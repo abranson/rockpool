@@ -932,6 +932,7 @@ private slots:
     void fetchHealthDataDoesNotWaitAndRefreshesOverview();
     void fetchHealthDataErrorCompletesOnce();
     void failedHealthOverviewRetainsValidatedSnapshot();
+    void healthHistoryValidatesDatesAndPresence();
     void cannedResponsesLoadLazilyAndUseCachedGetter();
     void newestCannedResponsesReplyWins();
     void oldOwnerCannedResponsesReplyIsIgnored();
@@ -3469,6 +3470,60 @@ void PebbleAsyncTest::failedHealthOverviewRetainsValidatedSnapshot()
                     DelayedPebble::healthOverviewArguments(invalid));
     QTRY_VERIFY(pebble.healthOverviewReady());
     QCOMPARE(pebble.healthOverview(), snapshot);
+    QVERIFY(connection.interface()->unregisterService(QString::fromLatin1(serviceName)).isValid());
+}
+
+void PebbleAsyncTest::healthHistoryValidatesDatesAndPresence()
+{
+    QDBusConnection connection = QDBusConnection::connectToBus(
+        QDBusConnection::SessionBus, QStringLiteral("pebble-async-health-history"));
+    QVERIFY(connection.isConnected());
+    DelayedPebble watch(connection);
+    QVariantMap snapshot = healthOverview(4000, QStringLiteral("valid-"));
+    QVariantList history;
+    for (int i = 0; i < 90; ++i) {
+        QVariantMap day;
+        day.insert(QStringLiteral("date"), QDate(2024, 1, 1).addDays(i).toString(Qt::ISODate));
+        day.insert(QStringLiteral("steps"), i);
+        day.insert(QStringLiteral("sleepDuration"), 0);
+        day.insert(QStringLiteral("deepSleepDuration"), 0);
+        day.insert(QStringLiteral("hasMovement"), 1);
+        day.insert(QStringLiteral("hasSleep"), 0);
+        history.append(day);
+    }
+    snapshot.insert(QStringLiteral("history"), history);
+    watch.setHealthOverviewValue(snapshot);
+    registerWatch(&watch, connection);
+    registerService(connection);
+    Pebble pebble(QDBusObjectPath(QString::fromLatin1(watchPath)));
+    pebble.refreshHealthOverview();
+    QTRY_VERIFY(pebble.healthOverviewReady());
+    QCOMPARE(pebble.healthOverview(), snapshot);
+
+    QList<QVariantList> invalidHistories;
+    QVariantList invalid = history;
+    QVariantMap day = invalid[1].toMap();
+    day.insert(QStringLiteral("date"), QStringLiteral("2024-01-04"));
+    invalid[1] = day;
+    invalidHistories.append(invalid);
+    invalid = history;
+    day = invalid[0].toMap();
+    day.insert(QStringLiteral("hasSleep"), 2);
+    invalid[0] = day;
+    invalidHistories.append(invalid);
+    invalid = history;
+    invalid.append(history.last());
+    invalidHistories.append(invalid);
+    invalidHistories.append(QVariantList());
+    foreach (const QVariantList &badHistory, invalidHistories) {
+        QVariantMap bad = snapshot;
+        bad.insert(QStringLiteral("todaySteps"), 999);
+        bad.insert(QStringLiteral("history"), badHistory);
+        watch.setHealthOverviewValue(bad);
+        pebble.refreshHealthOverview();
+        QTRY_VERIFY(pebble.healthOverviewReady());
+        QCOMPARE(pebble.healthOverview(), snapshot);
+    }
     QVERIFY(connection.interface()->unregisterService(QString::fromLatin1(serviceName)).isValid());
 }
 

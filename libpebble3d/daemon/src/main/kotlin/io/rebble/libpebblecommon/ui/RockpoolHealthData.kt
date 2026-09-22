@@ -28,6 +28,7 @@ internal const val ROCKPOOL_HEALTH_MAX_DETAIL_SECONDS = 48L * 60L * 60L
 internal const val ROCKPOOL_HEALTH_MAX_AVERAGE_DAYS = 31
 
 private const val OVERVIEW_DAYS = 30
+private const val HISTORY_DAYS = 90
 private const val MAX_DETAIL_MOVEMENT_ROWS = 2 * 24 * 60
 private const val MAX_DETAIL_OVERLAY_ROWS = 4096
 private const val MAX_OVERVIEW_MOVEMENT_ROWS = (OVERVIEW_DAYS + 1) * 25 * 60
@@ -301,6 +302,7 @@ internal class RockpoolHealthDataCoordinator(
         val zone = timeZone()
         val today = now().toLocalDateTime(zone).date
         val averageStart = today.minus(DatePeriod(days = OVERVIEW_DAYS))
+        val historyStart = today.minus(DatePeriod(days = HISTORY_DAYS - 1))
         val tomorrow = today.plus(DatePeriod(days = 1))
         val movementStart = averageStart.atStartOfDayIn(zone).epochSeconds
         val movementEnd = tomorrow.atStartOfDayIn(zone).epochSeconds
@@ -312,10 +314,10 @@ internal class RockpoolHealthDataCoordinator(
         val movementByDate = movement.groupBy { row ->
             Instant.fromEpochSeconds(row.timestamp).toLocalDateTime(zone).date
         }.mapValues { (_, rows) -> movementSummary(rows) }
-        val sleep = sleepEntriesForDays(averageStart, today, zone)
+        val sleep = sleepEntriesForDays(historyStart, today, zone)
         val sleepByDate = buildMap {
-            repeat(OVERVIEW_DAYS + 1) { offset ->
-                val date = averageStart.plus(DatePeriod(days = offset))
+            repeat(HISTORY_DAYS) { offset ->
+                val date = historyStart.plus(DatePeriod(days = offset))
                 legacySleepSession(sleep, date.atStartOfDayIn(zone).epochSeconds)?.let {
                     put(date, it)
                 }
@@ -330,6 +332,35 @@ internal class RockpoolHealthDataCoordinator(
             sleepByDate[averageStart.plus(DatePeriod(days = offset))]
         }
         val lastNight = sleepByDate[today]
+
+        // Older bars need only daily step totals, not another two months of minute records.
+        val olderMovement = health.getDailyAggregates(
+            historyStart.atStartOfDayIn(zone).epochSeconds,
+            movementStart,
+        )
+        require(olderMovement.size <= HISTORY_DAYS) { "Health daily result exceeds $HISTORY_DAYS records" }
+        val olderStepsByDate = olderMovement.associate { row ->
+            LocalDate.parse(row.day) to legacyInt(row.steps ?: 0L)
+        }
+
+        // Keep missing records distinct from recorded zero activity. The UI can group these
+        // account-global days into calendar weeks without treating missing nights as zero sleep.
+        val history = (0 until HISTORY_DAYS).map { offset ->
+            val date = historyStart.plus(DatePeriod(days = offset))
+            val movementSummary = movementByDate[date]
+            val steps = movementSummary?.totalSteps ?: olderStepsByDate[date]
+            val sleepSummary = sleepByDate[date]
+            recordVariant(
+                linkedMapOf(
+                    "date" to Variant(date.toString()),
+                    "steps" to Variant(steps ?: 0),
+                    "sleepDuration" to Variant(legacyInt(sleepSummary?.totalSleep ?: 0L)),
+                    "deepSleepDuration" to Variant(legacyInt(sleepSummary?.deepSleep ?: 0L)),
+                    "hasMovement" to Variant(if (steps != null) 1 else 0),
+                    "hasSleep" to Variant(if (sleepSummary != null) 1 else 0),
+                ),
+            )
+        }
 
         val stepsWeek = mutableListOf<Variant<*>>()
         val sleepWeek = mutableListOf<Variant<*>>()
@@ -377,6 +408,7 @@ internal class RockpoolHealthDataCoordinator(
             "daysOfData" to Variant(maxOf(averageMovement.size, averageSleep.size)),
             "stepsWeek" to Variant(stepsWeek, "av"),
             "sleepWeek" to Variant(sleepWeek, "av"),
+            "history" to Variant(history, "av"),
         )
     }
 
