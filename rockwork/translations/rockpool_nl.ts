@@ -12,7 +12,7 @@
     <message id="filemanager-la-no_files">
         <location filename="../qml/pages/ImportPackagePage.qml" line="171"/>
         <source>No files</source>
-        <translation type="unfinished"></translation>
+        <translation>Geen bestanden</translation>
     </message>
 </context>
 <context>
@@ -463,7 +463,7 @@
     <message>
         <location filename="../qml/pages/ImportPackagePage.qml" line="161"/>
         <source>Sideloading file</source>
-        <translation type="unfinished"></translation>
+        <translation>Bestand wordt van lokaal medium geladen</translation>
     </message>
 </context>
 <context>
@@ -471,22 +471,22 @@
     <message>
         <location filename="../qml/pages/InfoPage.qml" line="29"/>
         <source>Version %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Versie %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/InfoPage.qml" line="42"/>
         <source>Legal</source>
-        <translation type="unfinished"></translation>
+        <translation>Legaal</translation>
     </message>
     <message>
         <location filename="../qml/pages/InfoPage.qml" line="80"/>
         <source>This application is neither affiliated with nor endorsed by Pebble Technology Corp.</source>
-        <translation type="unfinished"></translation>
+        <translation>Deze toepassing is noch geaffilieerd, werd noch goedgekeurd door Pebble Technology Corp.</translation>
     </message>
     <message>
         <location filename="../qml/pages/InfoPage.qml" line="90"/>
         <source>Pebble is a trademark of Pebble Technology Corp.</source>
-        <translation type="unfinished"></translation>
+        <translation>Pebble is een handelsmerk van Pebble Technology Corp.</translation>
     </message>
 </context>
 <context>
