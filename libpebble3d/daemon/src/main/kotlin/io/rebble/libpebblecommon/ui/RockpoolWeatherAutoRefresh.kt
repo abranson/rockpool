@@ -21,7 +21,7 @@ import kotlin.time.Duration.Companion.minutes
 internal class RockpoolWeatherAutoRefresh(
     private val scope: CoroutineScope,
     private val coordinator: RockpoolWeatherCoordinator,
-    private val units: () -> String,
+    private val units: suspend () -> String,
     private val fetch: suspend (
         RockpoolWeatherFetchTarget,
         RockpoolWeatherCoordinates,
@@ -51,7 +51,15 @@ internal class RockpoolWeatherAutoRefresh(
     }
 
     internal suspend fun refreshOnce() {
-        val selectedUnits = units().takeIf { it in setOf("m", "e", "h") } ?: "m"
+        val selectedUnits = try {
+            units().takeIf { it in setOf("m", "e", "h") } ?: "m"
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            onFailure(e)
+            return
+        }
+        if (!coordinator.setImperialUnits(selectedUnits == "e")) return
         coordinator.automaticFetchTargets().forEach { target ->
             try {
                 val coordinates = if (target.currentLocation) {
@@ -65,7 +73,9 @@ internal class RockpoolWeatherAutoRefresh(
                     null
                 }
                 fetch(target, coordinates, selectedUnits)?.let { observation ->
-                    coordinator.applyAutomaticObservation(target, observation, resolvedName)
+                    if ((units() == "e") == (selectedUnits == "e")) {
+                        coordinator.applyAutomaticObservation(target, observation, resolvedName)
+                    }
                 }
             } catch (e: CancellationException) {
                 throw e

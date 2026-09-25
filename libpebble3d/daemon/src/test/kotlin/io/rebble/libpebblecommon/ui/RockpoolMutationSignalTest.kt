@@ -420,6 +420,35 @@ class RockpoolMutationSignalTest {
     }
 
     @Test
+    fun `weather and watch selectors share the durable unit preference`() = runBlocking {
+        val directory = Files.createTempDirectory("rockpool-weather-units-")
+        temporarySettingsDirectories.add(directory)
+        val settings = RockpoolSettings(directory.resolve("rockpool.properties"))
+        settings.set("weather.units", "e") // Stale preference from an older installation.
+        val base = FakeLibPebble()
+        val state = MutableStateFlow(base.healthSettings.first().copy(imperialUnits = false))
+        val libPebble = object : LibPebble by base {
+            override val healthSettings: Flow<HealthSettings> = state
+        }
+        val coordinator = RockpoolHealthCoordinator(libPebble) { state.value = it }
+        val obj = rockpoolObject(
+            libPebble = libPebble, settings = settings, healthCoordinator = coordinator, emit = {},
+        )
+        assertEquals("m", obj.WeatherUnits())
+        obj.setWeatherUnits("e")
+        assertTrue(state.value.imperialUnits)
+        assertTrue(obj.ImperialUnits())
+        assertEquals("e", obj.WeatherUnits())
+        obj.SetImperialUnits(false)
+        assertEquals("m", obj.WeatherUnits())
+        obj.setWeatherUnits("h")
+        assertFalse(state.value.imperialUnits)
+        assertEquals("h", obj.WeatherUnits())
+        obj.SetImperialUnits(true)
+        assertEquals("e", obj.WeatherUnits())
+    }
+
+    @Test
     fun `global health settings notify every exported watch`() = runBlocking {
         val directory = Files.createTempDirectory("rockpool-health-signal-")
         val base = FakeLibPebble()

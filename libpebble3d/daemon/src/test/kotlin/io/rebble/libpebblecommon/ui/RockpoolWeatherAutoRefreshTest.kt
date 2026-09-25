@@ -21,6 +21,115 @@ import kotlin.test.assertTrue
 
 class RockpoolWeatherAutoRefreshTest {
     @Test
+    fun `unit changes convert cached forecasts offline and survive restart`() {
+        var settings = emptyMap<String, String>()
+        val updates = mutableListOf<List<WeatherLocationData>>()
+        val coordinator = coordinator(settings = { settings }, replace = { settings = it }, updates = updates)
+        assertTrue(coordinator.setLocations(listOf(location("London", "51.5", "-0.1"))))
+        val oldTarget = coordinator.automaticFetchTargets().single()
+        assertTrue(coordinator.applyAutomaticObservation(oldTarget, observation("Cached", 20).copy(
+            todayHigh = 25, todayLow = 0, tomorrowHigh = Short.MAX_VALUE, tomorrowLow = -10,
+        )))
+        assertTrue(coordinator.setImperialUnits(true))
+        val fahrenheit = assertIs<WeatherLocationData.WeatherLocationDataPopulated>(updates.last().single())
+        assertEquals(68, fahrenheit.currentTemp.toInt())
+        assertEquals(77, fahrenheit.todayHighTemp.toInt())
+        assertEquals(32, fahrenheit.todayLowTemp.toInt())
+        assertEquals(Short.MAX_VALUE, fahrenheit.tomorrowHighTemp)
+        assertEquals(14, fahrenheit.tomorrowLowTemp.toInt())
+        assertFalse(coordinator.applyAutomaticObservation(oldTarget, observation("Stale Celsius", 21)))
+
+        val reloaded = coordinator(settings = { settings }, replace = { settings = it }, updates = updates)
+        assertTrue(reloaded.setImperialUnits(true))
+        assertEquals(68, assertIs<WeatherLocationData.WeatherLocationDataPopulated>(updates.last().single()).currentTemp.toInt())
+        assertTrue(reloaded.setImperialUnits(false))
+        assertEquals(20, assertIs<WeatherLocationData.WeatherLocationDataPopulated>(updates.last().single()).currentTemp.toInt())
+    }
+
+    @Test
+    fun `legacy Fahrenheit observations are converted using their original units`() {
+        val location = parseRockpoolWeatherLocations(listOf(location("London", "51.5", "-0.1")))
+            .single().copy(observation = observation("Legacy", 68))
+        var settings = encodeRockpoolWeatherSettings(listOf(location))
+        val updates = mutableListOf<List<WeatherLocationData>>()
+        val coordinator = RockpoolWeatherCoordinator(
+            loadSettings = { settings },
+            replaceSettings = { settings = it; true },
+            updateWeatherData = updates::add,
+            legacyImperialUnits = { true },
+        )
+        assertTrue(coordinator.setImperialUnits(false))
+        assertEquals(20, assertIs<WeatherLocationData.WeatherLocationDataPopulated>(updates.last().single()).currentTemp.toInt())
+    }
+
+    @Test
+    fun `unavailable unit preference is retried on the next trigger`() = runBlocking {
+        val coordinator = coordinator()
+        var available = false
+        var failures = 0
+        val job = Job()
+        val refresh = RockpoolWeatherAutoRefresh(
+            scope = CoroutineScope(job + Dispatchers.Unconfined),
+            coordinator = coordinator,
+            units = { if (available) "m" else error("database unavailable") },
+            fetch = { _, _, _ -> error("no locations") },
+            onFailure = { failures++ },
+            refreshIntervalMillis = Long.MAX_VALUE,
+        )
+        refresh.start()
+        assertEquals(1, failures)
+        available = true
+        refresh.trigger()
+        yield()
+        assertEquals(1, failures)
+        job.cancel()
+    }
+
+    @Test
+    fun `failed unit conversion does not change durable or published observations`() {
+        var settings = emptyMap<String, String>()
+        var writable = true
+        val updates = mutableListOf<List<WeatherLocationData>>()
+        val coordinator = RockpoolWeatherCoordinator(
+            loadSettings = { settings },
+            replaceSettings = { if (writable) { settings = it; true } else false },
+            updateWeatherData = updates::add,
+        )
+        assertTrue(coordinator.setLocations(listOf(location("London", "51.5", "-0.1"))))
+        assertTrue(coordinator.inject("London", conditions(20, "External")))
+        val saved = settings
+        val count = updates.size
+        writable = false
+        assertFalse(coordinator.setImperialUnits(true))
+        assertEquals(saved, settings)
+        assertEquals(count, updates.size)
+    }
+
+    @Test
+    fun `unit change during fetch rejects old response and next refresh uses new units`() = runBlocking {
+        val updates = mutableListOf<List<WeatherLocationData>>()
+        val coordinator = coordinator(updates = updates)
+        assertTrue(coordinator.setLocations(listOf(location("London", "51.5", "-0.1"))))
+        var units = "m"
+        val fetchedUnits = mutableListOf<String>()
+        val refresh = RockpoolWeatherAutoRefresh(
+            scope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined),
+            coordinator = coordinator,
+            units = { units },
+            fetch = { _, _, requested ->
+                fetchedUnits += requested
+                units = "e"
+                observation("Automatic", if (requested == "e") 68 else 20)
+            },
+        )
+        refresh.refreshOnce()
+        assertIs<WeatherLocationData.WeatherLocationDataFailed>(updates.last().single())
+        refresh.refreshOnce()
+        assertEquals(listOf("m", "e"), fetchedUnits)
+        assertEquals(68, assertIs<WeatherLocationData.WeatherLocationDataPopulated>(updates.last().single()).currentTemp.toInt())
+    }
+
+    @Test
     fun `automatic observation persists and replays as automatic`() {
         var settings = emptyMap<String, String>()
         val updates = mutableListOf<List<WeatherLocationData>>()

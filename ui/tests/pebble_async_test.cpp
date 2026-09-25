@@ -961,6 +961,7 @@ private slots:
     void staleCannedContactsWriteErrorIsIgnored();
     void failedCannedContactsReadFallsBackAndRemainsWritable();
     void weatherSettingsLoadLazilyAndAtomically();
+    void watchUnitsSignalRefreshesWeatherUnits();
     void newestWeatherSettingsReplyWins();
     void oldOwnerWeatherSettingsReplyIsIgnored();
     void weatherSettersDoNotWaitForReplies();
@@ -4266,6 +4267,37 @@ void PebbleAsyncTest::weatherSettingsLoadLazilyAndAtomically()
              << "weather refresh elapsed" << refreshElapsed;
     QVERIFY2(constructionElapsed < 1000, "Pebble construction issued blocking weather reads");
     QVERIFY2(refreshElapsed < 1000, "Weather refresh waited for D-Bus replies");
+    QVERIFY(connection.interface()->unregisterService(QString::fromLatin1(serviceName)).isValid());
+}
+
+void PebbleAsyncTest::watchUnitsSignalRefreshesWeatherUnits()
+{
+    QDBusConnection connection = QDBusConnection::connectToBus(
+        QDBusConnection::SessionBus, QStringLiteral("pebble-async-weather-watch-units"));
+    QVERIFY(connection.isConnected());
+    DelayedPebble watch(connection);
+    watch.setWeatherUnitsValue(QStringLiteral("m"));
+    registerWatch(&watch, connection);
+    registerService(connection);
+    Pebble pebble(QDBusObjectPath(QString::fromLatin1(watchPath)));
+
+    watch.emitPebbleSignal(QStringLiteral("ImperialUnitsChanged"));
+    QTest::qWait(50);
+    QCOMPARE(watch.receivedCount(QStringLiteral("WeatherUnits")), 0);
+
+    pebble.refreshWeatherSettings();
+    QTRY_VERIFY(pebble.weatherSettingsReady());
+    QCOMPARE(pebble.weatherUnits(), QStringLiteral("m"));
+    watch.defer(QStringLiteral("WeatherUnits"));
+    pebble.refreshWeatherSettings();
+    QTRY_COMPARE(watch.pendingCount(QStringLiteral("WeatherUnits")), 1);
+    watch.emitPebbleSignal(QStringLiteral("ImperialUnitsChanged"));
+    QTRY_COMPARE(watch.pendingCount(QStringLiteral("WeatherUnits")), 2);
+    watch.replyPending(QStringLiteral("WeatherUnits"), 1, QVariantList() << QStringLiteral("e"));
+    QTRY_COMPARE(pebble.weatherUnits(), QStringLiteral("e"));
+    watch.replyNext(QStringLiteral("WeatherUnits"), QVariantList() << QStringLiteral("m"));
+    QTest::qWait(50);
+    QCOMPARE(pebble.weatherUnits(), QStringLiteral("e"));
     QVERIFY(connection.interface()->unregisterService(QString::fromLatin1(serviceName)).isValid());
 }
 

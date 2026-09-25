@@ -580,6 +580,10 @@ Pebble::Pebble(const QDBusObjectPath &path, QObject *parent,
     connect(m_iface, &RockpoolPebbleInterface::ImperialUnitsChanged,
             this, [this]() {
                 settingsPropertyChangedFromService(QString::fromLatin1(IMPERIAL_UNITS));
+                if (m_weatherRequested) {
+                    ++m_weatherValueRevisions[QString::fromLatin1(WEATHER_UNITS)];
+                    requestWeatherProperty(QString::fromLatin1(WEATHER_UNITS));
+                }
             });
     connect(m_iface, &RockpoolPebbleInterface::ProfileWhenConnectedChanged,
             this, [this]() {

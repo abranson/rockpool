@@ -1100,12 +1100,24 @@ internal class RockpoolPebbleObject(
 
     // ---- Weather ----
     override fun setWeatherApiKey(key: String) = settings.set("weather.apiKey", key)
-    override fun WeatherUnits(): String = settings.get("weather.units", "m")
+    override fun WeatherUnits(): String =
+        if (ImperialUnits()) "e" else if (settings.get("weather.units") == "h") "h" else "m"
     override fun setWeatherUnits(units: String) {
         if (units !in setOf("m", "e", "h")) throw invalidArgument("Unknown weather units")
-        if (!settings.setChecked("weather.units", units)) {
+        val saved = try {
+            healthCoordinator.update(
+                transform = { it.copy(imperialUnits = units == "e") },
+                commit = {
+                    settings.setAllChecked(mapOf(
+                        "weather.units" to units,
+                        "imperialUnits" to (units == "e").toString(),
+                    ))
+                },
+            )
+        } catch (e: Exception) {
             throw failedCall("Weather units could not be saved")
         }
+        if (!saved) throw failedCall("Weather units could not be saved")
         refreshWeather()
     }
 

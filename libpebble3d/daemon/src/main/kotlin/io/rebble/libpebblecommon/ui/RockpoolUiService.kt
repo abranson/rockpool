@@ -103,7 +103,7 @@ internal class RockpoolUiService(
     private val weatherAutoRefresh = RockpoolWeatherAutoRefresh(
         scope = scope,
         coordinator = weatherCoordinator,
-        units = { settings.get("weather.units", "m") },
+        units = { if (healthSettings.currentSuspend().imperialUnits) "e" else "m" },
         fetch = { _, coordinates, units ->
             weatherClient.fetch(
                 latitude = coordinates.latitude,
@@ -719,6 +719,8 @@ internal class RockpoolUiService(
             broadcastSignal { targetPath -> RockpoolPebble.HealthParamsChanged(targetPath) }
         }
         if (change.previous.imperialUnits != change.current.imperialUnits) {
+            weatherCoordinator.setImperialUnits(change.current.imperialUnits)
+            weatherAutoRefresh.trigger()
             broadcastSignal { targetPath -> RockpoolPebble.ImperialUnitsChanged(targetPath) }
         }
     }

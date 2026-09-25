@@ -18,6 +18,7 @@ import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneId
 import kotlin.uuid.Uuid
+import kotlin.math.roundToInt
 
 internal data class RockpoolWeatherLocation(
     val key: Uuid,
@@ -55,6 +56,7 @@ internal data class RockpoolWeatherFetchTarget(
     val longitude: String,
     val coordinates: RockpoolWeatherCoordinates?,
     val currentLocation: Boolean,
+    val imperialUnits: Boolean = false,
 )
 
 internal data class RockpoolWeatherCoordinates(
@@ -76,6 +78,7 @@ internal class RockpoolWeatherCoordinator(
     private val replaceSettings: (Map<String, String>) -> Boolean,
     private val updateWeatherData: (List<WeatherLocationData>) -> Unit,
     private val nowEpochSeconds: () -> Long = { System.currentTimeMillis() / 1_000L },
+    private val legacyImperialUnits: () -> Boolean = { false },
 ) {
     constructor(settings: RockpoolSettings, libPebble: LibPebble) : this(
         loadSettings = { settings.entries(ROCKPOOL_WEATHER_SETTINGS_PREFIX) },
@@ -83,10 +86,46 @@ internal class RockpoolWeatherCoordinator(
             settings.replacePrefix(ROCKPOOL_WEATHER_SETTINGS_PREFIX, it)
         },
         updateWeatherData = libPebble::updateWeatherData,
+        legacyImperialUnits = { settings.get("weather.units", "m") == "e" },
     )
 
     private var state: List<RockpoolWeatherLocation> =
         decodeRockpoolWeatherSettings(loadSettings()).getOrDefault(emptyList())
+
+    private var imperialUnits = storedImperialUnits(loadSettings())
+
+    private fun storedImperialUnits(values: Map<String, String>): Boolean =
+        values["${ROCKPOOL_WEATHER_SETTINGS_PREFIX}imperialUnits"]?.toBooleanStrictOrNull()
+            ?: legacyImperialUnits()
+
+    private fun persist(locations: List<RockpoolWeatherLocation>, imperial: Boolean = imperialUnits): Boolean =
+        replaceSettings(encodeRockpoolWeatherSettings(locations) +
+            ("${ROCKPOOL_WEATHER_SETTINGS_PREFIX}imperialUnits" to imperial.toString()))
+
+    /** Keep cached observations usable offline when the watch's unit preference changes. */
+    @Synchronized
+    fun setImperialUnits(imperial: Boolean): Boolean {
+        if (imperial == imperialUnits) return true
+        fun convert(value: Short): Short {
+            if (value == Short.MAX_VALUE) return value // Unknown temperature sentinel.
+            val converted = if (imperial) value * 9.0 / 5 + 32 else (value - 32) * 5.0 / 9
+            return converted.roundToInt().coerceIn(Short.MIN_VALUE.toInt(), Short.MAX_VALUE - 1).toShort()
+        }
+        val replacement = state.map { location ->
+            location.copy(observation = location.observation?.let {
+                it.copy(
+                    temperature = convert(it.temperature),
+                    todayHigh = convert(it.todayHigh), todayLow = convert(it.todayLow),
+                    tomorrowHigh = convert(it.tomorrowHigh), tomorrowLow = convert(it.tomorrowLow),
+                )
+            })
+        }
+        if (!persist(replacement, imperial)) return false
+        state = replacement
+        imperialUnits = imperial
+        updateWeatherData(state.toWeatherData())
+        return true
+    }
 
     init {
         // RockpoolSettings is the durable compatibility source of truth. Reconcile it with
@@ -103,11 +142,14 @@ internal class RockpoolWeatherCoordinator(
     /** Reconciles a late legacy migration into the live coordinator without a restart. */
     @Synchronized
     fun reloadPersisted(): Result<Boolean> {
-        val persisted = decodeRockpoolWeatherSettings(loadSettings()).getOrElse {
+        val values = loadSettings()
+        val persistedUnits = storedImperialUnits(values)
+        val persisted = decodeRockpoolWeatherSettings(values).getOrElse {
             return Result.failure(it)
         }
-        if (persisted == state) return Result.success(false)
+        if (persisted == state && persistedUnits == imperialUnits) return Result.success(false)
         state = persisted
+        imperialUnits = persistedUnits
         updateWeatherData(state.toWeatherData())
         return Result.success(true)
     }
@@ -125,7 +167,7 @@ internal class RockpoolWeatherCoordinator(
                 },
             )
         }
-        if (!replaceSettings(encodeRockpoolWeatherSettings(replacement))) return false
+        if (!persist(replacement)) return false
         state = replacement
         updateWeatherData(state.toWeatherData())
         return true
@@ -147,6 +189,7 @@ internal class RockpoolWeatherCoordinator(
                 longitude = location.longitude,
                 coordinates = null,
                 currentLocation = true,
+                imperialUnits = imperialUnits,
             )
         }
         val latitude = location.latitude.toDoubleOrNull()?.takeIf(Double::isFinite)
@@ -163,6 +206,7 @@ internal class RockpoolWeatherCoordinator(
             longitude = location.longitude,
             coordinates = RockpoolWeatherCoordinates(latitude, longitude),
             currentLocation = false,
+            imperialUnits = imperialUnits,
         )
     }
 
@@ -180,7 +224,8 @@ internal class RockpoolWeatherCoordinator(
             it.key == target.key && it.name == target.name &&
                 it.latitude == target.latitude && it.longitude == target.longitude
         }
-        if (index < 0 || state[index].observation?.source == RockpoolWeatherObservationSource.EXTERNAL) {
+        if (target.imperialUnits != imperialUnits || index < 0 ||
+            state[index].observation?.source == RockpoolWeatherObservationSource.EXTERNAL) {
             return false
         }
         val locationName = resolvedName?.takeIf { candidate ->
@@ -196,7 +241,7 @@ internal class RockpoolWeatherCoordinator(
                 observation = observation.copy(source = RockpoolWeatherObservationSource.AUTOMATIC),
             )
         }
-        if (!replaceSettings(encodeRockpoolWeatherSettings(replacement))) return false
+        if (!persist(replacement)) return false
         state = replacement
         updateWeatherData(state.toWeatherData())
         return true
@@ -210,7 +255,7 @@ internal class RockpoolWeatherCoordinator(
         val replacement = state.toMutableList().also {
             it[index] = it[index].copy(observation = observation)
         }
-        if (!replaceSettings(encodeRockpoolWeatherSettings(replacement))) return false
+        if (!persist(replacement)) return false
         state = replacement
         updateWeatherData(state.toWeatherData())
         return true
