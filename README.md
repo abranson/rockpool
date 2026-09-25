@@ -28,11 +28,13 @@ Available workflows include:
 - Notification forwarding, supported actions and message replies.
 - Call and media controls, contacts, and favorite-contact Send Text actions.
 - Calendar integration, timeline settings and saved-location weather forecasts.
-- Health history and settings, profile switching and developer tools.
+- Health history and settings, Quiet Time, profile switching and developer tools.
 
 Availability depends on the watch, transport and healthy platform services.
 Health history and several settings are shared across the account; they do not
-represent independent per-watch data. Per-watch app ordering remains pending.
+represent independent per-watch data. App installation, removal and ordering
+currently require exactly one paired watch; independent ordering for multiple
+watches remains pending.
 Message replies are restricted to supported Sailfish Messages notifications;
 an arbitrary application's notification does not automatically support replies.
 
@@ -136,7 +138,7 @@ resolve project dependencies in the project target. The authoritative
 Open the same checkout inside the SDK and run:
 
 ```sh
-mb2 -t TARGET --no-vcs-apply --no-fix-version build
+mb2 -t TARGET --no-fix-version build
 ```
 
 Replace `TARGET` with your project target's exact name. `--no-fix-version`
@@ -186,6 +188,21 @@ version from the spec; for the current version:
 rpm/create-source-archive.sh 2.0.0
 ```
 
+The archive step requires clean release sources, the submodule at its committed
+revision, and staged native output whose recorded commits match the checkout.
+
+### Updating translations
+
+RPM builds compile the checked-in translation catalogues without updating them.
+After changing UI text, refresh them from the repository root with Qt's `lupdate`:
+
+```sh
+lupdate ui/*.cpp ui/*.h ui/qml -recursive -extensions qml,js,cpp,h -ts ui/translations/*.ts
+```
+
+Review and commit the catalogue changes so Weblate can expose new strings to
+translators once they are published.
+
 ## Validation and troubleshooting
 
 From the repository root, check the public contract and build-artifact rules:
@@ -224,55 +241,21 @@ and rebuild the required stage; do not bypass artifact verification.
 
 ## Thanks
 
-* Ruslan N. Marchenko - Sailfish UI, Developer mode and much more
+* JPlexer - Getting libpebble3 building and working with Sailfish OS. And the awesome watchface.
+* Ruslan N. Marchenko - Original Sailfish UI, Developer mode and much more
 * Javispedro - Contributor to Pebbled, author of Saltoq and libwatchfish.
 * Michael Zanetti - Author of RockWork
 * Tomasz Sterna - Author of Pebbled
 * Brian Douglass - RockWork contributor
-* Katharine Berry - Pebble authority
+* Katharine Berry - Old Pebble authority
 * Robert Meijers, Philipp Andreas - Hints and tips
 * Christopher Frost, Kristjan Räts, István Hovai, Allan Nordhøy, Omar Anwar Aglan, J Li, Nathan Follens, Olexandr Nesterenko, ssantos, Jakob Jespersen - Translators
 
+## Watch artwork
 
-## Watch artwork provenance
+The Pebble 2 Duo, Time 2 and Round 2 frames are rendered from the public CAD
+models in [Core Devices' hardware repository](https://github.com/coredevices/hardware).
+Source models: copyright Core Devices 2025; usage terms are in that repository.
 
-The `pebble-2-duo-*.png`, `pebble-time-2-*.png`, and
-`pebble-round-2-*.png` frames are rendered from the public external CAD models
-in the Core Devices hardware repository:
-
-- `watch/Pebble 2 Duo (asterix)/20250918 Pebble 2 Duo - Solid model.STL`
-- `watch/Pebble Time 2 (obelix)/2026-04-08 Pebble Time 2 - 3D CAD Solid
-  Model.STL`
-- `watch/Pebble Round 2 (getafix)/Pebble Round 2 - External 3D CAD -
-  14mm.stl`
-- `watch/Pebble Round 2 (getafix)/Pebble Round 2 - External 3D CAD -
-  20mm.stl`
-
-Source: <https://github.com/coredevices/hardware>
-
-The repository states that its files are free to use to research, learn about,
-code, and hack on Core Devices products. Copyright Core Devices 2025.
-
-Source SHA-256 checksums:
-
-- Pebble 2 Duo STL:
-  `fa9b42bf877c0012eb3d4dd05425ae1e89f5af8d72e876446a62f3b1f23edb5a`
-- Time 2 STL:
-  `fb7c75e955e26de21611c81f73eb72bfe24a89df8b0b5064c730c88cecfa6311`
-- Round 2 14mm STL:
-  `917d40b36cef9369edbd488a5a743a06e1c895309e695f766e6d06ffa98d82dc`
-- Round 2 20mm STL:
-  `df4be31aeb930c3ee3d2abd7ef06cc4c6e7bcbd79331e636e0ec081244b6a3d6`
-
-Run `ui/artwork/render-core-watch-frames.py` with the four downloaded STL paths to
-regenerate the transparent UI frames. The renderer uses only NumPy and Pillow;
-it colours the case and strap for each protocol colour and leaves the exact
-watch display area transparent for Rockpool's live screenshot overlay.
-
-Pebble 2 Duo is rendered on the legacy 236x372 frame canvas with its native
-144x168 display opening and 22mm strap. Protocol colours 34 and 35 use the
-same official case geometry with black and white finishes.
-
-Round 2 protocol colours 40 through 43 are, in order: Black 20mm, Silver 20mm,
-Gold 14mm, and Silver 14mm. Each image is rendered from the matching case and
-strap-width CAD rather than treating the colour as independent of watch size.
+The [frame renderer](ui/artwork/render-core-watch-frames.py) uses NumPy and
+Pillow to generate the images with transparent openings for live screenshots.
