@@ -13,6 +13,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 
 /** Bridges provider-issued call identities into libpebble3's phone-control flow. */
 internal class PlatformCallsBackend(
@@ -29,6 +30,8 @@ internal class PlatformCallsBackend(
         val generation: Long,
     )
 
+    private class CallerLookup(val number: String)
+
     private val logger = Logger.withTag("PlatformCallsBackend")
     private val stateLock = Any()
     private val commands = Channel<PendingCommand>(MAX_PENDING_COMMANDS)
@@ -37,6 +40,8 @@ internal class PlatformCallsBackend(
     private var currentState = PlatformProviderController.CALL_ENDED
     private var currentName = ""
     private var currentNumber = ""
+    private var callerLookup: CallerLookup? = null
+    private var callerLookupCompleted = false
     private var currentGeneration = 0L
     private var currentCookie = 0u
     private var nextCookie = 1u
@@ -80,77 +85,96 @@ internal class PlatformCallsBackend(
     }
 
     override fun init(currentCall: MutableStateFlow<Call?>) {
-        val value = synchronized(stateLock) {
+        synchronized(stateLock) {
             check(target == null || target === currentCall) {
                 "platform call receiver initialized more than once"
             }
             target = currentCall
-            currentCallLocked()
+            publishCurrentCallLocked()
         }
-        currentCall.value = value
     }
 
     internal fun providerSnapshotChanged(snapshot: PlatformProviderSnapshot) {
         if (snapshot.domains and CALLS_DOMAIN != 0L) return
-        val flow = synchronized(stateLock) {
+        synchronized(stateLock) {
             if (currentId == null) return
             clearLocked()
-            target
+            publishCurrentCallLocked()
         }
-        flow?.value = null
     }
 
     internal fun providerCall(event: PlatformCallEvent) {
-        val update = synchronized(stateLock) {
+        val lookup = synchronized(stateLock) {
             if (event.state == PlatformProviderController.CALL_ENDED) {
                 if (event.id != currentId) return
                 clearLocked()
-                target to null
-            } else {
-                if (event.id != currentId) {
-                    currentGeneration++
-                    currentId = event.id
-                    currentCookie = allocateCookieLocked()
-                    answerCommandClaimed = false
-                    hangupCommandClaimed = false
-                } else if (event.state == PlatformProviderController.CALL_RINGING &&
-                    currentState != PlatformProviderController.CALL_RINGING
-                ) {
-                    answerCommandClaimed = false
-                }
-                currentState = event.state
+                publishCurrentCallLocked()
+                return
+            }
+            if (event.id != currentId || event.number != currentNumber) {
+                currentName = ""
+                callerLookup = null
+                callerLookupCompleted = false
+            }
+            if (event.id != currentId) {
+                currentGeneration++
+                currentId = event.id
+                currentCookie = allocateCookieLocked()
+                answerCommandClaimed = false
+                hangupCommandClaimed = false
+            } else if (event.state == PlatformProviderController.CALL_RINGING &&
+                currentState != PlatformProviderController.CALL_RINGING
+            ) {
+                answerCommandClaimed = false
+            }
+            currentState = event.state
+            currentNumber = event.number
+            if (event.name.isNotBlank()) {
                 currentName = event.name
-                currentNumber = event.number
-                target to currentCallLocked()
+                callerLookup = null
+                callerLookupCompleted = true
+            }
+            val pending = if (currentName.isEmpty() && currentNumber.isNotBlank() &&
+                callerLookup == null && !callerLookupCompleted
+            ) {
+                CallerLookup(currentNumber).also { callerLookup = it }
+            } else {
+                null
+            }
+            publishCurrentCallLocked()
+            pending
+        } ?: return
+
+        commandScope.launch {
+            val name = try {
+                withTimeoutOrNull(CALLER_LOOKUP_TIMEOUT_MS) {
+                    lookupContactName(lookup.number)
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                logger.w(e) { "platform caller-name lookup failed" }
+                null
+            }
+            synchronized(stateLock) {
+                // Identity also rejects ended/replaced calls and number changes,
+                // including a number changing away and back during a lookup.
+                if (callerLookup !== lookup) return@synchronized
+                callerLookup = null
+                callerLookupCompleted = true
+                if (!name.isNullOrBlank()) currentName = name
+                publishCurrentCallLocked()
             }
         }
-        update.first?.value = update.second
-        if (event.state != PlatformProviderController.CALL_ENDED &&
-            event.name.isEmpty() && event.number.isNotEmpty()) {
-            val lookupId = event.id
-            val lookupNumber = event.number
-            val lookupGeneration = synchronized(stateLock) { currentGeneration }
-            commandScope.launch {
-                val name = try {
-                    lookupContactName(lookupNumber)
-                } catch (e: CancellationException) {
-                    throw e
-                } catch (e: Exception) {
-                    logger.w(e) { "platform caller-name lookup failed" }
-                    null
-                }
-                if (name.isNullOrBlank()) return@launch
-                val refreshed = synchronized(stateLock) {
-                    if (currentId != lookupId || currentGeneration != lookupGeneration ||
-                        currentNumber != lookupNumber || currentName.isNotEmpty()) {
-                        return@synchronized null
-                    }
-                    currentName = name
-                    target to currentCallLocked()
-                }
-                refreshed?.first?.value = refreshed.second
-            }
-        }
+    }
+
+    private fun publishCurrentCallLocked() {
+        // Pebble ignores repeated IncomingCall packets while a call is showing.
+        // Resolve the name before the first ringing event, with a bounded wait.
+        // Answered/ended calls must still propagate while the lookup is pending.
+        target?.value = if (currentState == PlatformProviderController.CALL_RINGING &&
+            callerLookup != null
+        ) null else currentCallLocked()
     }
 
     private fun currentCallLocked(): Call? {
@@ -275,6 +299,8 @@ internal class PlatformCallsBackend(
         currentState = PlatformProviderController.CALL_ENDED
         currentName = ""
         currentNumber = ""
+        callerLookup = null
+        callerLookupCompleted = false
         currentCookie = 0u
         answerCommandClaimed = false
         hangupCommandClaimed = false
@@ -290,5 +316,6 @@ internal class PlatformCallsBackend(
         private const val CALLS_DOMAIN = 1L shl 3
         private const val STATUS_OK = 0
         private const val MAX_PENDING_COMMANDS = 8
+        private const val CALLER_LOOKUP_TIMEOUT_MS = 1_000L
     }
 }

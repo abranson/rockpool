@@ -157,7 +157,7 @@ class PlatformCallsBackendTest {
     }
 
     @Test
-    fun resolvesMissingCallerNameWithoutDelayingTheInitialCall() = runBlocking {
+    fun resolvesCallerNameBeforePublishingTheFirstRingingCall() = runBlocking {
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
         try {
             val lookupStarted = CompletableDeferred<Unit>()
@@ -184,16 +184,153 @@ class PlatformCallsBackendTest {
                 )
             )
             withTimeout(1_000) { lookupStarted.await() }
-            val unresolved = assertIs<Call.RingingCall>(current.value)
-            assertNull(unresolved.contactName)
-            assertEquals("+123", unresolved.contactNumber)
+            assertNull(current.value)
+            // Repeated snapshots and late receiver initialization must not leak
+            // an unresolved call or start another lookup.
+            backend.providerCall(unnamedRingingEvent("call_a"))
+            backend.init(current)
+            assertNull(current.value)
 
             releaseLookup.complete(Unit)
             val resolved = withTimeout(1_000) {
                 current.filterNotNull().first { it.contactName == "Alice" }
             }
-            assertEquals(unresolved.cookie, resolved.cookie)
+            assertIs<Call.RingingCall>(resolved)
             assertEquals("+123", resolved.contactNumber)
+            backend.providerCall(unnamedRingingEvent("call_a"))
+            assertEquals("Alice", current.value?.contactName)
+            assertEquals(resolved.cookie, current.value?.cookie)
+        } finally {
+            scope.cancel()
+        }
+    }
+
+    @Test
+    fun callerLookupTimeoutPublishesNumberAndDoesNotRetryOnSnapshots() = callerLookupTest {
+        var lookups = 0
+        val backend = PlatformCallsBackend(
+            controller = PlatformProviderController(),
+            commandScope = this,
+            lookupContactName = {
+                lookups++
+                CompletableDeferred<String?>().await()
+            },
+        )
+        val current = MutableStateFlow<Call?>(null)
+        backend.init(current)
+        backend.providerCall(unnamedRingingEvent("call_a"))
+        assertNull(current.value)
+        val call = withTimeout(3_000) { current.filterNotNull().first() }
+        assertIs<Call.RingingCall>(call)
+        assertNull(call.contactName)
+        assertEquals("+123", call.contactNumber)
+        backend.providerCall(unnamedRingingEvent("call_a"))
+        assertIs<Call.RingingCall>(current.value)
+        assertEquals(1, lookups)
+    }
+
+    @Test
+    fun missingOrFailedContactLookupStillPublishesTheCall() = callerLookupTest {
+        for (fail in listOf(false, true)) {
+            val backend = PlatformCallsBackend(
+                controller = PlatformProviderController(),
+                commandScope = this,
+                lookupContactName = {
+                    if (fail) error("contacts unavailable")
+                    null
+                },
+            )
+            val current = MutableStateFlow<Call?>(null)
+            backend.init(current)
+            backend.providerCall(unnamedRingingEvent("call_a"))
+            val call = assertIs<Call.RingingCall>(current.value)
+            assertNull(call.contactName)
+            assertEquals("+123", call.contactNumber)
+        }
+    }
+
+    @Test
+    fun endingOrResettingCallDiscardsPendingNameEvenWhenIdIsReused() = callerLookupTest {
+        for (reset in listOf(false, true)) {
+            val names = ArrayDeque<CompletableDeferred<String?>>()
+            val oldName = CompletableDeferred<String?>()
+            val newName = CompletableDeferred<String?>()
+            names.add(oldName)
+            names.add(newName)
+            val backend = PlatformCallsBackend(
+                controller = PlatformProviderController(),
+                commandScope = this,
+                lookupContactName = { names.removeFirst().await() },
+            )
+            val current = MutableStateFlow<Call?>(null)
+            backend.init(current)
+            backend.providerCall(unnamedRingingEvent("call_a"))
+            if (reset) {
+                backend.providerSnapshotChanged(PlatformProviderSnapshot(state = "degraded"))
+            } else {
+                backend.providerCall(endedEvent("call_a"))
+            }
+            backend.providerCall(unnamedRingingEvent("call_a"))
+            oldName.complete("Old contact")
+            assertNull(current.value)
+            newName.complete("New contact")
+            assertEquals("New contact", current.value?.contactName)
+            backend.providerCall(endedEvent("call_a"))
+            assertNull(current.value)
+        }
+    }
+
+    @Test
+    fun answerWhileLookingUpNameNeverPublishesAnObsoleteRingingCall() = callerLookupTest {
+        val name = CompletableDeferred<String?>()
+        val backend = PlatformCallsBackend(
+            controller = PlatformProviderController(),
+            commandScope = this,
+            lookupContactName = { name.await() },
+        )
+        val current = MutableStateFlow<Call?>(null)
+        backend.init(current)
+        val event = unnamedRingingEvent("call_a")
+        backend.providerCall(event)
+        backend.providerCall(event.copy(state = PlatformProviderController.CALL_ACTIVE))
+        val active = assertIs<Call.ActiveCall>(current.value)
+        name.complete("Alice")
+        val resolved = assertIs<Call.ActiveCall>(current.value)
+        assertEquals("Alice", resolved.contactName)
+        assertEquals(active.cookie, resolved.cookie)
+    }
+
+    @Test
+    fun numberChangeDiscardsBothResolvedAndPendingNames() = callerLookupTest {
+        val oldName = CompletableDeferred<String?>()
+        val backend = PlatformCallsBackend(
+            controller = PlatformProviderController(),
+            commandScope = this,
+            lookupContactName = { number ->
+                if (number == "+123") oldName.await() else "Bob"
+            },
+        )
+        val current = MutableStateFlow<Call?>(null)
+        backend.init(current)
+        val event = unnamedRingingEvent("call_a")
+        backend.providerCall(event)
+        backend.providerCall(event.copy(number = "+456"))
+        assertEquals("Bob", current.value?.contactName)
+        oldName.complete("Alice")
+        assertEquals("Bob", current.value?.contactName)
+        backend.providerCall(event)
+        assertEquals("Alice", current.value?.contactName)
+        assertEquals("+123", current.value?.contactNumber)
+    }
+
+    private fun unnamedRingingEvent(id: String) = PlatformCallEvent(
+        PlatformProviderController.CALL_RINGING, id, "", "+123",
+    )
+
+    private fun callerLookupTest(block: suspend CoroutineScope.() -> Unit) = runBlocking {
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+        try {
+            scope.block()
         } finally {
             scope.cancel()
         }
