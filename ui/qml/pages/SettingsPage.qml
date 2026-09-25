@@ -1,4 +1,4 @@
-import QtQuick 2.2
+import QtQuick 2.6
 import Sailfish.Silica 1.0
 
 Page {
@@ -12,44 +12,71 @@ Page {
     property var cannedResponses: pebble ? pebble.cannedResponses : {}
     property bool cannedResponsesReady: pebble && pebble.cannedResponsesReady
     property var notificationsMap: pebble ? pebble.notificationsFilter:{}
-    property bool timelineWindowDirty
-    property bool loadingTimelineWindow
 
-    function loadTimelineWindow() {
-        if (!root.pebble || !root.pebble.timelineWindowReady
-                || root.timelineWindowDirty) {
+    property var pendingLanguage
+
+    function showLanguageRemorse() {
+        if (status !== PageStatus.Active || !pendingLanguage) {
             return
         }
-        root.loadingTimelineWindow = true
-        timelineWindowStartField.text = root.pebble.timelineWindowStart
-        timelineWindowFadeField.text = root.pebble.timelineWindowFade
-        timelineWindowEndField.text = root.pebble.timelineWindowEnd
-        root.loadingTimelineWindow = false
+        var selection = pendingLanguage
+        pendingLanguage = null
+        languageRemorse.execute(qsTr("Changing watch language to %1").arg(selection.name), function() {
+            if (root.status === PageStatus.Active && root.pebble === selection.watch
+                    && root.pebble.connected && root.pebble.languageVersion !== selection.version) {
+                root.pebble.loadLanguagePack(selection.file)
+            }
+        })
+    }
+
+    onStatusChanged: if (status === PageStatus.Active) showLanguageRemorse()
+
+    RemorsePopup {
+        id: languageRemorse
+    }
+
+    Timer {
+        id: languageRemorseTimer
+
+        interval: 0
+        onTriggered: root.showLanguageRemorse()
     }
 
     Component.onCompleted: {
         if (root.pebble) {
             root.pebble.refreshSettingsPage()
             root.pebble.refreshCannedResponses()
-            root.pebble.refreshTimelineWindow()
         }
-    }
-
-    Connections {
-        target: root.pebble
-        onTimelineWindowChanged: root.loadTimelineWindow()
-        onTimelineWindowReadyChanged: root.loadTimelineWindow()
     }
 
     SilicaFlickable {
         anchors.fill: parent
-        anchors.margins: Theme.horizontalPageMargin
-        contentHeight: content.height
+        contentHeight: content.height + Theme.paddingLarge
+
+        PullDownMenu {
+            MenuItem {
+                text: qsTr("Reset Timeline")
+                enabled: root.pebble && root.pebble.connected
+                onClicked: root.pebble.resetTimeline()
+            }
+            MenuItem {
+                text: qsTr("Login")
+                visible: !root.accountAuthenticated
+                enabled: root.pebble && !root.pebble.accountTokenPending
+                onClicked: pageStack.push(Qt.resolvedUrl("AppSettingsPage.qml"), {
+                                             url: "https://boot.rebble.io",
+                                             pebble: root.pebble,
+                                             oauthBootFlow: true
+                                         })
+            }
+        }
+
+        VerticalScrollDecorator {}
 
         Column {
             id: content
+
             width: parent.width
-            spacing: Theme.paddingSmall
 
             PageHeader {
                 title: qsTr("Settings")
@@ -74,10 +101,42 @@ Page {
                     }
                 currentIndex: root.pebble && root.pebble.imperialUnits ? 1 : 0
             }
-            Button {
+            WatchLanguageSelector {
+                pebble: root.pebble
+                onLanguageSelected: {
+                    root.pendingLanguage = {watch: root.pebble, file: file, name: name, version: version}
+                    // A full-screen picker returns here before showing remorse.
+                    // For an inline menu, defer until its click handler has finished.
+                    languageRemorseTimer.restart()
+                }
+            }
+
+            BackgroundItem {
+                id: quietTimeItem
+
                 width: parent.width
-                text: qsTr("Language")
-                onClicked: pageStack.push(Qt.resolvedUrl("LanguagePage.qml"), {pebble: pebble})
+                enabled: root.pebble !== null
+                onClicked: pageStack.push(Qt.resolvedUrl("QuietTimePage.qml"), {
+                                             pebble: root.pebble
+                                         })
+
+                Label {
+                    x: Theme.horizontalPageMargin
+                    width: parent.width - 2 * x - quietTimeArrow.width - Theme.paddingMedium
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: qsTr("Quiet Time")
+                    color: parent.highlighted ? Theme.highlightColor : Theme.primaryColor
+                    truncationMode: TruncationMode.Fade
+                }
+                Icon {
+                    id: quietTimeArrow
+
+                    anchors.right: parent.right
+                    anchors.rightMargin: Theme.horizontalPageMargin
+                    anchors.verticalCenter: parent.verticalCenter
+                    source: "image://theme/icon-m-right"
+                    highlighted: quietTimeItem.highlighted
+                }
             }
 
             SectionHeader {
@@ -102,99 +161,73 @@ Page {
                 onClicked: root.pebble.syncAppsFromCloud =
                            !root.pebble.syncAppsFromCloud
             }
-            Button {
-                width: parent.width
-                text: qsTr("Reset Timeline")
-                enabled: pebble && pebble.connected
-                onClicked: pebble.resetTimeline()
-            }
-            TextField {
-                id: timelineWindowStartField
+            BackgroundItem {
+                id: timelineWindowItem
 
                 width: parent.width
-                enabled: root.pebble && root.pebble.timelineWindowReady
-                label: qsTr("Timeline Window Start (days ago)")
-                placeholderText: label
-                inputMethodHints: Qt.ImhFormattedNumbersOnly
-                validator: IntValidator { bottom: -365; top: -1 }
-                onTextChanged: if (activeFocus && !root.loadingTimelineWindow) {
-                    root.timelineWindowDirty = true
-                }
-            }
-            TextField {
-                id: timelineWindowEndField
+                enabled: root.pebble !== null
+                onClicked: pageStack.push(Qt.resolvedUrl("TimelineSettingsDialog.qml"), {
+                                             pebble: root.pebble
+                                         })
 
-                width: parent.width
-                enabled: root.pebble && root.pebble.timelineWindowReady
-                label: qsTr("Timeline Window End (days ahead)")
-                placeholderText: label
-                inputMethodHints: Qt.ImhFormattedNumbersOnly
-                validator: IntValidator { bottom: -365; top: 365 }
-                onTextChanged: if (activeFocus && !root.loadingTimelineWindow) {
-                    root.timelineWindowDirty = true
+                Label {
+                    x: Theme.horizontalPageMargin
+                    width: parent.width - 2 * x - timelineArrow.width - Theme.paddingMedium
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: qsTr("Timeline window")
+                    color: parent.highlighted ? Theme.highlightColor : Theme.primaryColor
+                    truncationMode: TruncationMode.Fade
                 }
-            }
-            TextField {
-                id: timelineWindowFadeField
+                Icon {
+                    id: timelineArrow
 
-                width: parent.width
-                enabled: root.pebble && root.pebble.timelineWindowReady
-                label: qsTr("Notification re-delivery expiration (seconds)")
-                placeholderText: label
-                inputMethodHints: Qt.ImhFormattedNumbersOnly
-                validator: IntValidator { bottom: -2592000; top: 2592000 }
-                onTextChanged: if (activeFocus && !root.loadingTimelineWindow) {
-                    root.timelineWindowDirty = true
+                    anchors.right: parent.right
+                    anchors.rightMargin: Theme.horizontalPageMargin
+                    anchors.verticalCenter: parent.verticalCenter
+                    source: "image://theme/icon-m-right"
+                    highlighted: timelineWindowItem.highlighted
                 }
-            }
-            Button {
-                width: parent.width
-                text: qsTr("Set Timeline Window")
-                onClicked: {
-                    root.pebble.setTimelineWindow(
-                                Number(timelineWindowStartField.text),
-                                Number(timelineWindowFadeField.text),
-                                Number(timelineWindowEndField.text))
-                    root.timelineWindowDirty = false
-                }
-                enabled: root.pebble && root.pebble.timelineWindowReady
-                         && root.timelineWindowDirty
-                         && timelineWindowStartField.acceptableInput
-                         && timelineWindowFadeField.acceptableInput
-                         && timelineWindowEndField.acceptableInput
-                         && Number(timelineWindowStartField.text)
-                            <= Number(timelineWindowEndField.text)
-                         && timelineWindowStartField.text.length > 0
-                         && timelineWindowFadeField.text.length > 0
-                         && timelineWindowEndField.text.length > 0
             }
 
             SectionHeader {
-                text: qsTr("Active Timeline WebSync account")
+                text: qsTr("Rebble account")
             }
-            Label {
+            ListItem {
+                id: accountItem
+
                 width: parent.width
-                visible: pebble && accountAuthenticated
-                text: visible ? pebble.accountName : ""
-            }
-            Label {
-                width: parent.width
-                visible: pebble && accountAuthenticated
-                text: visible ? pebble.accountEmail : ""
-            }
-            Button {
-                width: parent.width
-                enabled: pebble && !pebble.accountTokenPending
-                text: accountAuthenticated ? qsTr("Logout") : qsTr("Login")
-                onClicked: if(accountAuthenticated) {
-                               pebble.setOAuthToken("");
-                           } else {
-                               pageStack.push(Qt.resolvedUrl("AppSettingsPage.qml"), {
-                                              url: "https://boot.rebble.io",
-                                              pebble: pebble,
-                                              oauthBootFlow: true
-                                          })
-                           }
+                contentHeight: accountDetails.height + 2 * Theme.paddingMedium
+                enabled: root.accountAuthenticated && root.pebble && !root.pebble.accountTokenPending
+                menu: ContextMenu {
+                    MenuItem {
+                        text: qsTr("Logout")
+                        onClicked: root.pebble.setOAuthToken("")
+                    }
+                }
+
+                Column {
+                    id: accountDetails
+
+                    x: Theme.horizontalPageMargin
+                    width: parent.width - 2 * x
+                    y: Theme.paddingMedium
+                    spacing: Theme.paddingSmall
+
+                    Label {
+                        width: parent.width
+                        wrapMode: Text.Wrap
+                        text: root.accountAuthenticated ? root.pebble.accountName : qsTr("Not signed in")
+                        color: accountItem.highlighted ? Theme.highlightColor : Theme.primaryColor
+                    }
+                    Label {
+                        width: parent.width
+                        visible: root.accountAuthenticated
+                        text: visible ? root.pebble.accountEmail : ""
+                        color: accountItem.highlighted ? Theme.secondaryHighlightColor : Theme.secondaryColor
+                        font.pixelSize: Theme.fontSizeSmall
+                        wrapMode: Text.Wrap
+                    }
+                }
             }
             BusyIndicator {
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -203,7 +236,8 @@ Page {
                 visible: running
             }
             Label {
-                width: parent.width
+                x: Theme.horizontalPageMargin
+                width: parent.width - 2 * x
                 visible: pebble && pebble.accountTokenError.length > 0
                 text: visible ? pebble.accountTokenError : ""
                 color: Theme.errorColor
@@ -266,10 +300,19 @@ Page {
             Repeater {
                 model: root.cannedResponsesReady ? Object.keys(cannedResponses) : []
                 delegate: BackgroundItem {
+                    id: responseItem
+
+                    width: content.width
+
                     Row {
+                        x: Theme.horizontalPageMargin
+                        width: parent.width - 2 * x
+                        anchors.verticalCenter: parent.verticalCenter
                         height: Theme.itemSizeSmall
                         spacing: Theme.paddingMedium
                         Image {
+                            id: responseIcon
+
                             anchors.verticalCenter: parent.verticalCenter
                             height: Theme.iconSizeSmall
                             width: height
@@ -285,9 +328,11 @@ Page {
                             }
                         }
                         Label {
+                            width: parent.width - responseIcon.width - parent.spacing
+                            truncationMode: TruncationMode.Fade
                             anchors.verticalCenter: parent.verticalCenter
                             text: (modelData in notificationsMap)?notificationsMap[modelData]["name"]:modelData
-                            color: highlighted ? Theme.highlightColor : Theme.primaryColor
+                            color: responseItem.highlighted ? Theme.highlightColor : Theme.primaryColor
                         }
                     }
                     onClicked: {

@@ -41,6 +41,7 @@ signals:
     void ProfileWhenConnectedChanged();
     void ProfileWhenDisconnectedChanged();
     void CalendarSyncEnabledChanged();
+    void QuietTimeSettingsChanged();
     void DevConnectionChanged(bool state);
     void WeatherLocationsChanged(const QVariantList &locations);
 };
@@ -48,6 +49,10 @@ signals:
 class Pebble : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(QVariantMap quietTimeSettings READ quietTimeSettings NOTIFY quietTimeChanged)
+    Q_PROPERTY(bool quietTimeReady READ quietTimeReady NOTIFY quietTimeChanged)
+    Q_PROPERTY(bool quietTimeBusy READ quietTimeBusy NOTIFY quietTimeChanged)
+    Q_PROPERTY(QString quietTimeError READ quietTimeError NOTIFY quietTimeChanged)
     // hardware details
     Q_PROPERTY(QString name READ name NOTIFY identityChanged)
     Q_PROPERTY(QString address READ address NOTIFY identityChanged)
@@ -229,6 +234,12 @@ public slots:
     int timelineWindowFade() const;
     int timelineWindowEnd() const;
     bool timelineWindowReady() const;
+    QVariantMap quietTimeSettings() const { return m_quietTimeSettings; }
+    bool quietTimeReady() const { return m_quietTimeReady; }
+    bool quietTimeBusy() const { return m_quietTimeBusy; }
+    QString quietTimeError() const { return m_quietTimeError; }
+    void refreshQuietTime();
+    void setQuietTimeSetting(const QString &key, const QString &value);
     void refreshTimelineWindow();
     void setTimelineWindow(int start, int fade, int end);
     void resetTimeline();
@@ -290,6 +301,7 @@ signals:
     void accountTokenPendingChanged();
     void accountTokenErrorChanged();
     void syncAppsFromCloudChanged();
+    void quietTimeChanged();
     void timelineWindowChanged();
     void timelineWindowReadyChanged();
 
@@ -434,6 +446,12 @@ private:
     QSet<QString> m_pendingConnectionReplies;
 
     RockpoolAccount *m_account;
+    QVariantMap m_quietTimeSettings;
+    bool m_quietTimeReady = false;
+    bool m_quietTimeBusy = false;
+    bool m_quietTimeRequested = false;
+    bool m_quietTimeRefreshPending = false;
+    QString m_quietTimeError;
     bool m_timelineWindowReady = false;
     bool m_timelineWindowHasSnapshot = false;
     bool m_timelineWindowRequestFailed = false;

@@ -391,6 +391,11 @@
     "allPublicMethods": true
   },
   {
+    "name": "io.rebble.libpebblecommon.ui.RockpoolPebble$QuietTimeSettingsChanged",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true
+  },
+  {
     "name": "io.rebble.libpebblecommon.ui.RockpoolPebble$CalendarSyncEnabledChanged",
     "allDeclaredConstructors": true,
     "allPublicMethods": true

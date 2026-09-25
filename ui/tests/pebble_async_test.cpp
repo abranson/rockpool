@@ -471,6 +471,16 @@ public slots:
         Q_UNUSED(sourceId)
         replyOrDelay(QStringLiteral("ForgetNotificationFilter"), QVariantList());
     }
+    void QuietTimeSettings()
+    {
+        replyOrDelay(QStringLiteral("QuietTimeSettings"), healthParamsArguments(QVariantMap()));
+    }
+    void SetQuietTimeSetting(const QString &key, const QString &value)
+    {
+        Q_UNUSED(key)
+        Q_UNUSED(value)
+        replyOrDelay(QStringLiteral("SetQuietTimeSetting"), QVariantList() << true);
+    }
     void TimelineColors()
     {
         replyOrDelay(QStringLiteral("TimelineColors"),
@@ -895,6 +905,8 @@ class PebbleAsyncTest : public QObject
     Q_OBJECT
 
 private slots:
+    void quietTimeAsyncSaveFailureAndSignals();
+    void quietTimeIgnoresOldOwnerReply();
     void notificationIconsResolveInstalledApplications();
     void constructorQueuesHeldBootstrapCalls();
     void addressBootstrapRetriesAfterInvalidReplies();
@@ -4988,6 +5000,79 @@ void PebbleAsyncTest::newerTimelineWindowWriteBeatsOlderReplyAndReadback()
     QTRY_COMPARE(pebble.timelineWindowStart(), 21);
     QTRY_COMPARE(pebble.timelineWindowFade(), 31);
     QTRY_COMPARE(pebble.timelineWindowEnd(), 41);
+    QVERIFY(connection.interface()->unregisterService(QString::fromLatin1(serviceName)).isValid());
+}
+
+void PebbleAsyncTest::quietTimeAsyncSaveFailureAndSignals()
+{
+    QDBusConnection connection = QDBusConnection::connectToBus(
+        QDBusConnection::SessionBus, QStringLiteral("pebble-async-quiet-time"));
+    DelayedPebble watch(connection);
+    watch.defer(QStringLiteral("QuietTimeSettings"));
+    watch.defer(QStringLiteral("SetQuietTimeSetting"));
+    registerWatch(&watch, connection);
+    registerService(connection);
+    Pebble pebble(QDBusObjectPath(QString::fromLatin1(watchPath)));
+    QCOMPARE(watch.receivedCount(QStringLiteral("QuietTimeSettings")), 0);
+    pebble.refreshQuietTime();
+    QVERIFY(pebble.quietTimeBusy());
+    QVERIFY(!pebble.quietTimeReady());
+    QTRY_COMPARE(watch.pendingCount(QStringLiteral("QuietTimeSettings")), 1);
+    QVariantMap values;
+    values.insert(QStringLiteral("dndManuallyEnabled"), QStringLiteral("0"));
+    values.insert(QStringLiteral("syncEnabled"), true);
+    watch.replyNext(QStringLiteral("QuietTimeSettings"), DelayedPebble::healthParamsArguments(values));
+    QTRY_VERIFY(pebble.quietTimeReady());
+    QVERIFY(!pebble.quietTimeBusy());
+    QCOMPARE(pebble.quietTimeSettings(), values);
+    pebble.setQuietTimeSetting(QStringLiteral("dndManuallyEnabled"), QStringLiteral("1"));
+    QVERIFY(pebble.quietTimeBusy());
+    QTRY_COMPARE(watch.pendingCount(QStringLiteral("SetQuietTimeSetting")), 1);
+    QCOMPARE(watch.arguments(QStringLiteral("SetQuietTimeSetting"), 0),
+             QVariantList() << QStringLiteral("dndManuallyEnabled") << QStringLiteral("1"));
+    watch.replyNext(QStringLiteral("SetQuietTimeSetting"), QVariantList() << false);
+    QTRY_COMPARE(watch.pendingCount(QStringLiteral("QuietTimeSettings")), 1);
+    watch.replyNext(QStringLiteral("QuietTimeSettings"), DelayedPebble::healthParamsArguments(values));
+    QTRY_VERIFY(!pebble.quietTimeBusy());
+    QVERIFY(!pebble.quietTimeError().isEmpty());
+    QCOMPARE(pebble.quietTimeSettings(), values);
+    watch.emitPebbleSignal(QStringLiteral("QuietTimeSettingsChanged"));
+    QTRY_COMPARE(watch.pendingCount(QStringLiteral("QuietTimeSettings")), 1);
+    values[QStringLiteral("dndManuallyEnabled")] = QStringLiteral("1");
+    watch.replyNext(QStringLiteral("QuietTimeSettings"), DelayedPebble::healthParamsArguments(values));
+    QTRY_COMPARE(pebble.quietTimeSettings(), values);
+    pebble.setQuietTimeSetting(QStringLiteral("dndManuallyEnabled"), QStringLiteral("0"));
+    QTRY_COMPARE(watch.pendingCount(QStringLiteral("SetQuietTimeSetting")), 1);
+    watch.replyNext(QStringLiteral("SetQuietTimeSetting"), QVariantList() << true);
+    QTRY_COMPARE(watch.pendingCount(QStringLiteral("QuietTimeSettings")), 1);
+    values[QStringLiteral("dndManuallyEnabled")] = QStringLiteral("0");
+    watch.replyNext(QStringLiteral("QuietTimeSettings"), DelayedPebble::healthParamsArguments(values));
+    QTRY_VERIFY(!pebble.quietTimeBusy());
+    QCOMPARE(pebble.quietTimeSettings(), values);
+    QVERIFY(pebble.quietTimeError().isEmpty());
+    QVERIFY(connection.interface()->unregisterService(QString::fromLatin1(serviceName)).isValid());
+}
+
+void PebbleAsyncTest::quietTimeIgnoresOldOwnerReply()
+{
+    QDBusConnection connection = QDBusConnection::connectToBus(
+        QDBusConnection::SessionBus, QStringLiteral("pebble-async-quiet-owner"));
+    DelayedPebble watch(connection);
+    watch.defer(QStringLiteral("QuietTimeSettings"));
+    registerWatch(&watch, connection);
+    registerService(connection);
+    Pebble pebble(QDBusObjectPath(QString::fromLatin1(watchPath)));
+    pebble.refreshQuietTime();
+    QTRY_COMPARE(watch.pendingCount(QStringLiteral("QuietTimeSettings")), 1);
+    QVERIFY(connection.interface()->unregisterService(QString::fromLatin1(serviceName)).isValid());
+    QTRY_VERIFY(!pebble.quietTimeBusy());
+    watch.replyNext(QStringLiteral("QuietTimeSettings"), DelayedPebble::healthParamsArguments(QVariantMap()));
+    QTest::qWait(50);
+    QVERIFY(!pebble.quietTimeReady());
+    registerService(connection);
+    QTRY_COMPARE(watch.pendingCount(QStringLiteral("QuietTimeSettings")), 1);
+    watch.replyNext(QStringLiteral("QuietTimeSettings"), DelayedPebble::healthParamsArguments(QVariantMap()));
+    QTRY_VERIFY(pebble.quietTimeReady());
     QVERIFY(connection.interface()->unregisterService(QString::fromLatin1(serviceName)).isValid());
 }
 

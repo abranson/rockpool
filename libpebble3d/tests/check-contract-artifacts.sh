@@ -299,6 +299,7 @@ rockpool_screenshot_model=$project_dir/ui/screenshotmodel.cpp
 rockpool_notification_model=$project_dir/ui/notificationsourcemodel.cpp
 pair_watch_page=$project_dir/ui/qml/pages/PairWatchPage.qml
 settings_page=$project_dir/ui/qml/pages/SettingsPage.qml
+timeline_settings_dialog=$project_dir/ui/qml/pages/TimelineSettingsDialog.qml
 app_settings_page=$project_dir/ui/qml/pages/AppSettingsPage.qml
 responses_page=$project_dir/ui/qml/pages/ResponsesPage.qml
 send_text_settings_dialog=$project_dir/ui/qml/pages/SendTextSettingsDialog.qml
@@ -306,7 +307,7 @@ health_settings_dialog=$project_dir/ui/qml/pages/HealthSettingsDialog.qml
 health_history_page=$project_dir/ui/qml/pages/HealthHistoryPage.qml
 weather_settings_dialog=$project_dir/ui/qml/pages/WeatherSettingsDialog.qml
 location_picker=$project_dir/ui/qml/pages/LocationPicker.qml
-language_page=$project_dir/ui/qml/pages/LanguagePage.qml
+language_selector=$project_dir/ui/qml/pages/WatchLanguageSelector.qml
 developer_tools_page=$project_dir/ui/qml/pages/DeveloperToolsPage.qml
 notifications_page=$project_dir/ui/qml/pages/NotificationsPage.qml
 notification_color_page=$project_dir/ui/qml/pages/NotificationColorPage.qml
@@ -598,6 +599,7 @@ require_file "$rockpool_screenshot_model" "Rockpool screenshot model"
 require_file "$rockpool_notification_model" "Rockpool notification-source model"
 require_file "$pair_watch_page" "Rockpool pairing page"
 require_file "$settings_page" "Rockpool settings page"
+require_file "$timeline_settings_dialog" "Rockpool timeline settings dialog"
 require_file "$app_settings_page" "Rockpool application/OAuth settings page"
 require_file "$responses_page" "Rockpool canned-response editor"
 require_file "$send_text_settings_dialog" "Rockpool Send Text settings dialog"
@@ -605,7 +607,7 @@ require_file "$health_settings_dialog" "Rockpool Health settings dialog"
 require_file "$health_history_page" "Rockpool Health history page"
 require_file "$weather_settings_dialog" "Rockpool weather settings dialog"
 require_file "$location_picker" "Rockpool weather location picker"
-require_file "$language_page" "Rockpool language settings page"
+require_file "$language_selector" "Rockpool watch language selector"
 require_file "$developer_tools_page" "Rockpool developer-tools page"
 require_file "$notifications_page" "Rockpool notifications page"
 require_file "$notification_color_page" "Rockpool notification-colour page"
@@ -3056,9 +3058,9 @@ if ! awk '
     apply && !fade && index($0, "Number(timelineWindowFadeField.text)") { fade = NR }
     apply && !end && index($0, "Number(timelineWindowEndField.text)") { end = NR }
     END { exit !(apply && apply < start && start < fade && fade < end) }
-' "$settings_page"
+' "$timeline_settings_dialog"
 then
-    fail "timeline editor does not pass typed draft values directly in $settings_page"
+    fail "timeline editor does not pass typed draft values directly in $timeline_settings_dialog"
 fi
 
 require_fixed 'Q_PROPERTY(QString address READ address NOTIFY identityChanged)' \
@@ -3667,39 +3669,39 @@ require_fixed 'QTimer::singleShot(250, this' "$rockpool_pebble" \
 # The Timeline editor owns drafts in QML.  It refreshes a read-only, canonical
 # snapshot, does not overwrite an active edit, and sends exactly one typed
 # three-argument request without writing compatibility Q_PROPERTY members.
-require_fixed 'root.pebble.refreshTimelineWindow()' "$settings_page" \
+require_fixed 'root.pebble.refreshTimelineWindow()' "$timeline_settings_dialog" \
     'lazy asynchronous Timeline-window refresh'
-require_fixed 'root.pebble.timelineWindowReady' "$settings_page" \
+require_fixed 'root.pebble.timelineWindowReady' "$timeline_settings_dialog" \
     'Timeline-window readiness gate'
-require_fixed 'property bool timelineWindowDirty' "$settings_page" \
+require_fixed 'property bool timelineWindowDirty' "$timeline_settings_dialog" \
     'Timeline-window QML dirty draft state'
-require_fixed 'property bool loadingTimelineWindow' "$settings_page" \
+require_fixed 'property bool loadingTimelineWindow' "$timeline_settings_dialog" \
     'Timeline-window QML loading guard'
-require_fixed 'onTimelineWindowChanged: root.loadTimelineWindow()' "$settings_page" \
+require_fixed 'onTimelineWindowChanged: root.loadTimelineWindow()' "$timeline_settings_dialog" \
     'Timeline-window canonical snapshot loading hook'
-require_fixed 'onTimelineWindowReadyChanged: root.loadTimelineWindow()' "$settings_page" \
+require_fixed 'onTimelineWindowReadyChanged: root.loadTimelineWindow()' "$timeline_settings_dialog" \
     'Timeline-window readiness loading hook'
-require_fixed 'root.pebble.setTimelineWindow(' "$settings_page" \
+require_fixed 'root.pebble.setTimelineWindow(' "$timeline_settings_dialog" \
     'direct three-argument Timeline-window write request'
-require_fixed 'validator: IntValidator { bottom: -365; top: -1 }' "$settings_page" \
-    'canonical signed Timeline-window start validator'
-require_fixed 'validator: IntValidator { bottom: -2592000; top: 2592000 }' \
-    "$settings_page" 'canonical signed Timeline-window fade validator'
-require_fixed '&& Number(timelineWindowStartField.text)' "$settings_page" \
+require_fixed 'validator: IntValidator { bottom: 1; top: 365 }' "$timeline_settings_dialog" \
+    'positive UI Timeline-window lookback validator'
+require_fixed 'validator: IntValidator { bottom: 0; top: 2592000 }' \
+    "$timeline_settings_dialog" 'nonnegative UI Timeline-window expiration validator'
+require_fixed '&& -Number(timelineWindowStartField.text)' "$timeline_settings_dialog" \
     'canonical Timeline-window start/end ordering check'
-require_fixed '<= Number(timelineWindowEndField.text)' "$settings_page" \
+require_fixed '<= Number(timelineWindowEndField.text)' "$timeline_settings_dialog" \
     'canonical Timeline-window start-before-end comparator'
-reject_extended '&&[[:space:]]*-Number\(timelineWindowStartField\.text\)' "$settings_page" \
-    'legacy positive-start Timeline-window ordering check'
+reject_extended '&&[[:space:]]*Number\(timelineWindowStartField\.text\)' "$timeline_settings_dialog" \
+    'unconverted positive lookback in Timeline-window ordering check'
 for timeline_editor_value in \
     'Number(timelineWindowStartField.text)' \
     'Number(timelineWindowFadeField.text)' \
     'Number(timelineWindowEndField.text)'
 do
-    require_fixed "$timeline_editor_value" "$settings_page" \
+    require_fixed "$timeline_editor_value" "$timeline_settings_dialog" \
         'typed Timeline-window editor argument'
 done
-reject_extended 'pebble\.timelineWindow(Start|Fade|End)[[:space:]]*=' "$settings_page" \
+reject_extended 'pebble\.timelineWindow(Start|Fade|End)[[:space:]]*=' "$timeline_settings_dialog" \
     'Timeline editor writes read-only compatibility properties directly'
 
 for timeline_regression in \
@@ -3827,8 +3829,8 @@ done
 reject_extended 'm_iface->call\("(LoadLanguagePack|ConfigurationClosed|LaunchApp|ConfigurationURL|RemoveApp|InstallApp|SideloadApp|SetAppOrder|RequestScreenshot|RemoveScreenshot|PerformFirmwareUpgrade)"\)' \
     "$rockpool_pebble" 'blocking converted compatibility command'
 require_fixed 'enabled: pebble && pebble.connected && languages.length > 0' \
-    "$language_page" 'connected-watch language-pack submission gate'
-require_fixed 'enabled: pebble && pebble.connected' "$settings_page" \
+    "$language_selector" 'connected-watch language-pack submission gate'
+require_fixed 'enabled: root.pebble && root.pebble.connected' "$settings_page" \
     'connected-watch Timeline reset gate'
 require_fixed 'enabled: root.pebble && root.pebble.connected' "$screenshots_page" \
     'connected-watch screenshot capture gate'

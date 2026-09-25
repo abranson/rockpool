@@ -429,6 +429,18 @@ internal class RockpoolPebbleObject(
         }
     }
 
+    override fun QuietTimeSettings(): Map<String, Variant<*>> = runBlocking {
+        withTimeout(5.seconds) {
+            quietTimeSnapshot(libPebble.watchPrefs.first()).mapValues { Variant(it.value) } +
+                ("syncEnabled" to Variant(libPebble.config.value.watchConfig.enableWatchSettingsSync))
+        }
+    }
+
+    override fun SetQuietTimeSetting(key: String, value: String): Boolean = runBlocking {
+        if (!libPebble.config.value.watchConfig.enableWatchSettingsSync) return@runBlocking false
+        saveQuietTime(libPebble, key, value)
+    }
+
     // ---- Timeline window ----
     override fun setTimelineWindow(start: Int, fade: Int, end: Int) {
         if (!timelineWindow.update(address, start, fade, end)) {

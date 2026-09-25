@@ -371,6 +371,11 @@ internal class RockpoolUiService(
         watchLocker()
         watchNotificationApps()
         watchHealthData()
+        scope.launch {
+            libPebble.watchPrefs.collect {
+                broadcastSignal { path -> RockpoolPebble.QuietTimeSettingsChanged(path) }
+            }
+        }
         watchScanning()
         weatherAutoRefresh.start()
     }
@@ -719,6 +724,9 @@ internal class RockpoolUiService(
     }
 
     private fun libPebbleConfigChanged(change: LibPebbleConfigUpdate) {
+        if (change.previous.watchConfig.enableWatchSettingsSync != change.current.watchConfig.enableWatchSettingsSync) {
+            broadcastSignal { path -> RockpoolPebble.QuietTimeSettingsChanged(path) }
+        }
         if (change.previous.watchConfig.calendarPins != change.current.watchConfig.calendarPins) {
             broadcastSignal { targetPath ->
                 RockpoolPebble.CalendarSyncEnabledChanged(targetPath)

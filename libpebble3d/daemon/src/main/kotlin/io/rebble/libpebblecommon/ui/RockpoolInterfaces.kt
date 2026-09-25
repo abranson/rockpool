@@ -85,6 +85,10 @@ interface RockpoolPebble : DBusInterface {
     fun setSyncAppsFromCloud(enable: Boolean)
     fun resetTimeline()
 
+    // Shared watch preferences (synchronized by libpebble3).
+    fun QuietTimeSettings(): Map<String, Variant<*>>
+    fun SetQuietTimeSetting(key: String, value: String): Boolean
+
     // Timeline
     fun setTimelineWindow(start: Int, fade: Int, end: Int)
     fun timelineWindowStart(): Int
@@ -205,6 +209,7 @@ interface RockpoolPebble : DBusInterface {
     class UpgradingFirmwareChanged(path: String) : DBusSignal(path)
     class LanguageVersionChanged(path: String) : DBusSignal(path)
     class LogsDumped(path: String, success: Boolean) : DBusSignal(path, success)
+    class QuietTimeSettingsChanged(path: String) : DBusSignal(path)
     class CalendarSyncEnabledChanged(path: String) : DBusSignal(path)
     class ImperialUnitsChanged(path: String) : DBusSignal(path)
     class ProfileWhenConnectedChanged(path: String) : DBusSignal(path)

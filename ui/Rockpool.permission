@@ -5,6 +5,9 @@
 dbus-user.talk io.rebble.libpebble3
 dbus-user.talk org.rockpool
 
+# Read the profile choices shown by Settings.
+dbus-user.call com.nokia.profiled=com.nokia.profiled.get_profiles@/com/nokia/profiled
+
 # Android launcher artwork used by the notification application list.
 whitelist ${HOME}/.local/share/apkd-bridge/launcherIcon
 read-only ${HOME}/.local/share/apkd-bridge/launcherIcon

@@ -601,6 +601,11 @@ Pebble::Pebble(const QDBusObjectPath &path, QObject *parent,
     connect(m_iface, &RockpoolPebbleInterface::WeatherLocationsChanged,
             this, &Pebble::weatherLocationsChangedFromService);
 
+    connect(m_iface, &RockpoolPebbleInterface::QuietTimeSettingsChanged,
+            this, [this]() {
+                if (m_quietTimeRequested) refreshQuietTime();
+            });
+
     dataChanged();
     refreshApps();
     refreshNotifications();
@@ -619,6 +624,13 @@ void Pebble::serviceOwnerChanged(const QString &service,
     m_logDumpPending = false;
     ++m_logDumpEpoch;
     ++m_serviceEpoch;
+    m_quietTimeSettings.clear();
+    m_quietTimeReady = false;
+    m_quietTimeBusy = false;
+    m_quietTimeRefreshPending = false;
+    m_quietTimeError.clear();
+    emit quietTimeChanged();
+    if (!newOwner.isEmpty() && m_quietTimeRequested) refreshQuietTime();
     ++m_connectionEpoch;
     ++m_appsEpoch;
     ++m_screenshotsEpoch;
@@ -2206,6 +2218,63 @@ void Pebble::setTimelineWindowReady(bool ready)
         m_timelineWindowReady = ready;
         emit timelineWindowReadyChanged();
     }
+}
+
+void Pebble::refreshQuietTime()
+{
+    m_quietTimeRequested = true;
+    if (m_quietTimeBusy) {
+        m_quietTimeRefreshPending = true;
+        return;
+    }
+    m_quietTimeBusy = true;
+    emit quietTimeChanged();
+    const quint64 serviceEpoch = m_serviceEpoch;
+    auto *watcher = new QDBusPendingCallWatcher(
+        m_iface->asyncCall(QStringLiteral("QuietTimeSettings")), this);
+    connect(watcher, &QDBusPendingCallWatcher::finished, this,
+            [this, serviceEpoch](QDBusPendingCallWatcher *finished) {
+        QDBusPendingReply<QVariantMap> reply = *finished;
+        finished->deleteLater();
+        if (serviceEpoch != m_serviceEpoch) return;
+        m_quietTimeBusy = false;
+        if (reply.isError()) {
+            m_quietTimeReady = false;
+            m_quietTimeError = tr("Could not load Quiet Time settings.");
+        } else {
+            if (!m_quietTimeReady) m_quietTimeError.clear();
+            m_quietTimeSettings = reply.value();
+            m_quietTimeReady = true;
+        }
+        emit quietTimeChanged();
+        if (m_quietTimeRefreshPending) {
+            m_quietTimeRefreshPending = false;
+            refreshQuietTime();
+        }
+    });
+}
+
+void Pebble::setQuietTimeSetting(const QString &key, const QString &value)
+{
+    if (!m_quietTimeReady || m_quietTimeBusy) return;
+    m_quietTimeBusy = true;
+    m_quietTimeError.clear();
+    emit quietTimeChanged();
+    const quint64 serviceEpoch = m_serviceEpoch;
+    auto *watcher = new QDBusPendingCallWatcher(
+        m_iface->asyncCall(QStringLiteral("SetQuietTimeSetting"), key, value), this);
+    connect(watcher, &QDBusPendingCallWatcher::finished, this,
+            [this, serviceEpoch](QDBusPendingCallWatcher *finished) {
+        QDBusPendingReply<bool> reply = *finished;
+        finished->deleteLater();
+        if (serviceEpoch != m_serviceEpoch) return;
+        m_quietTimeBusy = false;
+        if (reply.isError() || !reply.value()) {
+            m_quietTimeError = tr("Could not save Quiet Time settings.");
+        }
+        m_quietTimeRefreshPending = false;
+        refreshQuietTime();
+    });
 }
 
 void Pebble::refreshTimelineWindow()
