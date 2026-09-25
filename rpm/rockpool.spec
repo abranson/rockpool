@@ -216,11 +216,18 @@ desktop-file-install --delete-original       \
 %pre
 systemctl-user stop rockpoold.service || :
 systemctl-user disable rockpoold.service || :
+# Remember the installed override before RPM replaces it, including reinstalls.
+sha256sum %{_sysconfdir}/systemd/system/bluetooth.service.d/50-libpebble3d.conf \
+    > /run/%{name}-bluetooth-override.sha256 2>/dev/null || :
 
 %post
 update-desktop-database
 systemctl daemon-reload || :
-systemctl try-restart bluetooth.service || :
+# Applying a new override needs a restart; unchanged upgrades must preserve links.
+if ! sha256sum --check --status /run/%{name}-bluetooth-override.sha256 2>/dev/null; then
+    systemctl try-restart bluetooth.service || :
+fi
+rm -f /run/%{name}-bluetooth-override.sha256
 systemctl-user daemon-reload || :
 if [ "$1" = "1" ]; then
     systemctl-user start libpebble3d.service || :
