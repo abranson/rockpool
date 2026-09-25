@@ -3174,6 +3174,10 @@ void Pebble::appsReplyFinished(QDBusPendingCallWatcher *watcher)
 
         if (app->isWatchFace()) {
             watchfaces.append(app);
+        } else if (app->uuid() == QStringLiteral("{07e0d9cb-8957-4bf7-9d42-35bf47caadfe}")) {
+            // The movement controls and SetAppOrder require Settings to be first,
+            // even when the locker supplies a different saved order.
+            applications.prepend(app);
         } else {
             applications.append(app);
         }

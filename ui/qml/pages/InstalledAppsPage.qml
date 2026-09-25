@@ -1,4 +1,4 @@
-import QtQuick 2.2
+import QtQuick 2.6
 import Sailfish.Silica 1.0
 import RockPool 1.0
 
@@ -10,6 +10,7 @@ Page {
     property bool showWatchFaces: false
     property var model: showWatchApps ? pebble.installedApps : pebble.installedWatchfaces
     property bool appMutationsAllowed: rockPool.knownPebbleCount === 1
+    property bool appOrderChanged
 
     AppStoreClient {
         id: client
@@ -27,6 +28,18 @@ Page {
                                               showWatchApps: root.showWatchApps,
                                               showWatchFaces: root.showWatchFaces
                                           })
+            }
+            MenuItem {
+                text: qsTr("Save Apps Order")
+                visible: root.appOrderChanged
+                enabled: root.appMutationsAllowed
+                onClicked: {
+                    if (!root.appMutationsAllowed)
+                        return
+
+                    listView.model.commitMove()
+                    root.appOrderChanged = false
+                }
             }
         }
         header: Column {
@@ -123,25 +136,6 @@ Page {
             return;
 
         listView.model.move(idx,idx+dir);
-        moveDock.show();
-    }
-
-    DockedPanel {
-        id: moveDock
-        dock: Dock.Top
-        width: parent.width
-        height: Theme.itemSizeSmall
-        Button {
-            text: qsTr("Save Apps Order")
-            enabled: root.appMutationsAllowed
-            anchors.horizontalCenter: parent.horizontalCenter
-            onClicked: {
-                if (!root.appMutationsAllowed)
-                    return;
-
-                moveDock.hide();
-                listView.model.commitMove();
-            }
-        }
+        root.appOrderChanged = true;
     }
 }

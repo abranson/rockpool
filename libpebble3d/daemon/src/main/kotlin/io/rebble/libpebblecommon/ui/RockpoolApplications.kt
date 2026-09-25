@@ -39,6 +39,13 @@ internal fun rockpoolApplicationRecords(
 ): List<Variant<*>> = rockpoolInstalledApplications(applications, watchType).map { app ->
     val properties = app.properties
     val platform = checkNotNull(app.findCompatiblePlatform(watchType))
+    val artwork = if (properties.type == AppType.Watchface) {
+        platform.screenshotImageUrl?.takeIf { it.isNotBlank() }
+            ?: properties.platforms.firstOrNull()?.screenshotImageUrl?.takeIf { it.isNotBlank() }
+            ?: platform.iconImageUrl
+    } else {
+        platform.iconImageUrl
+    }
     Variant(
         linkedMapOf(
             "uuid" to Variant(formatRockpoolAppUuid(properties.id)),
@@ -48,7 +55,7 @@ internal fun rockpoolApplicationRecords(
             "watchface" to Variant(properties.type == AppType.Watchface),
             "version" to Variant(properties.version.orEmpty()),
             "hasSettings" to Variant((app as? LockerWrapper.NormalApp)?.configurable ?: false),
-            "icon" to Variant(platform.iconImageUrl.orEmpty()),
+            "icon" to Variant(artwork.orEmpty()),
             "systemApp" to Variant(app is LockerWrapper.SystemApp),
         ),
         "a{sv}",

@@ -81,6 +81,33 @@ class RockpoolApplicationsTest {
     }
 
     @Test
+    fun `watchfaces use platform screenshots while watchapps retain icons`() {
+        fun artwork(type: AppType, platforms: List<AppPlatform>): Any? {
+            val app = normalApp(
+                uuid = "77777777-7777-4777-8777-777777777777",
+                order = 1,
+                type = type,
+                platforms = platforms,
+            )
+            return rockpoolApplicationRecords(listOf(app), WatchType.EMERY)
+                .single().variantMap().value("icon")
+        }
+        val platforms = listOf(
+            AppPlatform(WatchType.APLITE, screenshotImageUrl = "aplite-preview.png"),
+            AppPlatform(WatchType.EMERY, screenshotImageUrl = "emery-preview.png", iconImageUrl = "icon.png"),
+        )
+        assertEquals("emery-preview.png", artwork(AppType.Watchface, platforms))
+        assertEquals("icon.png", artwork(AppType.Watchapp, platforms))
+        assertEquals("aplite-preview.png", artwork(AppType.Watchface, listOf(
+            platforms.first(), AppPlatform(WatchType.EMERY, screenshotImageUrl = ""),
+        )))
+        assertEquals("icon.png", artwork(AppType.Watchface, listOf(
+            AppPlatform(WatchType.EMERY, iconImageUrl = "icon.png"),
+        )))
+        assertEquals("", artwork(AppType.Watchface, listOf(AppPlatform(WatchType.EMERY))))
+    }
+
+    @Test
     fun `compat UUIDs use Qt braces and resolution accepts UUID or store id`() {
         val application = normalApp(
             uuid = "44444444-4444-4444-8444-444444444444",

@@ -911,6 +911,7 @@ private slots:
     void constructorQueuesHeldBootstrapCalls();
     void addressBootstrapRetriesAfterInvalidReplies();
     void newestAppsReplyWins();
+    void settingsPrecedesSendTextWhenReorderingApps();
     void newestNotificationReplyWins();
     void notificationFilterCommandsDoNotWaitForReplies();
     void staleNotificationFilterCommandErrorIsIgnored();
@@ -1352,6 +1353,49 @@ void PebbleAsyncTest::newestAppsReplyWins()
     watch.replyNext(QStringLiteral("InstalledApps"), DelayedPebble::appsArguments(QStringLiteral("oldest-app")));
     QTest::qWait(50);
     QCOMPARE(pebble.installedApps()->get(0)->name(), QStringLiteral("newest-app"));
+    QVERIFY(connection.interface()->unregisterService(QString::fromLatin1(serviceName)).isValid());
+}
+
+void PebbleAsyncTest::settingsPrecedesSendTextWhenReorderingApps()
+{
+    QDBusConnection connection = QDBusConnection::connectToBus(
+        QDBusConnection::SessionBus, QStringLiteral("pebble-async-app-order"));
+    QVERIFY(connection.isConnected());
+    DelayedPebble watch(connection);
+    registerWatch(&watch, connection);
+    registerService(connection);
+    watch.defer(QStringLiteral("InstalledApps"));
+    Pebble pebble(QDBusObjectPath(QString::fromLatin1(watchPath)));
+    QTRY_COMPARE(watch.pendingCount(QStringLiteral("InstalledApps")), 1);
+
+    const QString sendText = QStringLiteral("{0863fc6a-66c5-4f62-ab8a-82ed00a98b5d}");
+    const QString settings = QStringLiteral("{07e0d9cb-8957-4bf7-9d42-35bf47caadfe}");
+    const QString music = QStringLiteral("music-app");
+    const QString face = QStringLiteral("watchface");
+    QDBusArgument apps;
+    apps.beginArray(qMetaTypeId<QDBusVariant>());
+    foreach (const QString &uuid, (QStringList() << sendText << settings << music << face)) {
+        QVariantMap app;
+        app.insert(QStringLiteral("uuid"), uuid);
+        app.insert(QStringLiteral("name"), uuid);
+        app.insert(QStringLiteral("watchface"), uuid == face);
+        apps << QDBusVariant(app);
+    }
+    apps.endArray();
+    watch.replyNext(QStringLiteral("InstalledApps"), QVariantList() << QVariant::fromValue(apps));
+
+    QTRY_COMPARE(pebble.installedApps()->rowCount(), 3);
+    QCOMPARE(pebble.installedApps()->get(0)->uuid(), settings);
+    QCOMPARE(pebble.installedApps()->get(1)->uuid(), sendText);
+    QCOMPARE(pebble.installedApps()->get(2)->uuid(), music);
+    QCOMPARE(pebble.installedWatchfaces()->rowCount(), 1);
+    QCOMPARE(pebble.installedWatchfaces()->get(0)->uuid(), face);
+
+    pebble.installedApps()->move(1, 2);
+    pebble.installedApps()->commitMove();
+    QTRY_COMPARE(watch.receivedCount(QStringLiteral("SetAppOrder")), 1);
+    QCOMPARE(watch.arguments(QStringLiteral("SetAppOrder")).at(0).toStringList(),
+             (QStringList() << settings << music << sendText << face));
     QVERIFY(connection.interface()->unregisterService(QString::fromLatin1(serviceName)).isValid());
 }
 

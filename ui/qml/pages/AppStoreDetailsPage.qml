@@ -1,4 +1,4 @@
-import QtQuick 2.2
+import QtQuick 2.6
 import Sailfish.Silica 1.0
 import QtGraphicalEffects 1.0
 
@@ -15,15 +15,64 @@ Page {
         contentHeight: contentColumn.height
         clip: true
 
+        PullDownMenu {
+            MenuItem {
+                id: installMenuItem
+
+                enabled: root.appInstallationAllowed && !installed && !installing && !root.app.companion
+                text: installing && !installed ? qsTr("Installing...")
+                                               : (root.app.companion ? qsTr("Needs Companion")
+                                                                     : (installed ? qsTr("Installed") : qsTr("Install")))
+                property bool installing
+                property bool installed: root.pebble.installedApps.contains(root.app.storeId) || root.pebble.installedWatchfaces.contains(root.app.storeId)
+                Connections {
+                    target: root.pebble.installedApps
+                    onChanged: {
+                        installMenuItem.installed = root.pebble.installedApps.contains(root.app.storeId) || root.pebble.installedWatchfaces.contains(root.app.storeId)
+                    }
+                }
+
+                Connections {
+                    target: root.pebble.installedWatchfaces
+                    onChanged: {
+                        installMenuItem.installed = root.pebble.installedApps.contains(root.app.storeId) || root.pebble.installedWatchfaces.contains(root.app.storeId)
+                    }
+                }
+
+                onClicked: {
+                    if (!root.appInstallationAllowed)
+                        return
+
+                    root.pebble.installApp(root.app.storeId)
+                    installMenuItem.installing = true
+                }
+            }
+        }
+
         Column {
             id: contentColumn
+
             width: parent.width
             height: childrenRect.height
             spacing: 2 * Theme.paddingLarge
 
             PageHeader {
-                title: " "
-                height: Math.max(implicitHeight, appDock.height)
+                title: root.app.name
+                description: root.app.vendor
+                descriptionWrapMode: Text.Wrap
+                leftMargin: Theme.horizontalPageMargin + appIcon.width + Theme.paddingMedium
+
+                Image {
+                    id: appIcon
+
+                    anchors.left: parent.left
+                    anchors.leftMargin: Theme.horizontalPageMargin
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: Theme.iconSizeLarge
+                    height: Math.min(width, parent.height - 2 * Theme.paddingMedium)
+                    fillMode: Image.PreserveAspectFit
+                    source: root.app.icon
+                }
             }
             Label {
                 width: parent.width - 2 * Theme.horizontalPageMargin
@@ -44,11 +93,6 @@ Page {
                 font.pixelSize: Theme.fontSizeSmall
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.Wrap
-            }
-            Label {
-                text: root.app.name //qsTr("App details")
-                font.pixelSize: Theme.fontSizeLarge
-                anchors.horizontalCenter: parent.horizontalCenter
             }
 
             Image {
@@ -243,97 +287,4 @@ Page {
             }
         }
     }
-    DockedPanel {
-        id: appDock
-
-        property real topInset: root.orientation === Orientation.Portrait
-                                 ? Screen.topCutout.height : 0
-        property real verticalPadding: Theme.paddingLarge
-
-        width: parent.width
-        height: topInset + Math.max(headerColumn.height, installButton.height)
-                + 2 * verticalPadding
-        dock: Dock.Top
-
-        Item {
-            anchors {
-                fill: parent
-                topMargin: appDock.topInset
-            }
-
-            Image {
-                id: appIcon
-                anchors {
-                    left: parent.left
-                    leftMargin: Theme.horizontalPageMargin
-                    top: parent.top
-                    topMargin: appDock.verticalPadding
-                }
-                height: headerColumn.height
-                width: height
-                source: root.app.icon
-            }
-
-            Column {
-                id: headerColumn
-
-                anchors {
-                    left: appIcon.right
-                    leftMargin: Theme.paddingMedium
-                    right: installButton.left
-                    rightMargin: Theme.paddingMedium
-                    top: parent.top
-                    topMargin: appDock.verticalPadding
-                }
-                width: parent.width-installButton.width
-                Label {
-                    text: root.app.name
-                    elide: Text.ElideRight
-                    width: parent.width
-                }
-                Label {
-                    text: root.app.vendor
-                    font.pixelSize: Theme.fontSizeSmall
-                }
-            }
-
-            Button {
-                id: installButton
-                anchors {
-                    right: parent.right
-                    rightMargin: Theme.horizontalPageMargin
-                    top: parent.top
-                    topMargin: appDock.verticalPadding
-                }
-                enabled: root.appInstallationAllowed && !installed && !installing && !root.app.companion
-                text: installing && !installed ? qsTr("Installing...")
-                                               : (root.app.companion ? qsTr("Needs Companion")
-                                                                     : (installed ? qsTr("Installed") : qsTr("Install")))
-                property bool installing: false
-                property bool installed: root.pebble.installedApps.contains(root.app.storeId) || root.pebble.installedWatchfaces.contains(root.app.storeId)
-                Connections {
-                    target: root.pebble.installedApps
-                    onChanged: {
-                        installButton.installed = root.pebble.installedApps.contains(root.app.storeId) || root.pebble.installedWatchfaces.contains(root.app.storeId)
-                    }
-                }
-
-                Connections {
-                    target: root.pebble.installedWatchfaces
-                    onChanged: {
-                        installButton.installed = root.pebble.installedApps.contains(root.app.storeId) || root.pebble.installedWatchfaces.contains(root.app.storeId)
-                    }
-                }
-
-                onClicked: {
-                    if (!root.appInstallationAllowed)
-                        return
-
-                    root.pebble.installApp(root.app.storeId)
-                    installButton.installing = true
-                }
-            }
-        }
-    }
-    Component.onCompleted: appDock.show();
 }

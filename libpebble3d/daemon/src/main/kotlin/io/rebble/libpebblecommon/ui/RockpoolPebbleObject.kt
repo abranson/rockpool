@@ -12,6 +12,7 @@ import io.rebble.libpebblecommon.connection.LibPebble
 import io.rebble.libpebblecommon.connection.PebbleDevice
 import io.rebble.libpebblecommon.database.entity.MuteState
 import io.rebble.libpebblecommon.disk.pbw.PbwApp
+import io.rebble.libpebblecommon.disk.pbw.StorePbwMetadata
 import io.rebble.libpebblecommon.disk.pbw.bestVariantFor
 import io.rebble.libpebblecommon.js.PKJSApp
 import io.rebble.libpebblecommon.locker.AppType
@@ -153,7 +154,10 @@ internal class RockpoolPebbleObject(
         return allowed
     }
 
-    private suspend fun sideloadAppForThisWatch(path: Path): Boolean {
+    private suspend fun sideloadAppForThisWatch(
+        path: Path,
+        storeMetadata: StorePbwMetadata? = null,
+    ): Boolean {
         // Pbw installation enters the account-global locker and LibPebble then syncs every
         // connected watch. Recheck immediately before that call: another known watch may have
         // appeared while a download or PBW parse was in progress.
@@ -164,7 +168,11 @@ internal class RockpoolPebbleObject(
             logger.w { "PBW has no compatible build for ${watch.watchType.watchType}" }
             return false
         }
-        return libPebble.sideloadApp(path)
+        return if (storeMetadata != null) {
+            libPebble.sideloadApp(path, storeMetadata)
+        } else {
+            libPebble.sideloadApp(path)
+        }
     }
 
     private fun key(name: String) = "$keyPrefix.$name"
@@ -785,7 +793,7 @@ internal class RockpoolPebbleObject(
             }
             val ok = try {
                 val app = RebbleAppstore.downloadPbw(id)
-                val installed = app != null && sideloadAppForThisWatch(app.path)
+                val installed = app != null && sideloadAppForThisWatch(app.path, app.storeMetadata)
                 val uuid = app?.uuid
                 if (installed && uuid != null) {
                     // Also add it to the Rebble locker so it becomes a real locker member with a

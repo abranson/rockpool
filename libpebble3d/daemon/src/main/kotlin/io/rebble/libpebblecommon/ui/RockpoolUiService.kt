@@ -679,6 +679,14 @@ internal class RockpoolUiService(
     }
 
     private fun watchLocker() {
+        val storeAssociations = RockpoolStoreAssociations(libPebble, changed = {
+            broadcastSignal { path -> RockpoolPebble.InstalledAppsChanged(path) }
+        })
+        scope.launch {
+            libPebble.getAllLockerUuids().distinctUntilChanged().collect {
+                storeAssociations.refresh(it)
+            }
+        }
         scope.launch {
             libPebble.getAllLockerUuids().distinctUntilChanged().drop(1).collect {
                 synchronized(exported) { exported.values.map { it.path } }
