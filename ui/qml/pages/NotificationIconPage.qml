@@ -1,4 +1,4 @@
-import QtQuick 2.2
+import QtQuick 2.6
 import Sailfish.Silica 1.0
 
 // Picks a TimelineIcon for an app's notifications. The watch renders these system images; the
@@ -52,21 +52,29 @@ Page {
         pageStack.pop();
     }
 
-    SilicaListView {
-        anchors.fill: parent
+    Column {
+        id: searchHeader
 
-        header: Column {
-            width: parent.width
-            PageHeader {
-                title: qsTr("Icon")
-                description: root.appName
-            }
-            SearchField {
-                width: parent.width
-                placeholderText: qsTr("Search icons")
-                onTextChanged: root.query = text
-            }
+        width: parent.width
+        PageHeader {
+            title: qsTr("Icon")
+            description: root.appName
         }
+        SearchField {
+            width: parent.width
+            placeholderText: qsTr("Search icons")
+            onTextChanged: root.query = text
+        }
+    }
+
+    SilicaListView {
+        anchors {
+            top: searchHeader.bottom
+            bottom: parent.bottom
+            left: parent.left
+            right: parent.right
+        }
+        clip: true
 
         PullDownMenu {
             MenuItem {
