@@ -1,6 +1,9 @@
-* Thu Aug 20 2026 Andrew Branson <github@andrewbranson.net> 2.0-1
+* Fri Sep 25 2026 Andrew Branson <github@andrewbranson.net> 2.0.0-1
 - Replace rockpoold with the libpebble3d Native Image service.
 - Bundle the daemon, Sailfish provider, and Rockpool UI in one package.
+- Add watch settings, firmware updates, health history, and Send Text support.
+- Improve notification images, caller names, and installed app artwork.
+- Preserve store metadata and prevent deleted watchfaces returning after sync.
 
 * Wed Oct 29 2025 Andrew Branson <github@andrewbranson.net> 1.18-1
 - Fix for app settings. Thanks to Johannes Bachmann!
