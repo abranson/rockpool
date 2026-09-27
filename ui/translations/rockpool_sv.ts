@@ -20,7 +20,7 @@
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="101"/>
         <source>App settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Appinställningar</translation>
     </message>
 </context>
 <context>
@@ -53,12 +53,12 @@
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="81"/>
         <source>App changes are available only when exactly one watch is paired.</source>
-        <translation type="unfinished"></translation>
+        <translation>Appförändringar är bara tillgängliga när en klocka är parkopplad.</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="91"/>
         <source>Connect the watch to install apps.</source>
-        <translation type="unfinished"></translation>
+        <translation>Anslut klockan för att installera appar.</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="25"/>
@@ -157,12 +157,12 @@
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="50"/>
         <source>App changes are available only when exactly one watch is paired.</source>
-        <translation type="unfinished"></translation>
+        <translation>Appförändringar är bara tillgängliga när en klocka är parkopplad.</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="60"/>
         <source>Connect the watch to install apps.</source>
-        <translation type="unfinished"></translation>
+        <translation>Anslut klockan för att installera appar.</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="117"/>
@@ -262,12 +262,12 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="205"/>
         <source>Debug logging</source>
-        <translation type="unfinished"></translation>
+        <translation>Felsökningslogg</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="206"/>
         <source>Write debug messages to the system journal</source>
-        <translation type="unfinished"></translation>
+        <translation>Skriv felmeddelanden till systemloggen</translation>
     </message>
     <message>
         <source>Listen Port</source>
@@ -370,17 +370,17 @@
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="19"/>
         <source>PebbleOS changelog</source>
-        <translation type="unfinished"></translation>
+        <translation>PebbleOS ändringslogg</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="34"/>
         <source>Firmware</source>
-        <translation type="unfinished">Mjukvara</translation>
+        <translation>Mjukvara</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="51"/>
         <source>Update available</source>
-        <translation type="unfinished"></translation>
+        <translation>Uppdatering tillgänglig</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="59"/>
@@ -390,17 +390,17 @@
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="73"/>
         <source>This update will also upgrade recovery data. Make sure your Pebble smartwatch is connected to a power adapter.</source>
-        <translation type="unfinished"></translation>
+        <translation>Denna uppgradering kommer också att uppgradera din återställningsdata. Tillse att din Pebble är ansluten till en laddare.</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="81"/>
         <source>Release notes</source>
-        <translation type="unfinished"></translation>
+        <translation>Publiceringsnotiser</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="90"/>
         <source>No release notes were provided for this update.</source>
-        <translation type="unfinished"></translation>
+        <translation>Inga publiceringsnotiser lämnades för denna uppdatering.</translation>
     </message>
     <message>
         <source>A new firmware upgrade is available for your Pebble smartwatch.</source>
@@ -439,67 +439,67 @@
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="91"/>
         <source>%1 h</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 t</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="95"/>
         <source>%1 bpm</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 bpm</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="100"/>
         <source>No health data synced yet.</source>
-        <translation type="unfinished"></translation>
+        <translation>Inga synkroniserad hälsodata.</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="102"/>
         <source>Last updated %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Senast uppdaterad %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="131"/>
         <source>Syncing…</source>
-        <translation type="unfinished"></translation>
+        <translation>Synkroniserar…</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="131"/>
         <source>Sync now</source>
-        <translation type="unfinished"></translation>
+        <translation>Synka nu</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="137"/>
         <source>Health settings</source>
-        <translation type="unfinished">Hälsoinställningar</translation>
+        <translation>Hälsoinställningar</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="154"/>
         <source>Health history</source>
-        <translation type="unfinished"></translation>
+        <translation>Hälsohistorik</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="161"/>
         <source>Health history is shared across this Rockpool account. It is not assigned to a specific watch.</source>
-        <translation type="unfinished"></translation>
+        <translation>Hälsohistoriken delas över detta Rockpool-konto. Den tilldelas inte en specifik klocka.</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="180"/>
         <source>Health history could not be loaded. Pull down to retry.</source>
-        <translation type="unfinished"></translation>
+        <translation>Hälsohistoria kunde inte läsas in. Dra neråt för att försöka igen.</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="191"/>
         <source>Syncing health data from the watch.</source>
-        <translation type="unfinished"></translation>
+        <translation>Synkronisera hälsodata från klockan.</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="202"/>
         <source>The watch did not accept the health sync request.</source>
-        <translation type="unfinished"></translation>
+        <translation>Klockan accepterade inte hälsosynkronisering</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="212"/>
         <source>Connect a Pebble to sync new health data. Existing history remains available while disconnected.</source>
-        <translation type="unfinished"></translation>
+        <translation>Anslut en Pebble för att synkronisera ny hälsodata. Befintlig historik förblir tillgänglig medan den kopplas bort.</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="227"/>
@@ -1611,7 +1611,7 @@
     <message>
         <location filename="../qml/pages/TimelineSettingsDialog.qml" line="93"/>
         <source>Notifications</source>
-        <translation type="unfinished">Aviseringar</translation>
+        <translation>Aviseringar</translation>
     </message>
     <message>
         <location filename="../qml/pages/TimelineSettingsDialog.qml" line="101"/>
