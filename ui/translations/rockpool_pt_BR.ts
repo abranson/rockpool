@@ -779,8 +779,9 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/LocationPicker.qml" line="109"/>
-        <source>Location search and forecasts by &lt;a href=&quot;https://open-meteo.com/&quot;&gt;Open-Meteo&lt;/a&gt;</source>
+        <location filename="../qml/pages/LocationPicker.qml" line="110"/>
+        <source>Location search and forecasts by %1</source>
+        <extracomment>%1 is a link to Open-Meteo, the location search and weather provider.</extracomment>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1619,26 +1620,27 @@
         <translation>Unidades</translation>
     </message>
     <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="216"/>
+        <source>Location search and forecasts by %1</source>
+        <extracomment>%1 is a link to Open-Meteo, the location search and weather provider.</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Language</source>
         <translation type="obsolete">Idioma</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="215"/>
-        <source>Location search and forecasts by &lt;a href=&quot;https://open-meteo.com/&quot;&gt;Open-Meteo&lt;/a&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="263"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="265"/>
         <source>Metric</source>
         <translation type="unfinished">Métrico</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="264"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="266"/>
         <source>Imperial</source>
         <translation type="unfinished">Imperial</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="265"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="267"/>
         <source>Hybrid</source>
         <translation type="unfinished"></translation>
     </message>

@@ -847,8 +847,9 @@
         <translation>输入时将会显示匹配的位置</translation>
     </message>
     <message>
-        <location filename="../qml/pages/LocationPicker.qml" line="109"/>
-        <source>Location search and forecasts by &lt;a href=&quot;https://open-meteo.com/&quot;&gt;Open-Meteo&lt;/a&gt;</source>
+        <location filename="../qml/pages/LocationPicker.qml" line="110"/>
+        <source>Location search and forecasts by %1</source>
+        <extracomment>%1 is a link to Open-Meteo, the location search and weather provider.</extracomment>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1727,6 +1728,12 @@
         <translation>当前位置</translation>
     </message>
     <message>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="216"/>
+        <source>Location search and forecasts by %1</source>
+        <extracomment>%1 is a link to Open-Meteo, the location search and weather provider.</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Locales</source>
         <translation type="vanished">地区</translation>
     </message>
@@ -1740,26 +1747,21 @@
         <translation type="vanished">语言</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="215"/>
-        <source>Location search and forecasts by &lt;a href=&quot;https://open-meteo.com/&quot;&gt;Open-Meteo&lt;/a&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Default (English)</source>
         <translation type="vanished">默认（English）</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="263"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="265"/>
         <source>Metric</source>
         <translation>公制</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="264"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="266"/>
         <source>Imperial</source>
         <translation>英制</translation>
     </message>
     <message>
-        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="265"/>
+        <location filename="../qml/pages/WeatherSettingsDialog.qml" line="267"/>
         <source>Hybrid</source>
         <translation>混合</translation>
     </message>

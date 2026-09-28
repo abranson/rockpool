@@ -106,7 +106,9 @@ Dialog {
             horizontalAlignment: Text.AlignHCenter
             font.pixelSize: Theme.fontSizeExtraSmall
             textFormat: Text.RichText
-            text: qsTr("Location search and forecasts by <a href=\"https://open-meteo.com/\">Open-Meteo</a>")
+            //: %1 is a link to Open-Meteo, the location search and weather provider.
+            text: qsTr("Location search and forecasts by %1")
+                      .arg("<a href=\"https://open-meteo.com/\">Open-Meteo</a>")
             onLinkActivated: Qt.openUrlExternally(link)
         }
     }
