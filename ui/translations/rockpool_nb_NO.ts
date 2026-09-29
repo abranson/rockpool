@@ -20,7 +20,7 @@
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="101"/>
         <source>App settings</source>
-        <translation type="unfinished"></translation>
+        <translation>App innstillinger</translation>
     </message>
 </context>
 <context>
@@ -370,17 +370,17 @@
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="19"/>
         <source>PebbleOS changelog</source>
-        <translation type="unfinished"></translation>
+        <translation>PebbleOS endringslogg</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="34"/>
         <source>Firmware</source>
-        <translation type="unfinished">Fastvare</translation>
+        <translation>Fastvare</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="51"/>
         <source>Update available</source>
-        <translation type="unfinished"></translation>
+        <translation>Oppdatering tilgjengelig</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="59"/>
