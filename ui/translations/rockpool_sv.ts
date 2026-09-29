@@ -504,93 +504,93 @@
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="227"/>
         <source>Enable Pebble Health to collect new activity, sleep, and heart-rate statistics.</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktivera Pebble Health för att samla in ny aktivitet, sömn och hjärtfrekvensstatistik.</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="235"/>
         <source>Open health settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Öppna hälsoinställningar</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="249"/>
         <source>Graph view</source>
-        <translation type="unfinished"></translation>
+        <translation>Diagramvy</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="253"/>
         <source>Daily</source>
-        <translation type="unfinished"></translation>
+        <translation>Dagligen</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="254"/>
         <source>Weekly</source>
-        <translation type="unfinished"></translation>
+        <translation>Veckovis</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="270"/>
         <source>Weeks start on Monday. Steps are weekly totals; sleep is the average per recorded night. Incomplete weeks use available data.</source>
-        <translation type="unfinished"></translation>
+        <translation>Veckor börjar på måndag. Steg är veckovisa totaler, sömn är genomsnittet per registrerad natt. Ofullständiga veckor använder tillgänglig data.</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="272"/>
         <source>Each bar shows one day. Swipe the graphs to browse history.</source>
-        <translation type="unfinished"></translation>
+        <translation>Varje stapel visar en dag. Svep diagrammen för att bläddra i historien.</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="281"/>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="426"/>
         <source>Latest</source>
-        <translation type="unfinished"></translation>
+        <translation>Senaste</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="302"/>
         <source>Today&apos;s steps</source>
-        <translation type="unfinished"></translation>
+        <translation>Dagens stegantal</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="312"/>
         <source>Average %1 per day</source>
-        <translation type="unfinished"></translation>
+        <translation>Genomsnittligt %1 per dag</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="345"/>
         <source>Last night&apos;s sleep</source>
-        <translation type="unfinished"></translation>
+        <translation>Senaste nattens sömn</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="362"/>
         <source>Average %1 per night</source>
-        <translation type="unfinished"></translation>
+        <translation>Genomsnittligt %1 per natt</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="378"/>
         <source>Deep sleep</source>
-        <translation type="unfinished"></translation>
+        <translation>Djupsömn</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="417"/>
         <source>Heart rate</source>
-        <translation type="unfinished"></translation>
+        <translation>Hjärtfrekvens</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="428"/>
         <source>Today avg</source>
-        <translation type="unfinished"></translation>
+        <translation>Dagens genomsnitt</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="430"/>
         <source>30 day avg</source>
-        <translation type="unfinished"></translation>
+        <translation>30 dagars genomsnitt</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="460"/>
         <source>%1 recorded days in the last 90 days. Missing data is shown as —.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 registrerade dagar under de senaste 90 dagarna. Saknad data visas som —.</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="462"/>
         <source>%1 days of health data available.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 dagars tillgänglig hälsodata.</translation>
     </message>
 </context>
 <context>
@@ -671,12 +671,12 @@
     <message>
         <location filename="../qml/pages/ImportPackagePage.qml" line="57"/>
         <source>App changes are available only when exactly one watch is paired.</source>
-        <translation type="unfinished"></translation>
+        <translation>Appförändringar är bara tillgängliga när exakt en klocka är parkopplad.</translation>
     </message>
     <message>
         <location filename="../qml/pages/ImportPackagePage.qml" line="67"/>
         <source>Connect the watch to install apps.</source>
-        <translation type="unfinished"></translation>
+        <translation>Anslut klockan för att installera appar.</translation>
     </message>
     <message>
         <location filename="../qml/pages/ImportPackagePage.qml" line="193"/>
@@ -775,7 +775,7 @@
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="57"/>
         <source>App changes are available only when exactly one watch is paired.</source>
-        <translation type="unfinished"></translation>
+        <translation>Appförändringar är bara tillgängliga när exakt en klocka är parkopplad.</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="33"/>
@@ -850,7 +850,7 @@
         <location filename="../qml/pages/LocationPicker.qml" line="110"/>
         <source>Location search and forecasts by %1</source>
         <extracomment>%1 is a link to Open-Meteo, the location search and weather provider.</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Platssökning och prognoser med %1</translation>
     </message>
 </context>
 <context>
@@ -873,17 +873,17 @@
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="13"/>
         <source>Connecting…</source>
-        <translation type="unfinished"></translation>
+        <translation>Ansluter…</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="14"/>
         <source>Negotiating…</source>
-        <translation type="unfinished"></translation>
+        <translation>Förhandlar…</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="16"/>
         <source>Connection failed</source>
-        <translation type="unfinished"></translation>
+        <translation>Anslutning misslyckades</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="17"/>
@@ -894,27 +894,27 @@
         <location filename="../qml/pages/MainMenuPage.qml" line="30"/>
         <location filename="../qml/pages/MainMenuPage.qml" line="369"/>
         <source>Health history</source>
-        <translation type="unfinished"></translation>
+        <translation>Hälsohistorik</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="40"/>
         <source>Watch manager</source>
-        <translation type="unfinished"></translation>
+        <translation>Klockhanterare</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="60"/>
         <source>Connect</source>
-        <translation type="unfinished"></translation>
+        <translation>Anslut</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="67"/>
         <source>Disconnect</source>
-        <translation type="unfinished"></translation>
+        <translation>Koppla bort</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="180"/>
         <source>Firmware %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Mjukvara %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="207"/>
@@ -934,7 +934,7 @@
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="255"/>
         <source>Your Pebble smartwatch is disconnected. Please make sure it is powered on and within range.</source>
-        <translation type="unfinished"></translation>
+        <translation>Din Pebble Smartwatch är bortkopplad. Se till att den är påslagen och inom räckhåll.</translation>
     </message>
     <message>
         <source>Your Pebble smartwatch is disconnected. Please make sure it is powered on, within range and it is paired properly in the Bluetooth System Settings.</source>
@@ -985,12 +985,12 @@
     <message>
         <location filename="../qml/pages/NotificationColorPage.qml" line="37"/>
         <source>Colour</source>
-        <translation type="unfinished"></translation>
+        <translation>Färg</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationColorPage.qml" line="44"/>
         <source>Use default colour</source>
-        <translation type="unfinished"></translation>
+        <translation>Använd standardfärg</translation>
     </message>
 </context>
 <context>
@@ -998,22 +998,22 @@
     <message>
         <location filename="../qml/pages/NotificationIconPage.qml" line="61"/>
         <source>Icon</source>
-        <translation type="unfinished"></translation>
+        <translation>Ikon</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationIconPage.qml" line="66"/>
         <source>Search icons</source>
-        <translation type="unfinished"></translation>
+        <translation>Sök ikoner</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationIconPage.qml" line="73"/>
         <source>Use default icon</source>
-        <translation type="unfinished"></translation>
+        <translation>Använd standardikon</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationIconPage.qml" line="111"/>
         <source>No matching icons</source>
-        <translation type="unfinished"></translation>
+        <translation>Inga matchande ikoner</translation>
     </message>
 </context>
 <context>
@@ -1046,12 +1046,12 @@
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="127"/>
         <source>Colour…</source>
-        <translation type="unfinished"></translation>
+        <translation>Färg…</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="136"/>
         <source>Icon…</source>
-        <translation type="unfinished"></translation>
+        <translation>Ikon…</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="145"/>
@@ -1064,47 +1064,47 @@
     <message>
         <location filename="../qml/pages/PairWatchPage.qml" line="43"/>
         <source>Pairing timed out. Put the watch in pairing mode and try again.</source>
-        <translation type="unfinished"></translation>
+        <translation>Parkoppling överskred tidsgränsen. Sätt klockan i parkopplingsläge och försök igen.</translation>
     </message>
     <message>
         <location filename="../qml/pages/PairWatchPage.qml" line="57"/>
         <source>Pair a Pebble</source>
-        <translation type="unfinished"></translation>
+        <translation>Parkoppla en Pebble</translation>
     </message>
     <message>
         <location filename="../qml/pages/PairWatchPage.qml" line="59"/>
         <source>Scanning for watches…</source>
-        <translation type="unfinished"></translation>
+        <translation>Söker efter klockor…</translation>
     </message>
     <message>
         <location filename="../qml/pages/PairWatchPage.qml" line="60"/>
         <source>Scan stopped</source>
-        <translation type="unfinished"></translation>
+        <translation>Sökning stoppad</translation>
     </message>
     <message>
         <location filename="../qml/pages/PairWatchPage.qml" line="66"/>
         <source>Stop scanning</source>
-        <translation type="unfinished"></translation>
+        <translation>Stoppa sökning</translation>
     </message>
     <message>
         <location filename="../qml/pages/PairWatchPage.qml" line="66"/>
         <source>Scan again</source>
-        <translation type="unfinished"></translation>
+        <translation>Sök igen</translation>
     </message>
     <message>
         <location filename="../qml/pages/PairWatchPage.qml" line="86"/>
         <source>Connecting…</source>
-        <translation type="unfinished"></translation>
+        <translation>Ansluter…</translation>
     </message>
     <message>
         <location filename="../qml/pages/PairWatchPage.qml" line="105"/>
         <source>Searching for Pebble watches</source>
-        <translation type="unfinished"></translation>
+        <translation>Söker efter Pebble-klockor</translation>
     </message>
     <message>
         <location filename="../qml/pages/PairWatchPage.qml" line="106"/>
         <source>Put the watch in pairing mode: Settings → Bluetooth on the watch.</source>
-        <translation type="unfinished"></translation>
+        <translation>Sätt klockan i parkopplingsläge: Inställningar → Bluetooth på klockan.</translation>
     </message>
 </context>
 <context>
@@ -1112,12 +1112,12 @@
     <message>
         <location filename="../pebble.cpp" line="2247"/>
         <source>Could not load Quiet Time settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunde inte läsa in inställningarna för Tyst tid.</translation>
     </message>
     <message>
         <location filename="../pebble.cpp" line="2277"/>
         <source>Could not save Quiet Time settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunde inte spara inställningarna för Tyst tid.</translation>
     </message>
 </context>
 <context>
@@ -1145,37 +1145,37 @@
         <location filename="../qml/pages/PebblesPage.qml" line="18"/>
         <location filename="../qml/pages/PebblesPage.qml" line="112"/>
         <source>Pair new watch</source>
-        <translation type="unfinished"></translation>
+        <translation>Parkoppla ny klocka</translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="33"/>
         <source>Connect</source>
-        <translation type="unfinished"></translation>
+        <translation>Anslut</translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="40"/>
         <source>Disconnect</source>
-        <translation type="unfinished"></translation>
+        <translation>Koppla bort</translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="47"/>
         <source>Forget watch</source>
-        <translation type="unfinished"></translation>
+        <translation>Glöm klockan</translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="48"/>
         <source>Forgetting watch</source>
-        <translation type="unfinished"></translation>
+        <translation>Glömmer klockan</translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="75"/>
         <source>Connecting…</source>
-        <translation type="unfinished"></translation>
+        <translation>Ansluter…</translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="76"/>
         <source>Negotiating…</source>
-        <translation type="unfinished"></translation>
+        <translation>Förhandlar…</translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="77"/>
@@ -1185,7 +1185,7 @@
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="78"/>
         <source>Connection failed</source>
-        <translation type="unfinished"></translation>
+        <translation>Anslutning misslyckades</translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="79"/>
@@ -1195,7 +1195,7 @@
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="103"/>
         <source>No Pebble smartwatches configured yet. Put your watch in pairing mode and pair it from here.</source>
-        <translation type="unfinished"></translation>
+        <translation>Inga Pebble Smartwatch konfigurerad ännu. Sätt din klocka i parkopplingsläge och parkoppla den härifrån.</translation>
     </message>
     <message>
         <source>No Pebble smartwatches configured yet. Please connect your Pebble smartwatch using System Settings.</source>
@@ -1211,82 +1211,82 @@
     <message>
         <location filename="../qml/pages/QuietTimePage.qml" line="45"/>
         <source>Refresh</source>
-        <translation type="unfinished"></translation>
+        <translation>Uppdatera</translation>
     </message>
     <message>
         <location filename="../qml/pages/QuietTimePage.qml" line="57"/>
         <source>Quiet Time</source>
-        <translation type="unfinished"></translation>
+        <translation>Tyst tid</translation>
     </message>
     <message>
         <location filename="../qml/pages/QuietTimePage.qml" line="61"/>
         <source>These settings are shared by your watches and sync when connected. Firmware support may vary.</source>
-        <translation type="unfinished"></translation>
+        <translation>Dessa inställningar delas av dina klockor och synkroniseras när de är anslutna. Mjukvarustödet kan variera.</translation>
     </message>
     <message>
         <location filename="../qml/pages/QuietTimePage.qml" line="77"/>
         <source>Watch settings synchronization is disabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Klockans inställningssynkronisering är avaktiverad.</translation>
     </message>
     <message>
         <location filename="../qml/pages/QuietTimePage.qml" line="89"/>
         <source>Manual Quiet Time</source>
-        <translation type="unfinished"></translation>
+        <translation>Manuell Tyst tid</translation>
     </message>
     <message>
         <location filename="../qml/pages/QuietTimePage.qml" line="97"/>
         <source>During calendar events</source>
-        <translation type="unfinished"></translation>
+        <translation>Under kalenderhändelser</translation>
     </message>
     <message>
         <location filename="../qml/pages/QuietTimePage.qml" line="105"/>
         <source>Weekdays</source>
-        <translation type="unfinished"></translation>
+        <translation>Veckodagar</translation>
     </message>
     <message>
         <location filename="../qml/pages/QuietTimePage.qml" line="106"/>
         <source>Weekends</source>
-        <translation type="unfinished"></translation>
+        <translation>Helger</translation>
     </message>
     <message>
         <location filename="../qml/pages/QuietTimePage.qml" line="114"/>
         <source>Scheduled Quiet Time</source>
-        <translation type="unfinished"></translation>
+        <translation>Schemalagd Tyst tid</translation>
     </message>
     <message>
         <location filename="../qml/pages/QuietTimePage.qml" line="122"/>
         <source>Start</source>
-        <translation type="unfinished"></translation>
+        <translation>Start</translation>
     </message>
     <message>
         <location filename="../qml/pages/QuietTimePage.qml" line="129"/>
         <source>End</source>
-        <translation type="unfinished"></translation>
+        <translation>Slut</translation>
     </message>
     <message>
         <location filename="../qml/pages/QuietTimePage.qml" line="136"/>
         <source>During Quiet Time</source>
-        <translation type="unfinished"></translation>
+        <translation>Under Tyst tid</translation>
     </message>
     <message>
         <location filename="../qml/pages/QuietTimePage.qml" line="139"/>
         <source>Allow phone calls</source>
-        <translation type="unfinished"></translation>
+        <translation>Tillåt telefonsamtal</translation>
     </message>
     <message>
         <location filename="../qml/pages/QuietTimePage.qml" line="147"/>
         <source>Show notifications</source>
-        <translation type="unfinished"></translation>
+        <translation>Visa aviseringar</translation>
     </message>
     <message>
         <location filename="../qml/pages/QuietTimePage.qml" line="155"/>
         <source>Automatically dismiss notifications</source>
-        <translation type="unfinished"></translation>
+        <translation>Avfärda aviseringar automatiskt</translation>
     </message>
     <message>
         <location filename="../qml/pages/QuietTimePage.qml" line="163"/>
         <source>Motion backlight</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Rörelseaktiverad bakgrundsbelysning</translation>
     </message>
 </context>
 <context>
@@ -1347,17 +1347,17 @@
     <message>
         <location filename="../rockpoolaccount.cpp" line="246"/>
         <source>Rockpool returned an invalid account operation</source>
-        <translation type="unfinished"></translation>
+        <translation>Rockpool returnerade en ogiltig kontooperation</translation>
     </message>
     <message>
         <location filename="../rockpoolaccount.cpp" line="271"/>
         <source>Rockpool rejected the account change</source>
-        <translation type="unfinished"></translation>
+        <translation>Rockpool avvisade kontoändringen</translation>
     </message>
     <message>
         <location filename="../rockpoolaccount.cpp" line="322"/>
         <source>Rockpool account service changed</source>
-        <translation type="unfinished"></translation>
+        <translation>Rockpool kontotjänst ändrad</translation>
     </message>
 </context>
 <context>
@@ -1535,27 +1535,27 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="24"/>
         <source>Changing watch language to %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Ändrar klockspråket till %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="127"/>
         <source>Quiet Time</source>
-        <translation type="unfinished"></translation>
+        <translation>Tyst tid</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="177"/>
         <source>Timeline window</source>
-        <translation type="unfinished"></translation>
+        <translation>Tidslinjefönster</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="193"/>
         <source>Rebble account</source>
-        <translation type="unfinished"></translation>
+        <translation>Rebble-konto</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="219"/>
         <source>Not signed in</source>
-        <translation type="unfinished"></translation>
+        <translation>Inte inloggad</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="248"/>
@@ -1591,22 +1591,22 @@
     <message>
         <location filename="../qml/pages/TimelineSettingsDialog.qml" line="60"/>
         <source>Timeline window</source>
-        <translation type="unfinished"></translation>
+        <translation>Tidslinjefönster</translation>
     </message>
     <message>
         <location filename="../qml/pages/TimelineSettingsDialog.qml" line="61"/>
         <source>Save</source>
-        <translation type="unfinished"></translation>
+        <translation>Spara</translation>
     </message>
     <message>
         <location filename="../qml/pages/TimelineSettingsDialog.qml" line="69"/>
         <source>Start (days included before today)</source>
-        <translation type="unfinished"></translation>
+        <translation>Start (dagar inkluderade före idag)</translation>
     </message>
     <message>
         <location filename="../qml/pages/TimelineSettingsDialog.qml" line="83"/>
         <source>End (days included after today)</source>
-        <translation type="unfinished"></translation>
+        <translation>Slut (dagar inkluderade efter idag)</translation>
     </message>
     <message>
         <location filename="../qml/pages/TimelineSettingsDialog.qml" line="93"/>
@@ -1616,7 +1616,7 @@
     <message>
         <location filename="../qml/pages/TimelineSettingsDialog.qml" line="101"/>
         <source>Re-delivery expiration (seconds)</source>
-        <translation type="unfinished"></translation>
+        <translation>Återleverans går ut (sekunder)</translation>
     </message>
 </context>
 <context>
@@ -1624,22 +1624,22 @@
     <message>
         <location filename="../qml/pages/WatchLanguageSelector.qml" line="17"/>
         <source>Watch language</source>
-        <translation type="unfinished"></translation>
+        <translation>Klockspråk</translation>
     </message>
     <message>
         <location filename="../qml/pages/WatchLanguageSelector.qml" line="19"/>
         <source>Loading languages…</source>
-        <translation type="unfinished"></translation>
+        <translation>Läser in språk…</translation>
     </message>
     <message>
         <location filename="../qml/pages/WatchLanguageSelector.qml" line="35"/>
         <source>Unknown</source>
-        <translation type="unfinished"></translation>
+        <translation>Okänd</translation>
     </message>
     <message>
         <location filename="../qml/pages/WatchLanguageSelector.qml" line="114"/>
         <source>Languages could not be loaded. Reopen Settings to try again.</source>
-        <translation type="unfinished"></translation>
+        <translation>Språk kunde inte läsas in. Öppna inställningar för att försöka igen.</translation>
     </message>
 </context>
 <context>
@@ -1731,7 +1731,7 @@
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="216"/>
         <source>Location search and forecasts by %1</source>
         <extracomment>%1 is a link to Open-Meteo, the location search and weather provider.</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Platssökning och prognoser av %1</translation>
     </message>
     <message>
         <source>Locales</source>
