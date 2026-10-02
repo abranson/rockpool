@@ -479,32 +479,32 @@
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="161"/>
         <source>Health history is shared across this Rockpool account. It is not assigned to a specific watch.</source>
-        <translation type="unfinished"></translation>
+        <translation>Helsehistorikk deles på tvers av denne Rockpool-kontoen. Den er ikke knyttet til en bestemt klokke.</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="180"/>
         <source>Health history could not be loaded. Pull down to retry.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunne ikke laste inn helsehistorikk. Dra ned for å prøve på nytt.</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="191"/>
         <source>Syncing health data from the watch.</source>
-        <translation type="unfinished"></translation>
+        <translation>Synkroniserer helsedata fra klokken.</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="202"/>
         <source>The watch did not accept the health sync request.</source>
-        <translation type="unfinished"></translation>
+        <translation>Klokken godtok ikke forespørselen om å synkronisere helsedata.</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="212"/>
         <source>Connect a Pebble to sync new health data. Existing history remains available while disconnected.</source>
-        <translation type="unfinished"></translation>
+        <translation>Koble til en Pebble for å synkronisere nye helsedata. Eksisterende historikk er fortsatt tilgjengelig mens den er frakoblet.</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="227"/>
         <source>Enable Pebble Health to collect new activity, sleep, and heart-rate statistics.</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktiver Pebble Health for å samle inn ny statistikk om aktivitet, søvn og puls.</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="235"/>
@@ -737,7 +737,7 @@
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="54"/>
         <source>Really Delete?</source>
-        <translation>Bekreft sletting.</translation>
+        <translation>Vil du virkelig slette?</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="60"/>
@@ -1329,7 +1329,7 @@
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="69"/>
         <source>Really Delete?</source>
-        <translation>Bekreft sletting.</translation>
+        <translation>Vil du virkelig slette?</translation>
     </message>
     <message>
         <location filename="../qml/pages/ResponsesPage.qml" line="75"/>
@@ -1395,7 +1395,7 @@
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="66"/>
         <source>Really Delete?</source>
-        <translation>Bekreft sletting.</translation>
+        <translation>Vil du virkelig slette?</translation>
     </message>
     <message>
         <location filename="../qml/pages/ScreenshotsPage.qml" line="73"/>
@@ -1428,7 +1428,7 @@
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="133"/>
         <source>Really Delete?</source>
-        <translation>Bekreft sletting.</translation>
+        <translation>Vil du virkelig slette?</translation>
     </message>
     <message>
         <location filename="../qml/pages/SendTextSettingsDialog.qml" line="203"/>
@@ -1611,7 +1611,7 @@
     <message>
         <location filename="../qml/pages/TimelineSettingsDialog.qml" line="93"/>
         <source>Notifications</source>
-        <translation type="unfinished">Merknader</translation>
+        <translation>Varsler</translation>
     </message>
     <message>
         <location filename="../qml/pages/TimelineSettingsDialog.qml" line="101"/>
