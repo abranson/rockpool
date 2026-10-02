@@ -53,12 +53,12 @@
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="81"/>
         <source>App changes are available only when exactly one watch is paired.</source>
-        <translation type="unfinished"></translation>
+        <translation>Appendringer er bare tilgjengelige når nøyaktig én klokke er koblet til.</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="91"/>
         <source>Connect the watch to install apps.</source>
-        <translation type="unfinished"></translation>
+        <translation>Koble til klokken for å installere apper.</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="25"/>
@@ -157,12 +157,12 @@
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="50"/>
         <source>App changes are available only when exactly one watch is paired.</source>
-        <translation type="unfinished"></translation>
+        <translation>Appendringer er kun tilgjengelige når nøyaktig én klokke er koblet til.</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="60"/>
         <source>Connect the watch to install apps.</source>
-        <translation type="unfinished"></translation>
+        <translation>Koble til klokken for å installere apper.</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="117"/>
@@ -262,12 +262,12 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="205"/>
         <source>Debug logging</source>
-        <translation type="unfinished"></translation>
+        <translation>Feilsøkingslogging</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="206"/>
         <source>Write debug messages to the system journal</source>
-        <translation type="unfinished"></translation>
+        <translation>Skriv feilsøkingsmeldinger til systemloggen</translation>
     </message>
     <message>
         <source>Listen Port</source>
@@ -390,17 +390,17 @@
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="73"/>
         <source>This update will also upgrade recovery data. Make sure your Pebble smartwatch is connected to a power adapter.</source>
-        <translation type="unfinished"></translation>
+        <translation>Denne oppdateringen vil også oppgradere gjenopprettingsdata. Sørg for at Pebble-smartklokken din er koblet til en strømadapter.</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="81"/>
         <source>Release notes</source>
-        <translation type="unfinished"></translation>
+        <translation>Lanseringsnotater</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="90"/>
         <source>No release notes were provided for this update.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ingen lanseringsnotater for denne oppdateringen.</translation>
     </message>
     <message>
         <source>A new firmware upgrade is available for your Pebble smartwatch.</source>
@@ -439,42 +439,42 @@
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="91"/>
         <source>%1 h</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 t</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="95"/>
         <source>%1 bpm</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 bpm</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="100"/>
         <source>No health data synced yet.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ingen helsedata synkronisert ennå.</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="102"/>
         <source>Last updated %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Sist oppdatert %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="131"/>
         <source>Syncing…</source>
-        <translation type="unfinished"></translation>
+        <translation>Synkroniserer…</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="131"/>
         <source>Sync now</source>
-        <translation type="unfinished"></translation>
+        <translation>Synkroniser nå</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="137"/>
         <source>Health settings</source>
-        <translation type="unfinished">Helseinnstillinger</translation>
+        <translation>Helseinnstillinger</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="154"/>
         <source>Health history</source>
-        <translation type="unfinished"></translation>
+        <translation>Helsehistorikk</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="161"/>
