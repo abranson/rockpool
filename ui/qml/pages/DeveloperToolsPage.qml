@@ -1,4 +1,4 @@
-import QtQuick 2.2
+import QtQuick 2.6
 import Sailfish.Silica 1.0
 
 Page {
@@ -47,6 +47,7 @@ Page {
     //Creating the menu list this way to allow the text field to be translatable (http://askubuntu.com/a/476331)
     ListModel {
         id: devMenuModel
+
         dynamicRoles: true
     }
 
@@ -91,7 +92,7 @@ Page {
         });
         devMenuModel.append({
             icon: "device-upload",
-            text: qsTr("Install app or watchface from file"),
+            text: qsTr("Install from file"),
             page: "ImportPackagePage.qml",
             call: null
         });
@@ -99,6 +100,7 @@ Page {
 
     DockedPanel {
         id: devConnDocker
+
         width: parent.width
         height: devContent.childrenRect.height
         dock: Dock.Bottom
@@ -112,6 +114,7 @@ Page {
 
         Column {
             id: devContent
+
             width: parent.width
             SectionHeader {
                 text: qsTr("Developer Connection Settings")
@@ -155,12 +158,14 @@ Page {
 
     DockedPanel {
         id: sendLogsDocker
+
         width: parent.width
         height: content.childrenRect.height
         dock: Dock.Bottom
         open: false
         Column {
             id: content
+
             width: parent.width
             spacing: Theme.paddingSmall
             Label {
@@ -172,6 +177,7 @@ Page {
             }
             BusyIndicator {
                 id: busyIndicator
+
                 visible: false
                 running: visible
                 anchors.horizontalCenter: parent.horizontalCenter

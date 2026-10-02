@@ -1,4 +1,4 @@
-import QtQuick 2.2
+import QtQuick 2.6
 import Sailfish.Silica 1.0
 import RockPool 1.0
 import Nemo.FileManager 1.0
@@ -15,7 +15,7 @@ Page {
 
     property alias path: fileModel.path
     property string homePath: StandardPaths.home
-    property string title
+    property string title: qsTr("Install from file")
     property bool showFormat
 
     signal formatClicked
@@ -53,8 +53,16 @@ Page {
             Label {
                 width: parent.width - 2 * Theme.horizontalPageMargin
                 anchors.horizontalCenter: parent.horizontalCenter
+                text: qsTr("Select an app or watchface (.pbw), or a language pack (.pbl) for your watch.")
+                color: Theme.secondaryColor
+                font.pixelSize: Theme.fontSizeSmall
+                wrapMode: Text.Wrap
+            }
+            Label {
+                width: parent.width - 2 * Theme.horizontalPageMargin
+                anchors.horizontalCenter: parent.horizontalCenter
                 visible: !root.appMutationsAllowed
-                text: qsTr("App changes are available only when exactly one watch is paired.")
+                text: qsTr("File installation is available only when exactly one watch is paired.")
                 color: Theme.secondaryColor
                 font.pixelSize: Theme.fontSizeSmall
                 horizontalAlignment: Text.AlignHCenter
@@ -64,7 +72,7 @@ Page {
                 width: parent.width - 2 * Theme.horizontalPageMargin
                 anchors.horizontalCenter: parent.horizontalCenter
                 visible: root.appMutationsAllowed && !root.appInstallationAllowed
-                text: qsTr("Connect the watch to install apps.")
+                text: qsTr("Connect the watch to install files.")
                 color: Theme.secondaryColor
                 font.pixelSize: Theme.fontSizeSmall
                 horizontalAlignment: Text.AlignHCenter
@@ -190,10 +198,20 @@ Page {
                         return
 
                     var filePath = Qt.resolvedUrl(fileModel.path + "/" + model.fileName)
-                    remorseAction(qsTr("Sideloading file"),function(){
-                        console.log("Sideloading file", filePath);
-                        root.pebble.sideloadApp(filePath);
-                    });
+                    var watch = root.pebble
+                    var languagePack = /\.pbl$/i.test(model.fileName)
+                    var actionText = languagePack
+                            ? qsTr("Installing language pack %1").arg(model.fileName)
+                            : qsTr("Sideloading file")
+                    remorseAction(actionText, function() {
+                        if (!root.appInstallationAllowed || root.pebble !== watch)
+                            return
+
+                        if (languagePack)
+                            watch.loadLanguagePack(filePath)
+                        else
+                            watch.sideloadApp(filePath)
+                    })
                 }
             }
         }
