@@ -13,6 +13,70 @@
 #include <QDir>
 #include <QCryptographicHash>
 
+namespace {
+
+const char cohortsUrl[] = "https://cohorts.rebble.io/cohort";
+
+struct FirmwareVersion
+{
+    bool valid = false;
+    int major = 0;
+    int minor = 0;
+    int patch = 0;
+};
+
+FirmwareVersion parseFirmwareVersion(const QString &version)
+{
+    QString numeric = version.trimmed();
+    if (numeric.startsWith(QLatin1Char('v'), Qt::CaseInsensitive)) {
+        numeric.remove(0, 1);
+    }
+    numeric = numeric.section(QLatin1Char('-'), 0, 0);
+
+    const QStringList fields = numeric.split(QLatin1Char('.'));
+    if (fields.size() < 2 || fields.size() > 3) {
+        return FirmwareVersion();
+    }
+
+    bool majorOk = false;
+    bool minorOk = false;
+    bool patchOk = true;
+    FirmwareVersion parsed;
+    parsed.major = fields.at(0).toInt(&majorOk);
+    parsed.minor = fields.at(1).toInt(&minorOk);
+    if (fields.size() == 3) {
+        parsed.patch = fields.at(2).toInt(&patchOk);
+    }
+    parsed.valid = majorOk && minorOk && patchOk;
+    return parsed;
+}
+
+bool isNewer(const FirmwareVersion &candidate, const FirmwareVersion &current)
+{
+    if (candidate.major != current.major) {
+        return candidate.major > current.major;
+    }
+    if (candidate.minor != current.minor) {
+        return candidate.minor > current.minor;
+    }
+    return candidate.patch > current.patch;
+}
+
+bool isSha256(const QByteArray &digest)
+{
+    if (digest.size() != 64) {
+        return false;
+    }
+    foreach (const char c, digest) {
+        if (!((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f'))) {
+            return false;
+        }
+    }
+    return true;
+}
+
+}
+
 FirmwareDownloader::FirmwareDownloader(Pebble *pebble, WatchConnection *connection):
     QObject(pebble),
     m_pebble(pebble),
@@ -46,6 +110,23 @@ QString FirmwareDownloader::url() const
 bool FirmwareDownloader::upgrading() const
 {
     return m_upgradeInProgress;
+}
+
+void FirmwareDownloader::clearUpdateCandidate()
+{
+    const bool changed = m_updateAvailable
+            || !m_candidateVersion.isEmpty()
+            || !m_releaseNotes.isEmpty()
+            || !m_url.isEmpty()
+            || !m_hash.isEmpty();
+    m_updateAvailable = false;
+    m_candidateVersion.clear();
+    m_releaseNotes.clear();
+    m_url.clear();
+    m_hash.clear();
+    if (changed) {
+        emit updateAvailableChanged();
+    }
 }
 
 void FirmwareDownloader::performUpgrade()
@@ -135,56 +216,85 @@ void FirmwareDownloader::performUpgrade()
 
 void FirmwareDownloader::checkForNewFirmware()
 {
-    QString platformString = m_pebble->platformString();
+    const QString platformString = m_pebble->platformString();
     if(platformString.isEmpty()) {
         qWarning() << "Hardware revision not supported for firmware upgrades" << m_pebble->hardwareRevision();
+        clearUpdateCandidate();
         return;
     }
 
-    QString url("https://pebblefw.s3.amazonaws.com/pebble/%1/%2/latest.json");
-    url = url.arg(platformString).arg("release-v3.8");
+    QUrl url(QString::fromLatin1(cohortsUrl));
+    QUrlQuery query;
+    query.addQueryItem(QStringLiteral("select"), QStringLiteral("fw"));
+    query.addQueryItem(QStringLiteral("hardware"), platformString);
+    query.addQueryItem(QStringLiteral("mobilePlatform"), QStringLiteral("android"));
+    query.addQueryItem(QStringLiteral("mobileVersion"), QStringLiteral("4.4.2"));
+    query.addQueryItem(QStringLiteral("mobileHardware"), QStringLiteral("sailfish"));
+    query.addQueryItem(QStringLiteral("pebbleAppVersion"), QStringLiteral("4.4.2"));
+    url.setQuery(query);
     qDebug() << "fetching firmware info:" << url;
     QNetworkRequest request(url);
     QNetworkReply *reply = m_nam->get(request);
     connect(reply, &QNetworkReply::finished, [this, reply]() {
+        reply->deleteLater();
+        if (reply->error() != QNetworkReply::NoError) {
+            qWarning() << "Error fetching firmware info" << reply->errorString();
+            clearUpdateCandidate();
+            return;
+        }
+
         QJsonParseError error;
         QJsonDocument jsonDoc = QJsonDocument::fromJson(reply->readAll(), &error);
-        qDebug() << "firmware info reply:" << jsonDoc.toJson();
         if (error.error != QJsonParseError::NoError) {
-            qWarning() << "Error parsing firmware fetch reply" << jsonDoc.toJson(QJsonDocument::Indented);
-            return;
-        }
-        QVariantMap resultMap = jsonDoc.toVariant().toMap();
-        if (!resultMap.contains("normal")) {
-            qWarning() << "Could not find normal firmware package" << jsonDoc.toJson(QJsonDocument::Indented);
+            qWarning() << "Error parsing firmware fetch reply" << error.errorString();
+            clearUpdateCandidate();
             return;
         }
 
-        qDebug() << "current:" << m_pebble->softwareVersion() << "candidate:" << resultMap.value("normal").toMap().value("friendlyVersion").toString();
-
-        QVariantMap targetFirmware;
-        if (resultMap.contains("3.x-migration") && m_pebble->softwareVersion() < "v3.0.0") {
-            targetFirmware = resultMap.value("3.x-migration").toMap();
-        } else if (m_pebble->softwareVersion() >= "v3.0.0" &&
-                           resultMap.value("normal").toMap().value("friendlyVersion").toString() != m_pebble->softwareVersion()){
-            targetFirmware = resultMap.value("normal").toMap();
-        }
-
+        const QVariantMap resultMap = jsonDoc.toVariant().toMap();
+        const QVariantMap targetFirmware = resultMap.value(QStringLiteral("fw"))
+                .toMap().value(QStringLiteral("normal")).toMap();
         if (targetFirmware.isEmpty()) {
-            qDebug() << "Watch firmware is up to date";
-            m_updateAvailable = false;
-            emit updateAvailableChanged();
+            qWarning() << "Could not find normal firmware package for" << m_pebble->platformString();
+            clearUpdateCandidate();
             return;
         }
 
-        qDebug() << targetFirmware;
+        const QString candidateVersion = targetFirmware.value(QStringLiteral("friendlyVersion")).toString();
+        const FirmwareVersion candidate = parseFirmwareVersion(candidateVersion);
+        const FirmwareVersion current = parseFirmwareVersion(m_pebble->softwareVersion());
+        if (!candidate.valid || (!m_pebble->recovery() && !current.valid)) {
+            qWarning() << "Could not compare firmware versions"
+                       << m_pebble->softwareVersion() << candidateVersion;
+            clearUpdateCandidate();
+            return;
+        }
 
-        m_candidateVersion = targetFirmware.value("friendlyVersion").toString();
-        m_releaseNotes = targetFirmware.value("notes").toString();
-        m_url = targetFirmware.value("url").toString();
-        m_hash = targetFirmware.value("sha-256").toByteArray();
+        qDebug() << "current:" << m_pebble->softwareVersion()
+                 << "candidate:" << candidateVersion
+                 << "recovery:" << m_pebble->recovery();
+        if (!m_pebble->recovery() && !isNewer(candidate, current)) {
+            qDebug() << "Watch firmware is up to date";
+            clearUpdateCandidate();
+            return;
+        }
+
+        const QUrl firmwareUrl(targetFirmware.value(QStringLiteral("url")).toString());
+        const QByteArray hash = targetFirmware.value(QStringLiteral("sha-256"))
+                .toByteArray().trimmed().toLower();
+        if (!firmwareUrl.isValid() || firmwareUrl.scheme() != QStringLiteral("https")
+                || firmwareUrl.host().isEmpty() || !isSha256(hash)) {
+            qWarning() << "Invalid firmware metadata for" << m_pebble->platformString();
+            clearUpdateCandidate();
+            return;
+        }
+
+        m_candidateVersion = candidateVersion;
+        m_releaseNotes = targetFirmware.value(QStringLiteral("notes")).toString();
+        m_url = firmwareUrl.toString();
+        m_hash = hash;
         m_updateAvailable = true;
-        qDebug() << "candidate firmware upgrade" << m_candidateVersion << m_releaseNotes << m_url;
+        qDebug() << "candidate firmware upgrade" << m_candidateVersion << m_url;
         emit updateAvailableChanged();
     });
 }
@@ -223,4 +333,3 @@ void FirmwareDownloader::systemMessageReceived(const QByteArray &data)
         emit upgradingChanged();
     });
 }
-

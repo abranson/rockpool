@@ -34,6 +34,8 @@ private slots:
     void systemMessageReceived(const QByteArray &data);
 
 private:
+    void clearUpdateCandidate();
+
     QNetworkAccessManager *m_nam;
     Pebble *m_pebble;
     WatchConnection *m_connection;
