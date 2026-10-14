@@ -2949,10 +2949,12 @@ require_fixed 'encodeURIComponent(query)' "$location_picker" \
     'weather location query escaping'
 require_fixed 'generation !== searchGeneration || request !== activeRequest' \
     "$location_picker" 'stale weather location reply rejection'
-require_fixed 'Location search and forecasts by <a href=\"https://open-meteo.com/\">Open-Meteo</a>' \
-    "$location_picker" 'weather location provider attribution'
-require_fixed 'Location search and forecasts by <a href=\"https://open-meteo.com/\">Open-Meteo</a>' \
-    "$weather_settings_dialog" 'automatic weather provider attribution'
+for attribution_source in "$location_picker" "$weather_settings_dialog"; do
+    require_fixed 'qsTr("Location search and forecasts by %1")' \
+        "$attribution_source" 'translatable weather provider attribution'
+    require_fixed '.arg("<a href=\"https://open-meteo.com/\">Open-Meteo</a>")' \
+        "$attribution_source" 'weather provider attribution link substitution'
+done
 require_fixed 'https://api.open-meteo.com/v1/forecast' "$libpebble3_open_meteo" \
     'supported keyless weather forecast endpoint'
 require_fixed 'parameters.append("forecast_days", "2")' "$libpebble3_open_meteo" \
@@ -3951,8 +3953,13 @@ for guarded_app_page in \
 do
     require_fixed 'property bool appMutationsAllowed: rockPool.knownPebbleCount === 1' \
         "$guarded_app_page" 'single-watch application-mutation guard'
-    require_fixed 'App changes are available only when exactly one watch is paired.' \
-        "$guarded_app_page" 'single-watch application-mutation explanation'
+    if [ "$guarded_app_page" = "$import_package_page" ]; then
+        require_fixed 'File installation is available only when exactly one watch is paired.' \
+            "$guarded_app_page" 'single-watch file-installation explanation'
+    else
+        require_fixed 'App changes are available only when exactly one watch is paired.' \
+            "$guarded_app_page" 'single-watch application-mutation explanation'
+    fi
 done
 require_fixed 'appMutationsAllowed: root.appMutationsAllowed' "$installed_apps_page" \
     'installed-app delegate mutation guard propagation'
