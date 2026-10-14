@@ -593,7 +593,7 @@
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="151"/>
         <source>More Active</source>
-        <translation></translation>
+        <translation>More Active</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="160"/>
