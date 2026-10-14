@@ -1127,7 +1127,7 @@
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="9"/>
         <source>RockPool</source>
-        <translation></translation>
+        <translation>RockPool</translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="10"/>
