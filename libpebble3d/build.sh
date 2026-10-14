@@ -134,7 +134,7 @@ echo "== gradle jvmDist (daemon composite build; libpebble3 from $BUILD_MOBILEAP
     MOBILEAPP="$BUILD_MOBILEAPP" \
     LIBPEBBLE3_ARCHIVE_GIT_HASH="$mobileapp_git_hash" \
     LIBPEBBLE3_ARCHIVE_VERSION_CODE="$mobileapp_version_code" \
-    ./gradlew jvmDist)
+    ./gradlew -PenableAndroidNativeBuild=false jvmDist)
 
 echo "== builder image"
 BUILDER_IID_FILE=$(mktemp "${TMPDIR:-/tmp}/libpebble3d-builder-image.XXXXXX")
