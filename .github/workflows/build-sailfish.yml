@@ -1,0 +1,161 @@
+name: Build Sailfish RPM
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sailfish-${{ github.ref }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  native:
+    name: AArch64 Native Image
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 330
+    env:
+      NI_THREADS: '4'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+          persist-credentials: false
+
+      - name: Prepare disk and Gradle limits
+        run: |
+          test "$RUNNER_ENVIRONMENT" = github-hosted
+          test "$(uname -m)" = aarch64
+          df -h /
+          # These preinstalled toolchains are unused by the JVM/native build.
+          # Keep Android, Java and Docker; never prune the sealed native inputs.
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup
+          mkdir -p "$HOME/.gradle" ci-artifacts
+          cat > "$HOME/.gradle/gradle.properties" <<'EOF'
+          org.gradle.jvmargs=-Xmx6g
+          org.gradle.workers.max=2
+          org.gradle.parallel=false
+          org.gradle.daemon=false
+          kotlin.compiler.execution.strategy=in-process
+          EOF
+          # Version metadata requires full history and upstream tags, even for a pinned submodule.
+          if test "$(git -C libpebble3d/mobileapp rev-parse --is-shallow-repository)" = true; then
+            git -C libpebble3d/mobileapp fetch --unshallow --tags origin
+          else
+            git -C libpebble3d/mobileapp fetch --tags origin
+          fi
+          df -h /
+
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3
+        with:
+          # AGP needs an SDK to configure the composite JVM build; no emulator or NDK.
+          packages: ''
+          log-accepted-android-sdk-licenses: false
+
+      - name: Build committed native artifacts
+        run: |
+          set -o pipefail
+          ./build-libpebble3d.sh --release 2>&1 | tee ci-artifacts/native-build.log
+          sh rpm/verify-native-artifacts.sh rpm/native committed
+          # Tar preserves executable permissions and the hidden provenance manifest.
+          tar -czf ci-artifacts/native-aarch64.tar.gz -C rpm/native .
+          df -h / | tee ci-artifacts/native-disk.log
+
+      - name: Upload sealed native inputs
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: native-aarch64-${{ github.sha }}
+          path: ci-artifacts/native-aarch64.tar.gz
+          compression-level: 0
+          overwrite: true
+          retention-days: 7
+          if-no-files-found: error
+
+      - name: Upload native diagnostics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: native-logs-${{ github.run_attempt }}
+          path: ci-artifacts/*.log
+          retention-days: 7
+          if-no-files-found: warn
+
+  sailfish:
+    name: Sailfish AArch64 RPM
+    needs: native
+    # A separate VM releases all native-job Docker layers, Gradle caches and snapshots.
+    # The existing Sailfish SDK image is x86-64, even when building AArch64 RPMs.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      SDK_IMAGE: coderus/sailfishos-platform-sdk@sha256:e7c4379393b17ee63d7f7443ce9930c315a61fdb2e732016346ccbe8c934435e
+      SDK_TARGET: SailfishOS-5.2.0.15-aarch64
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: native-aarch64-${{ github.sha }}
+          path: ci-artifacts
+
+      - name: Prepare clean packaging disk and verify inputs
+        run: |
+          test "$RUNNER_ENVIRONMENT" = github-hosted
+          df -h /
+          # This job has no Android/JVM work; only the SDK and source are needed.
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/local/lib/android
+          mkdir -p rpm/native
+          tar -xzf ci-artifacts/native-aarch64.tar.gz -C rpm/native
+          sh rpm/verify-native-artifacts.sh rpm/native committed
+          grep -Fx "rockpool_commit=$GITHUB_SHA" rpm/native/.build-provenance
+          mobileapp_commit=$(git rev-parse HEAD:libpebble3d/mobileapp)
+          grep -Fx "mobileapp_commit=$mobileapp_commit" rpm/native/.build-provenance
+          rm ci-artifacts/native-aarch64.tar.gz
+          df -h /
+
+      - name: Build RPM with the pinned public SDK
+        run: |
+          set -o pipefail
+          docker pull "$SDK_IMAGE"
+          mkdir -p ci-artifacts/rpms
+          # Only this disposable output directory is writable by the SDK user.
+          chmod 0777 ci-artifacts ci-artifacts/rpms
+          docker run --rm --privileged \
+            -e SDK_TARGET \
+            -v "$PWD:/source:ro" \
+            -v "$PWD/ci-artifacts:/output" \
+            "$SDK_IMAGE" bash /source/.github/scripts/build-sfos.sh \
+            2>&1 | tee ci-artifacts/sailfish-build.log
+          df -h /
+
+      - name: Upload RPM
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: rockpool-aarch64-${{ github.sha }}
+          path: ci-artifacts/rpms/*.rpm
+          compression-level: 0
+          overwrite: true
+          retention-days: 14
+          if-no-files-found: error
+
+      - name: Upload packaging diagnostics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: sailfish-logs-${{ github.run_attempt }}
+          path: ci-artifacts/*.log
+          retention-days: 7
+          if-no-files-found: warn

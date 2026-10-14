@@ -269,3 +269,35 @@ Source models: copyright Core Devices 2025; usage terms are in that repository.
 
 The [frame renderer](ui/artwork/render-core-watch-frames.py) uses NumPy and
 Pillow to generate the images with transparent openings for live screenshots.
+
+## GitHub Actions build
+
+The **Build Sailfish RPM** workflow is manually triggered from the Actions tab.
+It builds the selected committed revision and its pinned `libpebble3d/mobileapp`
+submodule; uncommitted local changes are not included. The workflow must be on
+the default branch before GitHub exposes its manual trigger.
+
+The Native Image job uses `ubuntu-24.04-arm` to avoid ARM emulation. It installs
+JDK 17 and Android command-line tools for Gradle configuration, limits Gradle to
+two workers and a 6 GB heap, and uses in-process Kotlin compilation with no
+persistent Gradle daemon. Native Image uses four workers and its existing 75%
+memory limit. The first hosted run still needs to establish actual memory,
+disk usage and duration.
+
+Only the sealed native artifacts cross into the Sailfish job, in a tarball that
+preserves executable modes and `.build-provenance`. The second job verifies the
+manifest, hashes, architecture and source revisions before packaging. It runs
+on a fresh x86-64 runner with the public Sailfish 5.2.0.15 SDK image pinned by
+digest, using an isolated `rockpool` target snapshot and the spec's version.
+It runs the RPM's `%check` suites. This is separate from the local live SDK.
+
+Separate jobs reclaim all native-job Docker layers, Gradle files and temporary
+source snapshots before the SDK build. Each job also removes explicitly listed
+unused preinstalled toolchains on its disposable GitHub-hosted runner. The
+packaging job removes Android tools and its downloaded native tarball after
+verification; it never cleans `rpm/native` with a wildcard for shared libraries.
+
+Download the `rockpool-aarch64-<commit>` artifact for the RPM. Native inputs and
+diagnostic logs are retained for seven days, and RPMs for fourteen days. The
+workflow has read-only repository permissions and does not publish releases,
+push commits or deploy to devices.
