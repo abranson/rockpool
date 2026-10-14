@@ -273,6 +273,12 @@ Pillow to generate the images with transparent openings for live screenshots.
 ## GitHub Actions build
 
 The **Build Sailfish RPM** workflow is manually triggered from the Actions tab.
+Leave `native_run_id` empty for a full build.
+For a packaging retry, enter a completed run ID to reuse its sealed native
+artifact. Reuse requires identical source outside this workflow, its Sailfish
+packaging script and this README. Artifact hashes and the original source commit
+remain verified; expired artifacts require a full build.
+
 It builds the selected committed revision and its pinned `libpebble3d/mobileapp`
 submodule; uncommitted local changes are not included. The workflow must be on
 the default branch before GitHub exposes its manual trigger.
