@@ -1,3 +1,12 @@
+* Wed Oct 14 2026 Andrew Branson <github@andrewbranson.net> 2.0.2-1
+- Show watch battery levels and add configurable low-battery notifications.
+- Withdraw low-battery warnings when disabled or no longer applicable.
+- Compact watch status layout and show battery fill and low-charge colour.
+- Build native-image and Sailfish RPMs with GitHub Actions.
+- Publish master-tagged builds to the zypp repository.
+- Avoid downloading the Android NDK for daemon builds.
+- Update Norwegian Bokmål and Swedish translations.
+
 * Fri Oct 02 2026 Andrew Branson <github@andrewbranson.net> 2.0.1-1
 - Fix firmware checks; add language-pack sideloading.
 

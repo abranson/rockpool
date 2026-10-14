@@ -287,7 +287,10 @@ the default branch before GitHub exposes its manual trigger.
 The Native Image job uses `ubuntu-24.04-arm` to avoid ARM emulation. It installs
 JDK 17 and Android command-line tools for Gradle configuration, limits Gradle to
 two workers and a 6 GB heap, and uses in-process Kotlin compilation with no
-persistent Gradle daemon. Native Image uses four workers and its existing 75%
+persistent Gradle daemon. The daemon build passes
+`-PenableAndroidNativeBuild=false` to avoid configuring the unused Android CMake
+build and downloading its NDK. Normal Android builds keep native builds enabled.
+Native Image uses four workers and its existing 75%
 memory limit. The first hosted run still needs to establish actual memory,
 disk usage and duration.
 
