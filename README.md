@@ -272,7 +272,14 @@ Pillow to generate the images with transparent openings for live screenshots.
 
 ## GitHub Actions build
 
-The **Build Sailfish RPM** workflow is manually triggered from the Actions tab.
+The **Build Sailfish RPM** workflow runs on every branch or tag push and can also be manually
+triggered from the Actions tab.
+Leave `native_run_id` empty for a full build.
+For a packaging retry, enter a completed run ID to reuse its sealed native
+artifact. Reuse requires identical source outside this workflow, its Sailfish
+packaging script and this README. Artifact hashes and the original source commit
+remain verified; expired artifacts require a full build.
+
 It builds the selected committed revision and its pinned `libpebble3d/mobileapp`
 submodule; uncommitted local changes are not included. The workflow must be on
 the default branch before GitHub exposes its manual trigger.
@@ -299,5 +306,16 @@ verification; it never cleans `rpm/native` with a wildcard for shared libraries.
 
 Download the `rockpool-aarch64-<commit>` artifact for the RPM. Native inputs and
 diagnostic logs are retained for seven days, and RPMs for fourteen days. The
-workflow has read-only repository permissions and does not publish releases,
-push commits or deploy to devices.
+build jobs have read-only repository permissions and do not deploy to devices.
+
+Successful tag-push builds publish RPMs only when the tagged commit is in
+`master` history. Tags on unmerged development branches build artifacts without
+publishing. The destination is `${repository_owner}/repo` on its `master` branch,
+matching the zypp repository used by the other apps. Set
+Rockpool's `PUBLISH_REPO_TOKEN` Actions secret to a fine-grained token with
+Contents read/write access to that package repository. Missing credentials skip
+publication with a warning; configured but invalid credentials fail the job.
+Publication replaces only matching Rockpool packages in `aarch64/`, updates
+metadata with `createrepo_c`, and uses a normal Git push so concurrent updates
+cannot be overwritten. Manual runs, including artifact-reuse retries, only build
+and upload artifacts. This workflow does not create GitHub releases.

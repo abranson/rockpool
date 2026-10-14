@@ -1,10 +1,19 @@
 name: Build Sailfish RPM
 
 on:
+  push:
+    branches: ['**']
+    tags: ['**']
   workflow_dispatch:
+    inputs:
+      native_run_id:
+        description: 'Reuse native artifacts from a previous run (packaging-only changes)'
+        type: string
+        default: ''
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   group: sailfish-${{ github.ref }}
@@ -16,6 +25,7 @@ defaults:
 
 jobs:
   native:
+    if: inputs.native_run_id == ''
     name: AArch64 Native Image
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 330
@@ -94,6 +104,7 @@ jobs:
   sailfish:
     name: Sailfish AArch64 RPM
     needs: native
+    if: ${{ !cancelled() && (needs.native.result == 'success' || (needs.native.result == 'skipped' && inputs.native_run_id != '')) }}
     # A separate VM releases all native-job Docker layers, Gradle caches and snapshots.
     # The existing Sailfish SDK image is x86-64, even when building AArch64 RPMs.
     runs-on: ubuntu-24.04
@@ -104,14 +115,46 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
+          fetch-depth: 0
           persist-credentials: false
+
+      - name: Select and validate native source run
+        id: native-source
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NATIVE_RUN_ID: ${{ inputs.native_run_id }}
+        run: |
+          source_sha=$GITHUB_SHA
+          source_run=$GITHUB_RUN_ID
+          if test -n "$NATIVE_RUN_ID"; then
+            [[ "$NATIVE_RUN_ID" =~ ^[0-9]+$ ]]
+            source_run=$NATIVE_RUN_ID
+            gh api "repos/$GITHUB_REPOSITORY/actions/runs/$source_run" > /tmp/native-run.json
+            jq -e '.path == ".github/workflows/build-sailfish.yml" and .status == "completed"' /tmp/native-run.json
+            source_sha=$(jq -r .head_sha /tmp/native-run.json)
+            [[ "$source_sha" =~ ^[0-9a-f]{40}$ ]]
+            # Amended workflow commits may no longer be reachable from a branch.
+            git fetch --no-tags origin "$source_sha"
+            git cat-file -e "$source_sha^{commit}"
+            # Reuse only across workflow, packaging-script or documentation fixes.
+            # Keep the original native provenance; never relabel an older binary.
+            git diff --exit-code "$source_sha" "$GITHUB_SHA" -- . \
+              ':(exclude).github/workflows/build-sailfish.yml' \
+              ':(exclude).github/scripts/build-sfos.sh' ':(exclude)README.md'
+          fi
+          echo "sha=$source_sha" >> "$GITHUB_OUTPUT"
+          echo "run-id=$source_run" >> "$GITHUB_OUTPUT"
 
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
-          name: native-aarch64-${{ github.sha }}
+          name: native-aarch64-${{ steps.native-source.outputs.sha }}
           path: ci-artifacts
+          github-token: ${{ github.token }}
+          run-id: ${{ steps.native-source.outputs.run-id }}
 
       - name: Prepare clean packaging disk and verify inputs
+        env:
+          NATIVE_SOURCE_SHA: ${{ steps.native-source.outputs.sha }}
         run: |
           test "$RUNNER_ENVIRONMENT" = github-hosted
           df -h /
@@ -119,8 +162,10 @@ jobs:
           sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/local/lib/android
           mkdir -p rpm/native
           tar -xzf ci-artifacts/native-aarch64.tar.gz -C rpm/native
+          # The archive root inherits mktemp's 0700; the SDK runs as another UID.
+          chmod 0755 rpm/native
           sh rpm/verify-native-artifacts.sh rpm/native committed
-          grep -Fx "rockpool_commit=$GITHUB_SHA" rpm/native/.build-provenance
+          grep -Fx "rockpool_commit=$NATIVE_SOURCE_SHA" rpm/native/.build-provenance
           mobileapp_commit=$(git rev-parse HEAD:libpebble3d/mobileapp)
           grep -Fx "mobileapp_commit=$mobileapp_commit" rpm/native/.build-provenance
           rm ci-artifacts/native-aarch64.tar.gz
@@ -133,11 +178,17 @@ jobs:
           mkdir -p ci-artifacts/rpms
           # Only this disposable output directory is writable by the SDK user.
           chmod 0777 ci-artifacts ci-artifacts/rpms
-          docker run --rm --privileged \
+          # Reap forked test D-Bus daemons after their parents exit.
+          docker run --rm --init --privileged --user root \
             -e SDK_TARGET \
             -v "$PWD:/source:ro" \
             -v "$PWD/ci-artifacts:/output" \
-            "$SDK_IMAGE" bash /source/.github/scripts/build-sfos.sh \
+            "$SDK_IMAGE" bash -euc '
+              # Avoid Ubuntu host AppArmor denying PAM access to mode-0000 shadow.
+              # This changes only the disposable container; keep access root-only.
+              chmod 0400 /etc/shadow
+              exec runuser -u mersdk -- bash /source/.github/scripts/build-sfos.sh
+            ' \
             2>&1 | tee ci-artifacts/sailfish-build.log
           df -h /
 
@@ -159,3 +210,116 @@ jobs:
           path: ci-artifacts/*.log
           retention-days: 7
           if-no-files-found: warn
+
+  publish:
+    name: Publish tagged RPMs to zypp repository
+    needs: sailfish
+    if: ${{ !cancelled() && needs.sailfish.result == 'success' && github.event_name == 'push' && startsWith(github.ref, 'refs/tags/') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    concurrency:
+      group: rockpool-package-repository-publish
+      cancel-in-progress: false
+    env:
+      PACKAGE_REPO: ${{ github.repository_owner }}/repo
+    steps:
+      - name: Checkout tagged source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          path: tagged-source
+
+      - name: Check tag is on master
+        id: release
+        working-directory: tagged-source
+        run: |
+          git fetch --no-tags origin +refs/heads/master:refs/remotes/origin/master
+          if git merge-base --is-ancestor HEAD refs/remotes/origin/master; then
+            echo "eligible=true" >> "$GITHUB_OUTPUT"
+          else
+            result=$?
+            if [ "$result" -ne 1 ]; then
+              exit "$result"
+            fi
+            echo "::notice::Tag is not on master; skipping RPM repository publication."
+            echo "eligible=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check publish configuration
+        if: steps.release.outputs.eligible == 'true'
+        id: publish
+        env:
+          GH_TOKEN: ${{ secrets.PUBLISH_REPO_TOKEN }}
+        run: |
+          if [ -z "${GH_TOKEN:-}" ]; then
+            echo "::warning::PUBLISH_REPO_TOKEN is not set; skipping RPM repository publication."
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          gh api "repos/$PACKAGE_REPO" --silent
+          echo "enabled=true" >> "$GITHUB_OUTPUT"
+
+      - name: Download RPMs
+        if: steps.publish.outputs.enabled == 'true'
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: rockpool-aarch64-${{ github.sha }}
+          path: rpms
+
+      - name: Checkout RPM repository
+        if: steps.publish.outputs.enabled == 'true'
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          repository: ${{ env.PACKAGE_REPO }}
+          ref: master
+          token: ${{ secrets.PUBLISH_REPO_TOKEN }}
+          path: publish-repo
+
+      - name: Install repository tools
+        if: steps.publish.outputs.enabled == 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y createrepo-c
+
+      - name: Update RPM repository
+        if: steps.publish.outputs.enabled == 'true'
+        working-directory: publish-repo
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          rpms=(../rpms/*.rpm)
+          if [ "${#rpms[@]}" -eq 0 ]; then
+            echo "::error::No RPMs to publish."
+            exit 1
+          fi
+          # Validate every input before changing the repository.
+          for rpm in "${rpms[@]}"; do
+            filename=${rpm##*/}
+            if [[ ! $filename =~ ^(rockpool|rockpool-debuginfo|rockpool-debugsource)-[0-9][^-]*-[^-]+\.aarch64\.rpm$ ]]; then
+              echo "::error::Unexpected RPM artifact."
+              exit 1
+            fi
+          done
+          mkdir -p aarch64
+          for rpm in "${rpms[@]}"; do
+            filename=${rpm##*/}
+            [[ $filename =~ ^(rockpool|rockpool-debuginfo|rockpool-debugsource)-[0-9][^-]*-[^-]+\.aarch64\.rpm$ ]]
+            package=${BASH_REMATCH[1]}
+            old_rpms=(aarch64/"$package"-[0-9]*.aarch64.rpm)
+            if [ "${#old_rpms[@]}" -gt 0 ]; then
+              rm -- "${old_rpms[@]}"
+            fi
+            install -m 0644 "$rpm" "aarch64/$filename"
+          done
+          createrepo_c --update aarch64
+          git config user.name "GitHub Actions"
+          git config user.email "actions@users.noreply.github.com"
+          git add aarch64
+          if ! git diff --cached --quiet; then
+            git commit -m "Release rockpool $RELEASE_TAG"
+            # Never force: updates from other apps must not be overwritten.
+            git push origin HEAD:master
+          fi
