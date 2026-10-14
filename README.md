@@ -213,6 +213,37 @@ lupdate ui/*.cpp ui/*.h ui/qml -recursive -extensions qml,js,cpp,h -ts ui/transl
 Review and commit the catalogue changes so Weblate can expose new strings to
 translators once they are published.
 
+The affected Arabic entries awaiting translation must have an empty
+`<translation type="unfinished"></translation>`. An empty translation without
+that attribute is treated by Weblate's Qt adapter as a completed translation
+using the source text. PR #122 exported 168 such English copies in commit
+`a2614e4`; 167 remain active after the catalogue refresh, and one is vanished.
+The correction clears only those active placeholders, preserving Arabic text
+and the vanished message.
+
+Run `python3 .github/scripts/check-arabic-placeholders.py` to check these exact
+message identities. The Translation status workflow also runs on Arabic
+catalogue updates, including Weblate PRs, and rejects completed empty or
+source-identical values for these messages. Genuine translations can be
+completed normally; other messages and languages are outside this check.
+
+When merging the correction, let Hosted Weblate pull the corrected `master`
+before accepting another translation export. Verify that the affected Arabic
+entries are untranslated there (for example, Description and Developer).
+If pending Weblate edits conflict, preserve real translator work while clearing
+these placeholders and marking them untranslated in Weblate as well. Do not
+resolve the conflict by restoring the English copies. The hosted component's
+settings and pending edits are managed on Weblate, not by this repository;
+the CI check detects a stale export but does not update Weblate or enforce
+GitHub branch protection. Maintainers can require the `arabic-placeholders`
+check before merging translation PRs.
+
+Parser behaviour: [Weblate TS2Unit](https://github.com/WeblateOrg/weblate/blob/main/weblate/formats/ttkit.py)
+explicitly uses the source for empty translations without unfinished status.
+The Git diff establishes the export, but does not establish which hosted user
+action or add-on triggered it; the anonymous commit attribution alone is not
+evidence of a bulk translation action.
+
 ## Validation and troubleshooting
 
 From the repository root, check the public contract and build-artifact rules:

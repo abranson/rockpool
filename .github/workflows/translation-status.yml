@@ -1,0 +1,28 @@
+name: Translation status
+
+on:
+  pull_request:
+    paths:
+      - 'ui/translations/rockpool_ar.ts'
+      - '.github/scripts/check-arabic-placeholders.py'
+      - '.github/scripts/arabic-placeholder-messages.json'
+      - '.github/workflows/translation-status.yml'
+  push:
+    paths:
+      - 'ui/translations/rockpool_ar.ts'
+      - '.github/scripts/check-arabic-placeholders.py'
+      - '.github/scripts/arabic-placeholder-messages.json'
+      - '.github/workflows/translation-status.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  arabic-placeholders:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - run: python3 .github/scripts/check-arabic-placeholders.py
