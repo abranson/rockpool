@@ -973,7 +973,7 @@
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="393"/>
         <source>Firmware</source>
-        <translation></translation>
+        <translation>Firmware</translation>
     </message>
 </context>
 <context>
@@ -1121,7 +1121,7 @@
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="9"/>
         <source>RockPool</source>
-        <translation></translation>
+        <translation>RockPool</translation>
     </message>
     <message>
         <location filename="../qml/pages/PebblesPage.qml" line="10"/>
