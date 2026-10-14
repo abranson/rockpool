@@ -114,6 +114,7 @@ internal class RockpoolPebbleObject(
         watch.requestHealthData(fullSync = false)
     },
     private val sendTextConfiguration: SendTextConfigurationCoordinator? = null,
+    private val battery: RockpoolBattery = RockpoolBattery(settings, { _, _, _ -> false }, {}),
 ) : RockpoolPebble {
     private val logger = Logger.withTag("RockpoolPebble")
     private val keyPrefix = address.replace(":", "_")
@@ -336,6 +337,15 @@ internal class RockpoolPebbleObject(
 
     override fun HardwarePlatform(): String =
         known()?.watchType?.watchType?.codename ?: "unknown"
+    override fun BatteryPercentage(): Int = battery.percentage(address)
+    override fun LowBatteryThreshold(): Int = battery.threshold(address)
+    override fun SetLowBatteryThreshold(percentage: Int) {
+        if (!battery.setThreshold(address, percentage)) {
+            throw DBusExecutionException("Could not save low-battery threshold (expected 0..100)")
+        }
+        emit(RockpoolPebble.LowBatteryThresholdChanged(path))
+    }
+
     override fun SoftwareVersion(): String = known()?.runningFwVersion ?: ""
     override fun LanguageVersion(): String = rockpoolLanguageStatus(device()).version
     override fun Model(): Int = rockpoolWatchModel(

@@ -24,6 +24,7 @@ independently of the app window.
 Available workflows include:
 
 - Watch discovery, pairing, connection management and screenshots.
+- Watch battery percentage and configurable low-battery notifications.
 - Apps and watchfaces, app configuration, and firmware and language installation.
 - Notification forwarding, supported actions and message replies.
 - Call and media controls, contacts, and favorite-contact Send Text actions.
@@ -37,6 +38,15 @@ currently require exactly one paired watch; independent ordering for multiple
 watches remains pending.
 Message replies are restricted to supported Sailfish Messages notifications;
 an arbitrary application's notification does not automatically support replies.
+
+The watch page shows its battery percentage when available from Bluetooth or the
+watch library. In each watch's Settings, **Low battery warning** selects a warning
+threshold (10% by default) or **Off**. The background service warns at or below
+that level even with the app closed. A warning is not repeated on reconnect or
+service restart. Disabling warnings or a reported level above the threshold
+withdraws a tracked warning and re-arms it. Warnings remain dismissible; charging
+state is not currently available. Watches that
+do not report a battery level do not display a percentage or trigger warnings.
 
 Image previews require the notification producer to supply
 `x-nemo-image-preview-path` or `x-nemo-image-preview-data`. App icons and large

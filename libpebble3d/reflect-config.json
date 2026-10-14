@@ -564,5 +564,20 @@
     "name": "io.rebble.libpebblecommon.rockpool.LibPebble3VariantMap",
     "allDeclaredConstructors": true,
     "allPublicMethods": true
+  },
+  {
+    "name": "io.rebble.libpebblecommon.ui.RockpoolBatteryNotifications",
+    "allDeclaredMethods": true,
+    "allPublicMethods": true
+  },
+  {
+    "name": "io.rebble.libpebblecommon.ui.RockpoolPebble$BatteryPercentageChanged",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true
+  },
+  {
+    "name": "io.rebble.libpebblecommon.ui.RockpoolPebble$LowBatteryThresholdChanged",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true
   }
 ]

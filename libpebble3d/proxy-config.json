@@ -223,5 +223,10 @@
       "io.rebble.libpebblecommon.rockpool.LibPebble3Developer1",
       "io.rebble.libpebblecommon.rockpool.LibPebble3Operation1"
     ]
+  },
+  {
+    "interfaces": [
+      "io.rebble.libpebblecommon.ui.RockpoolBatteryNotifications"
+    ]
   }
 ]

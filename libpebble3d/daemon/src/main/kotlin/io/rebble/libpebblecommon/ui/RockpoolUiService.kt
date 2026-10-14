@@ -37,6 +37,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
@@ -94,6 +95,12 @@ internal class RockpoolUiService(
     private val reconnecting = AtomicBoolean(false)
     private val observersStarted = AtomicBoolean(false)
     private val connectionLock = Any()
+    private val battery = RockpoolBattery(
+        settings,
+        { address, name, percentage -> notifyLowWatchBattery(settings, address, name, percentage) },
+        { address -> emitSignal(RockpoolPebble.BatteryPercentageChanged("$PATH_PREFIX${address.replace(":", "_")}")) },
+        { address -> dismissLowWatchBattery(settings, address) },
+    )
     private val weatherCoordinator = RockpoolWeatherCoordinator(settings, libPebble)
     // libpebble3 keeps health history per account, not per watch. Every exported legacy Pebble
     // object therefore shares this read-only projection and receives the same update signal.
@@ -368,6 +375,17 @@ internal class RockpoolUiService(
         if (!observersStarted.compareAndSet(false, true)) return
         notificationSourcePublisher.start(scope)
         watchWatches()
+        scope.launch(Dispatchers.IO) {
+            combine(libPebble.watches, bluezBatteryLevels(), battery.settingsRevision) { watches, bluez, _ ->
+                watches.filterIsInstance<KnownPebbleDevice>().map { watch ->
+                    RockpoolBatteryWatch(
+                        watch.identifier.asString, watch.name,
+                        watch is CommonConnectedDevice,
+                        (watch as? CommonConnectedDevice)?.batteryLevel,
+                    )
+                } to bluez
+            }.collect { (watches, bluez) -> battery.update(watches, bluez) }
+        }
         watchLocker()
         watchNotificationApps()
         watchHealthData()
@@ -498,6 +516,7 @@ internal class RockpoolUiService(
                                 broadcast = ::broadcastSignal,
                                 configFitsStorage = configFitsStorage,
                                 sendTextConfiguration = sendTextConfiguration,
+                                battery = battery,
                             )
                             runCatching { connection?.exportObject(path, obj) }
                                 .onFailure { logger.e("export $path failed", it) }

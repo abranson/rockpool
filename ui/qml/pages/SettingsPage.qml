@@ -12,6 +12,7 @@ Page {
     property var cannedResponses: pebble ? pebble.cannedResponses : {}
     property bool cannedResponsesReady: pebble && pebble.cannedResponsesReady
     property var notificationsMap: pebble ? pebble.notificationsFilter:{}
+    property var lowBatteryOptions: [0, 5, 10, 15, 20, 25, 30, 40, 50]
 
     property var pendingLanguage
 
@@ -108,6 +109,25 @@ Page {
                     // A full-screen picker returns here before showing remorse.
                     // For an inline menu, defer until its click handler has finished.
                     languageRemorseTimer.restart()
+                }
+            }
+            ComboBox {
+                width: parent.width
+                label: qsTr("Low battery warning")
+                enabled: root.settingsReady
+                menu: ContextMenu {
+                    Repeater {
+                        model: root.lowBatteryOptions
+                        delegate: MenuItem {
+                            text: modelData === 0 ? qsTr("Off") : qsTr("%1%").arg(modelData)
+                            down: root.pebble && root.pebble.lowBatteryThreshold === modelData
+                            onClicked: root.pebble.lowBatteryThreshold = modelData
+                        }
+                    }
+                }
+                value: {
+                    var threshold = root.pebble ? root.pebble.lowBatteryThreshold : 10
+                    return threshold === 0 ? qsTr("Off") : qsTr("%1%").arg(threshold)
                 }
             }
 

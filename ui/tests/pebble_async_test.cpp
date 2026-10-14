@@ -216,6 +216,11 @@ public:
         m_imperialUnits = enabled;
     }
 
+    void setLowBatteryThresholdValue(int threshold)
+    {
+        m_lowBatteryThreshold = threshold;
+    }
+
     void setHealthParamsValue(const QVariantMap &params)
     {
         m_healthParams = params;
@@ -444,6 +449,8 @@ public slots:
     void Model() { replyOrDelay(QStringLiteral("Model"), QVariantList() << 0); }
     void Recovery() { replyOrDelay(QStringLiteral("Recovery"), QVariantList() << false); }
     void IsConnected() { replyOrDelay(QStringLiteral("IsConnected"), QVariantList() << false); }
+    void BatteryPercentage() { replyOrDelay(QStringLiteral("BatteryPercentage"), QVariantList() << m_batteryPercentage); }
+    void LowBatteryThreshold() { replyOrDelay(QStringLiteral("LowBatteryThreshold"), QVariantList() << m_lowBatteryThreshold); }
     void ConnectionState() { replyOrDelay(QStringLiteral("ConnectionState"), QVariantList() << 0); }
     void LastError() { replyOrDelay(QStringLiteral("LastError"), QVariantList() << QString()); }
     void timelineWindowStart()
@@ -607,6 +614,11 @@ public slots:
         m_imperialUnits = enabled;
         replyOrDelay(QStringLiteral("SetImperialUnits"), QVariantList());
     }
+    void SetLowBatteryThreshold(int threshold)
+    {
+        m_lowBatteryThreshold = threshold;
+        replyOrDelay(QStringLiteral("SetLowBatteryThreshold"), QVariantList());
+    }
     void SetProfileWhenConnected(const QString &profile)
     {
         m_profileWhenConnected = profile;
@@ -759,6 +771,8 @@ private:
     bool m_devConnectionState = false;
     int m_logLevel = 1;
     bool m_imperialUnits = false;
+    int m_batteryPercentage = 73;
+    int m_lowBatteryThreshold = 10;
     QVariantMap m_healthParams;
     QVariantMap m_healthOverview;
     QList<QVariantMap> m_healthParamsWrites;
@@ -909,6 +923,7 @@ private slots:
     void quietTimeIgnoresOldOwnerReply();
     void notificationIconsResolveInstalledApplications();
     void constructorQueuesHeldBootstrapCalls();
+    void batteryPropertiesLoadAndWriteAsynchronously();
     void addressBootstrapRetriesAfterInvalidReplies();
     void newestAppsReplyWins();
     void settingsPrecedesSendTextWhenReorderingApps();
@@ -1295,6 +1310,55 @@ void PebbleAsyncTest::constructorQueuesHeldBootstrapCalls()
     qDebug() << "held-bootstrap constructor elapsed" << elapsed;
     QVERIFY2(elapsed < 1000, "Pebble construction blocked on bootstrap reply");
     QVERIFY(unregistered);
+}
+
+void PebbleAsyncTest::batteryPropertiesLoadAndWriteAsynchronously()
+{
+    QDBusConnection connection = QDBusConnection::connectToBus(
+        QDBusConnection::SessionBus, QStringLiteral("pebble-async-battery"));
+    QVERIFY(connection.isConnected());
+    DelayedPebble watch(connection);
+    registerWatch(&watch, connection);
+    registerService(connection);
+    watch.setLowBatteryThresholdValue(25);
+    watch.defer(QStringLiteral("BatteryPercentage"));
+
+    Pebble pebble(QDBusObjectPath(QString::fromLatin1(watchPath)));
+    QTRY_COMPARE(watch.pendingCount(QStringLiteral("BatteryPercentage")), 1);
+    QCOMPARE(pebble.batteryPercentage(), -1);
+    QTRY_COMPARE(pebble.lowBatteryThreshold(), 25);
+
+    watch.emitPebbleSignal(QStringLiteral("BatteryPercentageChanged"));
+    QTRY_COMPARE(watch.pendingCount(QStringLiteral("BatteryPercentage")), 2);
+    watch.replyPending(QStringLiteral("BatteryPercentage"), 1, QVariantList() << 88);
+    QTRY_COMPARE(pebble.batteryPercentage(), 88);
+    watch.replyPending(QStringLiteral("BatteryPercentage"), 0, QVariantList() << 73);
+    QTest::qWait(20);
+    QCOMPARE(pebble.batteryPercentage(), 88);
+
+    watch.emitPebbleSignal(QStringLiteral("BatteryPercentageChanged"));
+    QTRY_COMPARE(watch.pendingCount(QStringLiteral("BatteryPercentage")), 1);
+    watch.replyNext(QStringLiteral("BatteryPercentage"), QVariantList() << 101);
+    QTest::qWait(20);
+    QCOMPARE(pebble.batteryPercentage(), 88);
+
+    watch.setLowBatteryThresholdValue(10);
+    pebble.refreshSettingsPage();
+    QTRY_COMPARE(pebble.lowBatteryThreshold(), 10);
+    QTRY_VERIFY(pebble.settingsPageReady());
+
+    watch.defer(QStringLiteral("SetLowBatteryThreshold"));
+    watch.defer(QStringLiteral("LowBatteryThreshold"));
+    pebble.setLowBatteryThreshold(15);
+    QTRY_COMPARE(watch.pendingCount(QStringLiteral("SetLowBatteryThreshold")), 1);
+    QCOMPARE(watch.arguments(QStringLiteral("SetLowBatteryThreshold")).first().toInt(), 15);
+    watch.replyPendingError(QStringLiteral("SetLowBatteryThreshold"), 0);
+    QTRY_COMPARE(watch.pendingCount(QStringLiteral("LowBatteryThreshold")), 1);
+    watch.replyNext(QStringLiteral("LowBatteryThreshold"), QVariantList() << 10);
+    QTRY_COMPARE(pebble.lowBatteryThreshold(), 10);
+
+    QVERIFY(connection.interface()->unregisterService(
+                QString::fromLatin1(serviceName)).isValid());
 }
 
 void PebbleAsyncTest::addressBootstrapRetriesAfterInvalidReplies()

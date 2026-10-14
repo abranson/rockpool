@@ -25,6 +25,8 @@ signals:
     void Connected();
     void Disconnected();
     void ConnectionStateChanged(int state);
+    void BatteryPercentageChanged();
+    void LowBatteryThresholdChanged();
     void InstalledAppsChanged();
     void OpenURL(const QString &uuid, const QString &url);
     void NotificationFilterChanged(const QString &sourceId, const QString &name,
@@ -57,6 +59,8 @@ class Pebble : public QObject
     Q_PROPERTY(QString name READ name NOTIFY identityChanged)
     Q_PROPERTY(QString address READ address NOTIFY identityChanged)
     Q_PROPERTY(bool connected READ connected NOTIFY connectedChanged)
+    Q_PROPERTY(int batteryPercentage READ batteryPercentage NOTIFY batteryPercentageChanged)
+    Q_PROPERTY(int lowBatteryThreshold READ lowBatteryThreshold WRITE setLowBatteryThreshold NOTIFY lowBatteryThresholdChanged)
     // Finer-grained than `connected`: 0=Disconnected 1=Connecting 2=Negotiating 3=Connected
     // 4=Failed. Lets the UI distinguish a reconnecting/failed watch from an idle one.
     Q_PROPERTY(int connectionState READ connectionState NOTIFY connectionStateChanged)
@@ -127,6 +131,9 @@ public:
     QDBusObjectPath path();
 
     bool connected() const;
+    int batteryPercentage() const;
+    int lowBatteryThreshold() const;
+    void setLowBatteryThreshold(int threshold);
     int connectionState() const;
     QString lastError() const;
     QString address() const;
@@ -260,6 +267,8 @@ public slots:
 signals:
     void identityChanged();
     void connectedChanged();
+    void batteryPercentageChanged();
+    void lowBatteryThresholdChanged();
     void connectionStateChanged();
     void platformStringChanged();
     void hardwarePlatformChanged();
@@ -418,6 +427,8 @@ private:
     QDBusObjectPath m_path;
 
     bool m_connected = false;
+    int m_batteryPercentage = -1;
+    int m_lowBatteryThreshold = 10;
     int m_connectionState = 0;
     QString m_lastError;
     QString m_address;

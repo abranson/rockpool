@@ -68,6 +68,11 @@ interface RockpoolPebble : DBusInterface {
     fun LastError(): String
     fun Recovery(): Boolean
 
+    // -1 means unavailable; threshold 0 disables low-battery notifications.
+    fun BatteryPercentage(): Int
+    fun LowBatteryThreshold(): Int
+    fun SetLowBatteryThreshold(percentage: Int)
+
     // Firmware / language packs
     fun FirmwareUpgradeAvailable(): Boolean
     fun CandidateFirmwareVersion(): String
@@ -188,6 +193,8 @@ interface RockpoolPebble : DBusInterface {
 
     class Connected(path: String) : DBusSignal(path)
     class Disconnected(path: String) : DBusSignal(path)
+    class BatteryPercentageChanged(path: String) : DBusSignal(path)
+    class LowBatteryThresholdChanged(path: String) : DBusSignal(path)
     class ConnectionStateChanged(path: String, state: Int) : DBusSignal(path, state)
     class InstalledAppsChanged(path: String) : DBusSignal(path)
 

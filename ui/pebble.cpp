@@ -29,6 +29,7 @@ const char IMPERIAL_UNITS[] = "ImperialUnits";
 const char PROFILE_WHEN_CONNECTED[] = "ProfileWhenConnected";
 const char PROFILE_WHEN_DISCONNECTED[] = "ProfileWhenDisconnected";
 const char CALENDAR_SYNC_ENABLED[] = "CalendarSyncEnabled";
+const char LOW_BATTERY_THRESHOLD[] = "LowBatteryThreshold";
 const char SYNC_APPS_FROM_CLOUD[] = "syncAppsFromCloud";
 const char HEALTH_PARAMS[] = "HealthParams";
 const char CANNED_RESPONSES[] = "cannedResponses";
@@ -58,6 +59,7 @@ QStringList settingsPageProperties()
         << QString::fromLatin1(PROFILE_WHEN_CONNECTED)
         << QString::fromLatin1(PROFILE_WHEN_DISCONNECTED)
         << QString::fromLatin1(CALENDAR_SYNC_ENABLED)
+        << QString::fromLatin1(LOW_BATTERY_THRESHOLD)
         << QString::fromLatin1(SYNC_APPS_FROM_CLOUD);
 }
 
@@ -556,6 +558,16 @@ Pebble::Pebble(const QDBusObjectPath &path, QObject *parent,
     connect(m_iface, &RockpoolPebbleInterface::Disconnected, this, &Pebble::pebbleDisconnected);
     connect(m_iface, &RockpoolPebbleInterface::ConnectionStateChanged,
             this, &Pebble::pebbleConnectionStateChanged);
+    connect(m_iface, &RockpoolPebbleInterface::BatteryPercentageChanged,
+            this, [this]() { requestProperty(QStringLiteral("BatteryPercentage")); });
+    connect(m_iface, &RockpoolPebbleInterface::LowBatteryThresholdChanged,
+            this, [this]() {
+                if (m_settingsPageRequested) {
+                    settingsPropertyChangedFromService(QString::fromLatin1(LOW_BATTERY_THRESHOLD));
+                } else {
+                    requestProperty(QString::fromLatin1(LOW_BATTERY_THRESHOLD));
+                }
+            });
     connect(m_iface, &RockpoolPebbleInterface::InstalledAppsChanged,
             this, &Pebble::refreshApps);
     connect(m_iface, &RockpoolPebbleInterface::OpenURL, this, &Pebble::openURL);
@@ -639,6 +651,7 @@ void Pebble::serviceOwnerChanged(const QString &service,
     ++m_appsEpoch;
     ++m_screenshotsEpoch;
     ++m_firmwareEpoch;
+    ++m_propertyEpochs[QStringLiteral("BatteryPercentage")];
     ++m_notificationFiltersEpoch;
     ++m_timelineColorsEpoch;
     ++m_timelineIconsEpoch;
@@ -663,6 +676,10 @@ void Pebble::serviceOwnerChanged(const QString &service,
     ++m_cannedContactsWriteEpoch;
     ++m_cannedContactsValueRevision;
     m_addressReadFailures = 0;
+    if (m_batteryPercentage != -1) {
+        m_batteryPercentage = -1;
+        emit batteryPercentageChanged();
+    }
     m_weatherLoadedProperties.clear();
     setWeatherSettingsReady(false);
     m_developerLoadedProperties.clear();
@@ -774,6 +791,30 @@ void Pebble::serviceOwnerChanged(const QString &service,
 bool Pebble::connected() const
 {
     return m_connected;
+}
+
+int Pebble::batteryPercentage() const
+{
+    return m_batteryPercentage;
+}
+
+int Pebble::lowBatteryThreshold() const
+{
+    return m_lowBatteryThreshold;
+}
+
+void Pebble::setLowBatteryThreshold(int threshold)
+{
+    if (threshold < 0 || threshold > 100) {
+        return;
+    }
+    const QString propertyName = QString::fromLatin1(LOW_BATTERY_THRESHOLD);
+    if (threshold == m_lowBatteryThreshold
+            && m_settingsAuthoritativeProperties.contains(propertyName)) {
+        return;
+    }
+    sendSettingsWrite(propertyName, QStringLiteral("SetLowBatteryThreshold"),
+                      threshold, m_lowBatteryThreshold);
 }
 
 QDBusObjectPath Pebble::path()
@@ -1811,6 +1852,10 @@ bool Pebble::applySettingsProperty(const QString &propertyName, const QVariant &
             && value.type() != QVariant::String) {
         return false;
     }
+    if (propertyName == QString::fromLatin1(LOW_BATTERY_THRESHOLD)
+            && (!isIntegerValue(value) || value.toInt() < 0 || value.toInt() > 100)) {
+        return false;
+    }
 
     ++m_settingsValueRevisions[propertyName];
     if (propertyName == QString::fromLatin1(IMPERIAL_UNITS)) {
@@ -1842,6 +1887,12 @@ bool Pebble::applySettingsProperty(const QString &propertyName, const QVariant &
         if (m_syncAppsFromCloud != enabled) {
             m_syncAppsFromCloud = enabled;
             emit syncAppsFromCloudChanged();
+        }
+    } else if (propertyName == QString::fromLatin1(LOW_BATTERY_THRESHOLD)) {
+        const int threshold = value.toInt();
+        if (m_lowBatteryThreshold != threshold) {
+            m_lowBatteryThreshold = threshold;
+            emit lowBatteryThresholdChanged();
         }
     } else {
         return false;
@@ -2609,7 +2660,8 @@ void Pebble::applyProperty(const QString &propertyName, const QVariant &value)
             propertyName == QString::fromLatin1(PROFILE_WHEN_CONNECTED) ||
             propertyName == QString::fromLatin1(PROFILE_WHEN_DISCONNECTED) ||
             propertyName == QString::fromLatin1(CALENDAR_SYNC_ENABLED) ||
-            propertyName == QString::fromLatin1(SYNC_APPS_FROM_CLOUD)) {
+            propertyName == QString::fromLatin1(SYNC_APPS_FROM_CLOUD) ||
+            propertyName == QString::fromLatin1(LOW_BATTERY_THRESHOLD)) {
         if (applySettingsProperty(propertyName, value)) {
             markSettingsPropertyLoaded(propertyName, true);
         } else {
@@ -2693,12 +2745,26 @@ void Pebble::applyProperty(const QString &propertyName, const QVariant &value)
             m_connected = connected;
             emit connectedChanged();
         }
+    } else if (propertyName == QStringLiteral("BatteryPercentage")) {
+        if (!isIntegerValue(value)) {
+            return;
+        }
+        const int percentage = value.toInt();
+        if (percentage < -1 || percentage > 100) {
+            return;
+        }
+        if (m_batteryPercentage != percentage) {
+            m_batteryPercentage = percentage;
+            emit batteryPercentageChanged();
+        }
     }
 }
 
 void Pebble::dataChanged()
 {
     qDebug() << "data changed";
+    requestProperty(QStringLiteral("BatteryPercentage"));
+    requestProperty(QString::fromLatin1(LOW_BATTERY_THRESHOLD));
     foreach (const QString &propertyName, bootstrapProperties()) {
         requestProperty(propertyName);
     }

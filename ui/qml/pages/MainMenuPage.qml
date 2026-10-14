@@ -1,4 +1,4 @@
-import QtQuick 2.2
+import QtQuick 2.6
 import Sailfish.Silica 1.0
 import QtGraphicalEffects 1.0
 
@@ -163,86 +163,127 @@ Page {
                         anchors.verticalCenter: parent.verticalCenter
                         width: parent.width - watchImage.width - parent.spacing
 
-                        Image {
-                            height: Theme.iconSizeSmall
-                            width: height
+                        Row {
                             anchors.horizontalCenter: parent.horizontalCenter
-                            source: "image://theme/icon-lock-"
-                                    + (root.pebble.connected ? "transfer" : "warning")
+                            spacing: Theme.paddingSmall
+
+                            Image {
+                                anchors.verticalCenter: parent.verticalCenter
+                                height: Theme.iconSizeSmall
+                                width: height
+                                source: "image://theme/icon-lock-"
+                                        + (root.pebble.connected ? "transfer" : "warning")
+                            }
+                            Label {
+                                text: root.connectionStatusText()
+                            }
                         }
-                        Label {
+                        Row {
+                            id: batteryRow
+
+                            readonly property bool low: root.pebble.lowBatteryThreshold > 0
+                                                        && root.pebble.batteryPercentage < root.pebble.lowBatteryThreshold
+                            readonly property color batteryColor: low ? Theme.errorColor : Theme.secondaryColor
+
                             anchors.horizontalCenter: parent.horizontalCenter
-                            text: root.connectionStatusText()
-                        }
-                        Label {
-                            width: parent.width
-                            text: root.pebble.softwareVersion
-                                  ? qsTr("Firmware %1").arg(root.pebble.softwareVersion)
-                                  : ""
-                            visible: text.length > 0
-                            color: Theme.secondaryColor
-                            font.pixelSize: Theme.fontSizeSmall
-                            horizontalAlignment: Text.AlignHCenter
-                            wrapMode: Text.Wrap
+                            spacing: Theme.paddingSmall
+                            visible: root.pebble.batteryPercentage >= 0
+
+                            Icon {
+                                anchors.verticalCenter: parent.verticalCenter
+                                width: Theme.iconSizeSmall
+                                height: width
+                                source: "image://theme/icon-m-battery"
+                                color: batteryRow.batteryColor
+
+                                // Fill the interior of Sailfish's battery outline from the bottom.
+                                Rectangle {
+                                    x: parent.width * 0.20
+                                    width: parent.width * 0.60
+                                    height: parent.height * 0.60
+                                            * Math.max(0, Math.min(100, root.pebble.batteryPercentage)) / 100
+                                    y: parent.height * 0.80 - height
+                                    color: batteryRow.batteryColor
+                                    opacity: 0.35
+                                }
+                            }
+                            Label {
+                                text: qsTr("Battery %1%").arg(root.pebble.batteryPercentage)
+                                color: batteryRow.batteryColor
+                                font.pixelSize: Theme.fontSizeSmall
+                            }
                         }
                         MouseArea {
-                            width: firmwareAvailableContent.width
+                            id: firmwareStatus
+
+                            readonly property bool updateAvailable: root.pebble.connected
+                                                                    && root.pebble.firmwareUpgradeAvailable
+                                                                    && !root.pebble.upgradingFirmware
+
+                            width: parent.width
                             height: firmwareAvailableContent.height
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            visible: root.pebble.connected && root.pebble.firmwareUpgradeAvailable && !root.pebble.upgradingFirmware
+                            visible: root.pebble.softwareVersion.length > 0 || updateAvailable
+                                     || root.pebble.upgradingFirmware
+                            enabled: updateAvailable
                             onClicked: pageStack.push(Qt.resolvedUrl("FirmwareUpgradePage.qml"), {
                                                           pebble: root.pebble
                                                       })
 
-                            Column {
+                            Row {
                                 id: firmwareAvailableContent
 
+                                anchors.horizontalCenter: parent.horizontalCenter
                                 spacing: Theme.paddingSmall
+                                width: parent.width
 
                                 Image {
-                                    source: "image://theme/icon-lock-application-update"
-                                    anchors.horizontalCenter: parent.horizontalCenter
+                                    id: upgradeIcon
+
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    width: visible ? Theme.iconSizeSmall : 0
+                                    height: width
+                                    visible: firmwareStatus.updateAvailable || root.pebble.upgradingFirmware
+                                    source: root.pebble.upgradingFirmware
+                                            ? "image://theme/icon-m-sync"
+                                            : "image://theme/icon-lock-application-update"
+                                    RotationAnimation on rotation {
+                                        duration: 2000
+                                        loops: Animation.Infinite
+                                        from: 0
+                                        to: 360
+                                        running: root.pebble.upgradingFirmware
+                                    }
                                 }
                                 Label {
-                                    text: qsTr("Update Available")
-                                    anchors.horizontalCenter: parent.horizontalCenter
+                                    width: firmwareStatus.width
+                                           - (upgradeIcon.visible ? upgradeIcon.width + parent.spacing : 0)
+                                    horizontalAlignment: upgradeIcon.visible ? Text.AlignLeft : Text.AlignHCenter
+                                    text: {
+                                        var version = root.pebble.softwareVersion
+                                                ? qsTr("Firmware %1").arg(root.pebble.softwareVersion) : ""
+                                        var status = root.pebble.upgradingFirmware ? qsTr("Upgrading...")
+                                                : firmwareStatus.updateAvailable ? qsTr("Update Available") : ""
+                                        return version && status ? version + " · " + status : version || status
+                                    }
+                                    color: Theme.secondaryColor
+                                    font.pixelSize: Theme.fontSizeSmall
+                                    wrapMode: Text.Wrap
                                 }
                             }
                         }
-
-                        Image {
-                            id: upgradeIcon
-                            height: Theme.iconSizeMedium
-                            width: height
+                        Row {
                             anchors.horizontalCenter: parent.horizontalCenter
-                            source: "image://theme/icon-m-sync"
+                            spacing: Theme.paddingSmall
+                            visible: root.pebble.developerSettingsReady
+                                     && root.pebble.devConnServerRunning
 
-                            RotationAnimation on rotation {
-                                duration: 2000
-                                loops: Animation.Infinite
-                                from: 0
-                                to: 360
-                                running: upgradeIcon.visible
+                            Image {
+                                anchors.verticalCenter: parent.verticalCenter
+                                source: "image://theme/icon-s-developer"
                             }
-                            visible: root.pebble.connected && root.pebble.upgradingFirmware
-                        }
-                        Label {
-                            text: qsTr("Upgrading...")
-                            font.pixelSize: Theme.fontSizeLarge
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            visible: root.pebble.connected && root.pebble.upgradingFirmware
-                        }
-                        Image {
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            source: "image://theme/icon-s-developer"
-                            visible: root.pebble.developerSettingsReady
-                                     && root.pebble.devConnServerRunning
-                        }
-                        Label {
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            text: qsTr("Running")
-                            visible: root.pebble.developerSettingsReady
-                                     && root.pebble.devConnServerRunning
+                            Label {
+                                text: qsTr("Running")
+                            }
                         }
                     }
                 }
