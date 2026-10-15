@@ -242,7 +242,7 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="95"/>
         <source>Install from file</source>
-        <translation type="unfinished"></translation>
+        <translation>Installer fra fil</translation>
     </message>
     <message>
         <source>Install app or watchface from file</source>
@@ -683,27 +683,27 @@
     <message>
         <location filename="../qml/pages/ImportPackagePage.qml" line="18"/>
         <source>Install from file</source>
-        <translation type="unfinished"></translation>
+        <translation>Installer fra fil</translation>
     </message>
     <message>
         <location filename="../qml/pages/ImportPackagePage.qml" line="56"/>
         <source>Select an app or watchface (.pbw), or a language pack (.pbl) for your watch.</source>
-        <translation type="unfinished"></translation>
+        <translation>Velg en app eller urskive (.pbw), eller en språkpakke (.pbl) til klokken din.</translation>
     </message>
     <message>
         <location filename="../qml/pages/ImportPackagePage.qml" line="65"/>
         <source>File installation is available only when exactly one watch is paired.</source>
-        <translation type="unfinished"></translation>
+        <translation>Filinstallasjon er bare tilgjengelig når nøyaktig én klokke er koblet til.</translation>
     </message>
     <message>
         <location filename="../qml/pages/ImportPackagePage.qml" line="75"/>
         <source>Connect the watch to install files.</source>
-        <translation type="unfinished"></translation>
+        <translation>Koble til klokken for å installere filer.</translation>
     </message>
     <message>
         <location filename="../qml/pages/ImportPackagePage.qml" line="204"/>
         <source>Installing language pack %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Installerer språkpakke %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/ImportPackagePage.qml" line="205"/>
@@ -941,7 +941,7 @@
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="211"/>
         <source>Battery %1%</source>
-        <translation type="unfinished"></translation>
+        <translation>Batteri %1%</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="263"/>
@@ -1572,19 +1572,19 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="116"/>
         <source>Low battery warning</source>
-        <translation type="unfinished"></translation>
+        <translation>Advarsel om lavt batteri</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="122"/>
         <location filename="../qml/pages/SettingsPage.qml" line="130"/>
         <source>Off</source>
-        <translation type="unfinished"></translation>
+        <translation>Av</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="122"/>
         <location filename="../qml/pages/SettingsPage.qml" line="130"/>
         <source>%1%</source>
-        <translation type="unfinished"></translation>
+        <translation>%1%</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="147"/>
