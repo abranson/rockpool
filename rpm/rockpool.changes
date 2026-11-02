@@ -1,3 +1,13 @@
+* Mon Nov 02 2026 Andrew Branson <github@andrewbranson.net> 2.0.3-1
+- Restore health sync for newer watch firmware and preserve existing history.
+- Store blood oxygen readings and show latest, 24-hour high and low values.
+- Add a simple blood oxygen toggle with ten-minute background sampling.
+- Notify about firmware updates and open the matching watch update screen.
+- Show retryable firmware download errors without interrupting the connection.
+- Align watch status icons and text, and improve firmware alert spacing.
+- Share watch logs, service logs and screenshots through the system chooser.
+- Refresh UI translation catalogues and retain Arabic placeholder safeguards.
+
 * Wed Oct 14 2026 Andrew Branson <github@andrewbranson.net> 2.0.2-1
 - Show watch battery levels and add configurable low-battery notifications.
 - Withdraw low-battery warnings when disabled or no longer applicable.
