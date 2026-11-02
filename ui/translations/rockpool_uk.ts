@@ -183,14 +183,12 @@
 <context>
     <name>ContentPeerPickerPage</name>
     <message>
-        <location filename="../qml/pages/ContentPeerPickerPage.qml" line="16"/>
         <source>Share Via</source>
-        <translation>Поділитися через</translation>
+        <translation type="vanished">Поділитися через</translation>
     </message>
     <message>
-        <location filename="../qml/pages/ContentPeerPickerPage.qml" line="26"/>
         <source>No Share Providers configured. Please add provider&apos;s account in System Settings</source>
-        <translation>Постачальника спільного доступу не налаштовано. Додайте обліковий запис в Налаштуванні Системи</translation>
+        <translation type="vanished">Постачальника спільного доступу не налаштовано. Додайте обліковий запис в Налаштуванні Системи</translation>
     </message>
 </context>
 <context>
@@ -209,38 +207,38 @@
 <context>
     <name>DeveloperToolsPage</name>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="12"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="24"/>
         <source>Developer Tools</source>
         <translation>Інструменти розробника</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="65"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="77"/>
         <source>Disable Service</source>
         <translation>Вимкнути службу</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="71"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="83"/>
         <source>Restart Service</source>
         <translation>Перезапустити службу</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="77"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="89"/>
         <source>Screenshots</source>
         <translation>Знімки екрана</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="83"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="95"/>
         <source>Developer Connection</source>
         <translation>Під&apos;єднання Розробника</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="89"/>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="172"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="101"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="184"/>
         <source>Report problem</source>
         <translation>Повідомити про Проблему</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="95"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="107"/>
         <source>Install from file</source>
         <translation type="unfinished"></translation>
     </message>
@@ -249,28 +247,33 @@
         <translation type="vanished">Встановити застосунок з файлу</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="120"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="132"/>
         <source>Developer Connection Settings</source>
         <translation>Налаштування під&apos;єднання розробника</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="125"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="137"/>
         <source>Enable Connection</source>
         <translation>Увімкнути під&apos;єднання</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="127"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="139"/>
         <source>Enable Developer Connection Service</source>
         <translation>Увімкнути службу під&apos;єднання розробника</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="211"/>
-        <source>Debug logging</source>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="216"/>
+        <source>Could not export watch logs. Please try again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="212"/>
-        <source>Write debug messages to the system journal</source>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="228"/>
+        <source>Could not export service logs. Please try again.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="244"/>
+        <source>Debug logging</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -290,17 +293,17 @@
         <translation type="vanished">Вмикає під&apos;єднання розробника через CloudPebble</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="140"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="152"/>
         <source>Runtime Status</source>
         <translation>Поточний стан</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="145"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="157"/>
         <source>DeveloperConnection Status</source>
         <translation>Стан під&apos;єднання розробника</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="146"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="158"/>
         <source>DeveloperConnection port listening state</source>
         <translation>Вказує чи слухає локальний порт служба під&apos;єднання розробника</translation>
     </message>
@@ -313,12 +316,12 @@
         <translation type="vanished">Вказує чи під&apos;єднана зараз служба до CloudPebble</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="153"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="165"/>
         <source>Close</source>
         <translation>Закрити</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="186"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="198"/>
         <source>Preparing logs package...</source>
         <translation>Підготовка пакету журналів...</translation>
     </message>
@@ -331,8 +334,10 @@
         <translation type="vanished">Вимкнути журнал служби</translation>
     </message>
     <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="223"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="257"/>
         <source>Send service logs</source>
-        <translation type="vanished">Надіслати журнал служби</translation>
+        <translation>Надіслати журнал служби</translation>
     </message>
     <message>
         <source>Enable service logs</source>
@@ -355,12 +360,18 @@
         <translation type="vanished">Критичні</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="224"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="211"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="269"/>
         <source>Send watch logs</source>
         <translation>Надіслати журнал годинника</translation>
     </message>
     <message>
-        <location filename="../qml/pages/DeveloperToolsPage.qml" line="235"/>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="245"/>
+        <source>Include debug messages in service logs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DeveloperToolsPage.qml" line="281"/>
         <source>Cancel</source>
         <translation>Скасувати</translation>
     </message>
@@ -407,6 +418,36 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../qml/pages/FirmwareUpgradePage.qml" line="105"/>
+        <source>Could not download the update. Check your internet connection and try again.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/FirmwareUpgradePage.qml" line="108"/>
+        <source>The downloaded firmware could not be read. Try downloading it again.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/FirmwareUpgradePage.qml" line="111"/>
+        <source>Could not start the update. Check your watch connection and try again.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/FirmwareUpgradePage.qml" line="113"/>
+        <source>The firmware update failed. Reconnect your watch and try again.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/FirmwareUpgradePage.qml" line="120"/>
+        <source>Updating your Pebble…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/FirmwareUpgradePage.qml" line="128"/>
+        <source>Try again</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>A new firmware upgrade is available for your Pebble smartwatch.</source>
         <translation type="vanished">Доступне оновлення мікропрограми для вашого годинника Pebble.</translation>
     </message>
@@ -428,7 +469,7 @@
         <translation type="vanished">Це оновлення також оновить дані відновлення. Перевірте чи ваш Pebble під&apos;єднано до джерела живлення.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/FirmwareUpgradePage.qml" line="99"/>
+        <location filename="../qml/pages/FirmwareUpgradePage.qml" line="128"/>
         <source>Upgrade now</source>
         <translation>Оновити зараз</translation>
     </message>
@@ -451,148 +492,189 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthHistoryPage.qml" line="100"/>
+        <location filename="../qml/pages/HealthHistoryPage.qml" line="101"/>
+        <source>Blood oxygen is off. Enable it in Health settings.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HealthHistoryPage.qml" line="104"/>
+        <source>Check blood oxygen in Health settings.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HealthHistoryPage.qml" line="107"/>
+        <source>Latest reading: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HealthHistoryPage.qml" line="111"/>
+        <source>Waiting for a reading.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HealthHistoryPage.qml" line="116"/>
         <source>No health data synced yet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthHistoryPage.qml" line="102"/>
+        <location filename="../qml/pages/HealthHistoryPage.qml" line="118"/>
         <source>Last updated %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthHistoryPage.qml" line="131"/>
+        <location filename="../qml/pages/HealthHistoryPage.qml" line="147"/>
         <source>Syncing…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthHistoryPage.qml" line="131"/>
+        <location filename="../qml/pages/HealthHistoryPage.qml" line="147"/>
         <source>Sync now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthHistoryPage.qml" line="137"/>
+        <location filename="../qml/pages/HealthHistoryPage.qml" line="153"/>
         <source>Health settings</source>
         <translation type="unfinished">Налаштування Оздоровлення</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthHistoryPage.qml" line="154"/>
+        <location filename="../qml/pages/HealthHistoryPage.qml" line="170"/>
         <source>Health history</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthHistoryPage.qml" line="161"/>
+        <location filename="../qml/pages/HealthHistoryPage.qml" line="177"/>
         <source>Health history is shared across this Rockpool account. It is not assigned to a specific watch.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthHistoryPage.qml" line="180"/>
+        <location filename="../qml/pages/HealthHistoryPage.qml" line="196"/>
         <source>Health history could not be loaded. Pull down to retry.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthHistoryPage.qml" line="191"/>
+        <location filename="../qml/pages/HealthHistoryPage.qml" line="207"/>
         <source>Syncing health data from the watch.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthHistoryPage.qml" line="202"/>
+        <location filename="../qml/pages/HealthHistoryPage.qml" line="218"/>
         <source>The watch did not accept the health sync request.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthHistoryPage.qml" line="212"/>
+        <location filename="../qml/pages/HealthHistoryPage.qml" line="228"/>
         <source>Connect a Pebble to sync new health data. Existing history remains available while disconnected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthHistoryPage.qml" line="227"/>
+        <location filename="../qml/pages/HealthHistoryPage.qml" line="243"/>
         <source>Enable Pebble Health to collect new activity, sleep, and heart-rate statistics.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthHistoryPage.qml" line="235"/>
+        <location filename="../qml/pages/HealthHistoryPage.qml" line="251"/>
         <source>Open health settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthHistoryPage.qml" line="249"/>
+        <location filename="../qml/pages/HealthHistoryPage.qml" line="265"/>
         <source>Graph view</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthHistoryPage.qml" line="253"/>
+        <location filename="../qml/pages/HealthHistoryPage.qml" line="269"/>
         <source>Daily</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthHistoryPage.qml" line="254"/>
+        <location filename="../qml/pages/HealthHistoryPage.qml" line="270"/>
         <source>Weekly</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthHistoryPage.qml" line="270"/>
+        <location filename="../qml/pages/HealthHistoryPage.qml" line="286"/>
         <source>Weeks start on Monday. Steps are weekly totals; sleep is the average per recorded night. Incomplete weeks use available data.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthHistoryPage.qml" line="272"/>
+        <location filename="../qml/pages/HealthHistoryPage.qml" line="288"/>
         <source>Each bar shows one day. Swipe the graphs to browse history.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthHistoryPage.qml" line="281"/>
-        <location filename="../qml/pages/HealthHistoryPage.qml" line="426"/>
+        <location filename="../qml/pages/HealthHistoryPage.qml" line="297"/>
+        <location filename="../qml/pages/HealthHistoryPage.qml" line="442"/>
+        <location filename="../qml/pages/HealthHistoryPage.qml" line="492"/>
         <source>Latest</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthHistoryPage.qml" line="302"/>
+        <location filename="../qml/pages/HealthHistoryPage.qml" line="318"/>
         <source>Today&apos;s steps</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthHistoryPage.qml" line="312"/>
+        <location filename="../qml/pages/HealthHistoryPage.qml" line="328"/>
         <source>Average %1 per day</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthHistoryPage.qml" line="345"/>
+        <location filename="../qml/pages/HealthHistoryPage.qml" line="361"/>
         <source>Last night&apos;s sleep</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthHistoryPage.qml" line="362"/>
+        <location filename="../qml/pages/HealthHistoryPage.qml" line="378"/>
         <source>Average %1 per night</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthHistoryPage.qml" line="378"/>
+        <location filename="../qml/pages/HealthHistoryPage.qml" line="394"/>
         <source>Deep sleep</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthHistoryPage.qml" line="417"/>
+        <location filename="../qml/pages/HealthHistoryPage.qml" line="433"/>
         <source>Heart rate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthHistoryPage.qml" line="428"/>
+        <location filename="../qml/pages/HealthHistoryPage.qml" line="444"/>
         <source>Today avg</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthHistoryPage.qml" line="430"/>
+        <location filename="../qml/pages/HealthHistoryPage.qml" line="446"/>
         <source>30 day avg</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthHistoryPage.qml" line="460"/>
+        <location filename="../qml/pages/HealthHistoryPage.qml" line="484"/>
+        <source>Blood oxygen (SpO₂)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HealthHistoryPage.qml" line="493"/>
+        <source>24 h high</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HealthHistoryPage.qml" line="494"/>
+        <source>24 h low</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HealthHistoryPage.qml" line="500"/>
+        <source>%1%</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HealthHistoryPage.qml" line="532"/>
         <source>%1 recorded days in the last 90 days. Missing data is shown as —.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthHistoryPage.qml" line="462"/>
+        <location filename="../qml/pages/HealthHistoryPage.qml" line="534"/>
         <source>%1 days of health data available.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -600,72 +682,87 @@
 <context>
     <name>HealthSettingsDialog</name>
     <message>
-        <location filename="../qml/pages/HealthSettingsDialog.qml" line="70"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="82"/>
         <source>Health settings</source>
         <translation>Налаштування Оздоровлення</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthSettingsDialog.qml" line="71"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="83"/>
         <source>OK</source>
         <translation>Гаразд</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthSettingsDialog.qml" line="72"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="84"/>
         <source>Cancel</source>
         <translation>Скасувати</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthSettingsDialog.qml" line="84"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="96"/>
         <source>Health app enabled</source>
         <translation>Застосунок оздоровлення увімкнено</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthSettingsDialog.qml" line="93"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="105"/>
+        <source>Blood oxygen (SpO₂)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="109"/>
+        <source>Blood oxygen will be enabled when you save these settings.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="110"/>
+        <source>Measure blood oxygen automatically.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="119"/>
         <source>Age</source>
         <translation>Вік</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthSettingsDialog.qml" line="106"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="132"/>
         <source>Height (cm)</source>
         <translation>Зріст (см)</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthSettingsDialog.qml" line="119"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="145"/>
         <source>Weight (kg)</source>
         <translation>Вага (кг)</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthSettingsDialog.qml" line="133"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="159"/>
         <source>Gender</source>
         <translation>Стать</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthSettingsDialog.qml" line="137"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="163"/>
         <source>Female</source>
         <translation>Жіноча</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthSettingsDialog.qml" line="141"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="167"/>
         <source>Male</source>
         <translation>Чоловіча</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthSettingsDialog.qml" line="150"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="176"/>
         <source>I want to be more active</source>
         <translation>Бажаю більше рухатися</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthSettingsDialog.qml" line="151"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="177"/>
         <source>More Active</source>
         <translation>Бути активнішим</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthSettingsDialog.qml" line="160"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="186"/>
         <source>I want to sleep more</source>
         <translation>Бажаю більше спати</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthSettingsDialog.qml" line="161"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="187"/>
         <source>Sleep More</source>
         <translation>Спати довше</translation>
     </message>
@@ -911,7 +1008,7 @@
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="30"/>
-        <location filename="../qml/pages/MainMenuPage.qml" line="410"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="428"/>
         <source>Health history</source>
         <translation type="unfinished"></translation>
     </message>
@@ -931,32 +1028,36 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="211"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="220"/>
         <source>Battery %1%</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="263"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="272"/>
         <source>Firmware %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="265"/>
-        <source>Update Available</source>
-        <translation>Доступне оновлення</translation>
+        <location filename="../qml/pages/MainMenuPage.qml" line="274"/>
+        <source>Pebble update available</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="264"/>
+        <source>Update Available</source>
+        <translation type="vanished">Доступне оновлення</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/MainMenuPage.qml" line="276"/>
         <source>Upgrading...</source>
         <translation>Оновлення...</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="285"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="303"/>
         <source>Running</source>
         <translation>Запущено</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="296"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="314"/>
         <source>Your Pebble smartwatch is disconnected. Please make sure it is powered on and within range.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -969,37 +1070,37 @@
         <translation type="vanished">Відкрити Налаштування Bluetooth</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="307"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="325"/>
         <source>Your Pebble smartwatch is in factory mode and needs to be initialized.</source>
         <translation>Ваш годинник Pebble знаходиться в спеціальному режимі та потребує ініціалізації.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="316"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="334"/>
         <source>Initialize Pebble</source>
         <translation>Ініціалізувати Pebble</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="405"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="423"/>
         <source>Notifications</source>
         <translation>Сповіщення</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="415"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="433"/>
         <source>Watch Apps</source>
         <translation>Застосунки</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="421"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="439"/>
         <source>Watchfaces</source>
         <translation>Циферблати</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="427"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="445"/>
         <source>Settings</source>
         <translation>Налаштування</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainMenuPage.qml" line="434"/>
+        <location filename="../qml/pages/MainMenuPage.qml" line="452"/>
         <source>Firmware</source>
         <translation>Мікропрограма</translation>
     </message>
@@ -1134,12 +1235,12 @@
 <context>
     <name>Pebble</name>
     <message>
-        <location filename="../pebble.cpp" line="2298"/>
+        <location filename="../pebble.cpp" line="2338"/>
         <source>Could not load Quiet Time settings.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../pebble.cpp" line="2328"/>
+        <location filename="../pebble.cpp" line="2368"/>
         <source>Could not save Quiet Time settings.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1387,42 +1488,41 @@
 <context>
     <name>ScreenshotsPage</name>
     <message>
-        <location filename="../qml/pages/ScreenshotsPage.qml" line="23"/>
+        <location filename="../qml/pages/ScreenshotsPage.qml" line="32"/>
         <source>Screenshots</source>
         <translation>Знімки екрана</translation>
     </message>
     <message>
-        <location filename="../qml/pages/ScreenshotsPage.qml" line="27"/>
+        <location filename="../qml/pages/ScreenshotsPage.qml" line="36"/>
         <source>Take Screenshot</source>
         <translation>Зробити знімок</translation>
     </message>
     <message>
-        <location filename="../qml/pages/ScreenshotsPage.qml" line="54"/>
+        <location filename="../qml/pages/ScreenshotsPage.qml" line="63"/>
         <source>Share</source>
         <translation>Поділитися</translation>
     </message>
     <message>
-        <location filename="../qml/pages/ScreenshotsPage.qml" line="56"/>
+        <location filename="../qml/pages/ScreenshotsPage.qml" line="14"/>
         <source>Pebble screenshot</source>
         <translation>Знімок екрана Pebble</translation>
     </message>
     <message>
-        <location filename="../qml/pages/ScreenshotsPage.qml" line="57"/>
         <source>Screen snapshot of Pebble Smartwatches</source>
-        <translation>Знімок екрана годинників Pebble</translation>
+        <translation type="vanished">Знімок екрана годинників Pebble</translation>
     </message>
     <message>
-        <location filename="../qml/pages/ScreenshotsPage.qml" line="63"/>
+        <location filename="../qml/pages/ScreenshotsPage.qml" line="70"/>
         <source>Delete</source>
         <translation>Видалити</translation>
     </message>
     <message>
-        <location filename="../qml/pages/ScreenshotsPage.qml" line="66"/>
+        <location filename="../qml/pages/ScreenshotsPage.qml" line="73"/>
         <source>Really Delete?</source>
         <translation>Дійсно Видалити?</translation>
     </message>
     <message>
-        <location filename="../qml/pages/ScreenshotsPage.qml" line="73"/>
+        <location filename="../qml/pages/ScreenshotsPage.qml" line="80"/>
         <source>Cancel</source>
         <translation>Скасувати</translation>
     </message>
