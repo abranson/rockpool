@@ -264,12 +264,12 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="216"/>
         <source>Could not export watch logs. Please try again.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunde inte exportera klockloggar. Försök igen.</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="228"/>
         <source>Could not export service logs. Please try again.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunde inte exportera tjänstloggar. Försök igen.</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="244"/>
@@ -372,7 +372,7 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="245"/>
         <source>Include debug messages in service logs</source>
-        <translation type="unfinished"></translation>
+        <translation>Inkludera felsökningsmeddelanden i tjänstloggar</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="281"/>
@@ -424,32 +424,32 @@
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="105"/>
         <source>Could not download the update. Check your internet connection and try again.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunde inte ladda ner uppdateringen. Kontrollera din internetanslutning och försök igen.</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="108"/>
         <source>The downloaded firmware could not be read. Try downloading it again.</source>
-        <translation type="unfinished"></translation>
+        <translation>Den nedladdade mjukvaran kunde inte läsas. Försök ladda ner den igen.</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="111"/>
         <source>Could not start the update. Check your watch connection and try again.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kan inte starta uppdateringen. Kontrollera din klockanslutning och försök igen.</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="113"/>
         <source>The firmware update failed. Reconnect your watch and try again.</source>
-        <translation type="unfinished"></translation>
+        <translation>Mjukvaruuppdateringen misslyckades. Återanslut klockan och försök igen.</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="120"/>
         <source>Updating your Pebble…</source>
-        <translation type="unfinished"></translation>
+        <translation>Uppdaterar din Pebble…</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="128"/>
         <source>Try again</source>
-        <translation type="unfinished"></translation>
+        <translation>Försök igen</translation>
     </message>
     <message>
         <source>A new firmware upgrade is available for your Pebble smartwatch.</source>
@@ -498,22 +498,22 @@
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="101"/>
         <source>Blood oxygen is off. Enable it in Health settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>Blodsyre är avstängt. Aktivera det i hälsoinställningarna.</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="104"/>
         <source>Check blood oxygen in Health settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kontrollera blodsyret i hälsoinställningarna.</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="107"/>
         <source>Latest reading: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Senaste avläsning: %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="111"/>
         <source>Waiting for a reading.</source>
-        <translation type="unfinished"></translation>
+        <translation>Väntar på en avläsning.</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="116"/>
@@ -655,22 +655,22 @@
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="484"/>
         <source>Blood oxygen (SpO₂)</source>
-        <translation type="unfinished"></translation>
+        <translation>Blodsyre (SpO2)</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="493"/>
         <source>24 h high</source>
-        <translation type="unfinished"></translation>
+        <translation>24 t hög</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="494"/>
         <source>24 h low</source>
-        <translation type="unfinished"></translation>
+        <translation>24 t låg</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="500"/>
         <source>%1%</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 %</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="532"/>
@@ -708,17 +708,17 @@
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="105"/>
         <source>Blood oxygen (SpO₂)</source>
-        <translation type="unfinished"></translation>
+        <translation>Blodsyre (SpO2)</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="109"/>
         <source>Blood oxygen will be enabled when you save these settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>Blodsyre aktiveras när du sparar dessa inställningar.</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="110"/>
         <source>Measure blood oxygen automatically.</source>
-        <translation type="unfinished"></translation>
+        <translation>Mät blodsyre automatiskt.</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="119"/>
@@ -1052,7 +1052,7 @@
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="274"/>
         <source>Pebble update available</source>
-        <translation type="unfinished"></translation>
+        <translation>Pebble-uppdatering tillgänglig</translation>
     </message>
     <message>
         <source>Update Available</source>
@@ -1423,7 +1423,7 @@
     <message>
         <location filename="../qml/pages/QuietTimePage.qml" line="163"/>
         <source>Motion backlight</source>
-        <translation type="unfinished">Rörelseaktiverad bakgrundsbelysning</translation>
+        <translation>Rörelseaktiverad bakgrundsbelysning</translation>
     </message>
 </context>
 <context>
