@@ -92,10 +92,11 @@ Page {
 
                 Row {
                     spacing: Theme.paddingLarge
-                    height: watchImage.height
+                    height: Math.max(watchImage.height, watchStatus.height)
                     width: watchMenu.cellWidth
 
                     Item {
+                        anchors.verticalCenter: parent.verticalCenter
                         width: watchImage.width
                         height: watchImage.height
                         MouseArea {
@@ -159,13 +160,15 @@ Page {
                         }
                     }
                     Column {
+                        id: watchStatus
+
                         spacing: Theme.paddingSmall
                         anchors.verticalCenter: parent.verticalCenter
                         width: parent.width - watchImage.width - parent.spacing
 
                         Row {
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            spacing: Theme.paddingSmall
+                            width: parent.width
+                            spacing: Theme.paddingLarge
 
                             Image {
                                 anchors.verticalCenter: parent.verticalCenter
@@ -175,6 +178,9 @@ Page {
                                         + (root.pebble.connected ? "transfer" : "warning")
                             }
                             Label {
+                                width: parent.width - Theme.iconSizeSmall - parent.spacing
+                                horizontalAlignment: Text.AlignLeft
+                                wrapMode: Text.Wrap
                                 text: root.connectionStatusText()
                             }
                         }
@@ -185,8 +191,8 @@ Page {
                                                         && root.pebble.batteryPercentage < root.pebble.lowBatteryThreshold
                             readonly property color batteryColor: low ? Theme.errorColor : Theme.secondaryColor
 
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            spacing: Theme.paddingSmall
+                            width: parent.width
+                            spacing: Theme.paddingLarge
                             visible: root.pebble.batteryPercentage >= 0
 
                             Icon {
@@ -208,6 +214,9 @@ Page {
                                 }
                             }
                             Label {
+                                width: parent.width - Theme.iconSizeSmall - parent.spacing
+                                horizontalAlignment: Text.AlignLeft
+                                wrapMode: Text.Wrap
                                 text: qsTr("Battery %1%").arg(root.pebble.batteryPercentage)
                                 color: batteryRow.batteryColor
                                 font.pixelSize: Theme.fontSizeSmall
@@ -232,37 +241,40 @@ Page {
                             Row {
                                 id: firmwareAvailableContent
 
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                spacing: Theme.paddingSmall
+                                spacing: Theme.paddingLarge
                                 width: parent.width
 
-                                Image {
-                                    id: upgradeIcon
-
+                                Item {
                                     anchors.verticalCenter: parent.verticalCenter
-                                    width: visible ? Theme.iconSizeSmall : 0
+                                    width: Theme.iconSizeSmall
                                     height: width
-                                    visible: firmwareStatus.updateAvailable || root.pebble.upgradingFirmware
-                                    source: root.pebble.upgradingFirmware
-                                            ? "image://theme/icon-m-sync"
-                                            : "image://theme/icon-lock-application-update"
-                                    RotationAnimation on rotation {
-                                        duration: 2000
-                                        loops: Animation.Infinite
-                                        from: 0
-                                        to: 360
-                                        running: root.pebble.upgradingFirmware
+
+                                    Image {
+                                        anchors.fill: parent
+                                        visible: firmwareStatus.updateAvailable || root.pebble.upgradingFirmware
+                                        source: root.pebble.upgradingFirmware
+                                                ? "image://theme/icon-m-sync"
+                                                : "image://theme/icon-lock-application-update"
+                                        RotationAnimation on rotation {
+                                            duration: 2000
+                                            loops: Animation.Infinite
+                                            from: 0
+                                            to: 360
+                                            running: root.pebble.upgradingFirmware
+                                        }
                                     }
                                 }
                                 Label {
-                                    width: firmwareStatus.width
-                                           - (upgradeIcon.visible ? upgradeIcon.width + parent.spacing : 0)
-                                    horizontalAlignment: upgradeIcon.visible ? Text.AlignLeft : Text.AlignHCenter
+                                    width: parent.width - Theme.iconSizeSmall - parent.spacing
+                                    horizontalAlignment: Text.AlignLeft
                                     text: {
                                         var version = root.pebble.softwareVersion
                                                 ? qsTr("Firmware %1").arg(root.pebble.softwareVersion) : ""
+                                        if (firmwareStatus.updateAvailable && !root.pebble.upgradingFirmware) {
+                                            return qsTr("Pebble update available") + (version ? "\n" + version : "")
+                                        }
                                         var status = root.pebble.upgradingFirmware ? qsTr("Upgrading...")
-                                                : firmwareStatus.updateAvailable ? qsTr("Update Available") : ""
+                                                : ""
                                         return version && status ? version + " · " + status : version || status
                                     }
                                     color: Theme.secondaryColor
@@ -272,16 +284,22 @@ Page {
                             }
                         }
                         Row {
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            spacing: Theme.paddingSmall
+                            width: parent.width
+                            spacing: Theme.paddingLarge
                             visible: root.pebble.developerSettingsReady
                                      && root.pebble.devConnServerRunning
 
                             Image {
                                 anchors.verticalCenter: parent.verticalCenter
+                                width: Theme.iconSizeSmall
+                                height: width
+                                fillMode: Image.PreserveAspectFit
                                 source: "image://theme/icon-s-developer"
                             }
                             Label {
+                                width: parent.width - Theme.iconSizeSmall - parent.spacing
+                                horizontalAlignment: Text.AlignLeft
+                                wrapMode: Text.Wrap
                                 text: qsTr("Running")
                             }
                         }

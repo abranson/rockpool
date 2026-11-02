@@ -94,14 +94,42 @@ Page {
                         onLinkActivated: Qt.openUrlExternally(link)
                     }
 
+                    Label {
+                        width: parent.width
+                        visible: root.pebble && root.pebble.firmwareUpdateError.length > 0
+                        color: Theme.errorColor
+                        wrapMode: Text.Wrap
+                        text: {
+                            var error = root.pebble ? root.pebble.firmwareUpdateError : ""
+                            if (error === "download-failed") {
+                                return qsTr("Could not download the update. Check your internet connection and try again.")
+                            }
+                            if (error === "invalid-firmware") {
+                                return qsTr("The downloaded firmware could not be read. Try downloading it again.")
+                            }
+                            if (error === "start-failed") {
+                                return qsTr("Could not start the update. Check your watch connection and try again.")
+                            }
+                            return qsTr("The firmware update failed. Reconnect your watch and try again.")
+                        }
+                    }
+
+                    Label {
+                        width: parent.width
+                        visible: root.pebble && root.pebble.upgradingFirmware
+                        text: qsTr("Updating your Pebble…")
+                        color: Theme.highlightColor
+                        wrapMode: Text.Wrap
+                    }
+
                     Button {
                         anchors.horizontalCenter: parent.horizontalCenter
-                        text: qsTr("Upgrade now")
+                        text: root.pebble && root.pebble.firmwareUpdateError.length > 0
+                              ? qsTr("Try again") : qsTr("Upgrade now")
                         visible: root.updateAvailable
                         enabled: root.pebble && root.pebble.connected && !root.pebble.upgradingFirmware
                         onClicked: {
                             root.pebble.performFirmwareUpgrade()
-                            pageStack.pop()
                         }
                     }
                 }

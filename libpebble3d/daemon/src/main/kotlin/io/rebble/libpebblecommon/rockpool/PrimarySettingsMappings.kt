@@ -5,6 +5,7 @@ package io.rebble.libpebblecommon.rockpool
 
 import io.rebble.libpebblecommon.database.entity.HealthGender
 import io.rebble.libpebblecommon.health.HealthSettings
+import io.rebble.libpebblecommon.database.entity.HRMonitoringInterval
 import org.freedesktop.dbus.types.Variant
 
 /** A primary-API canned-response group, in the order supplied by the caller. */
@@ -46,6 +47,9 @@ internal fun mergePrimaryHealthSettings(
         ageYears = age,
         gender = gender?.let { HealthGender.entries[it] } ?: existing.gender,
         imperialUnits = imperial,
+        bloodOxygenEnabled = settings.primaryBoolean("health.bloodOxygenEnabled") ?: existing.bloodOxygenEnabled,
+        spo2MeasurementInterval = settings.primaryInt("health.spo2MeasurementInterval", 0..3)
+            ?.let { HRMonitoringInterval.fromInt(it.toByte()) } ?: existing.spo2MeasurementInterval,
     )
 }
 
@@ -59,7 +63,10 @@ internal fun primaryHealthSettings(settings: HealthSettings): Map<String, Varian
     "moreActive" to Variant(settings.activityInsightsEnabled),
     "sleepMore" to Variant(settings.sleepInsightsEnabled),
     "imperialUnits" to Variant(settings.imperialUnits),
-)
+).apply {
+    settings.bloodOxygenEnabled?.let { put("bloodOxygenEnabled", Variant(it)) }
+    settings.spo2MeasurementInterval?.let { put("spo2MeasurementInterval", Variant(it.value.toInt())) }
+}
 
 /** Flatten ordered primary canned-response records into libpebble3 config values. */
 internal fun flattenPrimaryCannedResponses(

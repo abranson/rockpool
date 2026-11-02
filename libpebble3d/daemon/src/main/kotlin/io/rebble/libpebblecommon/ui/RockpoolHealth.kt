@@ -19,6 +19,8 @@ private val ROCKPOOL_HEALTH_KEYS = setOf(
     "weight",
     "moreActive",
     "sleepMore",
+    "bloodOxygenEnabled",
+    "spo2MeasurementInterval",
 )
 
 internal typealias RockpoolHealthUpdate = HealthSettingsUpdate
@@ -61,9 +63,10 @@ internal fun normalizeRockpoolHealthParams(
     return buildMap {
         params.forEach { (key, variant) ->
             val value = when (key) {
-                "enabled", "moreActive", "sleepMore" ->
+                "enabled", "moreActive", "sleepMore", "bloodOxygenEnabled" ->
                     variant.rockpoolBoolean()?.toString()
 
+                "spo2MeasurementInterval" -> variant.rockpoolInt()?.takeIf { it in 0..3 }?.toString()
                 "age" -> variant.rockpoolInt()?.takeIf { it in 1..130 }?.toString()
                 "height" -> variant.rockpoolInt()?.takeIf { it in 50..300 }?.toString()
                 // libpebble3 stores decagrams in a signed short, hence 327 kg is the exact limit.
@@ -86,7 +89,10 @@ internal fun rockpoolHealthParams(settings: HealthSettings): Map<String, Variant
     "weight" to Variant(settings.weightDag.toInt() / 100),
     "moreActive" to Variant(settings.activityInsightsEnabled),
     "sleepMore" to Variant(settings.sleepInsightsEnabled),
-)
+).apply {
+    settings.bloodOxygenEnabled?.let { put("bloodOxygenEnabled", Variant(it)) }
+    settings.spo2MeasurementInterval?.let { put("spo2MeasurementInterval", Variant(it.value.toInt())) }
+}
 
 private fun Variant<*>.rockpoolBoolean(): Boolean? =
     if (sig == "b") value as? Boolean else null

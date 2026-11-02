@@ -102,6 +102,7 @@ internal class RockpoolUiService(
         { address -> dismissLowWatchBattery(settings, address) },
     )
     private val weatherCoordinator = RockpoolWeatherCoordinator(settings, libPebble)
+    private val firmwareNotification = RockpoolFirmwareNotification(settings)
     // libpebble3 keeps health history per account, not per watch. Every exported legacy Pebble
     // object therefore shares this read-only projection and receives the same update signal.
     private val healthData = RockpoolHealthDataCoordinator(libPebble)
@@ -195,6 +196,7 @@ internal class RockpoolUiService(
         var connectionState: Int,
         var connectionError: String,
         var upgradingFirmware: Boolean = false,
+        var firmwareUpdateError: String = "",
         var firmwareStatus: RockpoolFirmwareStatus = RockpoolFirmwareStatus(false, "", ""),
         var languageStatus: RockpoolLanguageStatus = RockpoolLanguageStatus("", null),
     )
@@ -375,6 +377,17 @@ internal class RockpoolUiService(
         if (!observersStarted.compareAndSet(false, true)) return
         notificationSourcePublisher.start(scope)
         watchWatches()
+        scope.launch(Dispatchers.IO) {
+            libPebble.watches.collect { watches ->
+                watches.filterIsInstance<KnownPebbleDevice>().forEach { watch ->
+                    firmwareNotification.update(
+                        watch.identifier.asString, watch.name, rockpoolFirmwareStatus(watch),
+                        (watch as? CommonConnectedDevice)?.firmwareUpdateState
+                            is FirmwareUpdater.FirmwareUpdateStatus.Active,
+                    )
+                }
+            }
+        }
         scope.launch(Dispatchers.IO) {
             combine(libPebble.watches, bluezBatteryLevels(), battery.settingsRevision) { watches, bluez, _ ->
                 watches.filterIsInstance<KnownPebbleDevice>().map { watch ->
@@ -569,8 +582,10 @@ internal class RockpoolUiService(
                             )
                             val upgrading = (common?.firmwareUpdateState
                                 is FirmwareUpdater.FirmwareUpdateStatus.Active)
-                            if (watch.upgradingFirmware != upgrading) {
+                            val firmwareError = rockpoolFirmwareUpdateError(common?.firmwareUpdateState)
+                            if (watch.upgradingFirmware != upgrading || watch.firmwareUpdateError != firmwareError) {
                                 watch.upgradingFirmware = upgrading
+                                watch.firmwareUpdateError = firmwareError
                                 emitSignal(RockpoolPebble.UpgradingFirmwareChanged(watch.path))
                             }
                             val firmwareStatus = rockpoolFirmwareStatus(device)

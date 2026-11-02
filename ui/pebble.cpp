@@ -92,7 +92,8 @@ QStringList firmwareProperties()
         << QStringLiteral("FirmwareUpgradeAvailable")
         << QStringLiteral("FirmwareReleaseNotes")
         << QStringLiteral("CandidateFirmwareVersion")
-        << QStringLiteral("UpgradingFirmware");
+        << QStringLiteral("UpgradingFirmware")
+        << QStringLiteral("FirmwareUpdateError");
 }
 
 bool decodeVariantMap(const QVariant &value, QVariantMap *map)
@@ -250,6 +251,21 @@ bool decodeHealthOverview(const QDBusMessage &message, QVariantMap *overview)
             return false;
         }
         overview->insert(key, unwrapDBusVariant(overview->value(key)));
+    }
+
+    // An older daemon has no oxygen fields. Missing values remain distinct from readings.
+    const QStringList oxygenKeys = QStringList()
+        << QStringLiteral("latestSpo2")
+        << QStringLiteral("latestSpo2Timestamp")
+        << QStringLiteral("highSpo2Last24Hours")
+        << QStringLiteral("lowSpo2Last24Hours");
+    foreach (const QString &key, oxygenKeys) {
+        if (overview->contains(key)) {
+            if (!isIntegerValue(overview->value(key))) {
+                return false;
+            }
+            overview->insert(key, unwrapDBusVariant(overview->value(key)));
+        }
     }
 
     QVariantList stepsWeek;
@@ -427,6 +443,17 @@ bool healthParamsSnapshotValid(const QVariantMap &params)
         bool valid = false;
         params.value(key).toInt(&valid);
         if (!params.contains(key) || !valid) {
+            return false;
+        }
+    }
+
+    if (params.contains(QStringLiteral("bloodOxygenEnabled"))
+            && params.value(QStringLiteral("bloodOxygenEnabled")).type() != QVariant::Bool) {
+        return false;
+    }
+    if (params.contains(QStringLiteral("spo2MeasurementInterval"))) {
+        const QVariant interval = params.value(QStringLiteral("spo2MeasurementInterval"));
+        if (!isIntegerValue(interval) || interval.toInt() < 0 || interval.toInt() > 3) {
             return false;
         }
     }
@@ -636,6 +663,8 @@ void Pebble::serviceOwnerChanged(const QString &service,
     Q_UNUSED(service)
     Q_UNUSED(oldOwner)
 
+    const bool serviceLogDumpWasPending = m_serviceLogDumpPending;
+    m_serviceLogDumpPending = false;
     const bool logDumpWasPending = m_logDumpPending;
     m_logDumpPending = false;
     ++m_logDumpEpoch;
@@ -735,6 +764,9 @@ void Pebble::serviceOwnerChanged(const QString &service,
     setTimelinePaletteReady(QString::fromLatin1(TIMELINE_ICONS), false);
     m_pendingConnectionValues.clear();
     m_pendingConnectionReplies.clear();
+    m_upgradingFirmware = false;
+    m_firmwareUpdateError.clear();
+    emit upgradingFirmwareChanged();
     m_pendingFirmwareValues.clear();
     m_pendingFirmwareReplies.clear();
     m_pendingTimelineWindowValues.clear();
@@ -746,6 +778,9 @@ void Pebble::serviceOwnerChanged(const QString &service,
     m_timelineWindowWriteQueued = false;
     setTimelineWindowReady(false);
 
+    if (serviceLogDumpWasPending) {
+        emit serviceLogsDumped(QString());
+    }
     if (logDumpWasPending) {
         emit logsDumped(false);
     }
@@ -871,6 +906,11 @@ int Pebble::model() const
 bool Pebble::recovery() const
 {
     return m_recovery;
+}
+
+QString Pebble::firmwareUpdateError() const
+{
+    return m_firmwareUpdateError;
 }
 
 bool Pebble::upgradingFirmware() const
@@ -3386,8 +3426,11 @@ void Pebble::firmwarePropertyReplyFinished(QDBusPendingCallWatcher *watcher)
         m_candidateVersion = candidateVersion;
         emit firmwareUpgradeAvailableChanged();
     }
-    if (m_upgradingFirmware != upgrading) {
+    const QString error = m_pendingFirmwareValues.value(
+        QStringLiteral("FirmwareUpdateError")).toString();
+    if (m_upgradingFirmware != upgrading || m_firmwareUpdateError != error) {
         m_upgradingFirmware = upgrading;
+        m_firmwareUpdateError = error;
         emit upgradingFirmwareChanged();
     }
 }
@@ -3405,7 +3448,65 @@ void Pebble::removeScreenshot(const QString &filename)
 
 void Pebble::performFirmwareUpgrade()
 {
-    sendVoidCommand(QStringLiteral("PerformFirmwareUpgrade"));
+    if (m_upgradingFirmware) {
+        return;
+    }
+    ++m_firmwareEpoch;
+    m_upgradingFirmware = true;
+    m_firmwareUpdateError.clear();
+    emit upgradingFirmwareChanged();
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+        m_iface->asyncCall(QStringLiteral("PerformFirmwareUpgrade")), this);
+    const quint64 serviceEpoch = m_serviceEpoch;
+    connect(watcher, &QDBusPendingCallWatcher::finished, this,
+            [this, watcher, serviceEpoch]() {
+        const QDBusMessage reply = watcher->reply();
+        watcher->deleteLater();
+        if (serviceEpoch != m_serviceEpoch) {
+            return;
+        }
+        if (reply.type() == QDBusMessage::ErrorMessage) {
+            m_upgradingFirmware = false;
+            m_firmwareUpdateError = QStringLiteral("start-failed");
+            emit upgradingFirmwareChanged();
+        } else {
+            refreshFirmwareUpdateInfo();
+        }
+    });
+}
+
+void Pebble::dumpServiceLogs()
+{
+    if (m_serviceLogDumpPending) {
+        return;
+    }
+    m_serviceLogDumpPending = true;
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+        m_iface->asyncCall(QStringLiteral("getLogDump")), this);
+    watcher->setProperty("serviceEpoch",
+                         QVariant::fromValue<qulonglong>(m_serviceEpoch));
+    connect(watcher, &QDBusPendingCallWatcher::finished,
+            this, &Pebble::dumpServiceLogsReplyFinished);
+}
+
+void Pebble::dumpServiceLogsReplyFinished(QDBusPendingCallWatcher *watcher)
+{
+    const QDBusMessage reply = watcher->reply();
+    const quint64 serviceEpoch = watcher->property("serviceEpoch").toULongLong();
+    watcher->deleteLater();
+    if (serviceEpoch != m_serviceEpoch || !m_serviceLogDumpPending) {
+        return;
+    }
+    m_serviceLogDumpPending = false;
+    QString filename;
+    if (reply.type() != QDBusMessage::ErrorMessage && reply.arguments().count() == 1
+            && reply.arguments().first().userType() == QMetaType::QString) {
+        filename = reply.arguments().first().toString();
+    }
+    if (filename.isEmpty()) {
+        qWarning() << "Service log export failed:" << reply.errorMessage();
+    }
+    emit serviceLogsDumped(filename);
 }
 
 void Pebble::dumpLogs(const QString &filename)

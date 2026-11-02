@@ -15,6 +15,7 @@ Requires:   systemd-user-session-targets
 Requires:   qt5-plugin-position-geoclue
 Requires:   geoclue
 Requires:   sailfish-components-webview-qt5
+Requires:   sailfishshare-components
 Recommends: geoclue-provider-geonames-offline
 Provides:   libpebble3-dbus-api = 1
 Provides:   rockpool-ui-dbus-api = 1
@@ -248,6 +249,7 @@ if [ "$1" = "0" ]; then
 fi
 
 %files
+%{_datadir}/dbus-1/services/org.rockpool.UI.service
 %defattr(-,root,root,-)
 %{_bindir}/rockpool
 %{_datadir}/%{name}/qml

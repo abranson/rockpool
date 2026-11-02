@@ -5,6 +5,7 @@ package io.rebble.libpebblecommon.ui
 
 import io.rebble.libpebblecommon.connection.HealthDataApi
 import io.rebble.libpebblecommon.database.entity.HealthDataEntity
+import io.rebble.libpebblecommon.database.entity.hasUsableSpo2
 import io.rebble.libpebblecommon.database.entity.OverlayDataEntity
 import io.rebble.libpebblecommon.health.OverlayType
 import io.rebble.libpebblecommon.health.calculateSleepSearchWindow
@@ -300,7 +301,8 @@ internal class RockpoolHealthDataCoordinator(
 
     suspend fun healthOverview(): Map<String, Variant<*>> {
         val zone = timeZone()
-        val today = now().toLocalDateTime(zone).date
+        val currentTime = now()
+        val today = currentTime.toLocalDateTime(zone).date
         val averageStart = today.minus(DatePeriod(days = OVERVIEW_DAYS))
         val historyStart = today.minus(DatePeriod(days = HISTORY_DAYS - 1))
         val tomorrow = today.plus(DatePeriod(days = 1))
@@ -324,6 +326,11 @@ internal class RockpoolHealthDataCoordinator(
             }
         }
 
+        val nowSeconds = currentTime.epochSeconds
+        val oxygen24Hours = movement.filter {
+            it.timestamp >= nowSeconds - 24 * 60 * 60 && it.timestamp <= nowSeconds && it.hasUsableSpo2()
+        }
+        val latestOxygen = health.getLatestSpo2Reading(nowSeconds)
         val todayMovement = movementByDate[today] ?: MovementSummary.EMPTY
         val averageMovement = (0 until OVERVIEW_DAYS).mapNotNull { offset ->
             movementByDate[averageStart.plus(DatePeriod(days = offset))]
@@ -404,6 +411,10 @@ internal class RockpoolHealthDataCoordinator(
             "averageHeartRate30Days" to Variant(
                 averageInt(averageMovement.sumOf { it.averageHeartRate.toLong() }, averageMovement.size),
             ),
+            "latestSpo2" to Variant(latestOxygen?.spo2Percent ?: 0),
+            "latestSpo2Timestamp" to Variant(latestOxygen?.timestamp ?: 0L),
+            "highSpo2Last24Hours" to Variant(oxygen24Hours.maxOfOrNull { it.spo2Percent } ?: 0),
+            "lowSpo2Last24Hours" to Variant(oxygen24Hours.minOfOrNull { it.spo2Percent } ?: 0),
             "latestDataTimestamp" to Variant(health.getLatestTimestamp() ?: 0L),
             "daysOfData" to Variant(maxOf(averageMovement.size, averageSleep.size)),
             "stepsWeek" to Variant(stepsWeek, "av"),

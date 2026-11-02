@@ -10,6 +10,8 @@
 #include "applicationsfiltermodel.h"
 #include "appstoreclient.h"
 #include "screenshotmodel.h"
+#include "uiactivation.h"
+#include <QDBusConnection>
 #include <QTimer>
 
 #ifndef ROCKPOOL_DATA_PATH
@@ -39,6 +41,19 @@ int main(int argc, char *argv[])
     qmlRegisterType<ScreenshotModel>("RockPool", 1, 0, "ScreenshotModel");
 
     QScopedPointer<QQuickView> view(SailfishApp::createView());
+    UiActivation activation;
+    auto bus = QDBusConnection::sessionBus();
+    if (!bus.registerObject(QStringLiteral("/org/rockpool/UI"), &activation,
+                            QDBusConnection::ExportAllSlots)
+            || !bus.registerService(QStringLiteral("org.rockpool.UI"))) {
+        qWarning() << "Could not register Rockpool UI activation";
+    }
+    QObject::connect(&activation, &UiActivation::firmwareRequested, view.data(), [&view]() {
+        view->show();
+        view->raise();
+        view->requestActivate();
+    });
+    view->rootContext()->setContextProperty("uiActivation", &activation);
     view->rootContext()->setContextProperty("version", QStringLiteral(VERSION));
     view->rootContext()->setContextProperty("locale", locale);
     view->rootContext()->setContextProperty("appFilePath",QCoreApplication::applicationFilePath());

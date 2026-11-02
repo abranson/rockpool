@@ -72,14 +72,6 @@ import org.freedesktop.dbus.exceptions.DBusExecutionException
 import org.freedesktop.dbus.types.UInt16
 import org.freedesktop.dbus.types.Variant
 import java.io.File
-import java.nio.channels.Channels
-import java.nio.file.FileAlreadyExistsException
-import java.nio.file.Files
-import java.nio.file.LinkOption
-import java.nio.file.OpenOption
-import java.nio.file.Paths
-import java.nio.file.SecureDirectoryStream
-import java.nio.file.StandardOpenOption
 import java.util.concurrent.atomic.AtomicLong
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Duration.Companion.minutes
@@ -184,65 +176,8 @@ internal class RockpoolPebbleObject(
         if (fileOrUrl.startsWith("file:")) java.net.URI(fileOrUrl).path else fileOrUrl
     }.getOrDefault(fileOrUrl)
 
-    private suspend fun writeLogDump(watch: ConnectedPebbleDevice): java.nio.file.Path {
-        val home = System.getProperty("user.home")?.takeIf { it.isNotBlank() }
-            ?: error("User home directory is unavailable")
-        val homePath = Paths.get(home)
-        require(homePath.isAbsolute && Files.isDirectory(homePath, LinkOption.NOFOLLOW_LINKS)) {
-            "User home is not a directory"
-        }
-
-        val downloadsName = Paths.get(DOWNLOADS_DIRECTORY)
-        val downloadsPath = homePath.resolve(downloadsName)
-        if (!Files.exists(downloadsPath, LinkOption.NOFOLLOW_LINKS)) {
-            try {
-                Files.createDirectory(downloadsPath)
-            } catch (_: FileAlreadyExistsException) {
-                // A concurrent creator won the race; validate it through the directory handle below.
-            }
-        }
-
-        Files.newDirectoryStream(homePath).use { homeDirectory ->
-            @Suppress("UNCHECKED_CAST")
-            val secureHome = homeDirectory as? SecureDirectoryStream<java.nio.file.Path>
-                ?: error("Secure directory access is unavailable")
-            secureHome.newDirectoryStream(downloadsName, LinkOption.NOFOLLOW_LINKS).use { downloads ->
-                val targetName = Paths.get(LOG_DUMP_FILE)
-                val temporaryName =
-                    Paths.get(".$LOG_DUMP_FILE.${java.util.UUID.randomUUID()}.tmp")
-                var temporaryExists = false
-                try {
-                    val options = setOf<OpenOption>(
-                        StandardOpenOption.CREATE_NEW,
-                        StandardOpenOption.WRITE,
-                        LinkOption.NOFOLLOW_LINKS,
-                    )
-                    downloads.newByteChannel(temporaryName, options).use { channel ->
-                        temporaryExists = true
-                        Channels.newOutputStream(channel).bufferedWriter().use { output ->
-                            writeWatchLogs(watch, output)
-                        }
-                    }
-
-                    try {
-                        downloads.move(temporaryName, downloads, targetName)
-                    } catch (_: FileAlreadyExistsException) {
-                        // Unix replaces the entry atomically. Retain a safe fallback for providers
-                        // that require the existing target to be removed first.
-                        downloads.deleteFile(targetName)
-                        downloads.move(temporaryName, downloads, targetName)
-                    }
-                    temporaryExists = false
-                } finally {
-                    if (temporaryExists) {
-                        runCatching { downloads.deleteFile(temporaryName) }
-                    }
-                }
-            }
-        }
-
-        return downloadsPath.resolve(LOG_DUMP_FILE)
-    }
+    private suspend fun writeLogDump(watch: ConnectedPebbleDevice): java.nio.file.Path =
+        writeLogExport("pebble.log") { output -> writeWatchLogs(watch, output) }
 
     private suspend fun writeWatchLogs(watch: ConnectedPebbleDevice, output: Appendable) {
         output.appendLine("# Device logs:")
@@ -372,6 +307,9 @@ internal class RockpoolPebbleObject(
         commonConnected()?.updateFirmware(update)
         emit(RockpoolPebble.UpgradingFirmwareChanged(path))
     }
+
+    override fun FirmwareUpdateError(): String =
+        rockpoolFirmwareUpdateError(commonConnected()?.firmwareUpdateState)
 
     override fun UpgradingFirmware(): Boolean =
         commonConnected()?.firmwareUpdateState is FirmwareUpdater.FirmwareUpdateStatus.Active
@@ -723,9 +661,8 @@ internal class RockpoolPebbleObject(
         logger.d { "SetDevConnListenPort: not supported" }
     }
 
-    // The legacy method names are retained for D-Bus compatibility.  Rockpool no longer creates
-    // a second private service-log file: these simply enable/disable debug messages in the normal
-    // process journal.  Watch log export remains the separate DumpLogs operation below.
+    // Keep the legacy D-Bus names. Capture follows the normal severity threshold;
+    // exporting a snapshot does not enable debug logging or contact the watch.
     override fun startLogDump(): String {
         setJournalLogLevel(0)
         return ""
@@ -736,7 +673,13 @@ internal class RockpoolPebbleObject(
         return ""
     }
 
-    override fun getLogDump(): String = ""
+    override fun getLogDump(): String = try {
+        val snapshot = ServiceLogCapture.snapshot()
+        writeLogExport("libpebble3d.log") { it.write(snapshot) }.toString()
+    } catch (e: Exception) {
+        logger.e("Service log export failed", e)
+        throw DBusExecutionException("Could not export service logs")
+    }
 
     override fun isLogDumping(): Boolean = getLogLevel() == 0
 
@@ -1319,8 +1262,6 @@ internal class RockpoolPebbleObject(
         private const val MAX_STORED_LIST_VALUES = 64
         private const val MAX_STORED_LIST_TEXT_LENGTH = 512
         private const val LOCKER_LIMIT = 500
-        private const val DOWNLOADS_DIRECTORY = "Downloads"
-        private const val LOG_DUMP_FILE = "pebble.log"
         private const val LEGACY_LOG_GENERATIONS = 4
         private const val MAX_LOG_GENERATIONS = 256
         private const val LOG_TIMEOUTS_ALLOWED = 2

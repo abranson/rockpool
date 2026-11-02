@@ -2116,8 +2116,9 @@ internal class LibPebble3Service(
             val normalized = linkedMapOf<String, String>()
             values.forEach { (key, variant) ->
                 val value = when (key) {
-                    "enabled", "moreActive", "sleepMore", "imperialUnits" ->
+                    "enabled", "moreActive", "sleepMore", "imperialUnits", "bloodOxygenEnabled" ->
                         variant.booleanValue()?.toString()
+                    "spo2MeasurementInterval" -> variant.intValue()?.takeIf { it in 0..3 }?.toString()
                     "age" -> variant.intValue()?.takeIf { it in 1..130 }?.toString()
                     "height" -> variant.intValue()?.takeIf { it in 50..300 }?.toString()
                     "gender" -> variant.intValue()?.takeIf { it in 0..2 }?.toString()
@@ -2684,6 +2685,8 @@ internal class LibPebble3Service(
             "moreActive",
             "sleepMore",
             "imperialUnits",
+            "bloodOxygenEnabled",
+            "spo2MeasurementInterval",
         )
         private val PROFILE_KEYS = setOf("connected", "disconnected")
 

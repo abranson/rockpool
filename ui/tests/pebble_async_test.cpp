@@ -169,6 +169,8 @@ public:
         m_appName = name;
     }
 
+    void setFirmwareError(const QString &error) { m_firmwareError = error; }
+
     void setFirmwareInfo(bool available, const QString &notes, const QString &candidate)
     {
         m_firmwareAvailable = available;
@@ -560,6 +562,7 @@ public slots:
     void FirmwareUpgradeAvailable() { replyOrDelay(QStringLiteral("FirmwareUpgradeAvailable"), QVariantList() << m_firmwareAvailable); }
     void FirmwareReleaseNotes() { replyOrDelay(QStringLiteral("FirmwareReleaseNotes"), QVariantList() << m_firmwareNotes); }
     void CandidateFirmwareVersion() { replyOrDelay(QStringLiteral("CandidateFirmwareVersion"), QVariantList() << m_candidateVersion); }
+    void FirmwareUpdateError() { replyOrDelay(QStringLiteral("FirmwareUpdateError"), QVariantList() << m_firmwareError); }
     void UpgradingFirmware() { replyOrDelay(QStringLiteral("UpgradingFirmware"), QVariantList() << false); }
     void WeatherLocations() { replyOrDelay(QStringLiteral("WeatherLocations"), weatherLocationsArguments(m_weatherLocations)); }
     void WeatherUnits() { replyOrDelay(QStringLiteral("WeatherUnits"), QVariantList() << m_weatherUnits); }
@@ -663,6 +666,10 @@ public slots:
         m_logLevel = level;
         replyOrDelay(QStringLiteral("setLogLevel"), QVariantList());
     }
+    void getLogDump()
+    {
+        replyOrDelay(QStringLiteral("getLogDump"), QVariantList() << QString());
+    }
     void DumpLogs(const QString &filename)
     {
         Q_UNUSED(filename)
@@ -760,6 +767,7 @@ private:
     QString m_appName = QStringLiteral("baseline-app");
     QString m_notificationName = QStringLiteral("baseline-source");
     QStringList m_screenshots;
+    QString m_firmwareError;
     bool m_firmwareAvailable = false;
     QString m_firmwareNotes;
     QString m_candidateVersion;
@@ -933,6 +941,7 @@ private slots:
     void oldOwnerNotificationFilterCommandErrorIsIgnored();
     void newestScreenshotReplyWins();
     void newestFirmwareReplyWins();
+    void firmwareFailureCanRetry();
     void oldOwnerAppReplyIsIgnored();
     void timelinePalettesLoadLazilyAndIndependently();
     void failedTimelinePaletteFetchesCanRetry();
@@ -988,6 +997,8 @@ private slots:
     void developerSettersDoNotWaitForReplies();
     void failedDeveloperSettersRefreshAndRollBack();
     void dumpLogsDoesNotWaitForReplyAndReportsError();
+    void serviceLogsAreAsynchronousAndReportFailure();
+    void serviceLogsIgnoreOldOwnerReply();
     void dumpLogsOwnerChangeFailsOnceAndIgnoresOldCompletion();
     void timelineActionsDoNotWaitAndWindowReadbackIsCanonical();
     void resetTimelineErrorDoesNotChangeTimelineWindow();
@@ -1545,6 +1556,38 @@ void PebbleAsyncTest::newestFirmwareReplyWins()
     watch.replyNext(QStringLiteral("FirmwareUpgradeAvailable"), QVariantList() << false);
     QTest::qWait(50);
     QVERIFY(pebble.firmwareUpgradeAvailable());
+    QVERIFY(connection.interface()->unregisterService(QString::fromLatin1(serviceName)).isValid());
+}
+
+void PebbleAsyncTest::firmwareFailureCanRetry()
+{
+    QDBusConnection connection = QDBusConnection::connectToBus(
+        QDBusConnection::SessionBus, QStringLiteral("pebble-async-firmware-error"));
+    QVERIFY(connection.isConnected());
+    DelayedPebble watch(connection);
+    registerWatch(&watch, connection);
+    registerService(connection);
+    Pebble pebble(QDBusObjectPath(QString::fromLatin1(watchPath)));
+    QTRY_COMPARE(watch.receivedCount(QStringLiteral("FirmwareUpdateError")), 1);
+    watch.setFirmwareError(QStringLiteral("download-failed"));
+    watch.emitPebbleSignal(QStringLiteral("UpgradingFirmwareChanged"));
+    QTRY_COMPARE(pebble.firmwareUpdateError(), QStringLiteral("download-failed"));
+    QVERIFY(!pebble.upgradingFirmware());
+    watch.defer(QStringLiteral("PerformFirmwareUpgrade"));
+    pebble.performFirmwareUpgrade();
+    QVERIFY(pebble.firmwareUpdateError().isEmpty());
+    QVERIFY(pebble.upgradingFirmware());
+    pebble.performFirmwareUpgrade();
+    QTRY_COMPARE(watch.pendingCount(QStringLiteral("PerformFirmwareUpgrade")), 1);
+    watch.replyPendingError(QStringLiteral("PerformFirmwareUpgrade"), 0);
+    QTRY_COMPARE(pebble.firmwareUpdateError(), QStringLiteral("start-failed"));
+    QVERIFY(!pebble.upgradingFirmware());
+    pebble.performFirmwareUpgrade();
+    QTRY_COMPARE(watch.pendingCount(QStringLiteral("PerformFirmwareUpgrade")), 1);
+    watch.setFirmwareError(QString());
+    watch.replyNext(QStringLiteral("PerformFirmwareUpgrade"), QVariantList());
+    QTRY_VERIFY(!pebble.upgradingFirmware());
+    QVERIFY(pebble.firmwareUpdateError().isEmpty());
     QVERIFY(connection.interface()->unregisterService(QString::fromLatin1(serviceName)).isValid());
 }
 
@@ -3126,8 +3169,10 @@ void PebbleAsyncTest::healthParamsLoadLazilyAndDecodeDbusVariantMap()
     pebble.refreshHealthParams();
     pebble.refreshHealthParams();
     QTRY_COMPARE(watch.pendingCount(QStringLiteral("HealthParams")), 2);
-    const QVariantMap newest = healthParams(true, 41, QStringLiteral("female"),
+    QVariantMap newest = healthParams(true, 41, QStringLiteral("female"),
                                             178, 72, true, false);
+    newest.insert(QStringLiteral("bloodOxygenEnabled"), true);
+    newest.insert(QStringLiteral("spo2MeasurementInterval"), 1);
     watch.replyPending(QStringLiteral("HealthParams"), 1,
                        DelayedPebble::healthParamsArguments(newest));
     QTRY_VERIFY(pebble.healthParamsReady());
@@ -3412,7 +3457,11 @@ void PebbleAsyncTest::healthOverviewLoadsLazilyAndDecodesNestedDbusValues()
     pebble.refreshHealthOverview();
     pebble.refreshHealthOverview();
     QTRY_COMPARE(watch.pendingCount(QStringLiteral("HealthOverview")), 2);
-    const QVariantMap newest = healthOverview(9000, QStringLiteral("new-"));
+    QVariantMap newest = healthOverview(9000, QStringLiteral("new-"));
+    newest.insert(QStringLiteral("latestSpo2"), 98);
+    newest.insert(QStringLiteral("latestSpo2Timestamp"), qlonglong(1709294400));
+    newest.insert(QStringLiteral("highSpo2Last24Hours"), 99);
+    newest.insert(QStringLiteral("lowSpo2Last24Hours"), 96);
     watch.replyPending(QStringLiteral("HealthOverview"), 1,
                        DelayedPebble::healthOverviewArguments(newest));
     QTRY_VERIFY(pebble.healthOverviewReady());
@@ -4898,6 +4947,72 @@ void PebbleAsyncTest::failedDeveloperSettersRefreshAndRollBack()
     watch.replyNext(QStringLiteral("getLogLevel"), QVariantList() << 1);
     QTRY_COMPARE(pebble.getLogLevel(), 1);
     QVERIFY(connection.interface()->unregisterService(QString::fromLatin1(serviceName)).isValid());
+}
+
+void PebbleAsyncTest::serviceLogsAreAsynchronousAndReportFailure()
+{
+    QDBusConnection connection = QDBusConnection::connectToBus(
+        QDBusConnection::SessionBus, QStringLiteral("pebble-service-logs"));
+    DelayedPebble watch(connection);
+    registerWatch(&watch, connection);
+    registerService(connection);
+    Pebble pebble(QDBusObjectPath(QString::fromLatin1(watchPath)));
+    QSignalSpy spy(&pebble, QMetaMethod::fromSignal(&Pebble::serviceLogsDumped));
+    watch.defer(QStringLiteral("getLogDump"));
+    QElapsedTimer timer;
+    timer.start();
+    pebble.dumpServiceLogs();
+    QVERIFY(timer.elapsed() < 1000);
+    pebble.dumpServiceLogs();
+    QTRY_COMPARE(watch.pendingCount(QStringLiteral("getLogDump")), 1);
+    const QString path = QStringLiteral("/home/defaultuser/Downloads/libpebble3d.log");
+    watch.replyNext(QStringLiteral("getLogDump"), QVariantList() << path);
+    QTRY_COMPARE(spy.count(), 1);
+    QCOMPARE(spy.takeFirst().first().toString(), path);
+    pebble.dumpServiceLogs();
+    QTRY_COMPARE(watch.pendingCount(QStringLiteral("getLogDump")), 1);
+    watch.replyPendingError(QStringLiteral("getLogDump"), 0);
+    QTRY_COMPARE(spy.count(), 1);
+    QVERIFY(spy.takeFirst().first().toString().isEmpty());
+    pebble.dumpServiceLogs();
+    QTRY_COMPARE(watch.pendingCount(QStringLiteral("getLogDump")), 1);
+    watch.replyNext(QStringLiteral("getLogDump"), QVariantList() << 42);
+    QTRY_COMPARE(spy.count(), 1);
+    QVERIFY(spy.takeFirst().first().toString().isEmpty());
+    QVERIFY(connection.interface()->unregisterService(QString::fromLatin1(serviceName)).isValid());
+}
+
+void PebbleAsyncTest::serviceLogsIgnoreOldOwnerReply()
+{
+    QDBusConnection first = QDBusConnection::connectToBus(
+        QDBusConnection::SessionBus, QStringLiteral("service-logs-old"));
+    DelayedPebble oldWatch(first);
+    registerWatch(&oldWatch, first);
+    registerService(first, QDBusConnectionInterface::DontQueueService,
+                    QDBusConnectionInterface::AllowReplacement);
+    Pebble pebble(QDBusObjectPath(QString::fromLatin1(watchPath)));
+    QSignalSpy spy(&pebble, QMetaMethod::fromSignal(&Pebble::serviceLogsDumped));
+    oldWatch.defer(QStringLiteral("getLogDump"));
+    pebble.dumpServiceLogs();
+    QTRY_COMPARE(oldWatch.pendingCount(QStringLiteral("getLogDump")), 1);
+    QDBusConnection second = QDBusConnection::connectToBus(
+        QDBusConnection::SessionBus, QStringLiteral("service-logs-new"));
+    DelayedPebble newWatch(second);
+    newWatch.defer(QStringLiteral("getLogDump"));
+    registerWatch(&newWatch, second);
+    registerService(second, QDBusConnectionInterface::ReplaceExistingService,
+                    QDBusConnectionInterface::DontAllowReplacement);
+    QTRY_COMPARE(spy.count(), 1);
+    QVERIFY(spy.takeFirst().first().toString().isEmpty());
+    pebble.dumpServiceLogs();
+    QTRY_COMPARE(newWatch.pendingCount(QStringLiteral("getLogDump")), 1);
+    oldWatch.replyNext(QStringLiteral("getLogDump"), QVariantList() << QStringLiteral("old"));
+    QTest::qWait(50);
+    QCOMPARE(spy.count(), 0);
+    newWatch.replyNext(QStringLiteral("getLogDump"), QVariantList() << QStringLiteral("new"));
+    QTRY_COMPARE(spy.count(), 1);
+    QCOMPARE(spy.takeFirst().first().toString(), QStringLiteral("new"));
+    QVERIFY(second.interface()->unregisterService(QString::fromLatin1(serviceName)).isValid());
 }
 
 void PebbleAsyncTest::dumpLogsDoesNotWaitForReplyAndReportsError()

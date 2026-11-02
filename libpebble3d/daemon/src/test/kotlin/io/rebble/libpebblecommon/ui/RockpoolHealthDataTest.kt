@@ -7,6 +7,7 @@ import io.rebble.libpebblecommon.connection.FakeLibPebble
 import io.rebble.libpebblecommon.connection.HealthDataApi
 import io.rebble.libpebblecommon.database.dao.DailyMovementAggregate
 import io.rebble.libpebblecommon.database.entity.HealthDataEntity
+import io.rebble.libpebblecommon.database.entity.hasUsableSpo2
 import io.rebble.libpebblecommon.database.entity.OverlayDataEntity
 import io.rebble.libpebblecommon.health.OverlayType
 import kotlinx.coroutines.runBlocking
@@ -25,6 +26,40 @@ import kotlin.test.assertTrue
 import kotlin.time.Instant
 
 class RockpoolHealthDataTest {
+    @Test
+    fun `oxygen uses rolling hours across DST and filters invalid or poor readings`() = runBlocking {
+        val instant = Instant.parse("2024-03-31T12:00:00Z")
+        val end = instant.epochSeconds
+        fun oxygen(secondsAgo: Long, percent: Int, quality: Int = 6) =
+            movement(end - secondsAgo, 0, 0).copy(spo2Percent = percent, spo2Quality = quality)
+        val fake = FakeHealthData(movement = listOf(
+            oxygen(86401, 80), oxygen(86400, 96, 5), oxygen(3600, 99, 7), oxygen(120, 97),
+            oxygen(60, 70, 4), oxygen(50, 98, 1), oxygen(40, 98, 0), oxygen(30, 0),
+            oxygen(20, 101), oxygen(10, 100, 255), oxygen(-60, 100),
+        ))
+        val actual = RockpoolHealthDataCoordinator(fake, now = { instant },
+            timeZone = { TimeZone.of("Europe/Paris") }).healthOverview()
+        assertEquals(97, actual.getValue("latestSpo2").value)
+        assertEquals(end - 120, actual.getValue("latestSpo2Timestamp").value)
+        assertEquals(99, actual.getValue("highSpo2Last24Hours").value)
+        assertEquals(96, actual.getValue("lowSpo2Last24Hours").value)
+    }
+
+    @Test
+    fun `old latest oxygen survives an empty recent window`() = runBlocking {
+        val instant = Instant.parse("2024-03-31T12:00:00Z")
+        val old = movement(instant.epochSeconds - 40 * 86400, 0, 0)
+            .copy(spo2Percent = 98, spo2Quality = 6)
+        for (rows in listOf(emptyList(), listOf(old))) {
+            val actual = RockpoolHealthDataCoordinator(FakeHealthData(movement = rows),
+                now = { instant }, timeZone = { TimeZone.UTC }).healthOverview()
+            assertEquals(if (rows.isEmpty()) 0 else 98, actual.getValue("latestSpo2").value)
+            assertEquals(if (rows.isEmpty()) 0L else old.timestamp, actual.getValue("latestSpo2Timestamp").value)
+            assertEquals(0, actual.getValue("highSpo2Last24Hours").value)
+            assertEquals(0, actual.getValue("lowSpo2Last24Hours").value)
+        }
+    }
+
     @Test
     fun `day detail preserves legacy fields and exclusive end`() = runBlocking {
         val date = LocalDate(2024, 2, 29)
@@ -360,6 +395,9 @@ private class FakeHealthData(
     val aggregateCalls = mutableListOf<Pair<Long, Long>>()
 
     override suspend fun getLatestTimestamp(): Long? = latestTimestamp
+
+    override suspend fun getLatestSpo2Reading(beforeTimestamp: Long): HealthDataEntity? =
+        movement.filter { it.timestamp <= beforeTimestamp && it.hasUsableSpo2() }.maxByOrNull { it.timestamp }
 
     override suspend fun getDailyAggregates(start: Long, end: Long): List<DailyMovementAggregate> {
         aggregateCalls += start to end

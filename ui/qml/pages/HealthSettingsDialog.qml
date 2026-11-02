@@ -1,4 +1,4 @@
-import QtQuick 2.2
+import QtQuick 2.6
 import Sailfish.Silica 1.0
 
 Dialog {
@@ -26,7 +26,9 @@ Dialog {
         if (loadingSnapshot || !snapshotLoaded) {
             return;
         }
-        dirtyFields[field] = true;
+        var fields = cloneParams(dirtyFields);
+        fields[field] = true;
+        dirtyFields = fields;
         dirty = true;
     }
 
@@ -59,110 +61,137 @@ Dialog {
         if (!dirtyFields["sleepMore"]) {
             sleepMoreSwitch.checked = !!params["sleepMore"];
         }
+        if (!dirtyFields["bloodOxygenEnabled"]) {
+            bloodOxygenSwitch.checked = params["bloodOxygenEnabled"] !== false
+                    && params["spo2MeasurementInterval"] !== 3;
+        }
         snapshotLoaded = true;
         loadingSnapshot = false;
     }
 
-    Column {
-        width: parent.width
+    SilicaFlickable {
+        anchors.fill: parent
+        contentHeight: settingsColumn.height
 
-        DialogHeader {
-            title: qsTr("Health settings")
-            defaultAcceptText: qsTr("OK")
-            defaultCancelText: qsTr("Cancel")
-        }
-
-        BusyIndicator {
-            anchors.horizontalCenter: parent.horizontalCenter
-            running: !root.settingsReady
-            visible: running
-        }
-
-        TextSwitch {
-            id: enabledSwitch
-
-            text: qsTr("Health app enabled")
-            enabled: root.settingsReady
-            width: parent.width
-            onClicked: root.markDirty("enabled")
-        }
-
-        TextField {
-            id: ageField
-
-            label: qsTr("Age")
-            inputMethodHints: Qt.ImhDigitsOnly
-            enabled: root.settingsReady
-            width: parent.width
-            onTextChanged: if (activeFocus) root.markDirty("age")
-            EnterKey.enabled: text.length > 0 && text != "0"
-            EnterKey.onClicked: heightField.focus = true
-            EnterKey.iconSource: "image://theme/icon-m-enter-next"
-        }
-
-        TextField {
-            id: heightField
-
-            label: qsTr("Height (cm)")
-            inputMethodHints: Qt.ImhDigitsOnly
-            enabled: root.settingsReady
-            width: parent.width
-            onTextChanged: if (activeFocus) root.markDirty("height")
-            EnterKey.enabled: text.length > 0 && text != "0"
-            EnterKey.onClicked: weightField.focus = true
-            EnterKey.iconSource: "image://theme/icon-m-enter-next"
-        }
-
-        TextField {
-            id: weightField
-
-            label: qsTr("Weight (kg)")
-            inputMethodHints: Qt.ImhDigitsOnly
-            enabled: root.settingsReady
-            width: parent.width
-            onTextChanged: if (activeFocus) root.markDirty("weight")
-            EnterKey.enabled: text.length > 0 && text != "0"
-            EnterKey.onClicked: genderSelector.focus = true
-            EnterKey.iconSource: "image://theme/icon-m-enter-next"
-        }
-
-        ComboBox {
-            id: genderSelector
+        Column {
+            id: settingsColumn
 
             width: parent.width
-            label: qsTr("Gender")
-            enabled: root.settingsReady
-            menu: ContextMenu {
-                MenuItem {
-                    text: qsTr("Female")
-                    onClicked: root.markDirty("gender")
+
+            DialogHeader {
+                title: qsTr("Health settings")
+                defaultAcceptText: qsTr("OK")
+                defaultCancelText: qsTr("Cancel")
+            }
+
+            BusyIndicator {
+                anchors.horizontalCenter: parent.horizontalCenter
+                running: !root.settingsReady
+                visible: running
+            }
+
+            TextSwitch {
+                id: enabledSwitch
+
+                text: qsTr("Health app enabled")
+                enabled: root.settingsReady
+                width: parent.width
+                onClicked: root.markDirty("enabled")
+            }
+
+            TextSwitch {
+                id: bloodOxygenSwitch
+
+                text: qsTr("Blood oxygen (SpO₂)")
+                description: root.healthParams["bloodOxygenEnabled"] === undefined
+                             && root.healthParams["spo2MeasurementInterval"] !== 3
+                             && !root.dirtyFields["bloodOxygenEnabled"]
+                             ? qsTr("Blood oxygen will be enabled when you save these settings.")
+                             : qsTr("Measure blood oxygen automatically.")
+                enabled: root.settingsReady
+                width: parent.width
+                onClicked: root.markDirty("bloodOxygenEnabled")
+            }
+
+            TextField {
+                id: ageField
+
+                label: qsTr("Age")
+                inputMethodHints: Qt.ImhDigitsOnly
+                enabled: root.settingsReady
+                width: parent.width
+                onTextChanged: if (activeFocus) root.markDirty("age")
+                EnterKey.enabled: text.length > 0 && text != "0"
+                EnterKey.onClicked: heightField.focus = true
+                EnterKey.iconSource: "image://theme/icon-m-enter-next"
+            }
+
+            TextField {
+                id: heightField
+
+                label: qsTr("Height (cm)")
+                inputMethodHints: Qt.ImhDigitsOnly
+                enabled: root.settingsReady
+                width: parent.width
+                onTextChanged: if (activeFocus) root.markDirty("height")
+                EnterKey.enabled: text.length > 0 && text != "0"
+                EnterKey.onClicked: weightField.focus = true
+                EnterKey.iconSource: "image://theme/icon-m-enter-next"
+            }
+
+            TextField {
+                id: weightField
+
+                label: qsTr("Weight (kg)")
+                inputMethodHints: Qt.ImhDigitsOnly
+                enabled: root.settingsReady
+                width: parent.width
+                onTextChanged: if (activeFocus) root.markDirty("weight")
+                EnterKey.enabled: text.length > 0 && text != "0"
+                EnterKey.onClicked: genderSelector.focus = true
+                EnterKey.iconSource: "image://theme/icon-m-enter-next"
+            }
+
+            ComboBox {
+                id: genderSelector
+
+                width: parent.width
+                label: qsTr("Gender")
+                enabled: root.settingsReady
+                menu: ContextMenu {
+                    MenuItem {
+                        text: qsTr("Female")
+                        onClicked: root.markDirty("gender")
+                    }
+                    MenuItem {
+                        text: qsTr("Male")
+                        onClicked: root.markDirty("gender")
+                    }
                 }
-                MenuItem {
-                    text: qsTr("Male")
-                    onClicked: root.markDirty("gender")
-                }
+            }
+
+            TextSwitch {
+                id: moreActiveSwitch
+
+                description: qsTr("I want to be more active")
+                text: qsTr("More Active")
+                enabled: root.settingsReady
+                width: parent.width
+                onClicked: root.markDirty("moreActive")
+            }
+
+            TextSwitch {
+                id: sleepMoreSwitch
+
+                description: qsTr("I want to sleep more")
+                text: qsTr("Sleep More")
+                enabled: root.settingsReady
+                width: parent.width
+                onClicked: root.markDirty("sleepMore")
             }
         }
 
-        TextSwitch {
-            id: moreActiveSwitch
-
-            description: qsTr("I want to be more active")
-            text: qsTr("More Active")
-            enabled: root.settingsReady
-            width: parent.width
-            onClicked: root.markDirty("moreActive")
-        }
-
-        TextSwitch {
-            id: sleepMoreSwitch
-
-            description: qsTr("I want to sleep more")
-            text: qsTr("Sleep More")
-            enabled: root.settingsReady
-            width: parent.width
-            onClicked: root.markDirty("sleepMore")
-        }
+        VerticalScrollDecorator {}
     }
 
     Connections {
@@ -188,6 +217,17 @@ Dialog {
             updated["weight"] = weightField.text;
             updated["moreActive"] = moreActiveSwitch.checked;
             updated["sleepMore"] = sleepMoreSwitch.checked;
+            // Send oxygen preferences only after an explicit edit, preserving unknown watch state.
+            delete updated["bloodOxygenEnabled"];
+            delete updated["spo2MeasurementInterval"];
+            if (dirtyFields["bloodOxygenEnabled"]
+                    || (healthParams["bloodOxygenEnabled"] === undefined
+                        && healthParams["spo2MeasurementInterval"] !== 3)) {
+                updated["bloodOxygenEnabled"] = bloodOxygenSwitch.checked;
+                if (bloodOxygenSwitch.checked) {
+                    updated["spo2MeasurementInterval"] = 0; // 10 minutes, like the default heart-rate monitoring.
+                }
+            }
             pebble.healthParams = updated;
         }
     }

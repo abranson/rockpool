@@ -1,4 +1,4 @@
-import QtQuick 2.2
+import QtQuick 2.6
 import Sailfish.Silica 1.0
 import RockPool 1.0
 import Nemo.DBus 2.0
@@ -17,6 +17,11 @@ ApplicationWindow {
     property bool waitingForPebbleIdentity: false
     property string pendingPairAddress: ""
     property var sysProfiles: [ ]
+
+    Connections {
+        target: uiActivation
+        onFirmwareRequested: stackReloadTimer.restart()
+    }
 
     ServiceController {
         id: serviceController
@@ -58,6 +63,9 @@ ApplicationWindow {
         // The zero-delay timer lets the page-local signal handler clear its
         // pending address before loadStack() destroys the active page.
         onPebbleIdentityAvailable: {
+            if (uiActivation.firmwareAddress !== "") {
+                stackReloadTimer.restart()
+            }
             if (rockPool.waitingForPebbleIdentity
                     && (rockPool.pendingPairAddress === ""
                         || address.toLowerCase()
@@ -119,12 +127,30 @@ ApplicationWindow {
             } else {
                 pageStack.push(Qt.resolvedUrl("pages/PebblesPage.qml"))
             }
+            openRequestedFirmware()
         } else {
             console.log("Waiting for service")
             if(curPebble>=0) {
                 pageStack.clear();
                 pageStack.push(initialPage);
                 curPebble = -1;
+            }
+        }
+    }
+    function openRequestedFirmware() {
+        var address = uiActivation.firmwareAddress
+        if (!address || !pebbles.connectedToService) {
+            return
+        }
+        for (var i = 0; i < pebbles.count; ++i) {
+            var watch = pebbles.get(i)
+            if (watch && watch.address.toUpperCase() === address) {
+                curPebble = i
+                pageStack.clear()
+                pageStack.push(Qt.resolvedUrl("pages/MainMenuPage.qml"), {pebble: watch})
+                pageStack.push(Qt.resolvedUrl("pages/FirmwareUpgradePage.qml"), {pebble: watch})
+                uiActivation.consumeFirmwareRequest()
+                return
             }
         }
     }

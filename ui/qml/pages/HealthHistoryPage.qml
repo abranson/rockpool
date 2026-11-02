@@ -95,6 +95,22 @@ Page {
         return value > 0 ? qsTr("%1 bpm").arg(value) : "--"
     }
 
+    function oxygenSubtitle() {
+        var params = pebble && pebble.healthParamsReady ? pebble.healthParams : ({})
+        if (params["bloodOxygenEnabled"] === false || params["spo2MeasurementInterval"] === 3) {
+            return qsTr("Blood oxygen is off. Enable it in Health settings.")
+        }
+        if (params["bloodOxygenEnabled"] === undefined || params["spo2MeasurementInterval"] === undefined) {
+            return qsTr("Check blood oxygen in Health settings.")
+        }
+        if (Number(overview["latestSpo2Timestamp"]) > 0) {
+            return qsTr("Latest reading: %1").arg(Qt.formatDateTime(
+                        new Date(Number(overview["latestSpo2Timestamp"]) * 1000),
+                        "d MMM yyyy hh:mm"))
+        }
+        return qsTr("Waiting for a reading.")
+    }
+
     function formatTimestamp(timestamp) {
         if (timestamp <= 0) {
             return qsTr("No health data synced yet.")
@@ -445,6 +461,62 @@ Page {
                                     }
                                 }
                             }
+                        }
+                    }
+                }
+
+                Rectangle {
+                    width: parent.width - 2 * Theme.horizontalPageMargin
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    height: oxygenColumn.height + 2 * Theme.paddingLarge
+                    radius: Theme.paddingMedium
+                    color: "#142d79b7"
+
+                    Column {
+                        id: oxygenColumn
+
+                        x: Theme.paddingLarge
+                        y: Theme.paddingLarge
+                        width: parent.width - 2 * Theme.paddingLarge
+                        spacing: Theme.paddingMedium
+
+                        Label {
+                            text: qsTr("Blood oxygen (SpO₂)")
+                        }
+                        Row {
+                            width: parent.width
+                            spacing: Theme.paddingMedium
+
+                            Repeater {
+                                model: [
+                                    { value: root.overview["latestSpo2"], label: qsTr("Latest") },
+                                    { value: root.overview["highSpo2Last24Hours"], label: qsTr("24 h high") },
+                                    { value: root.overview["lowSpo2Last24Hours"], label: qsTr("24 h low") }
+                                ]
+                                delegate: Column {
+                                    width: (oxygenColumn.width - 2 * Theme.paddingMedium) / 3
+                                    Label {
+                                        text: Number(modelData.value) > 0
+                                              ? qsTr("%1%").arg(Number(modelData.value)) : "—"
+                                        color: root.sleepColor
+                                        font.pixelSize: Theme.fontSizeLarge
+                                    }
+                                    Label {
+                                        width: parent.width
+                                        color: Theme.secondaryColor
+                                        font.pixelSize: Theme.fontSizeTiny
+                                        text: modelData.label
+                                        wrapMode: Text.Wrap
+                                    }
+                                }
+                            }
+                        }
+                        Label {
+                            width: parent.width
+                            color: Theme.secondaryColor
+                            font.pixelSize: Theme.fontSizeTiny
+                            wrapMode: Text.Wrap
+                            text: root.oxygenSubtitle()
                         }
                     }
                 }

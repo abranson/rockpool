@@ -1,11 +1,23 @@
 import QtQuick 2.6
 import Sailfish.Silica 1.0
+import Sailfish.Share 1.0
 
 Page {
     id: root
 
     property var pebble: null
     property string watchLogFile: StandardPaths.home + "/Downloads/pebble.log"
+
+    property bool collectingWatchLogs: false
+    property bool collectingServiceLogs: false
+    property string logExportError
+
+    ShareAction {
+        id: logShare
+
+        // AppSupport treats text/* as inline content, not file attachments.
+        mimeType: "application/octet-stream"
+    }
 
     SilicaListView {
         header: PageHeader {
@@ -40,7 +52,7 @@ Page {
     property var _menu_calls: {
         "stop": function(){rockPool.stopService()},
         "restart": function(){rockPool.restartService()},
-        "logs": function(){if(devConnDocker.open){devConnDocker.hide()};sendLogsDocker.show()},
+        "logs": function(){if(devConnDocker.open){devConnDocker.hide()};root.logExportError = "";sendLogsDocker.show()},
         "dcon": function(){if(sendLogsDocker.open){sendLogsDocker.hide()};devConnDocker.show()}
     }
 
@@ -178,7 +190,7 @@ Page {
             BusyIndicator {
                 id: busyIndicator
 
-                visible: false
+                visible: root.collectingWatchLogs || root.collectingServiceLogs
                 running: visible
                 anchors.horizontalCenter: parent.horizontalCenter
             }
@@ -193,23 +205,44 @@ Page {
             Connections {
                 target: root.pebble
                 onLogsDumped: {
-                    busyIndicator.visible = false
+                    if (!root.collectingWatchLogs) return
+                    root.collectingWatchLogs = false
                     if (success) {
-                        pageStack.push(Qt.resolvedUrl("ContentPeerPickerPage.qml"), {
-                            itemName: "pebble.log",
-                            itemDescription: "Platform "+pebble.name+" ("+pebble.hardwarePlatform+") "+pebble.softwareVersion,
-                            contentType: "text/plain",
-                            filename: root.watchLogFile
-                        })
+                        logShare.title = qsTr("Send watch logs")
+                        logShare.resources = [root.watchLogFile]
+                        logShare.trigger()
+                        sendLogsDocker.hide()
+                    } else {
+                        root.logExportError = qsTr("Could not export watch logs. Please try again.")
                     }
-                    sendLogsDocker.hide()
                 }
+                onServiceLogsDumped: {
+                    if (!root.collectingServiceLogs) return
+                    root.collectingServiceLogs = false
+                    if (filename !== "") {
+                        logShare.title = qsTr("Send service logs")
+                        logShare.resources = [filename]
+                        logShare.trigger()
+                        sendLogsDocker.hide()
+                    } else {
+                        root.logExportError = qsTr("Could not export service logs. Please try again.")
+                    }
+                }
+            }
+
+            Label {
+                width: parent.width - 2 * Theme.horizontalPageMargin
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: root.logExportError
+                visible: text !== ""
+                wrapMode: Text.Wrap
+                color: Theme.errorColor
             }
 
             TextSwitch {
                 width: parent.width
                 text: qsTr("Debug logging")
-                description: qsTr("Write debug messages to the system journal")
+                description: qsTr("Include debug messages in service logs")
                 enabled: root.pebble && root.pebble.developerSettingsReady
                 automaticCheck: false
                 checked: root.pebble ? root.pebble.logLevel === 0 : false
@@ -221,12 +254,25 @@ Page {
             }
 
             Button {
+                text: qsTr("Send service logs")
+                visible: !busyIndicator.visible
+                enabled: root.pebble !== null
+                width: parent.width
+                onClicked: {
+                    root.logExportError = ""
+                    root.collectingServiceLogs = true
+                    root.pebble.dumpServiceLogs()
+                }
+            }
+
+            Button {
                 text: qsTr("Send watch logs")
                 visible: !busyIndicator.visible
                 enabled: root.pebble && root.pebble.connected
                 width: parent.width
                 onClicked: {
-                    busyIndicator.visible = true
+                    root.logExportError = ""
+                    root.collectingWatchLogs = true
                     root.pebble.dumpLogs(root.watchLogFile)
                 }
             }

@@ -1,10 +1,19 @@
-import QtQuick 2.2
+import QtQuick 2.6
 import Sailfish.Silica 1.0
+import Sailfish.Share 1.0
 
 Page {
     id: root
+
     allowedOrientations: Orientation.All
     property var pebble: null
+
+    ShareAction {
+        id: screenshotShare
+
+        title: qsTr("Pebble screenshot")
+        mimeType: "image/png"
+    }
 
     Drawer {
         id: pageDrawer
@@ -52,12 +61,10 @@ Page {
             spacing: Theme.paddingSmall
             Button {
                 text: qsTr("Share")
-                onClicked: pageStack.push(Qt.resolvedUrl("ContentPeerPickerPage.qml"), {
-                    itemName: qsTr("Pebble screenshot"),
-                    itemDescription: qsTr("Screen snapshot of Pebble Smartwatches"),
-                    contentType: "image/png",
-                    filename: grid.model.get(grid.currentIndex)
-                });
+                onClicked: {
+                    screenshotShare.resources = [grid.model.get(grid.currentIndex)]
+                    screenshotShare.trigger()
+                }
             }
             Button {
                 text: qsTr("Delete")

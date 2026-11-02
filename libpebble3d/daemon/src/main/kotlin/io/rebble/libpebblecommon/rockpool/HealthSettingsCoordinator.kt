@@ -39,7 +39,7 @@ internal enum class HealthSettingsInitializationResult {
  *
  * libpebble3 stores one account-global [HealthSettings] record. Daemon writes use the concrete
  * transactional persistence seam while this mutex is held, so primary and compatibility updates
- * cannot overlap or report success before all four durable rows have committed.
+ * cannot overlap or report success before all durable rows have committed.
  */
 internal class HealthSettingsCoordinator(
     private val libPebble: LibPebble,

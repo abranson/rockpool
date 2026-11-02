@@ -8,6 +8,7 @@ import io.rebble.libpebblecommon.connection.LibPebble
 import io.rebble.libpebblecommon.database.entity.HRMonitoringInterval
 import io.rebble.libpebblecommon.database.entity.HealthGender
 import io.rebble.libpebblecommon.health.HealthSettings
+import io.rebble.libpebblecommon.rockpool.mergePrimaryHealthSettings
 import org.freedesktop.dbus.types.UInt32
 import org.freedesktop.dbus.types.Variant
 import kotlinx.coroutines.flow.Flow
@@ -21,6 +22,24 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 class RockpoolHealthTest {
+    @Test
+    fun `oxygen settings preserve unknown state and merge explicit edits`() {
+        val original = healthSettings()
+        assertEquals(null, rockpoolHealthParams(original)["bloodOxygenEnabled"])
+        val updated = mergePrimaryHealthSettings(original, normalizeRockpoolHealthParams(mapOf(
+            "bloodOxygenEnabled" to Variant(true), "spo2MeasurementInterval" to Variant(2),
+        )))
+        assertEquals(original.copy(bloodOxygenEnabled = true,
+            spo2MeasurementInterval = HRMonitoringInterval.OneHour), updated)
+        assertEquals(true, rockpoolHealthParams(updated).getValue("bloodOxygenEnabled").value)
+        assertEquals(2, rockpoolHealthParams(updated).getValue("spo2MeasurementInterval").value)
+        assertEquals(updated.copy(ageYears = 50), mergePrimaryHealthSettings(updated, mapOf("health.age" to "50")))
+        for (invalid in listOf(mapOf("bloodOxygenEnabled" to Variant("true")),
+            mapOf("spo2MeasurementInterval" to Variant(4)), mapOf("spo2MeasurementInterval" to Variant(-1)))) {
+            assertFailsWith<IllegalArgumentException> { normalizeRockpoolHealthParams(invalid) }
+        }
+    }
+
     @Test
     fun `legacy QML health values normalize to libpebble keys`() {
         assertEquals(

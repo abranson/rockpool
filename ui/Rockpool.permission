@@ -4,6 +4,7 @@
 # The UI facade and the generic libpebble3 daemon API use separate names.
 dbus-user.talk io.rebble.libpebble3
 dbus-user.talk org.rockpool
+dbus-user.own org.rockpool.UI
 
 # Read the profile choices shown by Settings.
 dbus-user.call com.nokia.profiled=com.nokia.profiled.get_profiles@/com/nokia/profiled

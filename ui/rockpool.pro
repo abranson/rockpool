@@ -6,6 +6,7 @@ CONFIG += c++11
 CONFIG += sailfishapp
 
 HEADERS += \
+    uiactivation.h \
     notificationsourcemodel.h \
     servicecontrol.h \
     rockpoolaccount.h \
@@ -78,6 +79,10 @@ DISTFILES += JSM_FILES \
     icons/128x128/rockpool.png \
     icons/256x256/rockpool.png
 INSTALLS += jsm sailjail
+
+activation.files = org.rockpool.UI.service
+activation.path = /usr/share/dbus-1/services
+INSTALLS += activation
 
 CONFIG(debug, debug|release) {
     DEFINES += 'ROCKPOOL_DATA_PATH=\\"/opt/sdk/rockpool/usr/share/rockpool/\\"'

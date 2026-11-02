@@ -74,6 +74,7 @@ class Pebble : public QObject
     Q_PROPERTY(bool firmwareUpgradeAvailable READ firmwareUpgradeAvailable NOTIFY firmwareUpgradeAvailableChanged)
     Q_PROPERTY(QString firmwareReleaseNotes READ firmwareReleaseNotes NOTIFY firmwareUpgradeAvailableChanged)
     Q_PROPERTY(QString candidateVersion READ candidateVersion NOTIFY firmwareUpgradeAvailableChanged)
+    Q_PROPERTY(QString firmwareUpdateError READ firmwareUpdateError NOTIFY upgradingFirmwareChanged)
     Q_PROPERTY(bool upgradingFirmware READ upgradingFirmware NOTIFY upgradingFirmwareChanged)
     Q_PROPERTY(QString languageVersion READ languageVersion NOTIFY languageVersionChanged)
     // base functionality
@@ -146,6 +147,7 @@ public:
     int model() const;
     bool recovery() const;
     bool upgradingFirmware() const;
+    QString firmwareUpdateError() const;
 
     bool firmwareUpgradeAvailable() const;
     QString firmwareReleaseNotes() const;
@@ -229,6 +231,7 @@ public slots:
     void fetchHealthData();
 
     void dumpLogs(const QString &filename);
+    Q_INVOKABLE void dumpServiceLogs();
     void setDevConnEnabled(bool enabled);
     void setLogLevel(int level);
     int getLogLevel() const;
@@ -299,6 +302,7 @@ signals:
     void settingsPageReadyChanged();
 
     void logsDumped(bool success);
+    void serviceLogsDumped(const QString &filename);
     void devConnEnabledChanged();
     void devConnServerRunningChanged();
     void logLevelChanged();
@@ -402,6 +406,7 @@ private:
                             const QString &refreshProperty = QString());
     void developerWriteReplyFinished(QDBusPendingCallWatcher *watcher);
     void dumpLogsReplyFinished(QDBusPendingCallWatcher *watcher);
+    void dumpServiceLogsReplyFinished(QDBusPendingCallWatcher *watcher);
     void logsDumpedFromService(bool success);
     void serviceOwnerChanged(const QString &service,
                              const QString &oldOwner,
@@ -450,6 +455,7 @@ private:
     QString m_firmwareReleaseNotes;
     QString m_candidateVersion;
     bool m_upgradingFirmware = false;
+    QString m_firmwareUpdateError;
     QVariantMap m_pendingFirmwareValues;
     QSet<QString> m_pendingFirmwareReplies;
 
@@ -569,6 +575,7 @@ private:
     QHash<QString, quint64> m_developerWriteEpochs;
     QHash<QString, quint64> m_developerValueRevisions;
 
+    bool m_serviceLogDumpPending = false;
     bool m_logDumpPending = false;
     quint64 m_logDumpEpoch = 0;
 

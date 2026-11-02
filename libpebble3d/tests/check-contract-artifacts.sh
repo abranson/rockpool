@@ -3077,9 +3077,9 @@ require_fixed 'function connectWatch(address)' "$rockpool_qml" \
     'cover-visible watch-manager reconnect bridge'
 require_fixed 'pebbles.connectWatch(address)' "$rockpool_qml" \
     'watch-manager reconnect delegation'
-require_fixed 'contentType: "image/png"' "$screenshots_page" \
+require_fixed 'mimeType: "image/png"' "$screenshots_page" \
     'PNG screenshot sharing content type'
-reject_extended 'contentType:[[:space:]]*"image/jpeg"' "$screenshots_page" \
+reject_extended '(contentType|mimeType):[[:space:]]*"image/jpeg"' "$screenshots_page" \
     'JPEG declaration for PNG screenshots'
 
 # Opening the main page while disconnected makes its initial screenshot request
@@ -3605,12 +3605,16 @@ require_fixed 'serviceEpoch != m_serviceEpoch' "$rockpool_pebble" \
     'compatibility void-command stale-owner rejection'
 for command in \
     LoadLanguagePack ConfigurationClosed LaunchApp ConfigurationURL RemoveApp \
-    InstallApp SideloadApp SetAppOrder RequestScreenshot RemoveScreenshot \
-    PerformFirmwareUpgrade
+    InstallApp SideloadApp SetAppOrder RequestScreenshot RemoveScreenshot
 do
     require_fixed "sendVoidCommand(QStringLiteral(\"$command\")" "$rockpool_pebble" \
         "asynchronous compatibility command $command"
 done
+# Firmware upgrade now exposes its acknowledgement failure to the retry UI.
+require_fixed 'm_iface->asyncCall(QStringLiteral("PerformFirmwareUpgrade"))' \
+    "$rockpool_pebble" 'asynchronous firmware command with error handling'
+require_fixed 'm_firmwareUpdateError = QStringLiteral("start-failed")' \
+    "$rockpool_pebble" 'retryable firmware command error'
 # Timeline reset is an acknowledgement-only void command.  The window is a
 # separate asynchronous, serialized write/readback state machine: it must
 # preserve the legacy signed wire tuple and only publish a canonical snapshot.

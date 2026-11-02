@@ -44,6 +44,7 @@ import io.rebble.libpebblecommon.rockpool.loadPlatformNotificationFilters
 import io.rebble.libpebblecommon.rockpool.platformProviderModule
 import io.rebble.libpebblecommon.ui.RockpoolUiService
 import io.rebble.libpebblecommon.ui.rockpoolLogSeverity
+import io.rebble.libpebblecommon.ui.ServiceLogCapture
 import io.rebble.libpebblecommon.linux.web.RebbleBootConfigProvider
 import io.rebble.libpebblecommon.linux.web.RebbleAccountIdentityProvider
 import io.rebble.libpebblecommon.linux.web.RebbleTokenProvider
@@ -72,7 +73,9 @@ fun main() {
 
     val settings = RockpoolSettings()
 
-    // Preserve the saved journal threshold across daemon restarts. Diagnostic environment flags
+    Logger.addLogWriter(ServiceLogCapture.writer)
+
+    // Preserve the saved logging threshold across daemon restarts. Diagnostic environment flags
     // override that initial value, while the UI can still toggle debug output at runtime.
     Logger.setMinSeverity(
         when {

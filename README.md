@@ -238,8 +238,21 @@ Run these commands as the logged-in Sailfish user to inspect the daemon:
 
 ```sh
 systemctl --user status libpebble3d.service
-journalctl --user -u libpebble3d.service -b
 ```
+
+In Developer Tools → Report problem, **Send service logs** exports recent
+libpebble3d messages from the current daemon session to
+`~/Downloads/libpebble3d.log`. Capture follows the selected log level and retains
+at most 512 Ki characters, with each entry limited to 16 Ki characters. Older
+entries are discarded; restarting the daemon clears the buffer. Enable
+**Debug logging** before reproducing an issue to include debug messages.
+**Send watch logs** separately retrieves the watch firmware logs into
+`~/Downloads/pebble.log`. Both actions open the system share chooser and send
+files as attachments, including when sharing to Android applications.
+
+The packaged launcher discards daemon stdout/stderr, so the system journal is
+not a substitute for the service-log export. Platform-helper diagnostics may
+still appear there; reading the journal requires appropriate device privileges.
 
 For reports, include the installed RPM version, SailfishOS version, watch and
 firmware, transport, reproduction steps and relevant log excerpt. Remove
