@@ -240,7 +240,7 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="107"/>
         <source>Install from file</source>
-        <translation type="unfinished"></translation>
+        <translation>Installer fra fil</translation>
     </message>
     <message>
         <source>Install app or watchface from file</source>
@@ -264,12 +264,12 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="216"/>
         <source>Could not export watch logs. Please try again.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunne ikke eksportere visningslogger. Vennligst prøv igjen.</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="228"/>
         <source>Could not export service logs. Please try again.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunne ikke eksportere servicelogger. Vennligst prøv igjen.</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="244"/>
@@ -372,7 +372,7 @@
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="245"/>
         <source>Include debug messages in service logs</source>
-        <translation type="unfinished"></translation>
+        <translation>Inkluder feilsøkingsmeldinger i tjenesteloggene</translation>
     </message>
     <message>
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="281"/>
@@ -424,32 +424,32 @@
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="105"/>
         <source>Could not download the update. Check your internet connection and try again.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunne ikke laste ned oppdateringen. Sjekk internettforbindelsen og prøv igjen.</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="108"/>
         <source>The downloaded firmware could not be read. Try downloading it again.</source>
-        <translation type="unfinished"></translation>
+        <translation>Klarte ikke å lese den nedlastede programvareoppdateringen. Prøv å laste den ned på nytt.</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="111"/>
         <source>Could not start the update. Check your watch connection and try again.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunne ikke starte oppdateringen. Sjekk at klokken er koblet til, og prøv igjen.</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="113"/>
         <source>The firmware update failed. Reconnect your watch and try again.</source>
-        <translation type="unfinished"></translation>
+        <translation>Oppdateringen av programvaren mislyktes. Koble til klokken på nytt og prøv igjen.</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="120"/>
         <source>Updating your Pebble…</source>
-        <translation type="unfinished"></translation>
+        <translation>Oppdaterer din Pebble…</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="128"/>
         <source>Try again</source>
-        <translation type="unfinished"></translation>
+        <translation>Prøv igjen</translation>
     </message>
     <message>
         <source>A new firmware upgrade is available for your Pebble smartwatch.</source>
@@ -498,22 +498,22 @@
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="101"/>
         <source>Blood oxygen is off. Enable it in Health settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>Oksygen i blodet er slått av. Aktiver det i Helse-innstillingene.</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="104"/>
         <source>Check blood oxygen in Health settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>Sjekk oksygen i blodet i Helse-innstillingene.</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="107"/>
         <source>Latest reading: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Siste lesing: %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="111"/>
         <source>Waiting for a reading.</source>
-        <translation type="unfinished"></translation>
+        <translation>Venter på måling.</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="116"/>
@@ -655,22 +655,22 @@
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="484"/>
         <source>Blood oxygen (SpO₂)</source>
-        <translation type="unfinished"></translation>
+        <translation>Oksygen i blodet (SpO₂)</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="493"/>
         <source>24 h high</source>
-        <translation type="unfinished"></translation>
+        <translation>Høyeste (24 t)</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="494"/>
         <source>24 h low</source>
-        <translation type="unfinished"></translation>
+        <translation>Laveste (24 t)</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="500"/>
         <source>%1%</source>
-        <translation type="unfinished"></translation>
+        <translation>%1%</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthHistoryPage.qml" line="532"/>
@@ -708,17 +708,17 @@
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="105"/>
         <source>Blood oxygen (SpO₂)</source>
-        <translation type="unfinished"></translation>
+        <translation>Oksygen i blodet (SpO₂)</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="109"/>
         <source>Blood oxygen will be enabled when you save these settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>Oksygenmåling aktiveres når du lagrer disse innstillingene.</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="110"/>
         <source>Measure blood oxygen automatically.</source>
-        <translation type="unfinished"></translation>
+        <translation>Mål oksygen i blodet automatisk.</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="119"/>
@@ -784,27 +784,27 @@
     <message>
         <location filename="../qml/pages/ImportPackagePage.qml" line="18"/>
         <source>Install from file</source>
-        <translation type="unfinished"></translation>
+        <translation>Installer fra fil</translation>
     </message>
     <message>
         <location filename="../qml/pages/ImportPackagePage.qml" line="56"/>
         <source>Select an app or watchface (.pbw), or a language pack (.pbl) for your watch.</source>
-        <translation type="unfinished"></translation>
+        <translation>Velg en app eller urskive (.pbw), eller en språkpakke (.pbl) til klokken din.</translation>
     </message>
     <message>
         <location filename="../qml/pages/ImportPackagePage.qml" line="65"/>
         <source>File installation is available only when exactly one watch is paired.</source>
-        <translation type="unfinished"></translation>
+        <translation>Filinstallasjon er bare tilgjengelig når nøyaktig én klokke er koblet til.</translation>
     </message>
     <message>
         <location filename="../qml/pages/ImportPackagePage.qml" line="75"/>
         <source>Connect the watch to install files.</source>
-        <translation type="unfinished"></translation>
+        <translation>Koble til klokken for å installere filer.</translation>
     </message>
     <message>
         <location filename="../qml/pages/ImportPackagePage.qml" line="204"/>
         <source>Installing language pack %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Installerer språkpakke %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/ImportPackagePage.qml" line="205"/>
@@ -1042,7 +1042,7 @@
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="220"/>
         <source>Battery %1%</source>
-        <translation type="unfinished"></translation>
+        <translation>Batteri %1%</translation>
     </message>
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="272"/>
@@ -1052,7 +1052,7 @@
     <message>
         <location filename="../qml/pages/MainMenuPage.qml" line="274"/>
         <source>Pebble update available</source>
-        <translation type="unfinished"></translation>
+        <translation>Pebble-oppdatering tilgjengelig</translation>
     </message>
     <message>
         <source>Update Available</source>
@@ -1676,19 +1676,19 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="116"/>
         <source>Low battery warning</source>
-        <translation type="unfinished"></translation>
+        <translation>Advarsel om lavt batteri</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="122"/>
         <location filename="../qml/pages/SettingsPage.qml" line="130"/>
         <source>Off</source>
-        <translation type="unfinished"></translation>
+        <translation>Av</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="122"/>
         <location filename="../qml/pages/SettingsPage.qml" line="130"/>
         <source>%1%</source>
-        <translation type="unfinished"></translation>
+        <translation>%1%</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="147"/>
