@@ -1,5 +1,6 @@
-import QtQuick 2.2
+import QtQuick 2.6
 import Sailfish.Silica 1.0
+import RockPool 1.0
 
 Page {
     id: root
@@ -7,9 +8,61 @@ Page {
     property var pebble: null
     property var app_model: null
     property int app_index: -1
+    property string app_uuid
     property var app: app_model && app_index >= 0 ? app_model.get(app_index) : null
     property bool appMutationsAllowed: rockPool.knownPebbleCount === 1
     property bool appInstallationAllowed: appMutationsAllowed && pebble && pebble.connected
+
+    AppStoreClient {
+        id: client
+
+        hardwarePlatform: root.pebble ? root.pebble.hardwarePlatform : ""
+        model: root.app_model
+    }
+
+    function resolveRequestedApp() {
+        if (!app_uuid || !pebble)
+            return
+
+        var previous = app
+        var models = [pebble.installedApps, pebble.installedWatchfaces]
+        for (var m = 0; m < models.length; ++m) {
+            for (var i = 0; ; ++i) {
+                var item = models[m].get(i)
+                if (!item)
+                    break
+                if (item.uuid.toLowerCase() === app_uuid.toLowerCase()) {
+                    app_index = -1
+                    app_model = models[m]
+                    app_index = i
+                    if (item !== previous && item.storeId)
+                        client.fetchAppDetails(item.storeId)
+                    return
+                }
+            }
+        }
+        app_index = -1
+    }
+
+    Connections {
+        target: root.pebble ? root.pebble.installedApps : null
+        onChanged: {
+            if (installButton.installing)
+                pageStack.pop()
+            else
+                root.resolveRequestedApp()
+        }
+    }
+    Connections {
+        target: root.pebble ? root.pebble.installedWatchfaces : null
+        onChanged: {
+            if (installButton.installing)
+                pageStack.pop()
+            else
+                root.resolveRequestedApp()
+        }
+    }
+    Component.onCompleted: resolveRequestedApp()
     property var compatibilityPlatforms: [
         { label: "Classic", key: "aplite" },
         { label: "Time", key: "basalt" },
@@ -110,19 +163,12 @@ Page {
             }
             Button {
                 id: installButton
+
                 width: parent.width
                 enabled: root.appInstallationAllowed && root.app && !installing && !root.app.companion
                 property bool installing: false
                 text: installing ? qsTr("Upgrading...")
                                  : (root.app && root.app.companion ? qsTr("Needs Companion") : qsTr("Upgrade"))
-                Connections {
-                    target: root.pebble.installedApps
-                    onChanged: pageStack.pop()
-                }
-                Connections {
-                    target: root.pebble.installedWatchfaces
-                    onChanged: pageStack.pop()
-                }
                 onClicked: {
                     if (!root.appInstallationAllowed || !root.app)
                         return

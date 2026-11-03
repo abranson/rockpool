@@ -47,6 +47,9 @@ internal fun mergePrimaryHealthSettings(
         ageYears = age,
         gender = gender?.let { HealthGender.entries[it] } ?: existing.gender,
         imperialUnits = imperial,
+        hrmEnabled = settings.primaryBoolean("health.hrmEnabled") ?: existing.hrmEnabled,
+        hrmMeasurementInterval = settings.primaryInt("health.hrmMeasurementInterval", 0..3)
+            ?.let { HRMonitoringInterval.fromInt(it.toByte()) } ?: existing.hrmMeasurementInterval,
         bloodOxygenEnabled = settings.primaryBoolean("health.bloodOxygenEnabled") ?: existing.bloodOxygenEnabled,
         spo2MeasurementInterval = settings.primaryInt("health.spo2MeasurementInterval", 0..3)
             ?.let { HRMonitoringInterval.fromInt(it.toByte()) } ?: existing.spo2MeasurementInterval,
@@ -63,6 +66,8 @@ internal fun primaryHealthSettings(settings: HealthSettings): Map<String, Varian
     "moreActive" to Variant(settings.activityInsightsEnabled),
     "sleepMore" to Variant(settings.sleepInsightsEnabled),
     "imperialUnits" to Variant(settings.imperialUnits),
+    "hrmEnabled" to Variant(settings.hrmEnabled),
+    "hrmMeasurementInterval" to Variant(settings.hrmMeasurementInterval.value.toInt()),
 ).apply {
     settings.bloodOxygenEnabled?.let { put("bloodOxygenEnabled", Variant(it)) }
     settings.spo2MeasurementInterval?.let { put("spo2MeasurementInterval", Variant(it.value.toInt())) }

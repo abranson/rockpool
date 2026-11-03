@@ -61,12 +61,37 @@ Dialog {
         if (!dirtyFields["sleepMore"]) {
             sleepMoreSwitch.checked = !!params["sleepMore"];
         }
+        if (!dirtyFields["hrmEnabled"]) {
+            heartRateSwitch.checked = params["hrmEnabled"] === true;
+        }
+        if (!dirtyFields["hrmMeasurementInterval"]) {
+            heartRateInterval.currentIndex = intervalIndex(params["hrmMeasurementInterval"]);
+        }
         if (!dirtyFields["bloodOxygenEnabled"]) {
-            bloodOxygenSwitch.checked = params["bloodOxygenEnabled"] !== false
-                    && params["spo2MeasurementInterval"] !== 3;
+            bloodOxygenSwitch.checked = params["bloodOxygenEnabled"] === true;
+        }
+        if (!dirtyFields["spo2MeasurementInterval"]) {
+            bloodOxygenInterval.currentIndex = intervalIndex(params["spo2MeasurementInterval"]);
         }
         snapshotLoaded = true;
         loadingSnapshot = false;
+    }
+
+    function intervalIndex(value) {
+        return typeof value === "number" && value >= 0 && value <= 3
+                && Math.floor(value) === value ? value : -1;
+    }
+
+    function monitoringChanges(updated, enabledKey, intervalKey, checked, index) {
+        if (dirtyFields[enabledKey]) {
+            updated[enabledKey] = checked;
+        }
+        if (dirtyFields[intervalKey] && index >= 0) {
+            updated[intervalKey] = index;
+        } else if (dirtyFields[enabledKey] && checked
+                   && intervalIndex(healthParams[intervalKey]) < 0) {
+            updated[intervalKey] = 0; // Default only when no interval has been received.
+        }
     }
 
     SilicaFlickable {
@@ -100,17 +125,83 @@ Dialog {
             }
 
             TextSwitch {
+                id: heartRateSwitch
+
+                text: qsTr("Heart rate")
+                description: root.healthParams["hrmEnabled"] === undefined
+                             && !root.dirtyFields["hrmEnabled"]
+                             ? qsTr("Setting not received from the watch.")
+                             : qsTr("Measure heart rate automatically.")
+                enabled: root.settingsReady
+                width: parent.width
+                onClicked: root.markDirty("hrmEnabled")
+            }
+
+            ComboBox {
+                id: heartRateInterval
+
+                width: parent.width
+                label: qsTr("Measurement interval")
+                enabled: root.settingsReady && heartRateSwitch.checked
+                value: currentIndex < 0 ? qsTr("Not received from watch") : currentItem ? currentItem.text : ""
+                menu: ContextMenu {
+                    MenuItem {
+                        text: qsTr("10 minutes")
+                        onClicked: root.markDirty("hrmMeasurementInterval")
+                    }
+                    MenuItem {
+                        text: qsTr("30 minutes")
+                        onClicked: root.markDirty("hrmMeasurementInterval")
+                    }
+                    MenuItem {
+                        text: qsTr("1 hour")
+                        onClicked: root.markDirty("hrmMeasurementInterval")
+                    }
+                    MenuItem {
+                        text: qsTr("Disabled")
+                        onClicked: root.markDirty("hrmMeasurementInterval")
+                    }
+                }
+            }
+
+            TextSwitch {
                 id: bloodOxygenSwitch
 
                 text: qsTr("Blood oxygen (SpO₂)")
                 description: root.healthParams["bloodOxygenEnabled"] === undefined
-                             && root.healthParams["spo2MeasurementInterval"] !== 3
                              && !root.dirtyFields["bloodOxygenEnabled"]
-                             ? qsTr("Blood oxygen will be enabled when you save these settings.")
+                             ? qsTr("Setting not received from the watch.")
                              : qsTr("Measure blood oxygen automatically.")
                 enabled: root.settingsReady
                 width: parent.width
                 onClicked: root.markDirty("bloodOxygenEnabled")
+            }
+
+            ComboBox {
+                id: bloodOxygenInterval
+
+                width: parent.width
+                label: qsTr("Measurement interval")
+                enabled: root.settingsReady && bloodOxygenSwitch.checked
+                value: currentIndex < 0 ? qsTr("Not received from watch") : currentItem ? currentItem.text : ""
+                menu: ContextMenu {
+                    MenuItem {
+                        text: qsTr("10 minutes")
+                        onClicked: root.markDirty("spo2MeasurementInterval")
+                    }
+                    MenuItem {
+                        text: qsTr("30 minutes")
+                        onClicked: root.markDirty("spo2MeasurementInterval")
+                    }
+                    MenuItem {
+                        text: qsTr("1 hour")
+                        onClicked: root.markDirty("spo2MeasurementInterval")
+                    }
+                    MenuItem {
+                        text: qsTr("Disabled")
+                        onClicked: root.markDirty("spo2MeasurementInterval")
+                    }
+                }
             }
 
             TextField {
@@ -210,25 +301,23 @@ Dialog {
     onDone: {
         if (result === DialogResult.Accepted && settingsReady) {
             var updated = cloneParams(healthParams);
-            updated["enabled"] = enabledSwitch.checked;
-            updated["gender"] = genderSelector.currentIndex === 0 ? "female" : "male";
-            updated["age"] = ageField.text;
-            updated["height"] = heightField.text;
-            updated["weight"] = weightField.text;
-            updated["moreActive"] = moreActiveSwitch.checked;
-            updated["sleepMore"] = sleepMoreSwitch.checked;
-            // Send oxygen preferences only after an explicit edit, preserving unknown watch state.
-            delete updated["bloodOxygenEnabled"];
-            delete updated["spo2MeasurementInterval"];
-            if (dirtyFields["bloodOxygenEnabled"]
-                    || (healthParams["bloodOxygenEnabled"] === undefined
-                        && healthParams["spo2MeasurementInterval"] !== 3)) {
-                updated["bloodOxygenEnabled"] = bloodOxygenSwitch.checked;
-                if (bloodOxygenSwitch.checked) {
-                    updated["spo2MeasurementInterval"] = 0; // 10 minutes, like the default heart-rate monitoring.
-                }
+            for (var key in updated) {
+                if (!dirtyFields[key]) delete updated[key];
             }
-            pebble.healthParams = updated;
+            if (dirtyFields["enabled"]) updated["enabled"] = enabledSwitch.checked;
+            if (dirtyFields["gender"]) updated["gender"] = genderSelector.currentIndex === 0 ? "female" : "male";
+            if (dirtyFields["age"]) updated["age"] = ageField.text;
+            if (dirtyFields["height"]) updated["height"] = heightField.text;
+            if (dirtyFields["weight"]) updated["weight"] = weightField.text;
+            if (dirtyFields["moreActive"]) updated["moreActive"] = moreActiveSwitch.checked;
+            if (dirtyFields["sleepMore"]) updated["sleepMore"] = sleepMoreSwitch.checked;
+            monitoringChanges(updated, "hrmEnabled", "hrmMeasurementInterval",
+                              heartRateSwitch.checked, heartRateInterval.currentIndex);
+            monitoringChanges(updated, "bloodOxygenEnabled", "spo2MeasurementInterval",
+                              bloodOxygenSwitch.checked, bloodOxygenInterval.currentIndex);
+            if (Object.keys(updated).length > 0) {
+                pebble.healthParams = updated;
+            }
         }
     }
 }

@@ -447,14 +447,23 @@ bool healthParamsSnapshotValid(const QVariantMap &params)
         }
     }
 
-    if (params.contains(QStringLiteral("bloodOxygenEnabled"))
-            && params.value(QStringLiteral("bloodOxygenEnabled")).type() != QVariant::Bool) {
-        return false;
-    }
-    if (params.contains(QStringLiteral("spo2MeasurementInterval"))) {
-        const QVariant interval = params.value(QStringLiteral("spo2MeasurementInterval"));
-        if (!isIntegerValue(interval) || interval.toInt() < 0 || interval.toInt() > 3) {
+    const QStringList optionalBooleanKeys = QStringList()
+        << QStringLiteral("hrmEnabled")
+        << QStringLiteral("bloodOxygenEnabled");
+    foreach (const QString &key, optionalBooleanKeys) {
+        if (params.contains(key) && params.value(key).type() != QVariant::Bool) {
             return false;
+        }
+    }
+    const QStringList intervalKeys = QStringList()
+        << QStringLiteral("hrmMeasurementInterval")
+        << QStringLiteral("spo2MeasurementInterval");
+    foreach (const QString &key, intervalKeys) {
+        if (params.contains(key)) {
+            const QVariant interval = params.value(key);
+            if (!isIntegerValue(interval) || interval.toInt() < 0 || interval.toInt() > 3) {
+                return false;
+            }
         }
     }
 

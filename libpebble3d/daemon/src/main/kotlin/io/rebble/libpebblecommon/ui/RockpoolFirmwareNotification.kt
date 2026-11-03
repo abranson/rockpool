@@ -12,18 +12,24 @@ import java.io.DataOutputStream
 import java.util.Base64
 
 /** Nemo remote-action arguments use QDataStream's QVariant(QString) representation. */
-internal fun firmwareNotificationAction(address: String): String {
+internal fun firmwareNotificationAction(address: String): String =
+    rockpoolNotificationAction("OpenFirmwareUpdate", address)
+
+internal fun rockpoolNotificationAction(method: String, address: String, vararg arguments: String): String {
     require(Regex("[0-9A-Fa-f]{2}(:[0-9A-Fa-f]{2}){5}").matches(address))
-    val bytes = ByteArrayOutputStream()
-    DataOutputStream(bytes).use {
-        val text = address.uppercase().toByteArray(Charsets.UTF_16BE)
-        it.writeInt(10) // QMetaType::QString
-        it.writeByte(0) // non-null QVariant
-        it.writeInt(text.size)
-        it.write(text)
-    }
-    return "org.rockpool.UI /org/rockpool/UI org.rockpool.UI OpenFirmwareUpdate " +
+    val encodedArguments = (listOf(address.uppercase()) + arguments).map { argument ->
+        val bytes = ByteArrayOutputStream()
+        DataOutputStream(bytes).use {
+            val text = argument.toByteArray(Charsets.UTF_16BE)
+            it.writeInt(10) // QMetaType::QString
+            it.writeByte(0) // non-null QVariant
+            it.writeInt(text.size)
+            it.write(text)
+        }
         Base64.getEncoder().encodeToString(bytes.toByteArray())
+    }
+    return "org.rockpool.UI /org/rockpool/UI org.rockpool.UI $method " +
+        encodedArguments.joinToString(" ")
 }
 
 internal class RockpoolFirmwareNotification(

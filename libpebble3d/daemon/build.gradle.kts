@@ -27,6 +27,9 @@ dependencies {
     implementation("com.github.hypfvieh:dbus-java-transport-junixsocket:5.2.0")
     implementation("co.touchlab:kermit:2.0.8")
     implementation("io.insert-koin:koin-core:4.1.1")
+    // App update checks use libraries already present in libpebble3's runtime classpath.
+    implementation("io.ktor:ktor-client-cio:3.5.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
     // compose ui-graphics as a plain library (desktop/JVM variant) for ImageBitmap + asSkiaBitmap;
     // pulls skiko transitively. No Compose compiler plugin — see the plugins block.
     implementation("org.jetbrains.compose.ui:ui-graphics-desktop:1.10.1")

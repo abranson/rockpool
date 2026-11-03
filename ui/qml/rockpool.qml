@@ -21,6 +21,7 @@ ApplicationWindow {
     Connections {
         target: uiActivation
         onFirmwareRequested: stackReloadTimer.restart()
+        onAppUpdatesRequested: stackReloadTimer.restart()
     }
 
     ServiceController {
@@ -63,7 +64,7 @@ ApplicationWindow {
         // The zero-delay timer lets the page-local signal handler clear its
         // pending address before loadStack() destroys the active page.
         onPebbleIdentityAvailable: {
-            if (uiActivation.firmwareAddress !== "") {
+            if (uiActivation.firmwareAddress !== "" || uiActivation.appUpdateAddress !== "") {
                 stackReloadTimer.restart()
             }
             if (rockPool.waitingForPebbleIdentity
@@ -128,6 +129,7 @@ ApplicationWindow {
                 pageStack.push(Qt.resolvedUrl("pages/PebblesPage.qml"))
             }
             openRequestedFirmware()
+            openRequestedAppUpdates()
         } else {
             console.log("Waiting for service")
             if(curPebble>=0) {
@@ -155,6 +157,34 @@ ApplicationWindow {
         }
     }
     Component.onCompleted: loadStack()
+    function openRequestedAppUpdates() {
+        var address = uiActivation.appUpdateAddress
+        if (!address || !pebbles.connectedToService) {
+            return
+        }
+        for (var i = 0; i < pebbles.count; ++i) {
+            var watch = pebbles.get(i)
+            if (watch && watch.address.toUpperCase() === address) {
+                curPebble = i
+                pageStack.clear()
+                pageStack.push(Qt.resolvedUrl("pages/MainMenuPage.qml"), {pebble: watch})
+                if (uiActivation.appUpdateUuid !== "") {
+                    pageStack.push(Qt.resolvedUrl("pages/AppUpgradePage.qml"), {
+                        pebble: watch,
+                        app_uuid: uiActivation.appUpdateUuid
+                    })
+                } else {
+                    pageStack.push(Qt.resolvedUrl("pages/InstalledAppsPage.qml"), {
+                        pebble: watch,
+                        showWatchApps: !uiActivation.watchfaceUpdate,
+                        showWatchFaces: uiActivation.watchfaceUpdate
+                    })
+                }
+                uiActivation.consumeAppUpdateRequest()
+                return
+            }
+        }
+    }
     function getCurPebble() {
         if(curPebble>=0) return pebbles.get(curPebble);
         return null;

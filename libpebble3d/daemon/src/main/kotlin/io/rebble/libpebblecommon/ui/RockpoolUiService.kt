@@ -16,6 +16,7 @@ import io.rebble.libpebblecommon.connection.PebbleBtClassicIdentifier
 import io.rebble.libpebblecommon.connection.PebbleDevice
 import io.rebble.libpebblecommon.database.dao.AppWithCount
 import io.rebble.libpebblecommon.linux.weather.OpenMeteoWeatherClient
+import io.rebble.libpebblecommon.locker.AppType
 import io.rebble.libpebblecommon.rockpool.RockpoolSettings
 import io.rebble.libpebblecommon.rockpool.SendTextConfigurationCoordinator
 import io.rebble.libpebblecommon.util.GeolocationPositionResult
@@ -41,6 +42,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -713,6 +716,35 @@ internal class RockpoolUiService(
     }
 
     private fun watchLocker() {
+        val appUpdates = RockpoolAppUpdateNotification(settings)
+        scope.launch(Dispatchers.IO) {
+            val targets = combine(
+                libPebble.getLocker(AppType.Watchapp, null, Int.MAX_VALUE),
+                libPebble.getLocker(AppType.Watchface, null, Int.MAX_VALUE),
+                libPebble.watches.map { watches ->
+                    watches.filterIsInstance<KnownPebbleDevice>().map {
+                        it.identifier.asString to it.watchType.watchType
+                    }
+                }.distinctUntilChanged(),
+            ) { apps, faces, watches -> rockpoolAppUpdateTargets(apps + faces, watches) }
+                .distinctUntilChanged()
+            val ticks = flow {
+                while (true) {
+                    emit(Unit)
+                    delay(15 * 60 * 1000L)
+                }
+            }
+            combine(targets, ticks) { current, _ -> current }.collect { current ->
+                appUpdates.update(current) { target ->
+                    // Network requests can overlap app removal, an upgrade or forgetting a watch.
+                    val app = libPebble.getLockerApp(target.uuid).first()
+                    val watches = libPebble.watches.value.filterIsInstance<KnownPebbleDevice>().map {
+                        it.identifier.asString to it.watchType.watchType
+                    }
+                    app != null && target in rockpoolAppUpdateTargets(listOf(app), watches)
+                }
+            }
+        }
         val storeAssociations = RockpoolStoreAssociations(libPebble, changed = {
             broadcastSignal { path -> RockpoolPebble.InstalledAppsChanged(path) }
         })
