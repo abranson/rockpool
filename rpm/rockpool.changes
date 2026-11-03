@@ -1,3 +1,11 @@
+* Tue Nov 03 2026 Andrew Branson <github@andrewbranson.net> 2.0.4-1
+- Notify about watchapp and watchface updates and open the matching app details.
+- Add heart-rate and blood oxygen enable and measurement interval controls.
+- Sync health monitoring settings in both directions with the watch.
+- Support combined blood oxygen preferences in firmware 4.42 and newer.
+- Preserve the watch's oxygen activity setting and unsaved health dialog edits.
+- Update Norwegian Bokmål and Swedish translations and refresh UI catalogues.
+
 * Mon Nov 02 2026 Andrew Branson <github@andrewbranson.net> 2.0.3-1
 - Restore health sync for newer watch firmware and preserve existing history.
 - Store blood oxygen readings and show latest, 24-hour high and low values.

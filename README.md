@@ -48,6 +48,13 @@ withdraws a tracked warning and re-arms it. Warnings remain dismissible; chargin
 state is not currently available. Watches that
 do not report a battery level do not display a percentage or trigger warnings.
 
+The background service checks installed store apps and watchfaces for updates
+every six hours, including with the app window closed. Each available version
+is announced once per app; restarting the service does not repeat the alert.
+Tap the notification to open the app's details with its Upgrade button.
+Failed store checks are retried after 15 minutes. Unlinked
+sideloaded apps and system apps are excluded.
+
 Image previews require the notification producer to supply
 `x-nemo-image-preview-path` or `x-nemo-image-preview-data`. App icons and large
 icons are not treated as preview images. Images are bounded and forwarded only
@@ -195,7 +202,7 @@ To create a source archive containing verified release native inputs, use the
 version from the spec; for the current version:
 
 ```sh
-rpm/create-source-archive.sh 2.0.3
+rpm/create-source-archive.sh 2.0.4
 ```
 
 The archive step requires clean release sources, the submodule at its committed

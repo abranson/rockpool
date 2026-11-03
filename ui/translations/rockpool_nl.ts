@@ -134,48 +134,48 @@
 <context>
     <name>AppUpgradePage</name>
     <message>
-        <location filename="../qml/pages/AppUpgradePage.qml" line="42"/>
-        <location filename="../qml/pages/AppUpgradePage.qml" line="43"/>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="95"/>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="96"/>
         <source>Upgrading</source>
         <translation>Upgraden</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppUpgradePage.qml" line="88"/>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="141"/>
         <source>Version</source>
         <translation>Versie</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppUpgradePage.qml" line="117"/>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="171"/>
         <source>Upgrade</source>
         <translation>Upgraden</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppUpgradePage.qml" line="116"/>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="170"/>
         <source>Upgrading...</source>
         <translation>Upgraden...</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppUpgradePage.qml" line="50"/>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="103"/>
         <source>App changes are available only when exactly one watch is paired.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppUpgradePage.qml" line="60"/>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="113"/>
         <source>Connect the watch to install apps.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppUpgradePage.qml" line="117"/>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="171"/>
         <source>Needs Companion</source>
         <translation>Companion vereist</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppUpgradePage.qml" line="136"/>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="182"/>
         <source>Compatibility</source>
         <translation>Compatibiliteit</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppUpgradePage.qml" line="199"/>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="245"/>
         <source>Change Log</source>
         <translation>Veranderingslogboek</translation>
     </message>
@@ -682,87 +682,134 @@
 <context>
     <name>HealthSettingsDialog</name>
     <message>
-        <location filename="../qml/pages/HealthSettingsDialog.qml" line="82"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="107"/>
         <source>Health settings</source>
         <translation>Gezondheidsinstellingen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthSettingsDialog.qml" line="83"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="108"/>
         <source>OK</source>
         <translation>Oké</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthSettingsDialog.qml" line="84"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="109"/>
         <source>Cancel</source>
         <translation>Annuleren</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthSettingsDialog.qml" line="96"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="121"/>
         <source>Health app enabled</source>
         <translation>Gezondheidsapp ingeschakeld</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthSettingsDialog.qml" line="105"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="130"/>
+        <source>Heart rate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="133"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="173"/>
+        <source>Setting not received from the watch.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="134"/>
+        <source>Measure heart rate automatically.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="144"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="184"/>
+        <source>Measurement interval</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="146"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="186"/>
+        <source>Not received from watch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="149"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="189"/>
+        <source>10 minutes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="153"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="193"/>
+        <source>30 minutes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="157"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="197"/>
+        <source>1 hour</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="161"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="201"/>
+        <source>Disabled</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="170"/>
         <source>Blood oxygen (SpO₂)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthSettingsDialog.qml" line="109"/>
-        <source>Blood oxygen will be enabled when you save these settings.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/HealthSettingsDialog.qml" line="110"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="174"/>
         <source>Measure blood oxygen automatically.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthSettingsDialog.qml" line="119"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="210"/>
         <source>Age</source>
         <translation>Leeftijd</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthSettingsDialog.qml" line="132"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="223"/>
         <source>Height (cm)</source>
         <translation>Grootte (cm)</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthSettingsDialog.qml" line="145"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="236"/>
         <source>Weight (kg)</source>
         <translation>Gewicht (kg)</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthSettingsDialog.qml" line="159"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="250"/>
         <source>Gender</source>
         <translation>Geslacht</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthSettingsDialog.qml" line="163"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="254"/>
         <source>Female</source>
         <translation>Vrouwelijk</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthSettingsDialog.qml" line="167"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="258"/>
         <source>Male</source>
         <translation>Mannelijk</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthSettingsDialog.qml" line="176"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="267"/>
         <source>I want to be more active</source>
         <translation>Ik wil actiever worden</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthSettingsDialog.qml" line="177"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="268"/>
         <source>More Active</source>
         <translation>Actiever</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthSettingsDialog.qml" line="186"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="277"/>
         <source>I want to sleep more</source>
         <translation>Ik wil meer slapen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/HealthSettingsDialog.qml" line="187"/>
+        <location filename="../qml/pages/HealthSettingsDialog.qml" line="278"/>
         <source>Sleep More</source>
         <translation>Meer slapen</translation>
     </message>
@@ -1235,12 +1282,12 @@
 <context>
     <name>Pebble</name>
     <message>
-        <location filename="../pebble.cpp" line="2338"/>
+        <location filename="../pebble.cpp" line="2347"/>
         <source>Could not load Quiet Time settings.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../pebble.cpp" line="2368"/>
+        <location filename="../pebble.cpp" line="2377"/>
         <source>Could not save Quiet Time settings.</source>
         <translation type="unfinished"></translation>
     </message>
