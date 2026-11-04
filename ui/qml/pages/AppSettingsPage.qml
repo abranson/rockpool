@@ -14,29 +14,7 @@ Page {
     property bool oauthSubmissionActive
     property string oauthError
     property bool configurationSubmitted
-    readonly property string configurationReturnUrl: "about:blank#pebblejs://close#"
     allowedOrientations: Orientation.All
-
-    function configurationUrl() {
-        if (oauthBootFlow || !/^https?:\/\//i.test(url))
-            return url;
-
-        // Configuration pages can navigate from JavaScript, bypassing the link
-        // catcher. Give pages supporting return_to a callback Gecko can load.
-        var hashIdx = url.indexOf("#");
-        var base = hashIdx >= 0 ? url.substring(0, hashIdx) : url;
-        var fragment = hashIdx >= 0 ? url.substring(hashIdx) : "";
-        var queryIdx = base.indexOf("?");
-        var query = queryIdx >= 0 ? base.substring(queryIdx + 1).split("&") : [];
-        base = queryIdx >= 0 ? base.substring(0, queryIdx) : base;
-        var parameters = [];
-        for (var i = 0; i < query.length; ++i) {
-            if (query[i].split("=")[0] !== "return_to")
-                parameters.push(query[i]);
-        }
-        parameters.push("return_to=" + encodeURIComponent(configurationReturnUrl));
-        return base + "?" + parameters.join("&") + fragment;
-    }
 
     // boot.rebble.io serves a desktop layout to Sailfish's stock gecko UA and its login flow
     // gates on "open this on your phone". Present a mobile Firefox UA (matching the gecko 91
@@ -128,10 +106,6 @@ Page {
         // Both location changes and external-protocol requests return the same
         // encoded response to the watchapp.
         function handlePebbleUrl(u) {
-            if (!appSettings.oauthBootFlow
-                    && u.indexOf(appSettings.configurationReturnUrl) === 0) {
-                u = "pebblejs://close#" + u.substring(appSettings.configurationReturnUrl.length);
-            }
             if (u.indexOf("pebblejs://") !== 0 && u.indexOf("pebble://") !== 0)
                 return false;
             console.log("pebble configuration navigation received");
@@ -203,9 +177,9 @@ Page {
             // appSettings.url straight away.
             url: appSettings.oauthSubmissionActive
                  ? "about:blank"
-                 : (bootUaReady ? appSettings.configurationUrl() : "about:blank")
-            // Retain the location-change path for older engines and return_to
-            // callbacks. ESR153 also supplies external-protocol requests above.
+                 : (bootUaReady ? appSettings.url : "about:blank")
+            // Retain location changes for older engines. ESR153 also supplies
+            // external-protocol requests above.
             onUrlChanged: handlePebbleUrl("" + webView.url)
             onViewInitialized: {
                 webView.addMessageListener("embed:pebble");

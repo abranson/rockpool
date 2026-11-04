@@ -1,6 +1,6 @@
 * Wed Nov 04 2026 Andrew Branson <github@andrewbranson.net> 2.0.5-1
 - Fix saving watchface settings through external-protocol callbacks on ESR153.
-- Retain compatible return-URL and location-change handling for older WebViews.
+- Retain location-change and link handling for older WebViews.
 - Preserve encoded settings and prevent duplicate configuration submissions.
 - Update Swedish translations.
 
