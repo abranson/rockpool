@@ -708,54 +708,54 @@
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="130"/>
         <source>Heart rate</source>
-        <translation type="unfinished">Hjärtfrekvens</translation>
+        <translation>Hjärtfrekvens</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="133"/>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="173"/>
         <source>Setting not received from the watch.</source>
-        <translation type="unfinished"></translation>
+        <translation>Inställningen ej hämtad från klockan.</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="134"/>
         <source>Measure heart rate automatically.</source>
-        <translation type="unfinished"></translation>
+        <translation>Mät hjärtfrekvensen automatiskt.</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="144"/>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="184"/>
         <source>Measurement interval</source>
-        <translation type="unfinished"></translation>
+        <translation>Mätintervall</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="146"/>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="186"/>
         <source>Not received from watch</source>
-        <translation type="unfinished"></translation>
+        <translation>Ej hämtad från klockan</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="149"/>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="189"/>
         <source>10 minutes</source>
-        <translation type="unfinished"></translation>
+        <translation>10 minuter</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="153"/>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="193"/>
         <source>30 minutes</source>
-        <translation type="unfinished"></translation>
+        <translation>30 minuter</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="157"/>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="197"/>
         <source>1 hour</source>
-        <translation type="unfinished"></translation>
+        <translation>1 timma</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="161"/>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="201"/>
         <source>Disabled</source>
-        <translation type="unfinished"></translation>
+        <translation>Avaktiverad</translation>
     </message>
     <message>
         <location filename="../qml/pages/HealthSettingsDialog.qml" line="170"/>
