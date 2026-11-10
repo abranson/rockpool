@@ -18,7 +18,7 @@
 <context>
     <name>AppSettingsPage</name>
     <message>
-        <location filename="../qml/pages/AppSettingsPage.qml" line="101"/>
+        <location filename="../qml/pages/AppSettingsPage.qml" line="80"/>
         <source>App settings</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1168,22 +1168,57 @@
 <context>
     <name>NotificationIconPage</name>
     <message>
-        <location filename="../qml/pages/NotificationIconPage.qml" line="60"/>
-        <source>Icon</source>
+        <location filename="../qml/pages/NotificationIconPage.qml" line="80"/>
+        <source>Icon and colour</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/NotificationIconPage.qml" line="65"/>
+        <location filename="../qml/pages/NotificationIconPage.qml" line="108"/>
+        <source>Automatic icon</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/NotificationIconPage.qml" line="113"/>
+        <source>Custom icon</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/NotificationIconPage.qml" line="113"/>
+        <source>Default icon</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/NotificationIconPage.qml" line="121"/>
+        <source>Icon preview unavailable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/NotificationIconPage.qml" line="131"/>
+        <source>Custom colour: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/NotificationIconPage.qml" line="132"/>
+        <source>Default colour: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/NotificationIconPage.qml" line="176"/>
         <source>Search icons</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/NotificationIconPage.qml" line="81"/>
+        <location filename="../qml/pages/NotificationIconPage.qml" line="194"/>
         <source>Use default icon</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/NotificationIconPage.qml" line="119"/>
+        <location filename="../qml/pages/NotificationIconPage.qml" line="199"/>
+        <source>Use default colour</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/NotificationIconPage.qml" line="253"/>
         <source>No matching icons</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1191,42 +1226,83 @@
 <context>
     <name>NotificationsPage</name>
     <message>
-        <location filename="../qml/pages/NotificationsPage.qml" line="36"/>
+        <location filename="../qml/pages/NotificationsPage.qml" line="31"/>
+        <source>Always send to watch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/NotificationsPage.qml" line="32"/>
+        <source>Only when phone is inactive</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/NotificationsPage.qml" line="33"/>
+        <source>Do not send to watch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/NotificationsPage.qml" line="34"/>
+        <source>Unknown forwarding setting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/NotificationsPage.qml" line="44"/>
         <source>Notifications</source>
         <translation>அறிவிப்புகள்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NotificationsPage.qml" line="39"/>
+        <location filename="../qml/pages/NotificationsPage.qml" line="47"/>
+        <source>Tap an app to change notification forwarding. Tap its watch icon to customise the icon and colour. Apps appear here after sending a notification.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/NotificationsPage.qml" line="54"/>
+        <source>* Custom icon or colour</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/NotificationsPage.qml" line="172"/>
+        <source>Custom icon</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/NotificationsPage.qml" line="173"/>
+        <source>Default icon</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/NotificationsPage.qml" line="174"/>
+        <source>Automatic icon</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/NotificationsPage.qml" line="175"/>
+        <source>Custom colour</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/NotificationsPage.qml" line="175"/>
+        <source>Default colour</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Entries here will be added as notifications appear on the phone. Selected notifications will be shown on your Pebble smartwatch.</source>
-        <translation>தொலைபேசியில் அறிவிப்புகள் தோன்றுவதால் இங்கே உள்ளீடுகள் சேர்க்கப்படும். தேர்ந்தெடுக்கப்பட்ட அறிவிப்புகள் உங்கள் பெப்பிள் ச்மார்ட்வாட்சில் காண்பிக்கப்படும்.</translation>
+        <translation type="vanished">தொலைபேசியில் அறிவிப்புகள் தோன்றுவதால் இங்கே உள்ளீடுகள் சேர்க்கப்படும். தேர்ந்தெடுக்கப்பட்ட அறிவிப்புகள் உங்கள் பெப்பிள் ச்மார்ட்வாட்சில் காண்பிக்கப்படும்.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NotificationsPage.qml" line="109"/>
         <source>Always Enabled</source>
-        <translation>எப்போதும் இயக்கப்பட்டது</translation>
+        <translation type="vanished">எப்போதும் இயக்கப்பட்டது</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NotificationsPage.qml" line="115"/>
         <source>Disabled When Active</source>
-        <translation>செயலில் இருக்கும்போது முடக்கப்பட்டது</translation>
+        <translation type="vanished">செயலில் இருக்கும்போது முடக்கப்பட்டது</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NotificationsPage.qml" line="121"/>
         <source>Always Disabled</source>
-        <translation>எப்போதும் முடக்கப்பட்டது</translation>
+        <translation type="vanished">எப்போதும் முடக்கப்பட்டது</translation>
     </message>
     <message>
-        <location filename="../qml/pages/NotificationsPage.qml" line="127"/>
-        <source>Colour…</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/NotificationsPage.qml" line="136"/>
-        <source>Icon…</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/NotificationsPage.qml" line="145"/>
+        <location filename="../qml/pages/NotificationsPage.qml" line="204"/>
         <source>Forget</source>
         <translation>மறந்துவிடு</translation>
     </message>
@@ -1401,62 +1477,92 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/QuietTimePage.qml" line="89"/>
-        <source>Manual Quiet Time</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/QuietTimePage.qml" line="97"/>
+        <location filename="../qml/pages/QuietTimePage.qml" line="113"/>
         <source>During calendar events</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/QuietTimePage.qml" line="105"/>
+        <location filename="../qml/pages/QuietTimePage.qml" line="133"/>
         <source>Weekdays</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/QuietTimePage.qml" line="106"/>
+        <location filename="../qml/pages/QuietTimePage.qml" line="134"/>
         <source>Weekends</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/QuietTimePage.qml" line="114"/>
+        <location filename="../qml/pages/QuietTimePage.qml" line="123"/>
         <source>Scheduled Quiet Time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/QuietTimePage.qml" line="122"/>
+        <location filename="../qml/pages/QuietTimePage.qml" line="89"/>
+        <source>Follow phone privacy mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/QuietTimePage.qml" line="91"/>
+        <source>Enable Quiet Time while the phone&apos;s privacy mode is on, then restore the previous setting. Keep Bluetooth enabled in the phone&apos;s privacy settings.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/QuietTimePage.qml" line="92"/>
+        <source>Phone privacy mode is unavailable.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/QuietTimePage.qml" line="102"/>
+        <source>Force Quiet Time on</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/QuietTimePage.qml" line="104"/>
+        <source>Controlled by phone privacy mode.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/QuietTimePage.qml" line="105"/>
+        <source>Schedules and calendar events can still enable Quiet Time when this is off.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/QuietTimePage.qml" line="124"/>
+        <source>Use the weekday and weekend schedules. Turning this off keeps your saved times and day selections.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/QuietTimePage.qml" line="153"/>
         <source>Start</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/QuietTimePage.qml" line="129"/>
+        <location filename="../qml/pages/QuietTimePage.qml" line="161"/>
         <source>End</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/QuietTimePage.qml" line="136"/>
+        <location filename="../qml/pages/QuietTimePage.qml" line="168"/>
         <source>During Quiet Time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/QuietTimePage.qml" line="139"/>
+        <location filename="../qml/pages/QuietTimePage.qml" line="171"/>
         <source>Allow phone calls</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/QuietTimePage.qml" line="147"/>
+        <location filename="../qml/pages/QuietTimePage.qml" line="179"/>
         <source>Show notifications</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/QuietTimePage.qml" line="155"/>
+        <location filename="../qml/pages/QuietTimePage.qml" line="187"/>
         <source>Automatically dismiss notifications</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/QuietTimePage.qml" line="163"/>
+        <location filename="../qml/pages/QuietTimePage.qml" line="195"/>
         <source>Motion backlight</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1815,17 +1921,17 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/WatchLanguageSelector.qml" line="19"/>
-        <source>Loading languages…</source>
+        <location filename="../qml/pages/WatchLanguageSelector.qml" line="30"/>
+        <source>Loading…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/WatchLanguageSelector.qml" line="35"/>
+        <location filename="../qml/pages/WatchLanguageSelector.qml" line="38"/>
         <source>Unknown</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/WatchLanguageSelector.qml" line="114"/>
+        <location filename="../qml/pages/WatchLanguageSelector.qml" line="117"/>
         <source>Languages could not be loaded. Reopen Settings to try again.</source>
         <translation type="unfinished"></translation>
     </message>
