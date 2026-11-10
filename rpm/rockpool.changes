@@ -1,6 +1,7 @@
 * Tue Nov 10 2026 Andrew Branson <github@andrewbranson.net> 2.0.6-1
 - Show notification icon and colour previews, with a combined customisation page.
 - Group notification sources by forwarding mode and sort them by app name.
+- Open store listings from installed watchapp and watchface menus.
 - Correct Messages and email defaults and derive colours from other app icons.
 - Share icon colour selection across platform providers.
 - Follow phone privacy mode for Quiet Time and restore the previous setting.

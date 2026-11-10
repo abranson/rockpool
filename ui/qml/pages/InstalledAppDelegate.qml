@@ -1,9 +1,10 @@
-import QtQuick 2.2
+import QtQuick 2.6
 import Sailfish.Silica 1.0
 
 ListItem {
     id: root
 
+    property string storeId
     property string uuid: ""
     property string name: ""
     property string iconSource: ""
@@ -21,6 +22,7 @@ ListItem {
     signal deleteApp
     signal configureApp
     signal moveApp(int dir)
+    signal openStore
     signal upgrade
 
     contentHeight: Theme.itemSizeMedium
@@ -35,6 +37,11 @@ ListItem {
             visible: !isSystemApp
         }
 
+        MenuItem {
+            text: qsTr("Open in store")
+            visible: !root.isSystemApp && root.storeId.length > 0
+            onClicked: root.openStore()
+        }
         MenuItem {
             text: qsTr("Launch")
             enabled: root.watchConnected

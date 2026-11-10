@@ -873,42 +873,47 @@
 <context>
     <name>InstalledAppDelegate</name>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="32"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="34"/>
         <source>Upgrade</source>
         <translation>Оновити</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="32"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="34"/>
         <source>Version</source>
         <translation>Версія</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="39"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="41"/>
+        <source>Open in store</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="46"/>
         <source>Launch</source>
         <translation>Запустити</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="44"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="51"/>
         <source>Settings</source>
         <translation>Налаштування</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="50"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="57"/>
         <source>Delete</source>
         <translation>Видалити</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="54"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="61"/>
         <source>Really Delete?</source>
         <translation>Справді видалити?</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="60"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="67"/>
         <source>Move Up</source>
         <translation>Посунути вгору</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="66"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="73"/>
         <source>Move Down</source>
         <translation>Посунути вниз</translation>
     </message>
@@ -916,32 +921,37 @@
 <context>
     <name>InstalledAppsPage</name>
     <message>
-        <location filename="../qml/pages/InstalledAppsPage.qml" line="25"/>
+        <location filename="../qml/pages/InstalledAppsPage.qml" line="32"/>
+        <source>Could not load the store page. Please try again.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/InstalledAppsPage.qml" line="60"/>
         <source>Add New</source>
         <translation>Додати</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppsPage.qml" line="50"/>
+        <location filename="../qml/pages/InstalledAppsPage.qml" line="85"/>
         <source>Apps &amp; Watchfaces</source>
         <translation>Застосунки та Циферблати</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppsPage.qml" line="50"/>
+        <location filename="../qml/pages/InstalledAppsPage.qml" line="85"/>
         <source>Apps</source>
         <translation>Застосунки</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppsPage.qml" line="50"/>
+        <location filename="../qml/pages/InstalledAppsPage.qml" line="85"/>
         <source>Watchfaces</source>
         <translation>Циферблати</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppsPage.qml" line="57"/>
+        <location filename="../qml/pages/InstalledAppsPage.qml" line="101"/>
         <source>App changes are available only when exactly one watch is paired.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppsPage.qml" line="33"/>
+        <location filename="../qml/pages/InstalledAppsPage.qml" line="68"/>
         <source>Save Apps Order</source>
         <translation>Зберегти порядок застосунків</translation>
     </message>

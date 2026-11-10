@@ -185,7 +185,7 @@ void AppStoreClient::fetchLink(const QString &link)
     qDebug() << "fetching link" << request.url();
 
     QNetworkReply *reply = m_nam->get(request);
-    connect(reply, &QNetworkReply::finished, [this, reply, storeUrl]() {
+    connect(reply, &QNetworkReply::finished, this, [this, reply, storeUrl]() {
         qDebug() << "fetch reply";
         QByteArray data = reply->readAll();
         reply->deleteLater();
@@ -232,7 +232,7 @@ void AppStoreClient::fetchAppDetails(const QString &appId)
 
     QNetworkRequest request(url);
     QNetworkReply * reply = m_nam->get(request);
-    connect(reply, &QNetworkReply::finished, [this, reply, appId]() {
+    connect(reply, &QNetworkReply::finished, this, [this, reply, appId]() {
         reply->deleteLater();
         AppItem *item = model()->findByStoreId(appId);
         if (!item) {

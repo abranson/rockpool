@@ -873,42 +873,47 @@
 <context>
     <name>InstalledAppDelegate</name>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="32"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="34"/>
         <source>Upgrade</source>
         <translation>மேம்படுத்து</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="32"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="34"/>
         <source>Version</source>
         <translation>பதிப்பு</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="39"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="41"/>
+        <source>Open in store</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="46"/>
         <source>Launch</source>
         <translation>ஏவுதல்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="44"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="51"/>
         <source>Settings</source>
         <translation>அமைப்புகள்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="50"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="57"/>
         <source>Delete</source>
         <translation>நீக்கு</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="54"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="61"/>
         <source>Really Delete?</source>
         <translation>உண்மையில் நீக்கவா?</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="60"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="67"/>
         <source>Move Up</source>
         <translation>மேலே செல்லுங்கள்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="66"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="73"/>
         <source>Move Down</source>
         <translation>கீழே செல்லுங்கள்</translation>
     </message>
@@ -916,32 +921,37 @@
 <context>
     <name>InstalledAppsPage</name>
     <message>
-        <location filename="../qml/pages/InstalledAppsPage.qml" line="25"/>
+        <location filename="../qml/pages/InstalledAppsPage.qml" line="32"/>
+        <source>Could not load the store page. Please try again.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/InstalledAppsPage.qml" line="60"/>
         <source>Add New</source>
         <translation>புதியதைச் சேர்க்கவும்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppsPage.qml" line="50"/>
+        <location filename="../qml/pages/InstalledAppsPage.qml" line="85"/>
         <source>Apps &amp; Watchfaces</source>
         <translation>பயன்பாடுகள் மற்றும் கண்காணிப்பகங்கள்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppsPage.qml" line="50"/>
+        <location filename="../qml/pages/InstalledAppsPage.qml" line="85"/>
         <source>Apps</source>
         <translation>பயன்பாடுகள்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppsPage.qml" line="50"/>
+        <location filename="../qml/pages/InstalledAppsPage.qml" line="85"/>
         <source>Watchfaces</source>
         <translation>வாட்ச்ஃபேச்கள்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppsPage.qml" line="57"/>
+        <location filename="../qml/pages/InstalledAppsPage.qml" line="101"/>
         <source>App changes are available only when exactly one watch is paired.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppsPage.qml" line="33"/>
+        <location filename="../qml/pages/InstalledAppsPage.qml" line="68"/>
         <source>Save Apps Order</source>
         <translation>பயன்பாடுகளின் வரிசையை சேமிக்கவும்</translation>
     </message>
