@@ -48,6 +48,8 @@
 #include "calendarmonitor.h"
 #include "callmonitor.h"
 #include "contactmonitor.h"
+#include "iconcolorworker.h"
+#include "phonestate.h"
 #include "locationmonitor.h"
 #include "mainvolumemonitor.h"
 #include "notificationmonitor.h"
@@ -303,7 +305,14 @@ public:
               [this]() { emitContactChanged(); },
               [this](bool ready) { updateContactHealth(ready); },
               this),
-          m_contactsReady(false) {
+          m_contactsReady(false),
+          m_iconColor([this](quint64 id, int32_t status, int32_t color) {
+              completeIconColor(id, status, color);
+          }, this),
+          m_phone([this](uint32_t flags) { emitPhoneState(flags); },
+                  [this](quint64 id, uint16_t operation, int32_t status) {
+                      completePhoneCommand(id, operation, status);
+                  }, this) {
         const int flags = fcntl(fd, F_GETFL);
         if (flags < 0 || fcntl(fd, F_SETFL, flags | O_NONBLOCK) != 0) {
             QTimer::singleShot(0, QCoreApplication::instance(),
@@ -453,6 +462,21 @@ private:
             }
         }
         if (m_outgoing.size() >= kMaximumOutgoing) return true;
+        m_outgoing.push_back(frame);
+        return flushOutgoing();
+    }
+
+    bool queuePhoneState(const std::vector<uint8_t> &payload) {
+        std::vector<uint8_t> frame;
+        if (!lp3wire::encodeFrame(lp3wire::Event, 0, &payload[0], payload.size(), &frame)) return false;
+        for (std::deque<std::vector<uint8_t> >::iterator it = m_outgoing.begin();
+             it != m_outgoing.end(); ++it) {
+            if (lp3wire::isEventFrame(*it, lp3wire::PhoneStateChanged)) {
+                *it = frame;
+                return flushOutgoing();
+            }
+        }
+        if (m_outgoing.size() >= kMaximumOutgoing) return false;
         m_outgoing.push_back(frame);
         return flushOutgoing();
     }
@@ -849,11 +873,31 @@ private:
         }
     }
 
+    void completeIconColor(uint64_t requestId, int32_t status, int32_t color) {
+        if (!m_pending.remove(requestId)) return;
+        std::vector<uint8_t> payload;
+        if (!lp3wire::encodeIconColorReply(static_cast<uint32_t>(status), color, &payload) ||
+            !queueFrame(lp3wire::Complete, requestId, &payload[0], payload.size())) {
+            failClosed();
+        }
+    }
+
+    void completePhoneCommand(uint64_t requestId, uint16_t operation, int32_t status) {
+        if (!m_pending.remove(requestId)) return;
+        std::vector<uint8_t> payload;
+        if (!lp3wire::encodeStatusReply(operation, static_cast<uint32_t>(status), &payload) ||
+            !queueFrame(lp3wire::Complete, requestId, &payload[0], payload.size())) failClosed();
+    }
+
     bool completeBusy(uint64_t requestId, uint16_t operation,
                       uint32_t calendarKind =
                           lp3wire::CalendarQueryCalendars,
                       uint32_t contactKind = lp3wire::ContactQueryList) {
         std::vector<uint8_t> payload;
+        if (operation == lp3wire::IconColorQuery) {
+            return lp3wire::encodeIconColorReply(LP3_PLATFORM_BUSY, -1, &payload) &&
+                queueFrame(lp3wire::Complete, requestId, &payload[0], payload.size());
+        }
         if (operation == lp3wire::TimeGet) {
             lp3wire::TimeState empty;
             memset(&empty, 0, sizeof(empty));
@@ -892,7 +936,9 @@ private:
                 operation == lp3wire::MessageSend ||
                 operation == lp3wire::CallCommand ||
                 operation == lp3wire::MediaCommand ||
-                operation == lp3wire::PebbleBondRemove) &&
+                operation == lp3wire::PebbleBondRemove ||
+                operation == lp3wire::ProfileSet ||
+                operation == lp3wire::PairingRequest) &&
             lp3wire::encodeStatusReply(
                 operation, LP3_PLATFORM_BUSY, &payload) &&
             queueFrame(lp3wire::Complete, requestId,
@@ -925,7 +971,9 @@ private:
             m_locationReady = m_location.start();
             m_calendarReady = m_calendar.start();
             m_contactsReady = m_contacts.start();
+            m_phone.start();
             m_phase = Active;
+            emitPhoneState(m_phone.flags());
             emitMediaState();
             return queueHealth();
         }
@@ -943,6 +991,8 @@ private:
             lp3wire::LocationQueryData locationQuery = {};
             lp3wire::CalendarQueryData calendarQuery = {};
             lp3wire::ContactQueryData contactQuery = {};
+            lp3wire::IconColorQueryData iconColorQuery;
+            std::string phoneCommand;
             lp3wire::PebbleBondRemoveData pebbleBondRemove = {};
             if ((operation == lp3wire::TimeGet &&
                  !lp3wire::decodeTimeGet(frame.payload)) ||
@@ -963,6 +1013,10 @@ private:
                  !lp3wire::decodeCalendarQuery(frame.payload, &calendarQuery)) ||
                 (operation == lp3wire::ContactQuery &&
                  !lp3wire::decodeContactQuery(frame.payload, &contactQuery)) ||
+                (operation == lp3wire::IconColorQuery &&
+                 !lp3wire::decodeIconColorQuery(frame.payload, &iconColorQuery)) ||
+                ((operation == lp3wire::ProfileSet || operation == lp3wire::PairingRequest) &&
+                 !lp3wire::decodePhoneCommand(frame.payload, operation, &phoneCommand)) ||
                 (operation == lp3wire::PebbleBondRemove &&
                  !lp3wire::decodePebbleBondRemove(
                      frame.payload, &pebbleBondRemove)) ||
@@ -975,7 +1029,10 @@ private:
                  operation != lp3wire::LocationQuery &&
                  operation != lp3wire::CalendarQuery &&
                  operation != lp3wire::ContactQuery &&
-                 operation != lp3wire::PebbleBondRemove)) {
+                 operation != lp3wire::PebbleBondRemove &&
+                 operation != lp3wire::IconColorQuery &&
+                 operation != lp3wire::ProfileSet &&
+                 operation != lp3wire::PairingRequest)) {
                 return false;
             }
             if (m_pending.size() >= kMaximumPending) {
@@ -1033,6 +1090,11 @@ private:
             } else if (operation == lp3wire::ContactQuery) {
                 m_contactPending.insert(frame.requestId);
                 m_contacts.query(frame.requestId, contactQuery);
+            } else if (operation == lp3wire::IconColorQuery) {
+                m_iconColor.query(frame.requestId, iconColorQuery);
+            } else if (operation == lp3wire::ProfileSet || operation == lp3wire::PairingRequest) {
+                m_phone.command(frame.requestId, operation,
+                                QString::fromUtf8(phoneCommand.data(), static_cast<int>(phoneCommand.size())));
             } else {
                 QTimer::singleShot(
                     0, this,
@@ -1049,6 +1111,8 @@ private:
             }
             if (m_pending.remove(frame.requestId)) {
                 m_location.cancel(frame.requestId);
+                m_iconColor.cancel(frame.requestId);
+                m_phone.cancel(frame.requestId);
                 if (m_calendarPending.remove(frame.requestId)) {
                     m_calendar.cancel(frame.requestId);
                 }
@@ -1077,6 +1141,13 @@ private:
                 return;
             }
         }
+    }
+
+    void emitPhoneState(uint32_t flags) {
+        if (m_phase != Active) return;
+        std::vector<uint8_t> payload;
+        if (!lp3wire::encodePhoneStateChanged(flags, &payload) || !queuePhoneState(payload))
+            failClosed();
     }
 
     void emitTimeChanged() {
@@ -1136,6 +1207,8 @@ private:
     bool m_calendarReady;
     ContactMonitor m_contacts;
     bool m_contactsReady;
+    IconColorWorker m_iconColor;
+    PhoneState m_phone;
     QSet<quint64> m_pending;
     QSet<quint64> m_calendarPending;
     QSet<quint64> m_contactPending;

@@ -1,5 +1,8 @@
 package io.rebble.libpebblecommon.ui
 
+import io.rebble.libpebblecommon.rockpool.NotificationIconColors
+import io.rebble.libpebblecommon.rockpool.notificationAppDefaults
+
 import co.touchlab.kermit.Logger
 import io.rebble.libpebblecommon.LibPebbleConfig
 import io.rebble.libpebblecommon.connection.CommonConnectedDevice
@@ -30,6 +33,8 @@ import io.rebble.libpebblecommon.rockpool.PRIMARY_CALENDAR_PROVENANCE_EXPLICIT
 import io.rebble.libpebblecommon.rockpool.PRIMARY_CALENDAR_PROVENANCE_SETTING
 import io.rebble.libpebblecommon.rockpool.ProfileSettingsCoordinator
 import io.rebble.libpebblecommon.rockpool.RockpoolScreenshotStore
+import io.rebble.libpebblecommon.rockpool.PrivacyQuietTimeCoordinator
+import io.rebble.libpebblecommon.rockpool.QuietTimeSchedules
 import io.rebble.libpebblecommon.rockpool.RockpoolSettings
 import io.rebble.libpebblecommon.rockpool.SendTextConfigurationCoordinator
 import io.rebble.libpebblecommon.rockpool.TimelineWindowCoordinator
@@ -107,6 +112,9 @@ internal class RockpoolPebbleObject(
     },
     private val sendTextConfiguration: SendTextConfigurationCoordinator? = null,
     private val battery: RockpoolBattery = RockpoolBattery(settings, { _, _, _ -> false }, {}),
+    private val privacyQuietTime: PrivacyQuietTimeCoordinator? = null,
+    private val iconColors: NotificationIconColors? = null,
+    private val quietTimeSchedules: QuietTimeSchedules? = null,
 ) : RockpoolPebble {
     private val logger = Logger.withTag("RockpoolPebble")
     private val keyPrefix = address.replace(":", "_")
@@ -388,12 +396,30 @@ internal class RockpoolPebbleObject(
     override fun QuietTimeSettings(): Map<String, Variant<*>> = runBlocking {
         withTimeout(5.seconds) {
             quietTimeSnapshot(libPebble.watchPrefs.first()).mapValues { Variant(it.value) } +
-                ("syncEnabled" to Variant(libPebble.config.value.watchConfig.enableWatchSettingsSync))
+                ("syncEnabled" to Variant(libPebble.config.value.watchConfig.enableWatchSettingsSync)) +
+                ("followPrivacySwitch" to Variant(privacyQuietTime?.enabled ?: false)) +
+                ("privacySwitchSupported" to Variant(privacyQuietTime?.supported ?: false)) +
+                ("privacyOverrideActive" to Variant(privacyQuietTime?.overriding ?: false))
         }
     }
 
     override fun SetQuietTimeSetting(key: String, value: String): Boolean = runBlocking {
+        if (key == "followPrivacySwitch") {
+            if (value != "0" && value != "1") return@runBlocking false
+            return@runBlocking privacyQuietTime?.setEnabled(value == "1") ?: false
+        }
         if (!libPebble.config.value.watchConfig.enableWatchSettingsSync) return@runBlocking false
+        if (key == "schedulesEnabled") {
+            if (value != "0" && value != "1") return@runBlocking false
+            return@runBlocking quietTimeSchedules?.setEnabled(value == "1") ?: false
+        }
+        if (quietTimeSchedules != null &&
+            (key == "dndWeekdayScheduleEnabled" || key == "dndWeekendScheduleEnabled")) {
+            return@runBlocking quietTimeSchedules.setDayEnabled(key, value)
+        }
+        if (key == "dndManuallyEnabled" && privacyQuietTime != null) {
+            return@runBlocking privacyQuietTime.setManual(value)
+        }
         saveQuietTime(libPebble, key, value)
     }
 
@@ -417,6 +443,10 @@ internal class RockpoolPebbleObject(
         val configured = loadPlatformNotificationFilters(settings)
         libPebble.notificationApps().first().associate { appWithCount ->
             val app = appWithCount.app
+            val defaults = io.rebble.libpebblecommon.rockpool.notificationAppDefaults(
+                app.packageName, configured[app.packageName]?.icon,
+                iconColors?.cached(app.packageName, configured[app.packageName]?.icon.orEmpty()),
+            )
             val enabled = if (app.muteState == MuteState.Always) {
                 0
             } else {
@@ -433,6 +463,8 @@ internal class RockpoolPebbleObject(
                     // resolved default). A TimelineIcon.code and a TimelineColor.name respectively.
                     "iconCode" to Variant(app.iconCode ?: ""),
                     "colorName" to Variant(app.colorName ?: ""),
+                    "defaultIconCode" to Variant(defaults.first),
+                    "defaultColorName" to Variant(defaults.second),
                 ),
                 "a{sv}",
             )

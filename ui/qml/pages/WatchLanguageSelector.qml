@@ -15,8 +15,8 @@ ComboBox {
 
     width: parent.width
     label: qsTr("Watch language")
-    enabled: pebble && pebble.connected && languages.length > 0
-    description: loading ? qsTr("Loading languages…") : loadError
+    enabled: pebble && pebble.connected && languages.length > 0 && !loading
+    description: loadError
     currentIndex: {
         for (var i = 0; i < languages.length; ++i) {
             if (languages[i].ISOLocal === languageCode) {
@@ -26,6 +26,9 @@ ComboBox {
         return -1
     }
     value: {
+        if (loading) {
+            return qsTr("Loading…")
+        }
         for (var i = 0; i < languages.length; ++i) {
             if (languages[i].ISOLocal === languageCode) {
                 return languages[i].localName

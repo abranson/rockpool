@@ -21,7 +21,9 @@ extern "C" {
 #endif
 
 #define LP3_PLATFORM_ABI_MAJOR 1u
-#define LP3_PLATFORM_ABI_MINOR 9u
+#define LP3_PLATFORM_ABI_MINOR 11u
+#define LP3_PLATFORM_ICON_COLOR_SOURCE_MAX 256u
+#define LP3_PLATFORM_ICON_COLOR_ICON_MAX 1024u
 
 #define LP3_PLATFORM_NOTIFICATION_IMAGE_MAX (4u + 128u * 128u * 3u)
 #define LP3_PLATFORM_NOTIFICATION_ID_MAX 64u
@@ -509,6 +511,17 @@ struct lp3_platform_api_v1 {
         struct lp3_platform_instance *instance,
         uint64_t request_id,
         const struct lp3_platform_pebble_bond_v1 *bond);
+    /* Added in ABI 1.10. Returns status; rgb is packed RGB or -1 if no colour. */
+    int32_t (*icon_color)(struct lp3_platform_instance *instance,
+                          struct lp3_platform_string source,
+                          struct lp3_platform_string icon,
+                          int32_t *rgb);
+    /* Added in ABI 1.11. Cached flags: privacy known/active, activity known/active. */
+    int32_t (*get_phone_state)(struct lp3_platform_instance *instance, uint32_t *flags);
+    /* Dispatches a fixed platform pairing request; it does not wait for pairing. */
+    int32_t (*request_pairing)(struct lp3_platform_instance *instance,
+                               struct lp3_platform_string address);
+
 };
 
 int32_t lp3_platform_get_api(uint32_t host_abi_major,

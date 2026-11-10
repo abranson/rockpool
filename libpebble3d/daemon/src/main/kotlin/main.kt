@@ -17,9 +17,11 @@ import io.rebble.libpebblecommon.rockpool.LegacyRockpooldImporter
 import io.rebble.libpebblecommon.rockpool.LegacyGlobalSettingsReconciler
 import io.rebble.libpebblecommon.rockpool.LibPebbleConfigMutationCoordinator
 import io.rebble.libpebblecommon.rockpool.PlatformProviderController
+import io.rebble.libpebblecommon.rockpool.NotificationIconColors
 import io.rebble.libpebblecommon.rockpool.PlatformNotificationBackend
 import io.rebble.libpebblecommon.rockpool.NotificationFilterCoordinator
 import io.rebble.libpebblecommon.rockpool.ProfileSwitchCoordinator
+import io.rebble.libpebblecommon.rockpool.ProfileSetter
 import io.rebble.libpebblecommon.rockpool.ProfileSettingsCoordinator
 import io.rebble.libpebblecommon.rockpool.PrimaryCannedResponsesReconciler
 import io.rebble.libpebblecommon.rockpool.AccountSettingsCoordinator
@@ -36,6 +38,7 @@ import io.rebble.libpebblecommon.rockpool.initializeAccountLockerSessionGate
 import io.rebble.libpebblecommon.rockpool.isAccountLockerSessionGateRetired
 import io.rebble.libpebblecommon.rockpool.applyMandatoryDaemonConfigPolicy
 import io.rebble.libpebblecommon.rockpool.createBluezBondedWatchForgetCoordinator
+import io.rebble.libpebblecommon.rockpool.PrivacyQuietTimeCoordinator
 import io.rebble.libpebblecommon.rockpool.SailfishDeviceActivity
 import io.rebble.libpebblecommon.rockpool.SailfishRfcommSocketFactory
 import io.rebble.libpebblecommon.rockpool.SendTextConfigurationCoordinator
@@ -55,6 +58,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -101,11 +106,20 @@ fun main() {
     }
 
     val platformProvider = PlatformProviderController()
-    val deviceActivity = SailfishDeviceActivity()
+    val deviceActivity = SailfishDeviceActivity(platformProvider.phoneActive)
+    val iconColors = NotificationIconColors(
+        CoroutineScope(SupervisorJob() + Dispatchers.Default),
+        platformProvider::iconColor,
+        isAvailable = {
+            platformProvider.snapshot().domains and PlatformProviderController.NOTIFICATION_DOMAIN != 0L
+        },
+    )
+    platformProvider.addListener { iconColors.availabilityChanged() }
     val notificationBackend = PlatformNotificationBackend(
         platformProvider,
         loadPlatformNotificationFilters(settings),
         deviceActivity,
+        iconColors = iconColors,
     )
     val timelineWindow = TimelineWindowCoordinator(settings)
     val rfcommSocketFactory = SailfishRfcommSocketFactory()
@@ -291,7 +305,7 @@ fun main() {
     if (accountLockerUpgrade == AccountLockerUpgradeResult.FAILED) {
         Logger.w { "account locker ownership upgrade is still pending" }
     }
-    ProfileSwitchCoordinator(libPebble, settings).start()
+    ProfileSwitchCoordinator(libPebble, settings, ProfileSetter(platformProvider::setProfile)).start()
     Logger.i { "libpebble3 init() complete; idling" }
 
     // The generic API owns io.rebble.libpebble3. The Rockpool UI facade owns org.rockpool on a
@@ -314,6 +328,16 @@ fun main() {
         sendTextConfiguration,
         rfcommSocketFactory.available,
     ).start()
+    val privacyScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    val privacyActive = platformProvider.privacyActive
+    val privacyQuietTime = PrivacyQuietTimeCoordinator(
+        settings, libPebble, privacyActive,
+        { libPebble.config.value.watchConfig.enableWatchSettingsSync },
+    )
+    privacyQuietTime.start(privacyScope, merge(
+        libPebble.config.map { Unit },
+        libPebble.watches.map { Unit },
+    ))
     val rockpoolUiService = RockpoolUiService(
         libPebble,
         bondedWatchImporter,
@@ -327,6 +351,8 @@ fun main() {
         rfcommSocketFactory.available,
         configStoragePolicy::canPersist,
         sendTextConfiguration,
+        privacyQuietTime,
+        iconColors,
     )
     rockpoolUiService.start()
     accountIdentity.start()

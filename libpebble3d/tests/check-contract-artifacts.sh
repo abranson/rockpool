@@ -697,11 +697,11 @@ require_fixed 'release packaging requires committed Native Image input' \
     'committed Native Image provenance gate'
 require_fixed "require_line 'format=3'" "$native_verifier" \
     'versioned Native Image provenance format'
-require_fixed "require_line 'platform_abi=1.9'" "$native_verifier" \
+require_fixed "require_line 'platform_abi=1.11'" "$native_verifier" \
     'packaged public platform ABI identity'
 require_fixed "require_line 'launcher_abi=1'" "$native_verifier" \
     'packaged launcher ABI identity'
-require_fixed "require_line 'sailfish_wire=1.10'" "$native_verifier" \
+require_fixed "require_line 'sailfish_wire=1.12'" "$native_verifier" \
     'packaged private Sailfish wire identity'
 require_fixed 'mv "$temporary" "$destination"' "$native_stager" \
     'atomic verified Native Image input staging'
@@ -1871,14 +1871,14 @@ do
 done
 reject_extended '^BuildRequires:[[:space:]]+pkgconfig\(libpebble3d-platform\)' \
     "$rockpool_spec" 'self-referential platform ABI BuildRequires'
-require_fixed '#define LP3_PLATFORM_ABI_MINOR 9u' "$header" \
-    'public platform ABI minor 1.9'
-require_fixed '"1.9"' "$loader" \
-    'native platform snapshot ABI version 1.9'
-require_fixed 'val abiVersion: String = "1.9"' "$platform_provider_controller" \
-    'daemon platform snapshot ABI default 1.9'
-require_fixed 'field(3).ifEmpty { "1.9" }' "$platform_provider_controller" \
-    'daemon platform snapshot ABI fallback 1.9'
+require_fixed '#define LP3_PLATFORM_ABI_MINOR 11u' "$header" \
+    'public platform ABI minor 1.11'
+require_fixed '"1.11"' "$loader" \
+    'native platform snapshot ABI version 1.11'
+require_fixed 'val abiVersion: String = "1.11"' "$platform_provider_controller" \
+    'daemon platform snapshot ABI default 1.11'
+require_fixed 'field(3).ifEmpty { "1.11" }' "$platform_provider_controller" \
+    'daemon platform snapshot ABI fallback 1.11'
 require_fixed 'api->info.abi_minor < 6' "$loader" \
     'Contacts domain ABI-minor admission gate'
 require_fixed 'api->info.abi_minor >= 8' "$loader" \
@@ -1897,8 +1897,8 @@ require_fixed 'BuildRequires:  pkgconfig(Qt5Contacts)' "$rockpool_spec" \
     'Sailfish QtContacts build dependency'
 require_fixed 'QT += core dbus positioning contacts' "$helper_project" \
     'Qt Positioning linked only into the privileged Sailfish helper'
-require_fixed 'static const uint16_t kMinor = 10;' "$wire_header" \
-    'private provider wire minor 1.10'
+require_fixed 'static const uint16_t kMinor = 12;' "$wire_header" \
+    'private provider wire minor 1.12'
 require_fixed 'MessageReply = 5,' "$wire_header" \
     'private typed message-reply operation'
 require_fixed 'MessageSend = 9,' "$wire_header" \
@@ -2500,9 +2500,10 @@ do
     require_fixed 'addBluezSigHandler' "$bluez_signal_client" \
         'unique-owner BlueZ signal registration'
 done
-require_fixed 'MceSignal.SystemInactivityInd::class.java,' "$sailfish_device_activity" \
-    'typed MCE inactivity signal registration'
-require_fixed '                owner,' "$sailfish_device_activity" \
+phone_state_monitor=$libpebble3d_dir/../platform-sailfish/helper/phonestate.cpp
+require_fixed '&ActivityInterface::system_inactivity_ind' "$phone_state_monitor" \
+    'typed MCE inactivity signal registration in the helper'
+require_fixed 'new ActivityInterface(owner, source.bus, this)' "$phone_state_monitor" \
     'unique-owner MCE inactivity sender binding'
 require_fixed 'class SailfishPairingRequester' "$sailfish_linux_backend" \
     'Sailfish pairing requester implementation'

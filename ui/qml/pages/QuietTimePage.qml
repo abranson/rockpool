@@ -86,8 +86,24 @@ Page {
             }
             TextSwitch {
                 width: parent.width
-                text: qsTr("Manual Quiet Time")
-                enabled: root.editable
+                text: qsTr("Follow phone privacy mode")
+                description: root.settings.privacySwitchSupported === true
+                             ? qsTr("Enable Quiet Time while the phone's privacy mode is on, then restore the previous setting. Keep Bluetooth enabled in the phone's privacy settings.")
+                             : qsTr("Phone privacy mode is unavailable.")
+                enabled: root.ready && !root.pebble.quietTimeBusy
+                         && (root.settings.privacySwitchSupported === true || checked)
+                         && (root.settings.syncEnabled || checked)
+                automaticCheck: false
+                checked: root.settings.followPrivacySwitch === true
+                onClicked: root.pebble.setQuietTimeSetting("followPrivacySwitch", checked ? "0" : "1")
+            }
+            TextSwitch {
+                width: parent.width
+                text: qsTr("Force Quiet Time on")
+                description: root.settings.privacyOverrideActive
+                             ? qsTr("Controlled by phone privacy mode.")
+                             : qsTr("Schedules and calendar events can still enable Quiet Time when this is off.")
+                enabled: root.editable && !root.settings.privacyOverrideActive
                 automaticCheck: false
                 checked: root.settings.dndManuallyEnabled === "1"
                 onClicked: root.setValue("dndManuallyEnabled", checked ? "0" : "1")
@@ -100,6 +116,18 @@ Page {
                 checked: root.settings.dndSmartEnabled === "1"
                 onClicked: root.setValue("dndSmartEnabled", checked ? "0" : "1")
             }
+            TextSwitch {
+                id: schedulesSwitch
+
+                width: parent.width
+                text: qsTr("Scheduled Quiet Time")
+                description: qsTr("Use the weekday and weekend schedules. Turning this off keeps your saved times and day selections.")
+                enabled: root.editable
+                automaticCheck: false
+                checked: root.settings.dndWeekdayScheduleEnabled === "1"
+                         || root.settings.dndWeekendScheduleEnabled === "1"
+                onClicked: root.setValue("schedulesEnabled", checked ? "0" : "1")
+            }
             Repeater {
                 model: [
                     {title: qsTr("Weekdays"), enabledKey: "dndWeekdayScheduleEnabled", hoursKey: "dndWeekdaySchedule"},
@@ -107,11 +135,13 @@ Page {
                 ]
                 Column {
                     width: content.width
+                    visible: schedulesSwitch.checked
 
-                    SectionHeader { text: modelData.title }
                     TextSwitch {
+                        id: scheduleSwitch
+
                         width: parent.width
-                        text: qsTr("Scheduled Quiet Time")
+                        text: modelData.title
                         enabled: root.editable
                         automaticCheck: false
                         checked: root.settings[modelData.enabledKey] === "1"
@@ -119,6 +149,7 @@ Page {
                     }
                     ValueButton {
                         width: parent.width
+                        visible: scheduleSwitch.checked
                         label: qsTr("Start")
                         value: root.settings[modelData.hoursKey] ? root.settings[modelData.hoursKey].split("-")[0] : ""
                         enabled: root.editable
@@ -126,6 +157,7 @@ Page {
                     }
                     ValueButton {
                         width: parent.width
+                        visible: scheduleSwitch.checked
                         label: qsTr("End")
                         value: root.settings[modelData.hoursKey] ? root.settings[modelData.hoursKey].split("-")[1] : ""
                         enabled: root.editable

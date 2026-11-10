@@ -4,6 +4,7 @@
 package io.rebble.libpebblecommon.rockpool
 
 import co.touchlab.kermit.Logger
+import io.rebble.libpebblecommon.timeline.argbColor
 import io.rebble.libpebblecommon.linux.InactiveLinuxDeviceActivity
 import io.rebble.libpebblecommon.linux.LinuxDeviceActivity
 import io.rebble.libpebblecommon.linux.notifications.LinuxNotification
@@ -138,6 +139,7 @@ internal fun mapPlatformNotificationEvent(
                             .ifEmpty { null },
                         iconName = iconName,
                         defaultIcon = sailfishNotificationIcon(event.applicationId, iconName),
+                        colorArgb = sailfishNotificationColor(event.applicationId, iconName)?.argbColor(),
                     ),
                     hasDefaultAction = event.flags and
                         PlatformProviderController.NOTIFICATION_HAS_DEFAULT_ACTION != 0,
@@ -161,6 +163,7 @@ internal class PlatformNotificationBackend(
     private val filterApplyTimeoutMs: Long = FILTER_APPLY_TIMEOUT_MS,
     private val executeCommand: suspend (Int, String, () -> Boolean) -> Int? =
         controller::notificationCommand,
+    private val iconColors: NotificationIconColors? = null,
     private val executeReply: suspend (String, String, () -> Boolean) -> Int? =
         controller::replyMessage,
 ) : LinuxNotificationBackend {
@@ -194,7 +197,14 @@ internal class PlatformNotificationBackend(
                     resetDelivered()
                 }
             } else {
-                emit(event)
+                val notification = (event as? LinuxNotificationEvent.Posted)?.notification
+                val content = notification?.content
+                val color = if (content != null && content.colorArgb == null && iconColors != null) {
+                    iconColors.resolve(content.packageName, content.iconName.orEmpty())
+                } else null
+                emit(if (color != null) LinuxNotificationEvent.Posted(notification!!.copy(
+                    content = content!!.copy(colorArgb = color.argbColor()),
+                )) else event)
             }
         }
     }

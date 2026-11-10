@@ -61,6 +61,10 @@ kickstart.files = $$PWD/../libpebble3d/mobileapp/pebble/src/commonMain/composeRe
 kickstart.path = /usr/share/rockpool/qml/pages
 INSTALLS += kickstart
 
+watchicons.files = $$files(qml/images/watch-icons/*)
+watchicons.path = /usr/share/rockpool/qml/images/watch-icons
+INSTALLS += watchicons
+
 # Default rules for deployment.
 target.path = /usr/bin
 

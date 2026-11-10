@@ -191,11 +191,6 @@
   },
   {
     "interfaces": [
-      "io.rebble.libpebblecommon.rockpool.MceRequest"
-    ]
-  },
-  {
-    "interfaces": [
       "io.rebble.libpebblecommon.ui.GeoClueReverseGeocode"
     ]
   },

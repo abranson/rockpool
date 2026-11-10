@@ -18,6 +18,7 @@ internal data class RockpoolNotificationSource(
     val enabled: Int,
     val colorName: String?,
     val iconCode: String?,
+    val defaultColorName: String? = null,
 )
 
 /**

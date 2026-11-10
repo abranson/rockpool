@@ -67,6 +67,7 @@ struct Pending {
     uint16_t operation;
     bool complete;
     int32_t status;
+    int32_t iconColor;
     lp3wire::TimeState time;
     lp3wire::LocationData location;
     lp3wire::CalendarReplyData calendar;
@@ -74,7 +75,7 @@ struct Pending {
 
     explicit Pending(uint16_t requestOperation)
         : operation(requestOperation), complete(false),
-          status(LP3_PLATFORM_UNAVAILABLE) {
+          status(LP3_PLATFORM_UNAVAILABLE), iconColor(-1) {
         memset(&time, 0, sizeof(time));
         memset(&location, 0, sizeof(location));
         calendar.kind = lp3wire::CalendarQueryCalendars;
@@ -101,6 +102,7 @@ struct SailfishInstance : lp3_platform_instance {
     bool latched;
     bool forceReset;
     uint64_t nextRequestId;
+    uint32_t phoneState;
     uint64_t readyDomains;
     uint64_t degradedDomains;
     uint64_t failedDomains;
@@ -113,7 +115,7 @@ struct SailfishInstance : lp3_platform_instance {
     SailfishInstance()
         : stopping(false), control(-1), wake(-1), socket(-1), helperPid(-1),
           started(false), latched(false), forceReset(false),
-          nextRequestId(UINT64_C(1) << 63), readyDomains(0),
+          nextRequestId(UINT64_C(1) << 63), phoneState(0), readyDomains(0),
           degradedDomains(0), failedDomains(0),
           event(NULL), eventContext(NULL) {
     }
@@ -349,6 +351,7 @@ void publishDisconnected(SailfishInstance *instance) {
         instance->socket = -1;
         instance->helperPid = -1;
         instance->readyDomains = 0;
+        instance->phoneState = 0;
         instance->degradedDomains = 0;
         instance->failedDomains = 0;
         callback = instance->event;
@@ -607,7 +610,7 @@ bool decodeCompletion(uint16_t operation, const std::vector<uint8_t> &payload,
                       int32_t *status, lp3wire::TimeState *time,
                       lp3wire::LocationData *location,
                       lp3wire::CalendarReplyData *calendar,
-                      lp3wire::ContactReplyData *contacts) {
+                      lp3wire::ContactReplyData *contacts, int32_t *color = NULL) {
     uint32_t decodedStatus;
     if (status == NULL || time == NULL || location == NULL || calendar == NULL ||
         contacts == NULL) {
@@ -644,12 +647,24 @@ bool decodeCompletion(uint16_t operation, const std::vector<uint8_t> &payload,
         memset(location, 0, sizeof(*location));
         calendar->calendars.clear();
         calendar->events.clear();
+    } else if (operation == lp3wire::IconColorQuery) {
+        int32_t decodedColor;
+        if (!lp3wire::decodeIconColorReply(payload, &decodedStatus, &decodedColor)) {
+            return false;
+        }
+        if (color != NULL) *color = decodedColor;
+        memset(time, 0, sizeof(*time));
+        memset(location, 0, sizeof(*location));
+        calendar->calendars.clear();
+        calendar->events.clear();
+        contacts->contacts.clear();
     } else if (operation == lp3wire::NotificationCommand ||
                operation == lp3wire::MessageReply ||
                operation == lp3wire::MessageSend ||
                operation == lp3wire::CallCommand ||
                operation == lp3wire::MediaCommand ||
-               operation == lp3wire::PebbleBondRemove) {
+               operation == lp3wire::PebbleBondRemove ||
+               operation == lp3wire::ProfileSet || operation == lp3wire::PairingRequest) {
         if (!lp3wire::decodeStatusReply(payload, operation, &decodedStatus)) {
             return false;
         }
@@ -756,6 +771,13 @@ bool dispatchFrame(SailfishInstance *instance, const lp3wire::Frame &frame) {
         event.struct_size = sizeof(event);
         event.status = LP3_PLATFORM_OK;
         const uint16_t eventType = lp3wire::get16(&frame.payload[0]);
+        if (eventType == lp3wire::PhoneStateChanged) {
+            uint32_t flags;
+            if (!lp3wire::decodePhoneStateChanged(frame.payload, &flags)) return false;
+            std::lock_guard<std::mutex> lock(instance->mutex);
+            instance->phoneState = flags;
+            return true;
+        }
         if (eventType == lp3wire::TimeChanged) {
             lp3wire::TimeState time;
             lp3_platform_time_state_v1 abiTime;
@@ -945,7 +967,7 @@ bool dispatchFrame(SailfishInstance *instance, const lp3wire::Frame &frame) {
             lp3wire::TimeState time;
             if (!decodeCompletion(pending->second->operation, frame.payload,
                                   &locationStatus, &time, &location,
-                                  &calendar, &contacts)) {
+                                  &calendar, &contacts, &pending->second->iconColor)) {
                 return false;
             }
             pending->second->status = locationStatus;
@@ -1412,10 +1434,6 @@ int32_t locationQuery(lp3_platform_instance *raw, uint64_t requestId,
     return LP3_PLATFORM_OK;
 }
 
-int32_t notSupportedProfile(lp3_platform_instance *, uint64_t,
-                            const lp3_platform_profile_request_v1 *) {
-    return LP3_PLATFORM_NOT_SUPPORTED;
-}
 
 int32_t notificationCommand(
     lp3_platform_instance *raw, uint64_t requestId,
@@ -1963,6 +1981,171 @@ int32_t getTimeState(lp3_platform_instance *raw, lp3_platform_time_state_v1 *out
     return LP3_PLATFORM_OK;
 }
 
+int32_t iconColor(lp3_platform_instance *raw, lp3_platform_string source,
+                  lp3_platform_string icon, int32_t *out) {
+    SailfishInstance *instance = static_cast<SailfishInstance *>(raw);
+    std::vector<uint8_t> payload;
+    std::vector<uint8_t> frame;
+    std::shared_ptr<Pending> pending(new Pending(lp3wire::IconColorQuery));
+    uint64_t requestId;
+
+    if (instance == NULL || out == NULL || source.data == NULL || source.size == 0 ||
+        source.size > lp3wire::kIconColorSourceMax || icon.size > lp3wire::kIconColorIconMax ||
+        (icon.size != 0 && icon.data == NULL)) {
+        return LP3_PLATFORM_INVALID_ARGUMENT;
+    }
+    *out = -1;
+    lp3wire::IconColorQueryData query;
+    query.source.assign(source.data, source.size);
+    if (icon.size != 0) query.icon.assign(icon.data, icon.size);
+    if (!lp3wire::encodeIconColorQuery(query, &payload)) {
+        return LP3_PLATFORM_INVALID_ARGUMENT;
+    }
+    std::unique_lock<std::mutex> lock(instance->mutex);
+    if (instance->stopping.load() || instance->socket < 0 || instance->latched) {
+        return LP3_PLATFORM_UNAVAILABLE;
+    }
+    if (instance->pending.size() + instance->tombstones.size() >= kMaximumOutstanding ||
+        instance->outgoing.size() >= kMaximumOutgoing || instance->nextRequestId == 0) {
+        return LP3_PLATFORM_BUSY;
+    }
+    requestId = instance->nextRequestId++;
+    if (!lp3wire::encodeFrame(lp3wire::Request, requestId, &payload[0], payload.size(),
+                              &frame)) {
+        return LP3_PLATFORM_INTERNAL_ERROR;
+    }
+    instance->pending[requestId] = pending;
+    instance->outgoing.push_back(frame);
+    wakeWorker(instance);
+
+    if (!pending->condition.wait_for(lock, std::chrono::seconds(1),
+                                     [pending, instance] {
+                                         return pending->complete || instance->stopping.load();
+                                     })) {
+        std::map<uint64_t, std::shared_ptr<Pending> >::iterator current =
+            instance->pending.find(requestId);
+        if (current != instance->pending.end()) {
+            instance->pending.erase(current);
+            if (instance->tombstones.size() >= kMaximumOutstanding ||
+                instance->outgoing.size() >= kMaximumOutgoing) {
+                instance->forceReset = true;
+            } else {
+                std::vector<uint8_t> cancelFrame;
+                Tombstone tombstone;
+                tombstone.operation = lp3wire::IconColorQuery;
+                tombstone.expires =
+                    std::chrono::steady_clock::now() + kCancellationGrace;
+                instance->tombstones[requestId] = tombstone;
+                if (!lp3wire::encodeFrame(lp3wire::Cancel, requestId, NULL, 0,
+                                          &cancelFrame)) {
+                    instance->forceReset = true;
+                } else {
+                    instance->outgoing.push_back(cancelFrame);
+                }
+            }
+            wakeWorker(instance);
+        }
+        return LP3_PLATFORM_UNAVAILABLE;
+    }
+    if (!pending->complete) {
+        return LP3_PLATFORM_UNAVAILABLE;
+    }
+    if (pending->status != LP3_PLATFORM_OK) {
+        return pending->status;
+    }
+    *out = pending->iconColor;
+    return LP3_PLATFORM_OK;
+}
+
+int32_t phoneCommand(lp3_platform_instance *raw, uint16_t operation,
+                     lp3_platform_string value) {
+    SailfishInstance *instance = static_cast<SailfishInstance *>(raw);
+    std::vector<uint8_t> payload;
+    std::vector<uint8_t> frame;
+    std::shared_ptr<Pending> pending(new Pending(operation));
+    uint64_t requestId;
+
+    if (instance == NULL || value.data == NULL || value.size == 0 || value.size > 128) {
+        return LP3_PLATFORM_INVALID_ARGUMENT;
+    }
+    if (!lp3wire::encodePhoneCommand(operation, std::string(value.data, value.size), &payload)) {
+        return LP3_PLATFORM_INVALID_ARGUMENT;
+    }
+    std::unique_lock<std::mutex> lock(instance->mutex);
+    if (instance->stopping.load() || instance->socket < 0 || instance->latched) {
+        return LP3_PLATFORM_UNAVAILABLE;
+    }
+    if (instance->pending.size() + instance->tombstones.size() >= kMaximumOutstanding ||
+        instance->outgoing.size() >= kMaximumOutgoing || instance->nextRequestId == 0) {
+        return LP3_PLATFORM_BUSY;
+    }
+    requestId = instance->nextRequestId++;
+    if (!lp3wire::encodeFrame(lp3wire::Request, requestId, &payload[0], payload.size(),
+                              &frame)) {
+        return LP3_PLATFORM_INTERNAL_ERROR;
+    }
+    instance->pending[requestId] = pending;
+    instance->outgoing.push_back(frame);
+    wakeWorker(instance);
+
+    if (!pending->condition.wait_for(lock, std::chrono::seconds(4),
+                                     [pending, instance] {
+                                         return pending->complete || instance->stopping.load();
+                                     })) {
+        std::map<uint64_t, std::shared_ptr<Pending> >::iterator current =
+            instance->pending.find(requestId);
+        if (current != instance->pending.end()) {
+            instance->pending.erase(current);
+            if (instance->tombstones.size() >= kMaximumOutstanding ||
+                instance->outgoing.size() >= kMaximumOutgoing) {
+                instance->forceReset = true;
+            } else {
+                std::vector<uint8_t> cancelFrame;
+                Tombstone tombstone;
+                tombstone.operation = operation;
+                tombstone.expires =
+                    std::chrono::steady_clock::now() + kCancellationGrace;
+                instance->tombstones[requestId] = tombstone;
+                if (!lp3wire::encodeFrame(lp3wire::Cancel, requestId, NULL, 0,
+                                          &cancelFrame)) {
+                    instance->forceReset = true;
+                } else {
+                    instance->outgoing.push_back(cancelFrame);
+                }
+            }
+            wakeWorker(instance);
+        }
+        return LP3_PLATFORM_UNAVAILABLE;
+    }
+    if (!pending->complete) {
+        return LP3_PLATFORM_UNAVAILABLE;
+    }
+    if (pending->status != LP3_PLATFORM_OK) {
+        return pending->status;
+    }
+    return LP3_PLATFORM_OK;
+}
+
+int32_t setProfile(lp3_platform_instance *raw, uint64_t requestId,
+                   const lp3_platform_profile_request_v1 *profile) {
+    if (requestId == 0 || profile == NULL || profile->struct_size < sizeof(*profile))
+        return LP3_PLATFORM_INVALID_ARGUMENT;
+    return phoneCommand(raw, lp3wire::ProfileSet, profile->profile_id);
+}
+
+int32_t requestPairing(lp3_platform_instance *raw, lp3_platform_string address) {
+    return phoneCommand(raw, lp3wire::PairingRequest, address);
+}
+
+int32_t getPhoneState(lp3_platform_instance *raw, uint32_t *flags) {
+    SailfishInstance *instance = static_cast<SailfishInstance *>(raw);
+    if (instance == NULL || flags == NULL) return LP3_PLATFORM_INVALID_ARGUMENT;
+    std::lock_guard<std::mutex> lock(instance->mutex);
+    *flags = instance->socket >= 0 && !instance->stopping.load() && !instance->latched
+        ? instance->phoneState : 0;
+    return LP3_PLATFORM_OK;
+}
+
 int32_t notSupportedDeviceState(lp3_platform_instance *, lp3_platform_device_state_v1 *) {
     return LP3_PLATFORM_NOT_SUPPORTED;
 }
@@ -2049,13 +2232,16 @@ const lp3_platform_api_v1 kApi = {
     calendarQuery,
     contactQuery,
     locationQuery,
-    notSupportedProfile,
+    setProfile,
     getTimeState,
     notSupportedDeviceState,
     getStatus,
     notificationCommand,
     sendMessage,
     removePebbleBond,
+    iconColor,
+    getPhoneState,
+    requestPairing,
 };
 
 } // namespace

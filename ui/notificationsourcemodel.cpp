@@ -32,6 +32,10 @@ QVariant NotificationSourceModel::data(const QModelIndex &index, int role) const
         return item.m_colorName;
     case RoleIconCode:
         return item.m_iconCode;
+    case RoleDefaultColorName:
+        return item.m_defaultColorName;
+    case RoleDefaultIconCode:
+        return item.m_defaultIconCode;
     }
     return QVariant();
 }
@@ -45,6 +49,8 @@ QHash<int, QByteArray> NotificationSourceModel::roleNames() const
     roles.insert(RoleId, "id");
     roles.insert(RoleColorName, "colorName");
     roles.insert(RoleIconCode, "iconCode");
+    roles.insert(RoleDefaultColorName, "defaultColorName");
+    roles.insert(RoleDefaultIconCode, "defaultIconCode");
     return roles;
 }
 
@@ -76,6 +82,16 @@ void NotificationSourceModel::insert(const QString &sourceId, const QString &nam
                 m_sources[idx].m_enabled = enabled;
                 roles.append(RoleEnabled);
             }
+            if (roles.contains(RoleName) || roles.contains(RoleEnabled)) {
+                const int destination = sortedPosition(m_sources.at(idx), idx);
+                if (destination != idx) {
+                    beginMoveRows(QModelIndex(), idx, idx, QModelIndex(),
+                                  destination > idx ? destination + 1 : destination);
+                    m_sources.move(idx, destination);
+                    endMoveRows();
+                    idx = destination;
+                }
+            }
             if (!roles.isEmpty()) {
                 emit dataChanged(index(idx), index(idx), roles);
             }
@@ -89,13 +105,37 @@ void NotificationSourceModel::insert(const QString &sourceId, const QString &nam
         if (enabled < 0) {
             return;
         }
-        beginInsertRows(QModelIndex(), m_sources.count(), m_sources.count());
         NotificationSourceItem item = createNotificationItem(sourceId, name, icon);
         item.m_enabled = enabled;
-        m_sources.append(item);
+        const int destination = sortedPosition(item);
+        beginInsertRows(QModelIndex(), destination, destination);
+        m_sources.insert(destination, item);
         endInsertRows();
         emit countChanged();
     }
+}
+
+int NotificationSourceModel::sortedPosition(const NotificationSourceItem &item, int excludedRow) const
+{
+    int position = 0;
+    for (int i = 0; i < m_sources.count(); i++) {
+        if (i == excludedRow) {
+            continue;
+        }
+        const NotificationSourceItem &other = m_sources.at(i);
+        if (other.m_enabled != item.m_enabled) {
+            if (other.m_enabled > item.m_enabled) {
+                ++position;
+            }
+        } else {
+            const int comparison = QString::localeAwareCompare(other.m_displayName.toCaseFolded(),
+                                                               item.m_displayName.toCaseFolded());
+            if (comparison < 0 || (comparison == 0 && other.m_id < item.m_id)) {
+                ++position;
+            }
+        }
+    }
+    return position;
 }
 
 void NotificationSourceModel::setAppearance(const QString &sourceId, const QString &colorName, const QString &iconCode)
@@ -110,6 +150,27 @@ void NotificationSourceModel::setAppearance(const QString &sourceId, const QStri
             if (m_sources[i].m_iconCode != iconCode) {
                 m_sources[i].m_iconCode = iconCode;
                 roles.append(RoleIconCode);
+            }
+            if (!roles.isEmpty()) {
+                emit dataChanged(index(i), index(i), roles);
+            }
+            return;
+        }
+    }
+}
+
+void NotificationSourceModel::setDefaults(const QString &sourceId, const QString &colorName, const QString &iconCode)
+{
+    for (int i = 0; i < m_sources.count(); i++) {
+        if (m_sources[i].m_id == sourceId) {
+            QVector<int> roles;
+            if (m_sources[i].m_defaultColorName != colorName) {
+                m_sources[i].m_defaultColorName = colorName;
+                roles.append(RoleDefaultColorName);
+            }
+            if (m_sources[i].m_defaultIconCode != iconCode) {
+                m_sources[i].m_defaultIconCode = iconCode;
+                roles.append(RoleDefaultIconCode);
             }
             if (!roles.isEmpty()) {
                 emit dataChanged(index(i), index(i), roles);

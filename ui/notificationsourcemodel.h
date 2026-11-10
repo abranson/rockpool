@@ -14,6 +14,8 @@ public:
     // m_colorName is a TimelineColor.name, m_iconCode a TimelineIcon.code.
     QString m_colorName;
     QString m_iconCode;
+    QString m_defaultColorName;
+    QString m_defaultIconCode;
 
     bool operator ==(const NotificationSourceItem &other) {
         return m_id == other.m_id;
@@ -31,7 +33,9 @@ public:
         RoleIcon,
         RoleId,
         RoleColorName,
-        RoleIconCode
+        RoleIconCode,
+        RoleDefaultColorName,
+        RoleDefaultIconCode
     };
 
     explicit NotificationSourceModel(QObject *parent = 0);
@@ -46,11 +50,13 @@ public:
     void setAppearance(const QString &sourceId, const QString &colorName, const QString &iconCode);
     void setColorName(const QString &sourceId, const QString &colorName);
     void setIconCode(const QString &sourceId, const QString &iconCode);
+    void setDefaults(const QString &sourceId, const QString &colorName, const QString &iconCode);
 
 signals:
     void countChanged();
 
 private:
+    int sortedPosition(const NotificationSourceItem &item, int excludedRow = -1) const;
     QString resolveIcon(const QString &sourceId, const QString &name, const QString &icon);
     NotificationSourceItem createNotificationItem(const QString &sourceId, const QString &name, const QString &icon);
 

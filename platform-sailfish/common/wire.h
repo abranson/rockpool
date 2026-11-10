@@ -20,7 +20,7 @@
 namespace lp3wire {
 
 static const uint16_t kMajor = 1;
-static const uint16_t kMinor = 10;
+static const uint16_t kMinor = 12;
 static const size_t kNotificationImageMax = 4 + 128 * 128 * 3;
 static const size_t kHeaderSize = 24;
 static const size_t kMaxFrameSize = 64 * 1024;
@@ -48,7 +48,11 @@ enum Operation {
     ContactQuery = 8,
     MessageSend = 9,
     PebbleBondRemove = 10,
+    IconColorQuery = 11,
+    ProfileSet = 12,
+    PairingRequest = 13,
 };
+
 
 enum EventType {
     TimeChanged = 1,
@@ -58,6 +62,7 @@ enum EventType {
     MediaVolumeChanged = 5,
     CalendarChanged = 6,
     ContactChanged = 7,
+    PhoneStateChanged = 8,
 };
 
 enum NotificationFlag {
@@ -941,7 +946,8 @@ inline bool encodeStatusReply(uint16_t operation, uint32_t status,
                             operation != MessageSend &&
                             operation != CallCommand &&
                             operation != MediaCommand &&
-                            operation != PebbleBondRemove) ||
+                            operation != PebbleBondRemove &&
+                            operation != ProfileSet && operation != PairingRequest) ||
         !validStatus(status)) {
         return false;
     }
@@ -1786,6 +1792,113 @@ inline IoResult receiveFrameResult(int fd, Frame *frame, bool nonBlocking) {
 
 inline bool receiveFrame(int fd, Frame *frame) {
     return receiveFrameResult(fd, frame, false) == IoFrame;
+}
+
+struct IconColorQueryData { std::string source; std::string icon; };
+
+static const size_t kIconColorSourceMax = 256;
+static const size_t kIconColorIconMax = 1024;
+
+inline bool encodeIconColorQuery(const IconColorQueryData &query,
+                                std::vector<uint8_t> *payload) {
+    if (payload == NULL || !validText(query.source, kIconColorSourceMax, false) ||
+        !validText(query.icon, kIconColorIconMax)) return false;
+    payload->assign(12, 0);
+    put16(&(*payload)[0], IconColorQuery);
+    put32(&(*payload)[4], static_cast<uint32_t>(query.source.size()));
+    put32(&(*payload)[8], static_cast<uint32_t>(query.icon.size()));
+    payload->insert(payload->end(), query.source.begin(), query.source.end());
+    payload->insert(payload->end(), query.icon.begin(), query.icon.end());
+    return true;
+}
+
+inline bool decodeIconColorQuery(const std::vector<uint8_t> &payload,
+                                 IconColorQueryData *query) {
+    IconColorQueryData decoded;
+    if (query == NULL || payload.size() < 12 ||
+        get16(&payload[0]) != IconColorQuery || get16(&payload[2]) != 0) return false;
+    size_t offset = 12;
+    if (get32(&payload[4]) > kIconColorSourceMax ||
+        get32(&payload[8]) > kIconColorIconMax ||
+        !readText(payload, &offset, get32(&payload[4]), &decoded.source) ||
+        !readText(payload, &offset, get32(&payload[8]), &decoded.icon) ||
+        offset != payload.size() ||
+        !validText(decoded.source, kIconColorSourceMax, false) ||
+        !validText(decoded.icon, kIconColorIconMax)) return false;
+    *query = decoded;
+    return true;
+}
+
+inline bool encodeIconColorReply(uint32_t status, int32_t color,
+                                 std::vector<uint8_t> *payload) {
+    if (payload == NULL || !validStatus(status) || color < -1 || color > 0xffffff) return false;
+    payload->assign(12, 0);
+    put16(&(*payload)[0], IconColorQuery);
+    put32(&(*payload)[4], status);
+    put32(&(*payload)[8], static_cast<uint32_t>(color));
+    return true;
+}
+
+inline bool decodeIconColorReply(const std::vector<uint8_t> &payload,
+                                 uint32_t *status, int32_t *color) {
+    if (payload.size() != 12 || get16(&payload[0]) != IconColorQuery ||
+        get16(&payload[2]) != 0 || !validStatus(get32(&payload[4])) ||
+        static_cast<int32_t>(get32(&payload[8])) < -1 ||
+        static_cast<int32_t>(get32(&payload[8])) > 0xffffff) return false;
+    if (status != NULL) *status = get32(&payload[4]);
+    if (color != NULL) *color = static_cast<int32_t>(get32(&payload[8]));
+    return true;
+}
+
+inline bool validPhoneStateFlags(uint32_t flags) {
+    return (flags & ~15u) == 0 && (!(flags & 2u) || (flags & 1u)) &&
+        (!(flags & 8u) || (flags & 4u));
+}
+
+inline bool encodePhoneStateChanged(uint32_t flags, std::vector<uint8_t> *payload) {
+    if (payload == NULL || !validPhoneStateFlags(flags)) return false;
+    payload->assign(8, 0);
+    put16(&(*payload)[0], PhoneStateChanged);
+    put32(&(*payload)[4], flags);
+    return true;
+}
+
+inline bool decodePhoneStateChanged(const std::vector<uint8_t> &payload, uint32_t *flags) {
+    if (flags == NULL || payload.size() != 8 || get16(&payload[0]) != PhoneStateChanged ||
+        get16(&payload[2]) != 0 || !validPhoneStateFlags(get32(&payload[4]))) return false;
+    *flags = get32(&payload[4]);
+    return true;
+}
+
+inline bool validPhoneCommand(uint16_t operation, const std::string &value) {
+    if (operation == ProfileSet) return validText(value, 128, false);
+    if (operation != PairingRequest || value.size() != 17) return false;
+    for (size_t i = 0; i < value.size(); ++i) {
+        const char c = value[i];
+        if (i % 3 == 2) { if (c != ':') return false; }
+        else if (!((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') ||
+                   (c >= 'a' && c <= 'f'))) return false;
+    }
+    return true;
+}
+
+inline bool encodePhoneCommand(uint16_t operation, const std::string &value,
+                               std::vector<uint8_t> *payload) {
+    if (payload == NULL || !validPhoneCommand(operation, value)) return false;
+    payload->assign(8, 0);
+    put16(&(*payload)[0], operation);
+    put32(&(*payload)[4], static_cast<uint32_t>(value.size()));
+    payload->insert(payload->end(), value.begin(), value.end());
+    return true;
+}
+
+inline bool decodePhoneCommand(const std::vector<uint8_t> &payload, uint16_t operation,
+                               std::string *value) {
+    if (value == NULL || payload.size() < 8 || payload.size() > 136 ||
+        get16(&payload[0]) != operation || get16(&payload[2]) != 0) return false;
+    size_t offset = 8;
+    return readText(payload, &offset, get32(&payload[4]), value) &&
+        offset == payload.size() && validPhoneCommand(operation, *value);
 }
 
 } // namespace lp3wire

@@ -3009,6 +3009,7 @@ void Pebble::applyNotificationFilters(const QVariantMap &filters)
         const QVariantMap notifEntry = parsedFilters.value(sourceId).toMap();
         m_notifications->insert(sourceId, notifEntry.value("name").toString(), notifEntry.value("icon").toString(), notifEntry.value("enabled").toInt());
         m_notifications->setAppearance(sourceId, notifEntry.value("colorName").toString(), notifEntry.value("iconCode").toString());
+        m_notifications->setDefaults(sourceId, notifEntry.value("defaultColorName").toString(), notifEntry.value("defaultIconCode").toString());
     }
 
     if (m_notificationFilters != parsedFilters) {

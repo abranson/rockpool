@@ -4,6 +4,7 @@
 package io.rebble.libpebblecommon.rockpool
 
 import co.touchlab.kermit.Logger
+import io.rebble.libpebblecommon.timeline.TimelineColor
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
@@ -12,6 +13,8 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -29,7 +32,7 @@ import kotlin.time.Duration.Companion.seconds
 internal data class PlatformProviderSnapshot(
     val state: String,
     val provider: String = "",
-    val abiVersion: String = "1.9",
+    val abiVersion: String = "1.11",
     val buildId: String = "",
     val domains: Long = 0,
     val supportedDomains: Long = 0,
@@ -230,10 +233,29 @@ internal class PlatformProviderController(
         PlatformProviderNative::cancelContact,
     private val contactDrainNative: () -> Array<ByteArray> =
         PlatformProviderNative::drainContactEvents,
+    private val phoneNativeAvailable: () -> Boolean = { nativeLibraryLoaded },
+    private val phoneStateNative: () -> Int = PlatformProviderNative::phoneState,
+    private val profileNative: (String) -> Int = PlatformProviderNative::setProfile,
+    private val pairingNative: (String) -> Int = PlatformProviderNative::requestPairing,
+    private val iconColorNativeAvailable: () -> Boolean = { nativeLibraryLoaded },
+    private val iconColorNative: (String, String) -> Int = PlatformProviderNative::iconColor,
     private val removePebbleBondNativeAvailable: () -> Boolean = { nativeLibraryLoaded },
     private val removePebbleBondNative: (Int, String) -> Int =
         PlatformProviderNative::removePebbleBond,
 ) {
+    private val mutablePrivacyActive = MutableStateFlow<Boolean?>(null)
+    val privacyActive = mutablePrivacyActive.asStateFlow()
+    private val mutablePhoneActive = MutableStateFlow<Boolean?>(null)
+    val phoneActive = mutablePhoneActive.asStateFlow()
+
+    internal fun phoneStateChanged(rawFlags: Int) {
+        val flags = if (rawFlags and 15 == rawFlags &&
+            (rawFlags and 2 == 0 || rawFlags and 1 != 0) &&
+            (rawFlags and 8 == 0 || rawFlags and 4 != 0)) rawFlags else 0
+        mutablePrivacyActive.value = if (flags and 1 != 0) flags and 2 != 0 else null
+        mutablePhoneActive.value = if (flags and 4 != 0) flags and 8 != 0 else null
+    }
+
     private val logger = Logger.withTag("PlatformProvider")
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val lifecycleLock = Mutex()
@@ -319,7 +341,10 @@ internal class PlatformProviderController(
                 while (true) {
                     delay(PLATFORM_EVENT_INTERVAL)
                     lifecycleLock.withLock {
-                        if (nativeLibraryLoaded) drainNativeEvents()
+                        if (nativeLibraryLoaded) {
+                            phoneStateChanged(runCatching { phoneStateNative() }.getOrDefault(0))
+                            drainNativeEvents()
+                        } else phoneStateChanged(0)
                     }
                 }
             }
@@ -431,6 +456,35 @@ internal class PlatformProviderController(
             }
         }
 
+    suspend fun setProfile(profile: String) = withContext(Dispatchers.IO) {
+        require(profile.isNotEmpty() && profile.toByteArray(Charsets.UTF_8).size <= 128)
+        lifecycleLock.withLock {
+            check(phoneNativeAvailable()) { "platform provider unavailable" }
+            check(profileNative(profile) == 0) { "platform profile request failed" }
+        }
+    }
+
+    suspend fun requestPairing(address: String): Boolean = withContext(Dispatchers.IO) {
+        if (!address.matches(Regex("[0-9A-Fa-f]{2}(:[0-9A-Fa-f]{2}){5}"))) return@withContext false
+        lifecycleLock.withLock {
+            phoneNativeAvailable() && runCatching { pairingNative(address) == 0 }.getOrDefault(false)
+        }
+    }
+
+    suspend fun iconColor(source: String, icon: String): TimelineColor? =
+        withContext(Dispatchers.IO) {
+            if (source.isBlank() || source.toByteArray(Charsets.UTF_8).size > 256 ||
+                icon.toByteArray(Charsets.UTF_8).size > 1024) return@withContext null
+            lifecycleLock.withLock {
+                if (!iconColorNativeAvailable() || current.domains and NOTIFICATION_DOMAIN == 0L) {
+                    return@withLock null
+                }
+                val rgb = runCatching { iconColorNative(source, icon) }
+                    .getOrDefault(-1)
+                TimelineColor.entries.firstOrNull { it.color == rgb }
+            }
+        }
+
     suspend fun mediaCommand(command: Int, isCurrent: () -> Boolean): Int? =
         withContext(Dispatchers.IO) {
             lifecycleLock.withLock {
@@ -475,6 +529,7 @@ internal class PlatformProviderController(
     }
 
     internal fun providerSnapshotChanged(snapshot: PlatformProviderSnapshot) {
+        if (!snapshot.isRestartOperational()) phoneStateChanged(0)
         synchronized(mediaLock) {
             if (snapshot.domains and MEDIA_DOMAIN == 0L && latestMediaVolume != null) {
                 latestMediaVolume = null
@@ -1342,7 +1397,7 @@ internal class PlatformProviderController(
             state = field(0).ifEmpty { "failed" },
             provider = field(1),
             buildId = field(2),
-            abiVersion = field(3).ifEmpty { "1.9" },
+            abiVersion = field(3).ifEmpty { "1.11" },
             domains = field(4).toLongOrNull() ?: 0,
             helperPid = field(5).toLongOrNull() ?: 0,
             error = field(6),
@@ -1596,6 +1651,18 @@ internal object PlatformProviderNative {
 
     @JvmStatic
     external fun callCommand(command: Int, id: String): Int
+
+    @JvmStatic
+    external fun phoneState(): Int
+
+    @JvmStatic
+    external fun setProfile(profile: String): Int
+
+    @JvmStatic
+    external fun requestPairing(address: String): Int
+
+    @JvmStatic
+    external fun iconColor(source: String, icon: String): Int
 
     @JvmStatic
     external fun mediaCommand(command: Int): Int

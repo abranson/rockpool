@@ -48,12 +48,35 @@ withdraws a tracked warning and re-arms it. Warnings remain dismissible; chargin
 state is not currently available. Watches that
 do not report a battery level do not display a percentage or trigger warnings.
 
+In **Settings → Quiet Time**, **Follow phone privacy mode** optionally enables
+manual Quiet Time while Sailfish privacy mode is active. It is off by default
+and disabled on phones where the Sailfish privacy-mode API is unavailable.
+Rockpool saves the previous manual setting and restores it when privacy mode or
+this option is turned off, including after a daemon restart. Schedules and calendar
+settings are unchanged. Like other Quiet Time settings, this applies to all watches
+and requires watch settings synchronization. Changes made while disconnected sync
+when the watch reconnects. Leave Bluetooth enabled in the phone's privacy-mode
+settings so the watch can receive the change immediately.
+
+**Scheduled Quiet Time** enables or disables both schedules and hides their
+controls when off. Turning it back on restores the saved weekday/weekend
+selection; the time ranges are retained. Manual Quiet Time and calendar events
+remain independent of this switch.
+
 The background service checks installed store apps and watchfaces for updates
 every six hours, including with the app window closed. Each available version
 is announced once per app; restarting the service does not repeat the alert.
 Tap the notification to open the app's details with its Upgrade button.
 Failed store checks are retried after 15 minutes. Unlinked
 sideloaded apps and system apps are excluded.
+
+Notification colours use explicit per-app choices first, then built-in defaults.
+For other apps, Rockpool derives a default from the installed app icon and maps
+it to the watch's colour palette. Transparent, near-white, near-black and neutral
+pixels are ignored. Derived colours remain defaults: **Use default colour**
+restores them, and they do not add a custom-choice marker. The background service
+caches results while running, refreshes changed icon names, and periodically
+rechecks unchanged icons. Missing or unsuitable icons retain the watch default.
 
 Image previews require the notification producer to supply
 `x-nemo-image-preview-path` or `x-nemo-image-preview-data`. App icons and large
@@ -74,7 +97,10 @@ with GraalVM; the phone does not need a Java runtime.
 The Silica UI talks to the daemon's private `org.rockpool` compatibility
 interface. The daemon also exposes the generic `io.rebble.libpebble3` session-bus
 API. Sailfish integration lives in Rockpool's platform provider and isolated
-helper, including notifications, contacts, calendars, calls and location.
+helper, including notifications, contacts, calendars, calls, location, phone
+activity, privacy mode, profile switching, pairing dispatch and app-icon colour
+extraction. Icon decoding uses a bounded worker in that existing helper;
+no separate icon-colour executable or service is installed.
 
 | Source | Purpose |
 | --- | --- |

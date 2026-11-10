@@ -19,19 +19,26 @@ SOURCES += main.cpp \
     calendarmonitor.cpp \
     callmonitor.cpp \
     contactmonitor.cpp \
+    iconcolor.cpp \
+    iconcolorworker.cpp \
     locationmonitor.cpp \
     mainvolumemonitor.cpp \
     notificationmonitor.cpp \
-    pebblebondremover.cpp
+    pebblebondremover.cpp \
+    phonestate.cpp
 HEADERS += ../common/wire.h \
+    ../../libpebble3d/include/libpebble3d-icon-color.h \
     ../../libpebble3d/include/libpebble3d-launcher-wire.h \
     calendarmonitor.h \
     callmonitor.h \
     contactmonitor.h \
+    iconcolor.h \
+    iconcolorworker.h \
     locationmonitor.h \
     mainvolumemonitor.h \
     notificationmonitor.h \
     pebblebondremover.h \
+    phonestate.h \
     timeinterface.h
 
 isEmpty(LP3_LIBEXECDIR): LP3_LIBEXECDIR = /usr/libexec

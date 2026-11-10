@@ -777,6 +777,67 @@ fixed empty-reply `org.sailfishos.Messages` `/`
 Timeouts and owner or connection generation changes fail without retrying the
 externally visible send.
 
+Minor 12 moves Sailfish privacy-mode and MCE activity monitoring plus profile
+and pairing dispatch into the existing host. Platform ABI 1.11 appends an optional
+cached phone-state getter and pairing command; the existing profile setter is
+implemented. Older providers leave these capabilities unavailable.
+
+```text
+Event PhoneStateChanged (request_id = 0, payload size 8)
+    u16 event = 8
+    u16 reserved = 0
+    u32 flags                  // bit0 privacy known, bit1 privacy active,
+                               // bit2 activity known, bit3 activity active
+
+Request ProfileSet / PairingRequest (request_id != 0)
+    u16 operation = 12 / 13
+    u16 reserved = 0
+    u32 value_length
+    u8 value[value_length]     // profile: 1..128 UTF-8 bytes; pairing: Bluetooth address
+
+Complete status (matching request_id, payload size 8)
+    u16 operation = 12 / 13
+    u16 reserved = 0
+    u32 status
+```
+
+Unknown and inactive states remain distinct. Service owner changes clear known
+state, and generation/signal counters reject stale snapshots. Optional privacy
+API absence does not degrade other platform domains. MCE activity uses system
+inactivity, not display or lock status. Profile and pairing operations dispatch
+only to fixed Sailfish endpoints with no reply expected; success acknowledges
+submission, not completed pairing. Watch policy, privacy-state restoration and
+profile transition selection remain in the daemon.
+
+Minor 11 adds read-only app-icon colour extraction in the existing Sailfish host.
+Platform ABI 1.10 appends optional `icon_color`; older providers return unavailable.
+The operation accepts a source ID (1–256 UTF-8 bytes) and optional icon name
+(0–1024 bytes), never an arbitrary D-Bus operation. File lookup remains limited
+to installed launcher/icon roots. A bounded worker locates, decodes and resizes
+images without blocking the host event loop. Colour selection is shared in
+`include/libpebble3d-icon-color.h`: a Qt-independent function accepts straight
+ARGB32 pixels (at most 32 × 32, with an explicit row stride), selects a dominant
+saturated colour and quantizes it to the Pebble palette. Other platform providers
+can use the same function after decoding their app icons. Cancellation drops
+queued work and ignores late results; the daemon keeps its defaults cache and
+user overrides.
+
+```text
+Request IconColorQuery (request_id != 0)
+    u16 operation = 11
+    u16 reserved = 0
+    u32 source_length
+    u32 icon_length
+    u8 source[source_length]
+    u8 icon[icon_length]
+
+Complete IconColorReply (matching request_id, payload size 12)
+    u16 operation = 11
+    u16 reserved = 0
+    u32 status
+    i32 rgb                    // 0x000000..0xffffff, or -1 when absent
+```
+
 Minor 9 adds one idempotent Pebble-bond removal request. It carries only a
 numeric BlueZ adapter index and six address octets; no D-Bus destination,
 object path, interface, member, or caller-supplied device name crosses the

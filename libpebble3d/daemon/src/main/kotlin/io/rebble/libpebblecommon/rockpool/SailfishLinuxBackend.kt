@@ -3,35 +3,16 @@
  */
 package io.rebble.libpebblecommon.rockpool
 
-import co.touchlab.kermit.Logger
 import io.rebble.libpebblecommon.connection.bt.LinuxPairingRequester
 import io.rebble.libpebblecommon.connection.bt.ble.bluez.LinuxBluezAdapter
 import io.rebble.libpebblecommon.connection.bt.ble.bluez.LinuxBluezAdapterSelector
-import io.rebble.libpebblecommon.linux.dbus.RawSessionConnection
+import kotlinx.coroutines.runBlocking
 
-/** Delegates the typed bond request to Sailfish's session pairing broker. */
-internal class SailfishPairingRequester : LinuxPairingRequester {
-    private val logger = Logger.withTag("SailfishPairingRequester")
-
-    override fun requestPairing(address: String): Boolean = try {
-        RawSessionConnection.connect()?.use { connection ->
-            // Lipstick exposes this through a QML adaptor signal: it starts pairing
-            // but does not send a method reply. Waiting here prevents libpebble3
-            // from observing the bond and starting the Pebble protocol handshake.
-            connection.call(
-                "com.jolla.lipstick",
-                "/bluetooth",
-                "com.jolla.lipstick",
-                "pairWithDevice",
-                "s",
-                address,
-            )
-            true
-        } ?: false
-    } catch (e: Throwable) {
-        logger.e("Sailfish pairing request failed for $address", e)
-        false
-    }
+/** Delegates pairing dispatch to the platform bridge; completion remains with BlueZ. */
+internal class SailfishPairingRequester(
+    private val request: suspend (String) -> Boolean,
+) : LinuxPairingRequester {
+    override fun requestPairing(address: String): Boolean = runBlocking { request(address) }
 }
 
 /** Prefer AlienBT's later virtual HCI for a duplicated controller address. */

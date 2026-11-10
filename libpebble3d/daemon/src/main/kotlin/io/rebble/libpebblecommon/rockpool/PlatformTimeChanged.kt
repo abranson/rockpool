@@ -67,7 +67,7 @@ internal fun platformProviderModule(
         )
     } bind LegacyPhoneReceiver::class
     single { PlatformVolumeControl(controller) } bind VolumeControl::class
-    single { SailfishPairingRequester() } bind LinuxPairingRequester::class
+    single { SailfishPairingRequester(controller::requestPairing) } bind LinuxPairingRequester::class
     single { SailfishBluezAdapterSelector() } bind LinuxBluezAdapterSelector::class
     single { rfcommSocketFactory } bind LinuxRfcommSocketFactory::class
     single { timelineWindow } bind TimelineWindowProvider::class

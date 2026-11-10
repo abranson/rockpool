@@ -356,7 +356,7 @@ static void set_literal(char *destination, size_t destination_size,
 static void set_snapshot_state(const char *state, const char *error) {
     memset(&loader.snapshot, 0, sizeof(loader.snapshot));
     set_literal(loader.snapshot.state, sizeof(loader.snapshot.state), state);
-    set_literal(loader.snapshot.abi_version, sizeof(loader.snapshot.abi_version), "1.9");
+    set_literal(loader.snapshot.abi_version, sizeof(loader.snapshot.abi_version), "1.11");
     set_literal(loader.snapshot.domains, sizeof(loader.snapshot.domains), "0");
     set_literal(loader.snapshot.helper_pid, sizeof(loader.snapshot.helper_pid), "0");
     set_literal(loader.snapshot.supported_domains,
@@ -2965,6 +2965,88 @@ Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_mediaCommand(
     }
     pthread_mutex_unlock(&loader_lock);
     return result;
+}
+
+JNIEXPORT jint JNICALL
+Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_phoneState(
+    JNIEnv *env, jclass klass) {
+    uint32_t flags = 0;
+    (void)env; (void)klass;
+    pthread_mutex_lock(&loader_lock);
+    if (loader.api != NULL && loader.instance != NULL &&
+        loader.api->info.abi_minor >= 11 && API_HAS_MEMBER(loader.api, get_phone_state)) {
+        if (loader.api->get_phone_state(loader.instance, &flags) != LP3_PLATFORM_OK)
+            flags = 0;
+    }
+    pthread_mutex_unlock(&loader_lock);
+    return (jint)flags;
+}
+
+static jint phone_command(JNIEnv *env, jstring value, int pairing) {
+    char text[129];
+    uint32_t size = 0;
+    int32_t result = LP3_PLATFORM_UNAVAILABLE;
+    int gate;
+    if (!java_string_to_utf8(env, value, text, pairing ? 17 : 128, &size, 0))
+        return LP3_PLATFORM_INVALID_ARGUMENT;
+    pthread_mutex_lock(&loader_lock);
+    gate = begin_provider_command_dispatch(0);
+    if (gate && loader.api != NULL && loader.instance != NULL && loader.api->info.abi_minor >= 11) {
+        const struct lp3_platform_string argument = {text, size};
+        if (pairing && API_HAS_MEMBER(loader.api, request_pairing)) {
+            result = loader.api->request_pairing(loader.instance, argument);
+        } else if (!pairing && API_HAS_MEMBER(loader.api, set_profile) &&
+                   loader.next_request_id != 0 &&
+                   (loader.next_request_id & (UINT64_C(1) << 63)) == 0) {
+            const struct lp3_platform_profile_request_v1 profile = {sizeof(profile), argument};
+            result = loader.api->set_profile(loader.instance, loader.next_request_id++, &profile);
+        }
+    }
+    if (gate) end_provider_command_dispatch();
+    pthread_mutex_unlock(&loader_lock);
+    return result;
+}
+
+JNIEXPORT jint JNICALL
+Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_setProfile(
+    JNIEnv *env, jclass klass, jstring profile) {
+    (void)klass;
+    return phone_command(env, profile, 0);
+}
+
+JNIEXPORT jint JNICALL
+Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_requestPairing(
+    JNIEnv *env, jclass klass, jstring address) {
+    (void)klass;
+    return phone_command(env, address, 1);
+}
+
+JNIEXPORT jint JNICALL
+Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_iconColor(
+    JNIEnv *env, jclass klass, jstring source_value, jstring icon_value) {
+    char source[257], icon[1025];
+    uint32_t source_size = 0, icon_size = 0;
+    int32_t color = -1;
+    int gate;
+    (void)klass;
+    if (!java_string_to_utf8(env, source_value, source, 256, &source_size, 0) ||
+        !java_string_to_utf8(env, icon_value, icon, 1024, &icon_size, 1)) {
+        return -1;
+    }
+    pthread_mutex_lock(&loader_lock);
+    gate = begin_provider_command_dispatch(LP3_PLATFORM_DOMAIN_NOTIFICATIONS);
+    if (gate && loader.api != NULL && loader.instance != NULL &&
+        loader.api->info.abi_minor >= 10 && API_HAS_MEMBER(loader.api, icon_color)) {
+        const struct lp3_platform_string source_arg = {source, source_size};
+        const struct lp3_platform_string icon_arg = {icon, icon_size};
+        if (loader.api->icon_color(loader.instance, source_arg, icon_arg, &color) !=
+            LP3_PLATFORM_OK || color < -1 || color > 0xffffff) {
+            color = -1;
+        }
+    }
+    if (gate) end_provider_command_dispatch();
+    pthread_mutex_unlock(&loader_lock);
+    return color;
 }
 
 JNIEXPORT jint JNICALL

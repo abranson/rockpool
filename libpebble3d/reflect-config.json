@@ -254,21 +254,6 @@
     "allPublicMethods": true
   },
   {
-    "name": "io.rebble.libpebblecommon.rockpool.MceRequest",
-    "allDeclaredMethods": true,
-    "allPublicMethods": true
-  },
-  {
-    "name": "io.rebble.libpebblecommon.rockpool.MceSignal",
-    "allDeclaredMethods": true,
-    "allPublicMethods": true
-  },
-  {
-    "name": "io.rebble.libpebblecommon.rockpool.MceSignal$SystemInactivityInd",
-    "allDeclaredConstructors": true,
-    "allPublicMethods": true
-  },
-  {
     "name": "io.rebble.libpebblecommon.ui.GeoClueReverseGeocode",
     "allDeclaredMethods": true,
     "allPublicMethods": true

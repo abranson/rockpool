@@ -1,5 +1,8 @@
 package io.rebble.libpebblecommon.ui
 
+import io.rebble.libpebblecommon.rockpool.NotificationIconColors
+import io.rebble.libpebblecommon.rockpool.notificationAppDefaults
+
 import co.touchlab.kermit.Logger
 import io.rebble.libpebblecommon.LibPebbleConfig
 import io.rebble.libpebblecommon.connection.ActiveDevice
@@ -17,6 +20,8 @@ import io.rebble.libpebblecommon.connection.PebbleDevice
 import io.rebble.libpebblecommon.database.dao.AppWithCount
 import io.rebble.libpebblecommon.linux.weather.OpenMeteoWeatherClient
 import io.rebble.libpebblecommon.locker.AppType
+import io.rebble.libpebblecommon.rockpool.PrivacyQuietTimeCoordinator
+import io.rebble.libpebblecommon.rockpool.QuietTimeSchedules
 import io.rebble.libpebblecommon.rockpool.RockpoolSettings
 import io.rebble.libpebblecommon.rockpool.SendTextConfigurationCoordinator
 import io.rebble.libpebblecommon.util.GeolocationPositionResult
@@ -92,9 +97,12 @@ internal class RockpoolUiService(
     private val classicAvailable: Boolean,
     private val configFitsStorage: (LibPebbleConfig) -> Boolean = { true },
     private val sendTextConfiguration: SendTextConfigurationCoordinator? = null,
+    private val privacyQuietTime: PrivacyQuietTimeCoordinator? = null,
+    private val iconColors: NotificationIconColors? = null,
 ) {
     private val logger = Logger.withTag("RockpoolUiService")
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    private val quietTimeSchedules = QuietTimeSchedules(settings, libPebble)
     private val reconnecting = AtomicBoolean(false)
     private val observersStarted = AtomicBoolean(false)
     private val connectionLock = Any()
@@ -164,7 +172,11 @@ internal class RockpoolUiService(
             rockpoolNotificationSources(
                 latestNotificationApps,
                 loadPlatformNotificationFilters(settings),
-            )
+            ).map { source ->
+                source.copy(defaultColorName = notificationAppDefaults(
+                    source.sourceId, source.icon, iconColors?.cached(source.sourceId, source.icon),
+                ).second)
+            }
         },
         emit = { source ->
             broadcastSignal { targetPath ->
@@ -183,6 +195,7 @@ internal class RockpoolUiService(
     )
 
     init {
+        iconColors?.addListener { notificationSourcePublisher.invalidate() }
         profileSettings.addListener(::profileSettingsChanged)
         healthSettings.addListener(::healthSettingsChanged)
         configMutations.addListener(::libPebbleConfigChanged)
@@ -378,6 +391,7 @@ internal class RockpoolUiService(
 
     private fun startObservers() {
         if (!observersStarted.compareAndSet(false, true)) return
+        quietTimeSchedules.start(scope)
         notificationSourcePublisher.start(scope)
         watchWatches()
         scope.launch(Dispatchers.IO) {
@@ -407,6 +421,11 @@ internal class RockpoolUiService(
         watchHealthData()
         scope.launch {
             libPebble.watchPrefs.collect {
+                broadcastSignal { path -> RockpoolPebble.QuietTimeSettingsChanged(path) }
+            }
+        }
+        scope.launch {
+            privacyQuietTime?.revision?.collect {
                 broadcastSignal { path -> RockpoolPebble.QuietTimeSettingsChanged(path) }
             }
         }
@@ -533,6 +552,9 @@ internal class RockpoolUiService(
                                 configFitsStorage = configFitsStorage,
                                 sendTextConfiguration = sendTextConfiguration,
                                 battery = battery,
+                                privacyQuietTime = privacyQuietTime,
+                                iconColors = iconColors,
+                                quietTimeSchedules = quietTimeSchedules,
                             )
                             runCatching { connection?.exportObject(path, obj) }
                                 .onFailure { logger.e("export $path failed", it) }

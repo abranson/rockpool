@@ -2,7 +2,6 @@ import QtQuick 2.2
 import Sailfish.Silica 1.0
 import Sailfish.WebView 1.0
 import Sailfish.WebView.Popups 1.0
-import Sailfish.WebEngine 1.0
 
 Page {
     id: appSettings
@@ -16,18 +15,19 @@ Page {
     property bool configurationSubmitted
     allowedOrientations: Orientation.All
 
-    // boot.rebble.io serves a desktop layout to Sailfish's stock gecko UA and its login flow
-    // gates on "open this on your phone". Present a mobile Firefox UA (matching the gecko 91
-    // engine) so it serves the mobile flow.
-    //
-    // The GLOBAL override is used, not gecko's per-domain general.useragent.override.<host> form,
-    // because embedlite doesn't reliably honor per-domain overrides. To keep it from leaking onto
-    // PKJS config pages (same global engine), it's applied only for the boot flow and cleared
-    // again on close. It's also (re)applied once WebEngineSettings reports initialized: setting a
-    // preference before the engine is up is silently dropped, which is the likely reason a plain
-    // onCompleted set never took.
+    // Rebble only offers its boot link to Android/iOS clients. Keep the actual
+    // engine version and apply the Android identity only to this login view.
     property bool isBootFlow: oauthBootFlow && url === "https://boot.rebble.io"
-    property string bootUserAgent: "Mozilla/5.0 (Android 12; Mobile; rv:91.0) Gecko/91.0 Firefox/91.0"
+    property string bootUserAgent
+    readonly property bool bootUaReady: !isBootFlow || (bootUserAgent.length > 0
+                                                       && webview.webView.httpUserAgent === bootUserAgent)
+
+    function mobileUserAgent(userAgent) {
+        return userAgent.replace(/\(([^)]*)\)/, function(match, platform) {
+            var revision = platform.match(/(?:^|;\s*)(rv:[^;]+)/);
+            return "(Android; Mobile" + (revision ? "; " + revision[1] : "") + ")";
+        });
+    }
 
     // Runs in the web content process (see loadFrameScript below). Walks up from the click target
     // to the enclosing <a>, and if it points at a pebble scheme, cancels the doomed navigation and
@@ -47,28 +47,6 @@ Page {
         "  }" +
         "}, true);" +
         "dump('pebbleLinkCatcher installed\\n');"
-    // Gate navigation to the real url until the mobile UA is set. Non-boot pages are ready at once.
-    // The boot page loads about:blank first (warming the engine), then switches to boot.rebble.io
-    // only after applyBootUserAgent runs — otherwise, on a cold start the engine inits and fires
-    // the first request in one go, before any preference we set could apply.
-    property bool bootUaReady: !isBootFlow
-    function applyBootUserAgent() {
-        if (!isBootFlow || !WebEngineSettings.initialized) return;
-        WebEngineSettings.setPreference("general.useragent.override",
-                                        bootUserAgent, WebEngineSettings.StringPref);
-        bootUaReady = true;
-    }
-    Component.onCompleted: applyBootUserAgent()
-    Component.onDestruction: {
-        if (isBootFlow) {
-            WebEngineSettings.setPreference("general.useragent.override", "",
-                                            WebEngineSettings.StringPref);
-        }
-    }
-    Connections {
-        target: WebEngineSettings
-        onInitializedChanged: applyBootUserAgent()
-    }
     Connections {
         target: appSettings.pebble
         onConnectedChanged: {
@@ -173,8 +151,18 @@ Page {
             focus: true
             active: true
 
-            // about:blank until the boot UA is applied (see bootUaReady); non-boot pages load
-            // appSettings.url straight away.
+            httpUserAgent: appSettings.isBootFlow ? appSettings.bootUserAgent : ""
+            // Read the engine's default UA from a blank document before the
+            // first boot request; ordinary settings pages load immediately.
+            onDomContentLoadedChanged: {
+                if (webView.domContentLoaded && appSettings.isBootFlow
+                        && appSettings.bootUserAgent.length === 0) {
+                    webView.runJavaScript("return navigator.userAgent;", function(userAgent) {
+                        if (typeof userAgent === "string" && userAgent.length > 0)
+                            appSettings.bootUserAgent = appSettings.mobileUserAgent(userAgent);
+                    });
+                }
+            }
             url: appSettings.oauthSubmissionActive
                  ? "about:blank"
                  : (bootUaReady ? appSettings.url : "about:blank")

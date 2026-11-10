@@ -91,6 +91,22 @@
         "parameterTypes": ["int", "java.lang.String"]
       },
       {
+        "name": "phoneState",
+        "parameterTypes": []
+      },
+      {
+        "name": "setProfile",
+        "parameterTypes": ["java.lang.String"]
+      },
+      {
+        "name": "requestPairing",
+        "parameterTypes": ["java.lang.String"]
+      },
+      {
+        "name": "iconColor",
+        "parameterTypes": ["java.lang.String", "java.lang.String"]
+      },
+      {
         "name": "mediaCommand",
         "parameterTypes": ["int"]
       },

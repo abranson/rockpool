@@ -16,6 +16,7 @@ Requires:   qt5-plugin-position-geoclue
 Requires:   geoclue
 Requires:   sailfish-components-webview-qt5
 Requires:   sailfishshare-components
+Requires:   qt5-qtsvg-plugin-imageformat-svg
 Recommends: geoclue-provider-geonames-offline
 Provides:   libpebble3-dbus-api = 1
 Provides:   rockpool-ui-dbus-api = 1

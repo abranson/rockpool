@@ -7,7 +7,6 @@ import co.touchlab.kermit.Logger
 import io.rebble.libpebblecommon.connection.CommonConnectedDevice
 import io.rebble.libpebblecommon.connection.KnownPebbleDevice
 import io.rebble.libpebblecommon.connection.LibPebble
-import io.rebble.libpebblecommon.linux.dbus.RawSessionConnection
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -15,13 +14,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runInterruptible
 import kotlin.coroutines.cancellation.CancellationException
-import java.util.concurrent.RejectedExecutionException
-import java.util.concurrent.SynchronousQueue
-import java.util.concurrent.ThreadPoolExecutor
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicBoolean
 
 internal fun interface ProfileSetter {
@@ -40,7 +33,7 @@ internal class ProfileSwitchCoordinator(
     private val profileSetter: ProfileSetter,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
 ) {
-    constructor(libPebble: LibPebble, settings: RockpoolSettings) : this(
+    constructor(libPebble: LibPebble, settings: RockpoolSettings, setter: ProfileSetter) : this(
         watches = libPebble.watches.map { devices ->
             devices.filterIsInstance<KnownPebbleDevice>().map { device ->
                 ProfileWatchState(
@@ -50,7 +43,7 @@ internal class ProfileSwitchCoordinator(
             }
         },
         getSetting = settings::get,
-        profileSetter = ProfileSetter { profile -> setSailfishProfile(profile) },
+        profileSetter = setter,
     )
 
     private val connected = mutableMapOf<String, Boolean>()
@@ -115,44 +108,5 @@ internal class ProfileSwitchCoordinator(
 
     private companion object {
         private val logger = Logger.withTag("ProfileSwitchCoordinator")
-        private const val PROFILE_DBUS_TIMEOUT_SECONDS = 3L
-        private val profileExecutor = ThreadPoolExecutor(
-            1,
-            1,
-            0L,
-            TimeUnit.MILLISECONDS,
-            SynchronousQueue(),
-            { task -> Thread(task, "rockpool-profile-setter").apply { isDaemon = true } },
-            ThreadPoolExecutor.AbortPolicy(),
-        )
-
-        private suspend fun setSailfishProfile(profile: String) = runInterruptible(Dispatchers.IO) {
-            val request = try {
-                profileExecutor.submit<Boolean> {
-                    val connection = RawSessionConnection.connect() ?: return@submit false
-                    connection.use { conn ->
-                        conn.call(
-                            "com.nokia.profiled", "/com/nokia/profiled", "com.nokia.profiled",
-                            "set_profile", "s", profile,
-                        )
-                    }
-                    true
-                }
-            } catch (_: RejectedExecutionException) {
-                throw IllegalStateException("previous set_profile request is still blocked")
-            }
-            try {
-                if (!request.get(PROFILE_DBUS_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
-                    throw IllegalStateException("could not connect to session bus for set_profile")
-                }
-            } catch (e: TimeoutException) {
-                request.cancel(true)
-                throw IllegalStateException("set_profile timed out", e)
-            } catch (e: InterruptedException) {
-                request.cancel(true)
-                Thread.currentThread().interrupt()
-                throw CancellationException("set_profile was interrupted").apply { initCause(e) }
-            }
-        }
     }
 }
