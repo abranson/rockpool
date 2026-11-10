@@ -338,6 +338,12 @@ AppItem* AppStoreClient::parseAppItem(const QVariantMap &map)
     AppItem *item = new AppItem();
     item->setStoreId(map.value("id").toString());
     item->setName(map.value("title").toString());
+    item->setVendor(map.value("author").toString());
+    item->setVersion(map.value("latest_release").toMap().value("version").toString());
+    item->setIsWatchFace(map.value("type").toString() == "watchface");
+    const QVariantList headerImages = map.value("header_images").toList();
+    if (!headerImages.isEmpty())
+        item->setHeaderImage(headerImages.first().toMap().value("orig").toString());
     if (!map.value("list_image").toString().isEmpty()) {
         item->setIcon(map.value("list_image").toString());
     } else {
@@ -345,7 +351,7 @@ AppItem* AppStoreClient::parseAppItem(const QVariantMap &map)
     }
     item->setDescription(map.value("description").toString());
     item->setHearts(map.value("hearts").toInt());
-    item->setCategory(map.value("category_name").toString());
+    item->setCategory(map.value("category_name", map.value("category")).toString());
     // The search returns the companions as 00 01 10 11 string instead of a map.
     if (map.value("companions").type() == QVariant::Type::String) {
         item->setCompanion(map.value("companions") != "00");
