@@ -32,7 +32,6 @@ Page {
                 root.storeError = qsTr("Could not load the store page. Please try again.")
                 return
             }
-            fetchAppDetails(app.storeId)
             pageStack.push(Qt.resolvedUrl("AppStoreDetailsPage.qml"), {
                                app: app, pebble: root.pebble
                            })
