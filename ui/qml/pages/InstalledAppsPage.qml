@@ -11,6 +11,40 @@ Page {
     property var model: showWatchApps ? pebble.installedApps : pebble.installedWatchfaces
     property bool appMutationsAllowed: rockPool.knownPebbleCount === 1
     property bool appOrderChanged
+    property bool storeRequestPending
+    property string storeError
+
+    onStatusChanged: {
+        if (status === PageStatus.Inactive)
+            root.storeRequestPending = false
+    }
+
+    AppStoreClient {
+        id: storeClient
+
+        hardwarePlatform: root.pebble ? root.pebble.hardwarePlatform : ""
+        onBusyChanged: {
+            if (busy || !root.storeRequestPending)
+                return
+            root.storeRequestPending = false
+            var app = model.get(0)
+            if (!app) {
+                root.storeError = qsTr("Could not load the store page. Please try again.")
+                return
+            }
+            fetchAppDetails(app.storeId)
+            pageStack.push(Qt.resolvedUrl("AppStoreDetailsPage.qml"), {
+                               app: app, pebble: root.pebble
+                           })
+        }
+    }
+
+    BusyIndicator {
+        anchors.centerIn: parent
+        running: storeClient.busy
+        visible: running
+        size: BusyIndicatorSize.Large
+    }
 
     AppStoreClient {
         id: client
@@ -19,6 +53,7 @@ Page {
     }
     SilicaListView {
         id: listView
+
         anchors.fill: parent
         PullDownMenu {
             MenuItem {
@@ -53,6 +88,15 @@ Page {
             Label {
                 width: parent.width - 2 * Theme.horizontalPageMargin
                 anchors.horizontalCenter: parent.horizontalCenter
+                visible: root.storeError.length > 0
+                text: root.storeError
+                color: Theme.highlightColor
+                wrapMode: Text.Wrap
+            }
+
+            Label {
+                width: parent.width - 2 * Theme.horizontalPageMargin
+                anchors.horizontalCenter: parent.horizontalCenter
                 visible: !root.appMutationsAllowed
                 text: qsTr("App changes are available only when exactly one watch is paired.")
                 color: Theme.secondaryColor
@@ -66,6 +110,7 @@ Page {
         clip: true
 
         delegate: InstalledAppDelegate {
+            storeId: model.storeId
             uuid: model.uuid
             name: model.name
             vendor: model.vendor
@@ -88,6 +133,14 @@ Page {
             onLaunchApp: {
                 if (root.pebble && root.pebble.connected)
                     pebble.launchApp(model.uuid)
+            }
+            onOpenStore: {
+                if (!model.storeId || storeClient.busy)
+                    return
+                root.storeError = ""
+                root.storeRequestPending = true
+                storeClient.fetchLink("https://appstore-api.rebble.io/api/v1/apps/id/"
+                                      + encodeURIComponent(model.storeId))
             }
             onConfigureApp: root.configureApp(model.uuid)
             onMoveApp: {
