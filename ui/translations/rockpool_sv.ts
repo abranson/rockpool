@@ -901,7 +901,7 @@
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="41"/>
         <source>Open in store</source>
-        <translation type="unfinished"></translation>
+        <translation>Öppna i Store</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="46"/>
@@ -939,7 +939,7 @@
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="32"/>
         <source>Could not load the store page. Please try again.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunde inte läsa in Store-sidan. Försök igen!</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="60"/>
@@ -1200,37 +1200,37 @@
     <message>
         <location filename="../qml/pages/NotificationIconPage.qml" line="80"/>
         <source>Icon and colour</source>
-        <translation type="unfinished"></translation>
+        <translation>Ikon och färg</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationIconPage.qml" line="108"/>
         <source>Automatic icon</source>
-        <translation type="unfinished"></translation>
+        <translation>Automatisk ikon</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationIconPage.qml" line="113"/>
         <source>Custom icon</source>
-        <translation type="unfinished"></translation>
+        <translation>Anpassad ikon</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationIconPage.qml" line="113"/>
         <source>Default icon</source>
-        <translation type="unfinished"></translation>
+        <translation>Standardikon</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationIconPage.qml" line="121"/>
         <source>Icon preview unavailable</source>
-        <translation type="unfinished"></translation>
+        <translation>Ikongranskning otillgänglig</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationIconPage.qml" line="131"/>
         <source>Custom colour: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Anpassad färg: %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationIconPage.qml" line="132"/>
         <source>Default colour: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Standardfärg: %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationIconPage.qml" line="176"/>
@@ -1245,7 +1245,7 @@
     <message>
         <location filename="../qml/pages/NotificationIconPage.qml" line="199"/>
         <source>Use default colour</source>
-        <translation type="unfinished">Använd standardfärg</translation>
+        <translation>Använd standardfärg</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationIconPage.qml" line="253"/>
@@ -1258,22 +1258,22 @@
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="31"/>
         <source>Always send to watch</source>
-        <translation type="unfinished"></translation>
+        <translation>Skicka alltid för att se</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="32"/>
         <source>Only when phone is inactive</source>
-        <translation type="unfinished"></translation>
+        <translation>Bara när telefonen är inaktiv</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="33"/>
         <source>Do not send to watch</source>
-        <translation type="unfinished"></translation>
+        <translation>Skicka inte för att se</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="34"/>
         <source>Unknown forwarding setting</source>
-        <translation type="unfinished"></translation>
+        <translation>Okänd inställning</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="44"/>
@@ -1283,37 +1283,37 @@
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="47"/>
         <source>Tap an app to change notification forwarding. Tap its watch icon to customise the icon and colour. Apps appear here after sending a notification.</source>
-        <translation type="unfinished"></translation>
+        <translation>Tryck på en app för att ändra vidarebefordran av aviseringar. Tryck på dess klockikon för att anpassa ikon och färg. Appar visas här efter att ha skickat en avisering.</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="54"/>
         <source>* Custom icon or colour</source>
-        <translation type="unfinished"></translation>
+        <translation>* Anpassad ikon eller färg</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="172"/>
         <source>Custom icon</source>
-        <translation type="unfinished"></translation>
+        <translation>Anpassad ikon</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="173"/>
         <source>Default icon</source>
-        <translation type="unfinished"></translation>
+        <translation>Standardikon</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="174"/>
         <source>Automatic icon</source>
-        <translation type="unfinished"></translation>
+        <translation>Automatisk ikon</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="175"/>
         <source>Custom colour</source>
-        <translation type="unfinished"></translation>
+        <translation>Anpassad färg</translation>
     </message>
     <message>
         <location filename="../qml/pages/NotificationsPage.qml" line="175"/>
         <source>Default colour</source>
-        <translation type="unfinished"></translation>
+        <translation>Standardfärg</translation>
     </message>
     <message>
         <source>Entries here will be added as notifications appear on the phone. Selected notifications will be shown on your Pebble smartwatch.</source>
@@ -1541,37 +1541,37 @@
     <message>
         <location filename="../qml/pages/QuietTimePage.qml" line="89"/>
         <source>Follow phone privacy mode</source>
-        <translation type="unfinished"></translation>
+        <translation>Följ telefonens integritetsläge</translation>
     </message>
     <message>
         <location filename="../qml/pages/QuietTimePage.qml" line="91"/>
         <source>Enable Quiet Time while the phone&apos;s privacy mode is on, then restore the previous setting. Keep Bluetooth enabled in the phone&apos;s privacy settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktivera tyst läge medan telefonens sekretessläge är på, och återställ sedan den tidigare inställningen. Håll Bluetooth aktiverat i telefonens sekretessinställningar.</translation>
     </message>
     <message>
         <location filename="../qml/pages/QuietTimePage.qml" line="92"/>
         <source>Phone privacy mode is unavailable.</source>
-        <translation type="unfinished"></translation>
+        <translation>Telefonens integritetsläge är inte tillgängligt.</translation>
     </message>
     <message>
         <location filename="../qml/pages/QuietTimePage.qml" line="102"/>
         <source>Force Quiet Time on</source>
-        <translation type="unfinished"></translation>
+        <translation>Tvinga tyst läge på</translation>
     </message>
     <message>
         <location filename="../qml/pages/QuietTimePage.qml" line="104"/>
         <source>Controlled by phone privacy mode.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kontrollerat av telefonens integritetsläge.</translation>
     </message>
     <message>
         <location filename="../qml/pages/QuietTimePage.qml" line="105"/>
         <source>Schedules and calendar events can still enable Quiet Time when this is off.</source>
-        <translation type="unfinished"></translation>
+        <translation>Scheman och kalenderhändelser kan fortfarande aktivera tyst läge när detta är avstängt.</translation>
     </message>
     <message>
         <location filename="../qml/pages/QuietTimePage.qml" line="124"/>
         <source>Use the weekday and weekend schedules. Turning this off keeps your saved times and day selections.</source>
-        <translation type="unfinished"></translation>
+        <translation>Använd veckodags- och helgscheman. Att stänga av detta behåller dina sparade tider och dagsval.</translation>
     </message>
     <message>
         <location filename="../qml/pages/QuietTimePage.qml" line="153"/>
@@ -1969,7 +1969,7 @@
     <message>
         <location filename="../qml/pages/WatchLanguageSelector.qml" line="30"/>
         <source>Loading…</source>
-        <translation type="unfinished"></translation>
+        <translation>Läser in…</translation>
     </message>
     <message>
         <location filename="../qml/pages/WatchLanguageSelector.qml" line="38"/>
