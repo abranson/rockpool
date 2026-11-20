@@ -212,11 +212,14 @@ jobs:
           if-no-files-found: warn
 
   publish:
-    name: Publish tagged RPMs to zypp repository
+    name: Publish tagged RPMs to GitHub Releases and zypp repository
     needs: sailfish
     if: ${{ !cancelled() && needs.sailfish.result == 'success' && github.event_name == 'push' && startsWith(github.ref, 'refs/tags/') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 15
+    permissions:
+      contents: write
+      actions: read
     concurrency:
       group: rockpool-package-repository-publish
       cancel-in-progress: false
@@ -242,8 +245,66 @@ jobs:
             if [ "$result" -ne 1 ]; then
               exit "$result"
             fi
-            echo "::notice::Tag is not on master; skipping RPM repository publication."
+            echo "::notice::Tag is not on master; skipping release publication."
             echo "eligible=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Download RPMs
+        if: steps.release.outputs.eligible == 'true'
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: rockpool-aarch64-${{ github.sha }}
+          path: rpms
+
+      - name: Publish GitHub Release
+        if: steps.release.outputs.eligible == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          rpms=(rpms/*.rpm)
+          if [ "${#rpms[@]}" -eq 0 ]; then
+            echo "::error::No RPMs to publish."
+            exit 1
+          fi
+          # Validate every input before publishing to either destination.
+          for rpm in "${rpms[@]}"; do
+            filename=${rpm##*/}
+            if [[ ! $filename =~ ^(rockpool|rockpool-debuginfo|rockpool-debugsource)-[0-9][^-]*-[^-]+\.aarch64\.rpm$ ]]; then
+              echo "::error::Unexpected RPM artifact."
+              exit 1
+            fi
+          done
+          # Read the matching entry from the tagged source, not the default branch.
+          python3 - <<'PYTHON'
+          import os
+          from pathlib import Path
+
+          version = os.environ["RELEASE_TAG"].removeprefix("v")
+          notes = []
+          matched = False
+          for line in Path("tagged-source/rpm/rockpool.changes").read_text().splitlines():
+              if line.startswith("* "):
+                  if matched:
+                      break
+                  matched = line.split()[-1] == version
+              elif matched:
+                  notes.append(line)
+          body = "\n".join(notes).strip()
+          if not body:
+              raise SystemExit("No RPM changelog entry for tag " + os.environ["RELEASE_TAG"])
+          Path("release-notes.md").write_text(body + "\n")
+          PYTHON
+          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" > /dev/null; then
+            # Reruns replace assets without changing existing release notes.
+            gh release upload "$RELEASE_TAG" "${rpms[@]}" \
+              --repo "$GITHUB_REPOSITORY" --clobber
+          else
+            gh release create "$RELEASE_TAG" "${rpms[@]}" \
+              --repo "$GITHUB_REPOSITORY" --verify-tag \
+              --title "Rockpool $RELEASE_TAG" --notes-file release-notes.md
           fi
 
       - name: Check publish configuration
@@ -259,13 +320,6 @@ jobs:
           fi
           gh api "repos/$PACKAGE_REPO" --silent
           echo "enabled=true" >> "$GITHUB_OUTPUT"
-
-      - name: Download RPMs
-        if: steps.publish.outputs.enabled == 'true'
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
-        with:
-          name: rockpool-aarch64-${{ github.sha }}
-          path: rpms
 
       - name: Checkout RPM repository
         if: steps.publish.outputs.enabled == 'true'
