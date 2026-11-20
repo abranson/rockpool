@@ -140,8 +140,18 @@ Page {
         Connections {
             target: webview.webView
             ignoreUnknownSignals: true
+            onExternalUrlRequested: {
+                if (String(request.tabId) === String(webview.webView.selectedTabId)
+                        && /^pebble(js)?:\/\//.test(request.url)
+                        && request.accept()) {
+                    webview.handlePebbleUrl(request.url);
+                }
+            }
             onRecvAsyncMessageFromTab: {
-                if (message === "embed:externalurl")
+                // Older WebViews expose only the raw engine request. On newer
+                // versions the public callback signal owns its acknowledgement.
+                if (typeof webview.webView.externalUrlRequested !== "function"
+                        && message === "embed:externalurl")
                     webview.handleExternalUrl(tabId, data);
             }
         }
