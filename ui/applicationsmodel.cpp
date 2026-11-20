@@ -104,6 +104,10 @@ void ApplicationsModel::insert(AppItem *item)
     item->setParent(this);
     beginInsertRows(QModelIndex(), rowCount(), rowCount());
     m_apps.append(item);
+    connect(item, &AppItem::heartsChanged, this, [this, item]() {
+        const QModelIndex changedIndex = index(m_apps.indexOf(item));
+        emit dataChanged(changedIndex, changedIndex, QVector<int>() << RoleHearts);
+    });
     endInsertRows();
     emit changed();
 }
@@ -375,7 +379,10 @@ void AppItem::setDescription(const QString &description)
 
 void AppItem::setHearts(int hearts)
 {
+    if (m_hearts == hearts)
+        return;
     m_hearts = hearts;
+    emit heartsChanged();
 }
 
 void AppItem::setIsWatchFace(bool isWatchFace)

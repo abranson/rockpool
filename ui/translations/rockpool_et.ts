@@ -264,7 +264,20 @@
     </message>
 </context>
 <context>
+    <name>AppStoreClient</name>
+    <message>
+        <location filename="../appstoreclient.cpp" line="566"/>
+        <source>Could not load or update the vote. Tap to retry.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>AppStoreDetailsPage</name>
+    <message>
+        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="214"/>
+        <source>Sign in to %1 in Settings to vote.</source>
+        <translation type="unfinished"></translation>
+    </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="243"/>
         <source>Description</source>

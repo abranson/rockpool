@@ -73,7 +73,8 @@ Settings shows the sign-in status for the selected store. Tap the account row
 to sign in. Core Devices opens the Pebble sign-in page in your browser. Return
 to Rockpool after signing in to see your account name or email. You can stay
 signed in to both stores and switch between them. Choose **Logout** on the
-account row to sign out of that store.
+account row to sign out of that store. On an app or watchface listing, tap the
+heart to add or remove your vote using that store’s account.
 
 The background service checks installed store apps and watchfaces for updates
 every six hours, including with the app window closed. Each available version

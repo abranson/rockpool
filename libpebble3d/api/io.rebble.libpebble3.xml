@@ -57,6 +57,15 @@
         <arg name="operation" type="o" direction="out"/>
       </method>
       <method name="Sync"><arg name="operation" type="o" direction="out"/></method>
+      <method name="GetAppVote">
+        <arg name="appId" type="s" direction="in"/>
+        <arg name="operation" type="o" direction="out"/>
+      </method>
+      <method name="SetAppVote">
+        <arg name="appId" type="s" direction="in"/>
+        <arg name="voted" type="b" direction="in"/>
+        <arg name="operation" type="o" direction="out"/>
+      </method>
       <property name="Authenticated" type="b" access="read"/>
       <property name="Name" type="s" access="read"/>
       <property name="Email" type="s" access="read"/>

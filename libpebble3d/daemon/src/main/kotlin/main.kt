@@ -360,6 +360,7 @@ fun main() {
         cannedResponses,
         sendTextConfiguration,
         rfcommSocketFactory.available,
+        coreCredentials,
         rockpoolUiService::reviewInstall,
     ).start()
     rockpoolUiService.start()

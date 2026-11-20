@@ -241,6 +241,15 @@ Provider domains report `ready`, `degraded`, `failed`, or `missing` in
 capabilities.
 
 
+## App store votes
+
+`Account1.GetAppVote(appId)` reads the signed-in account's vote.
+`Account1.SetAppVote(appId, voted)` adds or removes it. Pass a 24-character
+Rebble store ID or a Core Devices store ID prefixed with `core:`.
+The listing ID selects the store and its credentials. On success,
+`Operation1.Result` contains `voted` (boolean) and `hearts` (integer).
+After a failed update, read the vote again to check the remote outcome.
+
 ## Stable error registry
 
 Methods normally return an `Operation1`; operational failures are represented

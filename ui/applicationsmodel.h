@@ -16,7 +16,7 @@ class AppItem: public QObject
     Q_PROPERTY(QString vendor MEMBER m_vendor NOTIFY vendorChanged)
     Q_PROPERTY(QString version MEMBER m_version NOTIFY versionChanged)
     Q_PROPERTY(QString description MEMBER m_description CONSTANT)
-    Q_PROPERTY(int hearts MEMBER m_hearts CONSTANT)
+    Q_PROPERTY(int hearts READ hearts NOTIFY heartsChanged)
     Q_PROPERTY(QStringList screenshotImages MEMBER m_screenshotImages CONSTANT)
     Q_PROPERTY(QString headerImage READ headerImage NOTIFY headerImageChanged)
     Q_PROPERTY(QString category MEMBER m_category CONSTANT)
@@ -93,6 +93,7 @@ public:
     void setChangeLog(const QVariantList &log);
 
 signals:
+    void heartsChanged();
     void versionChanged();
     void vendorChanged();
     void headerImageChanged();

@@ -2,6 +2,8 @@
 #define APPSTORECLIENT_H
 
 #include <QObject>
+#include <QPointer>
+#include <QVariantMap>
 
 class QUrl;
 class QNetworkAccessManager;
@@ -17,6 +19,10 @@ class AppStoreClient : public QObject
     Q_PROPERTY(int limit READ limit WRITE setLimit NOTIFY limitChanged)
     Q_PROPERTY(QString hardwarePlatform READ hardwarePlatform WRITE setHardwarePlatform NOTIFY hardwarePlatformChanged)
     Q_PROPERTY(bool busy READ busy NOTIFY busyChanged)
+    Q_PROPERTY(bool voteBusy READ voteBusy NOTIFY voteChanged)
+    Q_PROPERTY(bool voteReady READ voteReady NOTIFY voteChanged)
+    Q_PROPERTY(bool voted READ voted NOTIFY voteChanged)
+    Q_PROPERTY(QString voteError READ voteError NOTIFY voteChanged)
     Q_PROPERTY(bool enableCategories READ enableCategories WRITE setEnableCategories NOTIFY enableCategoriesChanged)
 
 public:
@@ -41,9 +47,14 @@ public:
     bool enableCategories() const;
 
     bool busy() const;
+    bool voteBusy() const { return m_voteBusy; }
+    bool voteReady() const { return m_voteReady; }
+    bool voted() const { return m_voted; }
+    QString voteError() const { return m_voteError; }
 
 signals:
     void sourceChanged();
+    void voteChanged();
     void limitChanged();
     void hardwarePlatformChanged();
     void busyChanged();
@@ -51,6 +62,9 @@ signals:
     void modelChanged();
 
 public slots:
+    void resetVote();
+    void fetchVote(AppItem *app);
+    void toggleVote(AppItem *app);
     void fetchHome(Type type);
     void fetchLink(const QString &link);
     void fetchInstalledListing(AppItem *item, const QString &store, bool openPage);
@@ -64,8 +78,16 @@ private:
     void fetchListing(const QUrl &url, Source source);
     AppItem *parseAppItem(const QVariantMap &map, Source source);
     void setBusy(bool busy);
+    void requestVote(AppItem *app, bool change);
+    void finishVote(quint64 epoch, const QVariantMap &result, bool success);
 
 private:
+    QPointer<AppItem> m_voteApp;
+    quint64 m_voteEpoch = 0;
+    bool m_voteBusy = false;
+    bool m_voteReady = false;
+    bool m_voted = false;
+    QString m_voteError;
     QNetworkAccessManager *m_nam;
     ApplicationsModel *m_model;
     ApplicationsModel *f_model = 0;

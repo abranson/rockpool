@@ -37,6 +37,7 @@ internal class AccountSettingsCoordinator(
     private val identityListeners = CopyOnWriteArrayList<(AccountIdentityChange) -> Unit>()
     private val tokenMutations = AccountTokenMutations()
     private val mutex = Mutex()
+    @Volatile
     private var generation = 0L
 
     fun enqueueTokenMutation(token: String): AccountTokenMutation = tokenMutations.enqueue(token)
@@ -64,9 +65,22 @@ internal class AccountSettingsCoordinator(
         return true
     }
 
+    /** Capture the account generation at an asynchronous operation's call boundary. */
+    fun sessionGeneration(): Long = generation
+
     suspend fun currentSession(): AccountSessionChange = mutex.withLock {
         AccountSessionChange(currentToken(), generation)
     }
+
+    /** Keep the credential stable while an account-specific remote action is in flight. */
+    suspend fun <T> withCurrentSession(session: AccountSessionChange, action: suspend () -> T): T? =
+        mutex.withLock {
+            if (session.token.isEmpty() || session.generation != generation || session.token != currentToken()) {
+                null
+            } else {
+                action()
+            }
+        }
 
     suspend fun setIdentity(
         session: AccountSessionChange,

@@ -57,12 +57,30 @@ internal class CoreStoreCredentials(
         return true
     }
 
-    suspend fun token(): String? = refreshMutex.withLock {
+    /** An account change invalidates this handle even when the same UID signs in again. */
+    class Session(val uid: String, internal val generation: Long)
+
+    @Synchronized
+    fun currentSession(): Session? = settings.get(UID).takeIf { it.isNotEmpty() }
+        ?.let { Session(it, revision.value) }
+
+    @Synchronized
+    fun <T> withCurrentSession(session: Session, action: () -> T): T? =
+        if (session.generation == revision.value && session.uid == settings.get(UID)) action() else null
+
+    suspend fun token(): String? = tokenFor(null)
+
+    suspend fun token(session: Session): String? = tokenFor(session)
+
+    private suspend fun tokenFor(session: Session?): String? = refreshMutex.withLock {
         val generation: Long
         val uid: String
         val refreshToken: String
         synchronized(this) {
             val fields = settings.entries(PREFIX)
+            if (session != null && (session.generation != revision.value || session.uid != fields[UID])) {
+                throw CoreStoreCredentialFailure("Core Devices account changed", authentication = true)
+            }
             if (fields.isEmpty()) return@withLock null
             uid = fields[UID] ?: throw CoreStoreCredentialFailure("Invalid Core Devices account")
             refreshToken = fields[TOKEN] ?: throw CoreStoreCredentialFailure("Invalid Core Devices account")
@@ -78,10 +96,12 @@ internal class CoreStoreCredentials(
             throw CoreStoreCredentialFailure("Could not refresh the Core Devices account")
         }
         synchronized(this) {
-            if (generation != revision.value) throw CoreStoreCredentialFailure("Core Devices account changed")
+            if (generation != revision.value) {
+                throw CoreStoreCredentialFailure("Core Devices account changed", authentication = true)
+            }
             if (result !is CoreStoreRefresh.Valid || result.uid != uid) {
                 if (!clear()) throw CoreStoreCredentialFailure("Could not clear the expired Core Devices account")
-                throw CoreStoreCredentialFailure("Core Devices sign-in has expired")
+                throw CoreStoreCredentialFailure("Core Devices sign-in has expired", authentication = true)
             }
             if (refreshToken != result.refreshToken && !settings.setChecked(TOKEN, result.refreshToken)) {
                 throw CoreStoreCredentialFailure("Could not save the refreshed Core Devices account")
@@ -102,7 +122,7 @@ internal class CoreStoreCredentials(
     }
 }
 
-internal class CoreStoreCredentialFailure(message: String) : IOException(message)
+internal class CoreStoreCredentialFailure(message: String, val authentication: Boolean = false) : IOException(message)
 
 internal sealed interface CoreStoreRefresh {
     data object Revoked : CoreStoreRefresh

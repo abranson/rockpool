@@ -1,6 +1,7 @@
 import QtQuick 2.6
 import Sailfish.Silica 1.0
 import QtGraphicalEffects 1.0
+import RockPool 1.0
 
 Page {
     id: root
@@ -9,6 +10,46 @@ Page {
     property var app: null
     property bool appMutationsAllowed: rockPool.knownPebbleCount === 1
     property bool appInstallationAllowed: appMutationsAllowed && pebble && pebble.connected
+
+    readonly property bool coreListing: app && app.storeId.indexOf("core:") === 0
+    readonly property bool accountAuthenticated: coreListing ? rockPool.coreAccount.signedIn
+                                                             : pebble && pebble.accountAuthenticated
+    readonly property bool accountBusy: coreListing ? rockPool.coreAccount.busy
+                                                    : pebble && pebble.accountTokenPending
+
+    AppStoreClient {
+        id: voteClient
+    }
+
+    // An account change can emit several signals in the same event loop turn.
+    Timer {
+        id: voteRefresh
+
+        interval: 0
+        onTriggered: {
+            if (root.app && root.accountAuthenticated && !root.accountBusy)
+                voteClient.fetchVote(root.app)
+        }
+    }
+
+    function refreshVote() {
+        voteClient.resetVote()
+        voteRefresh.restart()
+    }
+
+    Component.onCompleted: refreshVote()
+    onAppChanged: refreshVote()
+    Connections {
+        target: root.coreListing ? rockPool.coreAccount : null
+        onAccountChanged: root.refreshVote()
+    }
+    Connections {
+        target: root.coreListing ? null : root.pebble
+        onAccountAuthenticatedChanged: root.refreshVote()
+        onAccountTokenPendingChanged: root.refreshVote()
+        onAccountNameChanged: root.refreshVote()
+        onAccountEmailChanged: root.refreshVote()
+    }
 
     SilicaFlickable {
         anchors.fill: parent
@@ -110,19 +151,33 @@ Page {
                 }
                 height: Theme.iconSizeMedium
 
-                Item {
+                MouseArea {
+                    id: voteButton
+
                     width: parent.width/2 - Theme.paddingSmall*2
                     height: parent.height
+                    enabled: root.accountAuthenticated && !root.accountBusy
+                             && !voteClient.voteBusy
+                    onClicked: {
+                        if (voteClient.voteReady)
+                            voteClient.toggleVote(root.app)
+                        else
+                            voteClient.fetchVote(root.app)
+                    }
                     Row {
                         anchors.centerIn: parent
                         spacing: Theme.paddingSmall
-                        Image {
+                        Icon {
                             source: "image://theme/icon-s-like"
                             height: parent.height
                             width: height
+                            color: voteClient.voted || voteButton.pressed
+                                   ? Theme.highlightColor : Theme.primaryColor
+                            opacity: voteClient.voteBusy ? Theme.opacityLow : 1.0
                         }
                         Label {
                             text: root.app.hearts
+                            color: voteClient.voted ? Theme.highlightColor : Theme.primaryColor
                         }
                     }
                 }
@@ -149,6 +204,18 @@ Page {
                         }
                     }
                 }
+            }
+
+            Label {
+                width: parent.width - 2 * Theme.horizontalPageMargin
+                anchors.horizontalCenter: parent.horizontalCenter
+                visible: !root.accountAuthenticated || voteClient.voteError.length > 0
+                text: root.accountAuthenticated ? voteClient.voteError
+                                                : qsTr("Sign in to %1 in Settings to vote.").arg(root.coreListing ? "Core Devices" : "Rebble")
+                color: Theme.secondaryColor
+                font.pixelSize: Theme.fontSizeSmall
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.Wrap
             }
 
             Column {

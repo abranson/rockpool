@@ -1,5 +1,6 @@
 #include "appstoreclient.h"
 #include "applicationsmodel.h"
+#include "rockpooloperation.h"
 
 #include <QDBusConnection>
 #include <QDBusMessage>
@@ -485,3 +486,84 @@ void AppStoreClient::setBusy(bool busy)
     emit busyChanged();
 }
 
+void AppStoreClient::resetVote()
+{
+    ++m_voteEpoch;
+    m_voteApp.clear();
+    m_voteBusy = false;
+    m_voteReady = false;
+    m_voted = false;
+    m_voteError.clear();
+    emit voteChanged();
+}
+
+void AppStoreClient::fetchVote(AppItem *app)
+{
+    if (!m_voteBusy)
+        requestVote(app, false);
+}
+
+void AppStoreClient::toggleVote(AppItem *app)
+{
+    if (!m_voteBusy && m_voteReady && m_voteApp == app)
+        requestVote(app, true);
+}
+
+void AppStoreClient::requestVote(AppItem *app, bool change)
+{
+    if (!app || appDetailsUrl(app->storeId()).isEmpty())
+        return;
+
+    const quint64 epoch = ++m_voteEpoch;
+    m_voteApp = app;
+    m_voteBusy = true;
+    m_voteReady = false;
+    m_voteError.clear();
+    emit voteChanged();
+
+    QDBusMessage message = QDBusMessage::createMethodCall(
+        QStringLiteral("io.rebble.libpebble3"),
+        QStringLiteral("/io/rebble/libpebble3/Manager"),
+        QStringLiteral("io.rebble.libpebble3.Account1"),
+        change ? QStringLiteral("SetAppVote") : QStringLiteral("GetAppVote"));
+    message << app->storeId();
+    if (change)
+        message << !m_voted;
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+        QDBusConnection::sessionBus().asyncCall(message), this);
+    connect(watcher, &QDBusPendingCallWatcher::finished, this,
+            [this, watcher, epoch]() {
+        QDBusPendingReply<QDBusObjectPath> reply = *watcher;
+        watcher->deleteLater();
+        if (epoch != m_voteEpoch)
+            return;
+        if (reply.isError() || !reply.value().path().startsWith(
+                    QStringLiteral("/io/rebble/libpebble3/Operations/"))) {
+            finishVote(epoch, QVariantMap(), false);
+            return;
+        }
+        RockpoolOperation *operation = new RockpoolOperation(reply.value(), this);
+        connect(operation, &RockpoolOperation::completed, this,
+                [this, operation, epoch](bool success) {
+            finishVote(epoch, operation->result(), success);
+            operation->deleteLater();
+        });
+    });
+}
+
+void AppStoreClient::finishVote(quint64 epoch, const QVariantMap &result, bool success)
+{
+    if (epoch != m_voteEpoch)
+        return;
+
+    m_voteBusy = false;
+    m_voteReady = success && m_voteApp && result.contains("voted")
+        && result.contains("hearts") && result.value("hearts").toInt() >= 0;
+    if (m_voteReady) {
+        m_voted = result.value("voted").toBool();
+        m_voteApp->setHearts(result.value("hearts").toInt());
+    } else {
+        m_voteError = tr("Could not load or update the vote. Tap to retry.");
+    }
+    emit voteChanged();
+}

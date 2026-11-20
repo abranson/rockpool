@@ -66,6 +66,7 @@ import org.freedesktop.dbus.interfaces.Properties
 import org.freedesktop.dbus.messages.DBusSignal
 import org.freedesktop.dbus.types.UInt32
 import org.freedesktop.dbus.types.Variant
+import io.rebble.libpebblecommon.linux.web.AppstoreListingId
 import io.rebble.libpebblecommon.linux.web.MAX_PBW_INSTALL_BYTES
 import java.io.File
 import java.io.IOException
@@ -118,6 +119,7 @@ internal class LibPebble3Service(
     private val cannedResponsesReconciler: PrimaryCannedResponsesReconciler,
     private val sendTextConfiguration: SendTextConfigurationCoordinator,
     private val classicAvailable: Boolean,
+    private val coreCredentials: CoreStoreCredentials,
     private val reviewInstall: suspend (InstallReview) -> Map<String, Boolean>? = { null },
 ) {
     private val logger = Logger.withTag("LibPebble3Service")
@@ -128,6 +130,9 @@ internal class LibPebble3Service(
     private val reconnecting = AtomicBoolean(false)
     private val observersStarted = AtomicBoolean(false)
     private val configMutations = LibPebbleConfigMutationCoordinator.forLibPebble(libPebble)
+    private val rebbleAppVoteMutex = Mutex()
+    private val coreAppVoteMutex = Mutex()
+    private val appVote by lazy { AccountAppVote() }
 
     init {
         accountSettings.addListener(::accountSessionChanged)
@@ -804,6 +809,100 @@ internal class LibPebble3Service(
                 mutation.release()
                 throw e
             }
+        }
+
+        override fun GetAppVote(appId: String): DBusPath = appVoteOperation(appId, null)
+
+        override fun SetAppVote(appId: String, voted: Boolean): DBusPath = appVoteOperation(appId, voted)
+
+        private fun appVoteOperation(appId: String, desired: Boolean?): DBusPath {
+            val app = AppstoreListingId.parse(appId)
+            val coreSession = if (app?.core == true) coreCredentials.currentSession() else null
+            val rebbleGeneration = accountSettings.sessionGeneration()
+            return operation(if (desired == null) "account.get-app-vote" else "account.set-app-vote") {
+                if (app == null) {
+                    fail(ERROR_INVALID_ARGUMENT, "invalid store application id")
+                    return@operation
+                }
+                try {
+                    if (app.core) coreVote(app, desired, coreSession) else rebbleVote(app, desired, rebbleGeneration)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: CoreStoreCredentialFailure) {
+                    appVoteFailed(e.authentication)
+                } catch (e: AppVoteRequestFailed) {
+                    appVoteFailed(e.authentication)
+                } catch (_: Exception) {
+                    appVoteFailed(false)
+                }
+            }
+        }
+
+        private suspend fun LibPebble3OperationObject.coreVote(
+            app: AppstoreListingId,
+            desired: Boolean?,
+            session: CoreStoreCredentials.Session?,
+        ) {
+            if (session == null) {
+                fail(ERROR_AUTHENTICATION_FAILED, "account sign-in is required")
+                return
+            }
+            coreAppVoteMutex.withLock {
+                val token = coreCredentials.token(session) ?: throw AppVoteRequestFailed(authentication = true)
+                val result = if (desired == null) appVote.get(token, app, session.uid) else {
+                    appVote.set(token, app, desired, session.uid) {
+                        coreCredentials.withCurrentSession(session, ::beginCommit) == true
+                    }
+                }
+                val published = coreCredentials.withCurrentSession(session) {
+                    completeVote(result)
+                    true
+                }
+                if (published == null && !terminal()) {
+                    fail(ERROR_AUTHENTICATION_FAILED, "account changed during request")
+                }
+            }
+        }
+
+        private suspend fun LibPebble3OperationObject.rebbleVote(
+            app: AppstoreListingId,
+            desired: Boolean?,
+            generation: Long,
+        ) {
+            val session = accountSettings.currentSession()
+            if (session.generation != generation) {
+                fail(ERROR_AUTHENTICATION_FAILED, "account changed during request")
+                return
+            }
+            if (session.token.isEmpty()) {
+                fail(ERROR_AUTHENTICATION_FAILED, "account sign-in is required")
+                return
+            }
+            rebbleAppVoteMutex.withLock {
+                val current = accountSettings.withCurrentSession(session) {
+                    val result = if (desired == null) appVote.get(session.token, app) else {
+                        appVote.set(session.token, app, desired, beginCommit = ::beginCommit)
+                    }
+                    completeVote(result)
+                    true
+                }
+                if (current == null && !terminal()) {
+                    fail(ERROR_AUTHENTICATION_FAILED, "account changed during request")
+                }
+            }
+        }
+
+        private fun LibPebble3OperationObject.completeVote(result: AppVote?) {
+            if (result != null) {
+                succeed(mapOf("voted" to Variant(result.voted), "hearts" to Variant(result.hearts)))
+            }
+        }
+
+        private fun LibPebble3OperationObject.appVoteFailed(authentication: Boolean) {
+            fail(
+                if (authentication) ERROR_AUTHENTICATION_FAILED else ERROR_TRANSPORT_FAILED,
+                if (authentication) "account authentication failed" else "app vote request failed",
+            )
         }
 
         override fun Sync(): DBusPath = operation("account.sync") {

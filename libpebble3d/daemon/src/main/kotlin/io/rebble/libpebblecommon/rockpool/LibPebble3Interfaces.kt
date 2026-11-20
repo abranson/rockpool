@@ -63,6 +63,8 @@ internal interface LibPebble3Account1 : DBusInterface {
     /** The OAuth value is deliberately write-only. */
     fun SetOAuthToken(token: String): DBusPath
     fun Sync(): DBusPath
+    fun GetAppVote(appId: String): DBusPath
+    fun SetAppVote(appId: String, voted: Boolean): DBusPath
 }
 
 @DBusInterfaceName("io.rebble.libpebble3.Platform1")
