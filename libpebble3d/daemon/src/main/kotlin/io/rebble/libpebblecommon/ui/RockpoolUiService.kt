@@ -86,9 +86,13 @@ internal data class RockpoolFirmwareStatus(
     fun shouldSignalAfter(previous: RockpoolFirmwareStatus): Boolean = this != previous
 }
 
-private fun rockpoolFirmwareStatus(device: PebbleDevice?): RockpoolFirmwareStatus {
-    val update = (device as? CommonConnectedDevice)?.firmwareUpdateAvailable?.result
-        as? FirmwareUpdateCheckResult.FoundUpdate
+internal fun CommonConnectedDevice.currentFirmwareOffer(coreRevision: Long): FirmwareUpdateCheckResult.FoundUpdate? {
+    val update = firmwareUpdateAvailable.result as? FirmwareUpdateCheckResult.FoundUpdate ?: return null
+    return update.takeIf { it.accountRevision == null || it.accountRevision == coreRevision }
+}
+
+private fun rockpoolFirmwareStatus(device: PebbleDevice?, coreRevision: Long): RockpoolFirmwareStatus {
+    val update = (device as? CommonConnectedDevice)?.currentFirmwareOffer(coreRevision)
     return RockpoolFirmwareStatus(
         available = update != null,
         candidateVersion = update?.version?.stringVersion.orEmpty(),
@@ -308,24 +312,29 @@ internal class RockpoolUiService(
     internal inner class ManagerObject : RockpoolManager {
         override fun getObjectPath() = MANAGER_PATH
         override fun isRemote() = false
-        private fun requirePermissionEditor(): String {
+        private fun requireRockpoolUi(): String {
             val sender = DBusConnection.getCallInfo()?.source
             check(sender != null && sender == connection?.getDBusOwnerName("org.rockpool.UI")) {
-                "Permission review requires the Rockpool UI"
+                "This operation requires the Rockpool UI"
             }
             return sender
         }
 
         override fun AnswerInstallReview(token: String, decisionsJson: String): Boolean {
-            return installReviews.answer(requirePermissionEditor(), token, decisionsJson)
+            return installReviews.answer(requireRockpoolUi(), token, decisionsJson)
         }
 
         override fun GetCoreAccount(): List<String> = coreCredentials.profile()
 
-        override fun SetCoreAccount(refreshToken: String, uid: String, displayName: String, email: String): Boolean =
-            coreCredentials.save(refreshToken, uid, displayName, email)
+        override fun SetCoreAccount(refreshToken: String, uid: String, displayName: String, email: String): Boolean {
+            requireRockpoolUi()
+            return coreCredentials.save(refreshToken, uid, displayName, email)
+        }
 
-        override fun ClearCoreAccount(): Boolean = coreCredentials.clear()
+        override fun ClearCoreAccount(): Boolean {
+            requireRockpoolUi()
+            return coreCredentials.clear()
+        }
 
         override fun GetPreferredAppstore(): String = appStore.selection.value.source.value
 
@@ -368,7 +377,7 @@ internal class RockpoolUiService(
         }
 
         override fun GetAppPermissions(uuid: String): String {
-            requirePermissionEditor()
+            requireRockpoolUi()
             val id = Uuid.parse(uuid.removeSurrounding("{", "}"))
             return runBlocking {
                 check(libPebble.getLockerApp(id).first() is LockerWrapper.NormalApp) { "App is no longer installed" }
@@ -410,14 +419,14 @@ internal class RockpoolUiService(
         }
 
         override fun SetAppPermission(uuid: String, key: String, granted: Boolean): Boolean {
-            requirePermissionEditor()
+            requireRockpoolUi()
             val id = Uuid.parseOrNull(uuid.removeSurrounding("{", "}")) ?: return false
             if (fileScopeOf(key) != null) return false
             return runBlocking { (libPebble as? LibPebble3)?.setInstalledAppPermission(id, key, granted) == true }
         }
 
         override fun GrantAppFolder(uuid: String, path: String, writable: Boolean): Boolean {
-            requirePermissionEditor()
+            requireRockpoolUi()
             val id = Uuid.parseOrNull(uuid.removeSurrounding("{", "}")) ?: return false
             val files = pluginFiles ?: return false
             return runBlocking {
@@ -428,7 +437,7 @@ internal class RockpoolUiService(
         }
 
         override fun RevokeAppFolder(uuid: String, scope: String): Boolean {
-            requirePermissionEditor()
+            requireRockpoolUi()
             val id = Uuid.parseOrNull(uuid.removeSurrounding("{", "}")) ?: return false
             return runBlocking { (libPebble as? LibPebble3)?.revokeInstalledAppFolder(id, scope) == true }
         }
@@ -552,7 +561,7 @@ internal class RockpoolUiService(
             libPebble.watches.collect { watches ->
                 watches.filterIsInstance<KnownPebbleDevice>().forEach { watch ->
                     firmwareNotification.update(
-                        watch.identifier.asString, watch.name, rockpoolFirmwareStatus(watch),
+                        watch.identifier.asString, watch.name, rockpoolFirmwareStatus(watch, coreCredentials.changes.value),
                         (watch as? CommonConnectedDevice)?.firmwareUpdateState
                             is FirmwareUpdater.FirmwareUpdateStatus.Active,
                     )
@@ -713,6 +722,7 @@ internal class RockpoolUiService(
                                 quietTimeSchedules = quietTimeSchedules,
                                 reviewInstall = ::reviewInstall,
                                 appStore = appStore,
+                                coreAccountRevision = { coreCredentials.changes.value },
                             )
                             runCatching { connection?.exportObject(path, obj) }
                                 .onFailure { logger.e("export $path failed", it) }
@@ -771,7 +781,7 @@ internal class RockpoolUiService(
                                 watch.firmwareUpdateError = firmwareError
                                 emitSignal(RockpoolPebble.UpgradingFirmwareChanged(watch.path))
                             }
-                            val firmwareStatus = rockpoolFirmwareStatus(device)
+                            val firmwareStatus = rockpoolFirmwareStatus(device, coreCredentials.changes.value)
                             if (firmwareStatus.shouldSignalAfter(watch.firmwareStatus)) {
                                 watch.firmwareStatus = firmwareStatus
                                 emitSignal(

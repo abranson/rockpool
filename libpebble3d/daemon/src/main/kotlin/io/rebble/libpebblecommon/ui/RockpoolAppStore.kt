@@ -4,16 +4,14 @@ package io.rebble.libpebblecommon.ui
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.HttpTimeout
-import io.ktor.client.plugins.timeout
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
-import io.ktor.client.statement.bodyAsChannel
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.isSuccess
-import io.ktor.utils.io.jvm.javaio.copyTo
 import io.rebble.libpebblecommon.disk.pbw.StorePbwMetadata
 import io.rebble.libpebblecommon.linux.web.AppstoreListingId
+import io.rebble.libpebblecommon.linux.web.downloadPbwFile
 import io.rebble.libpebblecommon.linux.web.CoreAppstore
 import io.rebble.libpebblecommon.linux.web.RebbleAppstore
 import io.rebble.libpebblecommon.metadata.WatchType
@@ -90,14 +88,7 @@ internal class RockpoolAppStore(private val settings: RockpoolSettings) {
         } ?: return null
         check(metadata.uuid == listing.uuid && metadata.releaseVersion == listing.version)
         check(httpsPackageUrl(metadata.appstoreData.pbwLink))
-        val response = appStoreClient.get(metadata.appstoreData.pbwLink) {
-            timeout {
-                requestTimeoutMillis = 120_000L
-                socketTimeoutMillis = 30_000L
-            }
-        }
-        check(response.status.isSuccess()) { "Store package download returned ${response.status}" }
-        destination.outputStream().use { response.bodyAsChannel().copyTo(it) }
+        appStoreClient.downloadPbwFile(metadata.appstoreData.pbwLink, destination)
         return metadata
     }
 

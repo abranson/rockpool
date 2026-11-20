@@ -66,6 +66,7 @@ import org.freedesktop.dbus.interfaces.Properties
 import org.freedesktop.dbus.messages.DBusSignal
 import org.freedesktop.dbus.types.UInt32
 import org.freedesktop.dbus.types.Variant
+import io.rebble.libpebblecommon.linux.web.MAX_PBW_INSTALL_BYTES
 import java.io.File
 import java.io.IOException
 import java.nio.file.AtomicMoveNotSupportedException
@@ -2636,7 +2637,6 @@ internal class LibPebble3Service(
         private const val MAX_CANNED_RESPONSES = 64
         private const val SEND_TEXT_MAX_FAVORITES = 10
         private const val MAX_SETTING_STRING = 512
-        private const val MAX_PBW_INSTALL_BYTES = 32L * 1024L * 1024L
         private const val MAX_FIRMWARE_INSTALL_BYTES = 64L * 1024L * 1024L
         private const val MAX_LANGUAGE_INSTALL_BYTES = 16L * 1024L * 1024L
         private const val PRIMARY_LANGUAGE_PACK_NAME = "primary-language-pack"

@@ -80,6 +80,7 @@ import org.freedesktop.dbus.messages.DBusSignal
 import org.freedesktop.dbus.exceptions.DBusExecutionException
 import org.freedesktop.dbus.types.UInt16
 import org.freedesktop.dbus.types.Variant
+import io.rebble.libpebblecommon.linux.web.stagePbw
 import java.io.File
 import java.util.concurrent.atomic.AtomicLong
 import kotlin.time.Duration.Companion.seconds
@@ -121,6 +122,7 @@ internal class RockpoolPebbleObject(
     private val quietTimeSchedules: QuietTimeSchedules? = null,
     private val reviewInstall: suspend (InstallReview) -> Map<String, Boolean>? = { null },
     private val appStore: RockpoolAppStore = RockpoolAppStore(settings),
+    private val coreAccountRevision: () -> Long = { 0L },
 ) : RockpoolPebble {
     private val logger = Logger.withTag("RockpoolPebble")
     private val keyPrefix = address.replace(":", "_")
@@ -332,8 +334,7 @@ internal class RockpoolPebbleObject(
 
     // ---- Firmware / language packs ----
     private fun foundUpdate(): FirmwareUpdateCheckResult.FoundUpdate? =
-        commonConnected()?.firmwareUpdateAvailable?.result
-            as? FirmwareUpdateCheckResult.FoundUpdate
+        commonConnected()?.currentFirmwareOffer(coreAccountRevision())
 
     override fun FirmwareUpgradeAvailable(): Boolean = foundUpdate() != null
     override fun CandidateFirmwareVersion(): String =
@@ -345,8 +346,9 @@ internal class RockpoolPebbleObject(
     }
 
     override fun PerformFirmwareUpgrade() {
-        val update = foundUpdate() ?: return
-        commonConnected()?.updateFirmware(update, FirmwareUpdateTrigger.Ui)
+        val watch = commonConnected() ?: return
+        val update = watch.currentFirmwareOffer(coreAccountRevision()) ?: return
+        watch.updateFirmware(update, FirmwareUpdateTrigger.Ui)
         emit(RockpoolPebble.UpgradingFirmwareChanged(path))
     }
 
@@ -909,7 +911,7 @@ internal class RockpoolPebbleObject(
                     val source = File(localPath(packageFile))
                     require(source.isFile) { "Select a PBW file to install" }
                     source.inputStream().use { input ->
-                        file.outputStream().use { output -> input.copyTo(output) }
+                        stagePbw(input, file)
                     }
                     sideloadAppForThisWatch(Path(file.absolutePath))
                 }
