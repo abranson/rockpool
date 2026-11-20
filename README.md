@@ -253,7 +253,7 @@ To create a source archive containing verified release native inputs, use the
 version from the spec; for the current version:
 
 ```sh
-rpm/create-source-archive.sh 2.0.6
+rpm/create-source-archive.sh 2.1.0
 ```
 
 The archive step requires clean release sources, the submodule at its committed

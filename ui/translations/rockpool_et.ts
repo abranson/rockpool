@@ -266,7 +266,7 @@
 <context>
     <name>AppStoreClient</name>
     <message>
-        <location filename="../appstoreclient.cpp" line="566"/>
+        <location filename="../appstoreclient.cpp" line="572"/>
         <source>Could not load or update the vote. Tap to retry.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -279,47 +279,47 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="243"/>
+        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="310"/>
         <source>Description</source>
         <translation>Kirjeldus</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="266"/>
+        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="333"/>
         <source>Developer</source>
         <translation>Arendaja</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="271"/>
+        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="338"/>
         <source>Version</source>
         <translation>Versioon</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="25"/>
+        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="66"/>
         <source>Install</source>
         <translation>Installi</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="23"/>
+        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="64"/>
         <source>Installing...</source>
         <translation>Installimine...</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="81"/>
+        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="122"/>
         <source>App changes are available only when exactly one watch is paired.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="91"/>
+        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="132"/>
         <source>Connect the watch to install apps.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="25"/>
+        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="66"/>
         <source>Installed</source>
         <translation>Paigaldatud</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="24"/>
+        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="65"/>
         <source>Needs Companion</source>
         <translation>Vajab kaaslast</translation>
     </message>
@@ -327,59 +327,57 @@
 <context>
     <name>AppStorePage</name>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="47"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="49"/>
         <source>Use</source>
         <translation>Kasuta</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="47"/>
-        <location filename="../qml/pages/AppStorePage.qml" line="59"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="49"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="61"/>
         <source>Collections</source>
         <translation>Kogud</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="47"/>
-        <location filename="../qml/pages/AppStorePage.qml" line="59"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="49"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="61"/>
         <source>Categories</source>
         <translation>Kategooriad</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="53"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="55"/>
         <source>Search</source>
         <translation>Otsing</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="59"/>
         <source>Watchapps</source>
-        <translation>Kella rakendused</translation>
+        <translation type="vanished">Kella rakendused</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="59"/>
         <source>Watchfaces</source>
-        <translation>Sihverplaadid</translation>
+        <translation type="vanished">Sihverplaadid</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="105"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="108"/>
         <source>See all</source>
         <translation>Vaata kõiki</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="176"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="181"/>
         <source>All Apps</source>
         <translation>Kõik äpid</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="209"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="214"/>
         <source>Needs companion</source>
         <translation>Vajab kaaslast</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="236"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="241"/>
         <source>Search app or watchface</source>
         <translation>Otsi rakendusi või sihverplaate</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStorePage.qml" line="243"/>
+        <location filename="../qml/pages/AppStorePage.qml" line="249"/>
         <source>Search Results</source>
         <translation>Otsingu tulemused</translation>
     </message>
@@ -387,48 +385,48 @@
 <context>
     <name>AppUpgradePage</name>
     <message>
-        <location filename="../qml/pages/AppUpgradePage.qml" line="95"/>
-        <location filename="../qml/pages/AppUpgradePage.qml" line="96"/>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="207"/>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="208"/>
         <source>Upgrading</source>
         <translation>Uuendamine</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppUpgradePage.qml" line="141"/>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="253"/>
         <source>Version</source>
         <translation>Versioon</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppUpgradePage.qml" line="171"/>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="42"/>
         <source>Upgrade</source>
         <translation>Uuendused</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppUpgradePage.qml" line="170"/>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="311"/>
         <source>Upgrading...</source>
         <translation>Uuendamine...</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppUpgradePage.qml" line="103"/>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="215"/>
         <source>App changes are available only when exactly one watch is paired.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppUpgradePage.qml" line="113"/>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="225"/>
         <source>Connect the watch to install apps.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppUpgradePage.qml" line="171"/>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="313"/>
         <source>Needs Companion</source>
         <translation>Vajab kaaslast</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppUpgradePage.qml" line="182"/>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="334"/>
         <source>Compatibility</source>
         <translation>Ühilduvus</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppUpgradePage.qml" line="245"/>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="397"/>
         <source>Change Log</source>
         <translation>Muuda logi</translation>
     </message>
@@ -482,6 +480,77 @@
     <message>
         <source>No Share Providers configured. Please add provider&apos;s account in System Settings</source>
         <translation type="vanished">Ühtegi jagajat ei ole seadistatud. Palun lisa jagaja konto süsteemi sätete alt</translation>
+    </message>
+</context>
+<context>
+    <name>CoreStoreAccount</name>
+    <message>
+        <location filename="../corestoreaccount.cpp" line="124"/>
+        <source>Core Devices sign-in timed out.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../corestoreaccount.cpp" line="149"/>
+        <location filename="../corestoreaccount.cpp" line="230"/>
+        <source>The Rockpool daemon is unavailable.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../corestoreaccount.cpp" line="156"/>
+        <location filename="../corestoreaccount.cpp" line="193"/>
+        <source>Could not start Core Devices sign-in.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../corestoreaccount.cpp" line="220"/>
+        <source>Could not open the browser for Core Devices sign-in.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../corestoreaccount.cpp" line="238"/>
+        <source>Could not remove the saved Core Devices account.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../corestoreaccount.cpp" line="312"/>
+        <source>Sign-in was not completed. Return to Rockpool.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../corestoreaccount.cpp" line="313"/>
+        <source>Core Devices sign-in was declined or failed.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../corestoreaccount.cpp" line="315"/>
+        <source>Return to Rockpool to finish signing in.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../corestoreaccount.cpp" line="347"/>
+        <location filename="../corestoreaccount.cpp" line="364"/>
+        <source>Could not complete Core Devices sign-in.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../corestoreaccount.cpp" line="378"/>
+        <source>Could not verify the Core Devices account profile.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../corestoreaccount.cpp" line="384"/>
+        <source>Could not verify the Core Devices appstore account.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../corestoreaccount.cpp" line="392"/>
+        <source>Could not save the Core Devices account.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../corestoreaccount.cpp" line="440"/>
+        <source>The Rockpool daemon disconnected during Core Devices sign-in.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -677,66 +746,76 @@
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="19"/>
+        <source>Check for updates</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/FirmwareUpgradePage.qml" line="24"/>
         <source>PebbleOS changelog</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/FirmwareUpgradePage.qml" line="34"/>
+        <location filename="../qml/pages/FirmwareUpgradePage.qml" line="39"/>
         <source>Firmware</source>
         <translation type="unfinished">Püsivara</translation>
     </message>
     <message>
-        <location filename="../qml/pages/FirmwareUpgradePage.qml" line="51"/>
+        <location filename="../qml/pages/FirmwareUpgradePage.qml" line="57"/>
+        <source>Could not check for firmware updates</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/FirmwareUpgradePage.qml" line="58"/>
         <source>Update available</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/FirmwareUpgradePage.qml" line="59"/>
+        <location filename="../qml/pages/FirmwareUpgradePage.qml" line="66"/>
         <source>Currently installed firmware: %1</source>
         <translation>Hetkel paigaldatud püsivara: %1</translation>
     </message>
     <message>
-        <location filename="../qml/pages/FirmwareUpgradePage.qml" line="73"/>
+        <location filename="../qml/pages/FirmwareUpgradePage.qml" line="80"/>
         <source>This update will also upgrade recovery data. Make sure your Pebble smartwatch is connected to a power adapter.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/FirmwareUpgradePage.qml" line="81"/>
+        <location filename="../qml/pages/FirmwareUpgradePage.qml" line="88"/>
         <source>Release notes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/FirmwareUpgradePage.qml" line="90"/>
+        <location filename="../qml/pages/FirmwareUpgradePage.qml" line="97"/>
         <source>No release notes were provided for this update.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/FirmwareUpgradePage.qml" line="105"/>
+        <location filename="../qml/pages/FirmwareUpgradePage.qml" line="113"/>
         <source>Could not download the update. Check your internet connection and try again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/FirmwareUpgradePage.qml" line="108"/>
+        <location filename="../qml/pages/FirmwareUpgradePage.qml" line="116"/>
         <source>The downloaded firmware could not be read. Try downloading it again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/FirmwareUpgradePage.qml" line="111"/>
+        <location filename="../qml/pages/FirmwareUpgradePage.qml" line="119"/>
         <source>Could not start the update. Check your watch connection and try again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/FirmwareUpgradePage.qml" line="113"/>
+        <location filename="../qml/pages/FirmwareUpgradePage.qml" line="121"/>
         <source>The firmware update failed. Reconnect your watch and try again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/FirmwareUpgradePage.qml" line="120"/>
+        <location filename="../qml/pages/FirmwareUpgradePage.qml" line="128"/>
         <source>Updating your Pebble…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/FirmwareUpgradePage.qml" line="128"/>
+        <location filename="../qml/pages/FirmwareUpgradePage.qml" line="136"/>
         <source>Try again</source>
         <translation type="unfinished"></translation>
     </message>
@@ -745,7 +824,7 @@
         <translation type="vanished">Uus püsuvara uuendus on su Pebble nutikellale saadaval.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/FirmwareUpgradePage.qml" line="66"/>
+        <location filename="../qml/pages/FirmwareUpgradePage.qml" line="73"/>
         <source>Candidate firmware version: %1</source>
         <translation>Kandidaat püsivara versioon: %1</translation>
     </message>
@@ -762,12 +841,12 @@
         <translation type="vanished">See värskendus uuendab ka taastamise andmeid. Veendu, et su Pebble nutikell on ühendatud toiteadapteriga.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/FirmwareUpgradePage.qml" line="128"/>
+        <location filename="../qml/pages/FirmwareUpgradePage.qml" line="136"/>
         <source>Upgrade now</source>
         <translation>Uuenda kohe</translation>
     </message>
     <message>
-        <location filename="../qml/pages/FirmwareUpgradePage.qml" line="51"/>
+        <location filename="../qml/pages/FirmwareUpgradePage.qml" line="58"/>
         <source>Firmware is Up-To-Date</source>
         <translation>Püsivara on ajakohane</translation>
     </message>
@@ -1178,12 +1257,12 @@
     <message>
         <location filename="../qml/pages/InstallReviewDialog.qml" line="113"/>
         <source>Install</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Installi</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstallReviewDialog.qml" line="114"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Loobu</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstallReviewDialog.qml" line="120"/>
@@ -1234,52 +1313,52 @@
 <context>
     <name>InstalledAppDelegate</name>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="35"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="28"/>
         <source>Upgrade</source>
         <translation>Uuenda</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="35"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="29"/>
         <source>Version</source>
         <translation>Versioon</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="42"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="59"/>
         <source>Open in store</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="47"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="64"/>
         <source>Launch</source>
         <translation>Käivita</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="52"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="69"/>
         <source>Settings</source>
         <translation>Sätted</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="58"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="75"/>
         <source>Permissions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="63"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="80"/>
         <source>Delete</source>
         <translation>Kustuta</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="67"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="84"/>
         <source>Really Delete?</source>
         <translation>Tõesti kustutada?</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="73"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="90"/>
         <source>Move Up</source>
         <translation>Liiguta üles</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="79"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="96"/>
         <source>Move Down</source>
         <translation>Liiguta alla</translation>
     </message>
@@ -1297,37 +1376,37 @@
 <context>
     <name>InstalledAppsPage</name>
     <message>
-        <location filename="../qml/pages/InstalledAppsPage.qml" line="32"/>
+        <location filename="../qml/pages/InstalledAppsPage.qml" line="34"/>
         <source>Could not load the store page. Please try again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppsPage.qml" line="60"/>
+        <location filename="../qml/pages/InstalledAppsPage.qml" line="62"/>
         <source>Add New</source>
         <translation>Lisa uus</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppsPage.qml" line="85"/>
+        <location filename="../qml/pages/InstalledAppsPage.qml" line="89"/>
         <source>Apps &amp; Watchfaces</source>
         <translation>Rakendused ja sihverplaadid</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppsPage.qml" line="85"/>
+        <location filename="../qml/pages/InstalledAppsPage.qml" line="89"/>
         <source>Apps</source>
         <translation>Rakendused</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppsPage.qml" line="85"/>
+        <location filename="../qml/pages/InstalledAppsPage.qml" line="89"/>
         <source>Watchfaces</source>
         <translation>Sihverplaadid</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppsPage.qml" line="101"/>
+        <location filename="../qml/pages/InstalledAppsPage.qml" line="105"/>
         <source>App changes are available only when exactly one watch is paired.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppsPage.qml" line="68"/>
+        <location filename="../qml/pages/InstalledAppsPage.qml" line="72"/>
         <source>Save Apps Order</source>
         <translation>Salvesta rakenduste järjestus</translation>
     </message>
@@ -2211,19 +2290,39 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="188"/>
+        <source>Core Devices account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="228"/>
+        <source>Signed in</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="230"/>
+        <source>Finish signing in in your browser.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="264"/>
+        <source>Cancel sign-in</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../qml/pages/SettingsPage.qml" line="324"/>
         <source>Low battery warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="122"/>
-        <location filename="../qml/pages/SettingsPage.qml" line="130"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="330"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="338"/>
         <source>Off</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="122"/>
-        <location filename="../qml/pages/SettingsPage.qml" line="130"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="330"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="338"/>
         <source>%1%</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2258,10 +2357,10 @@
         <translation>Ühendatud</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="285"/>
-        <location filename="../qml/pages/SettingsPage.qml" line="298"/>
-        <location filename="../qml/pages/SettingsPage.qml" line="306"/>
-        <location filename="../qml/pages/SettingsPage.qml" line="319"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="420"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="433"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="441"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="454"/>
         <source>no change</source>
         <translation>muutusteta</translation>
     </message>

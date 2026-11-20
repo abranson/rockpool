@@ -1,3 +1,14 @@
+* Fri Nov 20 2026 Andrew Branson <github@andrewbranson.net> 2.1.0-1
+- Browse, search and install from the Core Devices and Rebble appstores.
+- Choose the store for update checks and review permissions before installing.
+- Sign in to Core Devices for firmware checks, cloud locker access and voting.
+- Add missing installed apps to the selected locker with confirmation.
+- Keep installed builds when switching stores and identify cross-store updates.
+- Offer an explicit switch between store builds of the same version.
+- Preserve watchapp settings callbacks and use the Sailjail UI language setting.
+- Update the Sailfish port to the upstream libpebble3 codebase.
+- Refresh the translation catalogues and include updated Swedish and Norwegian Bokmål translations.
+
 * Tue Nov 10 2026 Andrew Branson <github@andrewbranson.net> 2.0.6-1
 - Show notification icon and colour previews, with a combined customisation page.
 - Group notification sources by forwarding mode and sort them by app name.
