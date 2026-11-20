@@ -4,6 +4,8 @@
 package io.rebble.libpebblecommon.rockpool
 
 import io.rebble.libpebblecommon.connection.FirmwareUpdateCheckResult
+import io.rebble.libpebblecommon.connection.endpointmanager.FirmwareUpdateErrorStarting
+import io.rebble.libpebblecommon.connection.endpointmanager.FirmwareUpdateTrigger
 import io.rebble.libpebblecommon.connection.endpointmanager.FirmwareUpdater
 import io.rebble.libpebblecommon.connection.endpointmanager.LanguagePackInstallState
 import io.rebble.libpebblecommon.services.FirmwareVersion
@@ -22,16 +24,17 @@ class PrimaryInstallCompletionTest {
         val initial = FirmwareUpdater.FirmwareUpdateStatus.NotInProgress.Idle()
 
         val result = awaitPrimaryFirmwareInstall(initial, states) {
-            assertTrue(states.tryEmit(FirmwareUpdater.FirmwareUpdateStatus.WaitingToStart(update)))
+            assertTrue(states.tryEmit(FirmwareUpdater.FirmwareUpdateStatus.WaitingToStart(update, FirmwareUpdateTrigger.Sideload)))
             assertTrue(
                 states.tryEmit(
                     FirmwareUpdater.FirmwareUpdateStatus.InProgress(
                         update,
                         MutableStateFlow(0.5f),
+                        FirmwareUpdateTrigger.Sideload,
                     ),
                 ),
             )
-            assertTrue(states.tryEmit(FirmwareUpdater.FirmwareUpdateStatus.WaitingForReboot(update)))
+            assertTrue(states.tryEmit(FirmwareUpdater.FirmwareUpdateStatus.WaitingForReboot(update, FirmwareUpdateTrigger.Sideload)))
         }
 
         assertEquals(PrimaryInstallCompletion.SUCCEEDED, result)
@@ -46,7 +49,8 @@ class PrimaryInstallCompletionTest {
             assertTrue(
                 states.tryEmit(
                     FirmwareUpdater.FirmwareUpdateStatus.NotInProgress.ErrorStarting(
-                        io.rebble.libpebblecommon.connection.endpointmanager.FirmwareUpdateErrorStarting.ErrorParsingPbz,
+                        FirmwareUpdateErrorStarting.ErrorParsingPbz,
+                        FirmwareUpdateTrigger.Sideload,
                     ),
                 ),
             )
@@ -90,6 +94,7 @@ class PrimaryInstallCompletionTest {
             ),
             url = "",
             notes = "Sideloaded",
+            installsDirectly = true,
         )
     }
 }

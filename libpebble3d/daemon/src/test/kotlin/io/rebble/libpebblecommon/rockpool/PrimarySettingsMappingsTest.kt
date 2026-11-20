@@ -71,6 +71,8 @@ class PrimarySettingsMappingsTest {
                 "moreActive" to true,
                 "sleepMore" to false,
                 "imperialUnits" to true,
+                "hrmEnabled" to true,
+                "hrmMeasurementInterval" to 1,
             ),
             primaryHealthSettings(settings).mapValues { it.value.value },
         )

@@ -5,6 +5,7 @@ package io.rebble.libpebblecommon.rockpool
 
 import io.rebble.libpebblecommon.connection.FirmwareUpdateCheckResult
 import io.rebble.libpebblecommon.connection.FirmwareUpdateCheckState
+import io.rebble.libpebblecommon.connection.endpointmanager.FirmwareUpdateTrigger
 import io.rebble.libpebblecommon.connection.endpointmanager.FirmwareUpdater
 import io.rebble.libpebblecommon.services.FirmwareVersion
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -70,6 +71,7 @@ class PrimaryFirmwareTest {
             update = FirmwareUpdater.FirmwareUpdateStatus.InProgress(
                 candidate,
                 MutableStateFlow(1.5f),
+                FirmwareUpdateTrigger.Ui,
             ),
         )
 
@@ -142,5 +144,6 @@ class PrimaryFirmwareTest {
         ),
         url = "https://secret-download.invalid/firmware.pbz",
         notes = notes,
+        installsDirectly = true,
     )
 }
