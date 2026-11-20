@@ -1,31 +1,57 @@
 #include "appstoreclient.h"
 #include "applicationsmodel.h"
 
+#include <QDBusConnection>
+#include <QDBusMessage>
+#include <QDBusPendingCallWatcher>
+#include <QDBusPendingReply>
+#include <QPointer>
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QUrlQuery>
+#include <QJsonArray>
+#include <QRegularExpression>
+#include <QUuid>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonParseError>
 
 #include <libintl.h>
 
-/* Known params for pebble api
-    query.addQueryItem("offset", QString::number(offset));
-    query.addQueryItem("limit", QString::number(limit));
-    query.addQueryItem("image_ratio", "1"); // Not sure yet what this does
-    query.addQueryItem("filter_hardware", "true");
-    query.addQueryItem("firmware_version", "3");
-    query.addQueryItem("hardware", hardwarePlatform);
-    query.addQueryItem("platform", "all");
-*/
+namespace {
+const QString corePrefix = QStringLiteral("core:");
+
+QUrl storeOrigin(AppStoreClient::Source source)
+{
+    return source == AppStoreClient::CoreDevices
+        ? QUrl(QStringLiteral("https://appstore-api.repebble.com"))
+        : QUrl(QStringLiteral("https://appstore-api.rebble.io"));
+}
+
+AppStoreClient::Source sourceOf(const QString &storeId)
+{
+    return storeId.startsWith(corePrefix) ? AppStoreClient::CoreDevices : AppStoreClient::Rebble;
+}
+
+QUrl appDetailsUrl(const QString &storeId)
+{
+    const AppStoreClient::Source source = sourceOf(storeId);
+    const QString id = source == AppStoreClient::CoreDevices ? storeId.mid(corePrefix.size()) : storeId;
+    static const QRegularExpression validId(QStringLiteral("^[0-9a-fA-F]{24}$"));
+    if (!validId.match(id).hasMatch())
+        return QUrl();
+    return storeOrigin(source).resolved(QUrl(QStringLiteral("/api/v1/apps/id/") + id));
+}
+}
 
 AppStoreClient::AppStoreClient(QObject *parent):
     QObject(parent),
     m_nam(new QNetworkAccessManager(this)),
     m_model(new ApplicationsModel(this))
 {
+    connect(this, &AppStoreClient::sourceChanged, this, [this]() { ++m_catalogueEpoch; });
+    connect(this, &AppStoreClient::hardwarePlatformChanged, this, [this]() { ++m_catalogueEpoch; });
 }
 
 ApplicationsModel *AppStoreClient::model() const
@@ -88,21 +114,21 @@ void AppStoreClient::fetchHome(Type type)
         query.addQueryItem("filter_hardware", "true");
     }
 
-    QString url;
-    if (type == TypeWatchapp) {
-        url = "https://appstore-api.rebble.io/api/v1/home/apps";
-    } else {
-        url = "https://appstore-api.rebble.io/api/v1/home/watchfaces";
-    }
-    QUrl storeUrl(url);
+    const QString section = type == TypeWatchface ? QStringLiteral("watchfaces")
+        : m_source == CoreDevices ? QStringLiteral("watchapps-and-companions") : QStringLiteral("apps");
+    QUrl storeUrl = storeOrigin(m_source).resolved(QUrl(QStringLiteral("/api/v1/home/") + section));
     storeUrl.setQuery(query);
     QNetworkRequest request(storeUrl);
 
     qDebug() << "fetching home" << storeUrl.toString();
     QNetworkReply *reply = m_nam->get(request);
-    connect(reply, &QNetworkReply::finished, [this, reply]() {
-        QByteArray data = reply->readAll();
+    const Source source = m_source;
+    const quint64 requestId = ++m_homeRequest;
+    connect(reply, &QNetworkReply::finished, this, [this, reply, source, requestId]() {
         reply->deleteLater();
+        if (requestId != m_homeRequest)
+            return;
+        QByteArray data = reply->readAll();
 
         QJsonDocument jsonDoc = QJsonDocument::fromJson(data);
         QVariantMap resultMap = jsonDoc.toVariant().toMap();
@@ -118,7 +144,7 @@ void AppStoreClient::fetchHome(Type type)
             m_model->insertGroup(slug,
                                  entry.toMap().value("name").toString(),
                                  // Only the home page links are relative, so prepend here.
-                                 "https://appstore-api.rebble.io" + entry.toMap().value("links").toMap().value("apps").toString());
+                                 storeOrigin(source).resolved(entry.toMap().value("links").toMap().value("apps").toUrl()).toString());
         }
 
         QHash<QString, QString> categoryNames;
@@ -128,15 +154,15 @@ void AppStoreClient::fetchHome(Type type)
                 m_model->insertGroup(entry.toMap().value("id").toString(),
                                      entry.toMap().value("name").toString(),
                                      // Only the home page links are relative, so prepend here.
-                                     "https://appstore-api.rebble.io" + entry.toMap().value("links").toMap().value("apps").toString(),
+                                     storeOrigin(source).resolved(entry.toMap().value("links").toMap().value("apps").toUrl()).toString(),
                                      entry.toMap().value("icon").toMap().value("88x88").toString());
             }
         }
 
         foreach (const QVariant &entry, jsonDoc.toVariant().toMap().value("applications").toList()) {
-            AppItem* item = parseAppItem(entry.toMap());
+            AppItem* item = parseAppItem(entry.toMap(), source);
             foreach (const QString &collection, collections.keys()) {
-                if (collections.value(collection).contains(item->storeId())) {
+                if (collections.value(collection).contains(entry.toMap().value("id").toString())) {
                     item->setGroupId(collection);
                     item->setCollection(m_model->groupName(collection));
                     break;
@@ -167,10 +193,84 @@ void AppStoreClient::fetchHome(Type type)
 
 void AppStoreClient::fetchLink(const QString &link)
 {
+    fetchListing(storeOrigin(m_source).resolved(QUrl(link)), m_source);
+}
+
+void AppStoreClient::fetchInstalledListing(AppItem *item, const QString &store, bool openPage)
+{
+    if (openPage) {
+        m_model->clear();
+        setBusy(true);
+    } else if (item) {
+        item->setUpdateStoreId(QString());
+        item->setLatest(QString());
+        item->setChangeLog({});
+        item->setCompatibility({});
+        const QModelIndex index = model()->index(model()->indexOf(item));
+        if (index.isValid())
+            emit model()->dataChanged(index, index);
+    }
+
+    if (!item || item->isSystemApp() || item->storeId().isEmpty() || m_hardwarePlatform.isEmpty()
+            || (store != QStringLiteral("core") && store != QStringLiteral("rebble"))) {
+        if (openPage)
+            setBusy(false);
+        return;
+    }
+
+    const Source source = store == QStringLiteral("core") ? CoreDevices : Rebble;
+    const quint64 catalogueEpoch = m_catalogueEpoch;
+    const QString hardware = m_hardwarePlatform;
+    const QString version = item->version();
+    auto message = QDBusMessage::createMethodCall(QStringLiteral("org.rockpool"), QStringLiteral("/org/rockpool/Manager"),
+                                                   QStringLiteral("org.rockpool.Manager"), QStringLiteral("GetAppStoreListing"));
+    message.setArguments({item->uuid(), item->storeId(), hardware, store, version});
+    auto *watcher = new QDBusPendingCallWatcher(QDBusConnection::sessionBus().asyncCall(message, 60000), this);
+    const QPointer<AppItem> installed(item);
+    connect(watcher, &QDBusPendingCallWatcher::finished, this, [this, watcher, installed, source, catalogueEpoch, version, openPage]() {
+        QDBusPendingReply<QString> reply = *watcher;
+        watcher->deleteLater();
+        const QVariantMap result = QJsonDocument::fromJson(reply.value().toUtf8()).toVariant().toMap();
+        const QVariantMap app = result.value("app").toMap();
+        if (installed && installed->version() == version && source == m_source && catalogueEpoch == m_catalogueEpoch
+                && !app.value("id").toString().isEmpty() && QUuid(app.value("uuid").toString()) == QUuid(installed->uuid())) {
+            if (openPage) {
+                m_model->insert(parseAppItem(app, source));
+            } else if (result.value("updateAvailable").toBool()) {
+                const QVariantMap platforms = app.value("compatibility").toMap();
+                QVariantMap compatibility;
+                for (auto it = platforms.constBegin(); it != platforms.constEnd(); ++it) {
+                    const QVariantMap platform = it.value().toMap();
+                    if (platform.value("supported").toBool())
+                        compatibility.insert(it.key(), platform.value("firmware").toMap().value("major", 1));
+                }
+                const QString id = app.value("id").toString();
+                installed->setUpdateStoreId(source == CoreDevices ? corePrefix + id : id);
+                installed->setCompatibility(compatibility);
+                installed->setChangeLog(app.value("changelog").toList());
+                const QVariantMap companions = app.value("companions").toMap();
+                installed->setCompanion(!companions.value("android").isNull() || !companions.value("ios").isNull());
+                installed->setLatest(app.value("latest_release").toMap().value("version").toString());
+                const QModelIndex index = model()->index(model()->indexOf(installed));
+                if (index.isValid())
+                    emit model()->dataChanged(index, index);
+            }
+        }
+        if (openPage)
+            setBusy(false);
+    });
+}
+
+void AppStoreClient::fetchListing(const QUrl &url, Source source)
+{
     m_model->clear();
     setBusy(true);
 
-    QUrl storeUrl(link);
+    QUrl storeUrl(url);
+    if (storeUrl.scheme() != QStringLiteral("https") || storeUrl.host() != storeOrigin(source).host()) {
+        setBusy(false);
+        return;
+    }
     QUrlQuery query(storeUrl);
     // Navigation buttons are supplied based on actual navigation availability
     // Limit is preserved in links as long as it differs from default(20).
@@ -185,7 +285,7 @@ void AppStoreClient::fetchLink(const QString &link)
     qDebug() << "fetching link" << request.url();
 
     QNetworkReply *reply = m_nam->get(request);
-    connect(reply, &QNetworkReply::finished, this, [this, reply, storeUrl]() {
+    connect(reply, &QNetworkReply::finished, this, [this, reply, storeUrl, source]() {
         qDebug() << "fetch reply";
         QByteArray data = reply->readAll();
         reply->deleteLater();
@@ -194,7 +294,7 @@ void AppStoreClient::fetchLink(const QString &link)
         QVariantMap resultMap = jsonDoc.toVariant().toMap();
 
         foreach (const QVariant &entry, resultMap.value("data").toList()) {
-            AppItem *item = parseAppItem(entry.toMap());
+            AppItem *item = parseAppItem(entry.toMap(), source);
             qDebug() << "have entry" << item->name() << item->groupId() << item->companion() << item->category();
             // We filter apps in ModelFilter now. Since we didn't reqeuest additional apps to align for those
             // filtered out - it doesn't change end result. maybe slightly increases memory footprint.
@@ -214,7 +314,7 @@ void AppStoreClient::fetchLink(const QString &link)
         if (resultMap.contains("links") && resultMap.value("links").toMap().contains("nextPage") &&
                 !resultMap.value("links").toMap().value("nextPage").isNull()) {
             QString nextLink = resultMap.value("links").toMap().value("nextPage").toString();
-            m_model->addLink(nextLink, gettext("Next"));
+            m_model->addLink(storeUrl.resolved(QUrl(nextLink)).toString(), gettext("Next"));
         }
         setBusy(false);
     });
@@ -223,7 +323,9 @@ void AppStoreClient::fetchLink(const QString &link)
 
 void AppStoreClient::fetchAppDetails(const QString &appId)
 {
-    QUrl url("https://appstore-api.rebble.io/api/v1/apps/id/" + appId);
+    QUrl url = appDetailsUrl(appId);
+    if (url.isEmpty())
+        return;
     QUrlQuery query;
     if (!m_hardwarePlatform.isEmpty()) {
         query.addQueryItem("hardware", m_hardwarePlatform);
@@ -245,34 +347,16 @@ void AppStoreClient::fetchAppDetails(const QString &appId)
             return;
         } else
             qDebug() << "Attempting to parse for" << appId << item->category() << "cat";
-        QVariantMap replyMap = jsonDoc.toVariant().toMap().value("data").toList().first().toMap();
-        if(!item->category().isNull()) { // This is store item, category is always set
-            item->setVersion(replyMap.value("latest_release").toMap().value("version").toString());
-            if (replyMap.contains("header_images") && replyMap.value("header_images").toList().count() > 0) {
-                item->setHeaderImage(replyMap.value("header_images").toList().first().toMap().value("orig").toString());
-            }
-            item->setVendor(replyMap.value("author").toString());
-            item->setIsWatchFace(replyMap.value("type").toString() == "watchface");
-        } else { // This is phone item (installedApps) - category not preserved
-            qDebug() << "Fetching data for app" << appId;// << jsonDoc.toJson(QJsonDocument::Indented);
-            QVariantMap flatMap,cmpMap = replyMap.value("compatibility").toMap();
-            foreach(const QString &key, cmpMap.keys()) {
-                if(cmpMap.value(key).toMap().value("supported").toBool()) {
-                    //qDebug() << "Adding compatibility for" << appId << key;
-                    if(cmpMap.value(key).toMap().contains("firmware")) {
-                        flatMap.insert(key,cmpMap.value(key).toMap().value("firmware").toMap().value("major").toInt());
-                    } else {
-                        flatMap.insert(key,1);
-                    }
-                }
-            }
-            item->setLatest(replyMap.value("latest_release").toMap().value("version").toString());
-            item->setChangeLog(replyMap.value("changelog").toList());
-            item->setCompanion(!replyMap.value("companions").toMap().value("android").isNull() || !replyMap.value("companions").toMap().value("ios").isNull());
-            item->setCompatibility(flatMap);
-            QModelIndex mi = model()->index(model()->indexOf(item));
-            emit model()->dataChanged(mi,mi);
+        const QVariantMap replyMap = jsonDoc.toVariant().toMap().value("data").toList().value(0).toMap();
+        if (replyMap.isEmpty() || (!item->uuid().isEmpty()
+                && QUuid(replyMap.value("uuid").toString()) != QUuid(item->uuid())))
+            return;
+        item->setVersion(replyMap.value("latest_release").toMap().value("version").toString());
+        if (replyMap.contains("header_images") && replyMap.value("header_images").toList().count() > 0) {
+            item->setHeaderImage(replyMap.value("header_images").toList().first().toMap().value("orig").toString());
         }
+        item->setVendor(replyMap.value("author").toString());
+        item->setIsWatchFace(replyMap.value("type").toString() == "watchface");
     });
 }
 
@@ -286,30 +370,33 @@ void AppStoreClient::search(const QString &searchString, Type type, int page)
     m_model->clear();
     setBusy(true);
 
-    QUrl url("https://7683ow76eq-dsn.algolia.net/1/indexes/rebble-appstore-production/query");
-    QUrlQuery query;
-    query.addQueryItem("x-algolia-api-key", "252f4938082b8693a8a9fc0157d1d24f");
-    query.addQueryItem("x-algolia-application-id", "7683OW76EQ");
-    url.setQuery(query);
-
-    QString filter = "watchapp";
-    if (type == TypeWatchface) {
-        filter = "watchface";
-    }
-
-    QString pluralFilter = filter + "s";
-    QString params = QString("query=%1&hitsPerPage=30&page=%5&tagFilters=(%2)&analyticsTags=product-variant-time,%3,%4,appstore-search")
-        .arg(searchString).arg(filter).arg(m_hardwarePlatform).arg(pluralFilter).arg(page);
-    QJsonObject json;
-    json.insert("params", params);
-    QJsonDocument doc;
-    doc.setObject(json);
-    QByteArray body = doc.toJson();
-
+    const Source source = m_source;
+    const bool core = source == CoreDevices;
+    QUrl url(core ? QStringLiteral("https://gm3s9tryo4-dsn.algolia.net/1/indexes/apps/query")
+                  : QStringLiteral("https://7683ow76eq-dsn.algolia.net/1/indexes/rebble-appstore-production/query"));
     QNetworkRequest request(url);
-    qDebug() << "Search query:" << url << params;
+    request.setHeader(QNetworkRequest::ContentTypeHeader, QStringLiteral("application/json"));
+    request.setRawHeader("X-Algolia-Application-Id", core ? "GM3S9TRYO4" : "7683OW76EQ");
+    request.setRawHeader("X-Algolia-API-Key", core ? "0b83b4f8e4e8e9793d2f1f93c21894aa"
+                                                 : "252f4938082b8693a8a9fc0157d1d24f");
+
+    const QString typeTag = type == TypeWatchface ? QStringLiteral("watchface") : QStringLiteral("watchapp");
+    QJsonArray tags;
+    tags.append(typeTag);
+    if (core && !m_hardwarePlatform.isEmpty())
+        tags.append(m_hardwarePlatform);
+    QJsonObject json;
+    json.insert("query", searchString);
+    json.insert("hitsPerPage", 30);
+    json.insert("page", page);
+    json.insert("tagFilters", tags);
+    if (!core) {
+        json.insert("analyticsTags", QJsonArray{QStringLiteral("product-variant-time"), m_hardwarePlatform,
+                                               typeTag + QStringLiteral("s"), QStringLiteral("appstore-search")});
+    }
+    const QByteArray body = QJsonDocument(json).toJson(QJsonDocument::Compact);
     QNetworkReply *reply = m_nam->post(request, body);
-    connect(reply, &QNetworkReply::finished, [this, reply]() {
+    connect(reply, &QNetworkReply::finished, this, [this, reply, source]() {
         m_model->clear();
         setBusy(false);
 
@@ -318,7 +405,7 @@ void AppStoreClient::search(const QString &searchString, Type type, int page)
 
         QVariantMap resultMap = jsonDoc.toVariant().toMap();
         foreach (const QVariant &entry, resultMap.value("hits").toList()) {
-            AppItem *item = parseAppItem(entry.toMap());
+            AppItem *item = parseAppItem(entry.toMap(), source);
             m_model->insert(item);
 //            qDebug() << "have item" << item->storeId() << item->name() << item->icon();
         }
@@ -333,13 +420,17 @@ void AppStoreClient::search(const QString &searchString, Type type, int page)
     });
 }
 
-AppItem* AppStoreClient::parseAppItem(const QVariantMap &map)
+AppItem* AppStoreClient::parseAppItem(const QVariantMap &map, Source source)
 {
     AppItem *item = new AppItem();
-    item->setStoreId(map.value("id").toString());
+    const QString id = map.value("id").toString();
+    item->setStoreId(source == CoreDevices ? corePrefix + id : id);
+    const QUuid uuid(map.value("uuid").toString());
+    if (!uuid.isNull())
+        item->setUuid(uuid.toString());
     item->setName(map.value("title").toString());
     item->setVendor(map.value("author").toString());
-    item->setVersion(map.value("latest_release").toMap().value("version").toString());
+    item->setVersion(map.value("latest_release").toMap().value("version", map.value("version")).toString());
     item->setIsWatchFace(map.value("type").toString() == "watchface");
     const QVariantList headerImages = map.value("header_images").toList();
     if (!headerImages.isEmpty())

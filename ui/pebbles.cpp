@@ -6,6 +6,7 @@
 #include <QDebug>
 #include <QDBusArgument>
 #include <QDBusPendingCallWatcher>
+#include <QDBusPendingReply>
 #include <QDBusServiceWatcher>
 #include <algorithm>
 
@@ -30,6 +31,8 @@ Pebbles::Pebbles(QObject *parent):
     QDBusConnection::sessionBus().connect(ROCKPOOL_SERVICE, ROCKPOOL_MANAGER_PATH, ROCKPOOL_MANAGER_INTERFACE, "PebblesChanged", this, SLOT(refresh()));
     QDBusConnection::sessionBus().connect(ROCKPOOL_SERVICE, ROCKPOOL_MANAGER_PATH, ROCKPOOL_MANAGER_INTERFACE, "ScanningChanged", this, SLOT(onScanningChanged(bool)));
     QDBusConnection::sessionBus().connect(ROCKPOOL_SERVICE, ROCKPOOL_MANAGER_PATH, ROCKPOOL_MANAGER_INTERFACE, "ScanResultsChanged", this, SLOT(refreshScanResults()));
+    QDBusConnection::sessionBus().connect(ROCKPOOL_SERVICE, ROCKPOOL_MANAGER_PATH, ROCKPOOL_MANAGER_INTERFACE,
+                                          "PreferredAppstoreChanged", this, SLOT(onPreferredAppstoreChanged(QString)));
     connect(m_watcher, &QDBusServiceWatcher::serviceOwnerChanged,
             [this](const QString &, const QString &oldOwner, const QString &newOwner) {
         qDebug() << "service owner changed:" << oldOwner << "->" << newOwner;
@@ -56,6 +59,7 @@ Pebbles::Pebbles(QObject *parent):
                 m_version.clear();
                 emit versionChanged();
             }
+            onPreferredAppstoreChanged(QString());
             onScanningChanged(false);
             if (!m_scanResults.isEmpty()) {
                 m_scanResults.clear();
@@ -65,10 +69,12 @@ Pebbles::Pebbles(QObject *parent):
         if (!newOwner.isEmpty()) {
             refresh();
             refreshVersion();
+            refreshPreferredAppstore();
             refreshScanning();
             refreshScanResults();
         }
     });
+    refreshPreferredAppstore();
     refresh();
     refreshVersion();
     refreshScanning();
@@ -118,6 +124,45 @@ bool Pebbles::connectedToService()
 QString Pebbles::version() const
 {
     return m_version;
+}
+
+void Pebbles::onPreferredAppstoreChanged(const QString &store)
+{
+    ++m_preferenceEpoch;
+    m_preferredAppstore = store;
+    emit preferredAppstoreChanged();
+}
+
+void Pebbles::refreshPreferredAppstore()
+{
+    const quint64 epoch = ++m_preferenceEpoch;
+    auto *watcher = new QDBusPendingCallWatcher(callManager(QStringLiteral("GetPreferredAppstore")), this);
+    connect(watcher, &QDBusPendingCallWatcher::finished, this, [this, watcher, epoch]() {
+        QDBusPendingReply<QString> reply = *watcher;
+        watcher->deleteLater();
+        if (epoch == m_preferenceEpoch && reply.isValid())
+            onPreferredAppstoreChanged(reply.value());
+    });
+}
+
+void Pebbles::setPreferredAppstore(const QString &store)
+{
+    if (m_savingAppstore || store == m_preferredAppstore || (store != QStringLiteral("core") && store != QStringLiteral("rebble")))
+        return;
+    m_savingAppstore = true;
+    emit savingAppstoreChanged();
+    auto *watcher = new QDBusPendingCallWatcher(callManager(QStringLiteral("SetPreferredAppstore"), {store}), this);
+    connect(watcher, &QDBusPendingCallWatcher::finished, this, [this, watcher]() {
+        m_savingAppstore = false;
+        emit savingAppstoreChanged();
+        QDBusPendingReply<bool> reply = *watcher;
+        watcher->deleteLater();
+        if (!reply.isValid() || !reply.value()) {
+            qWarning() << "Could not save the preferred appstore";
+            emit preferredAppstoreChanged();
+            refreshPreferredAppstore();
+        }
+    });
 }
 
 void Pebbles::refreshVersion()

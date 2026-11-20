@@ -83,6 +83,23 @@ Page {
                 title: qsTr("Settings")
             }
 
+            ComboBox {
+                width: parent.width
+                label: qsTr("Appstore")
+                description: qsTr("Browse and check for updates in this store.")
+                enabled: rockPool.preferredAppstore.length > 0 && !rockPool.savingAppstore
+                currentIndex: rockPool.preferredAppstore === "core" ? 1 : (rockPool.preferredAppstore === "rebble" ? 0 : -1)
+                menu: ContextMenu {
+                    MenuItem {
+                        text: "Rebble"
+                        onClicked: rockPool.preferredAppstore = "rebble"
+                    }
+                    MenuItem {
+                        text: "Core Devices"
+                        onClicked: rockPool.preferredAppstore = "core"
+                    }
+                }
+            }
             SectionHeader {
                 text: qsTr("General")
             }

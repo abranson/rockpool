@@ -15,6 +15,8 @@ class Pebbles : public QAbstractListModel
 {
     Q_OBJECT
     Q_PROPERTY(bool connectedToService READ connectedToService NOTIFY connectedToServiceChanged)
+    Q_PROPERTY(bool savingAppstore READ savingAppstore NOTIFY savingAppstoreChanged)
+    Q_PROPERTY(QString preferredAppstore READ preferredAppstore WRITE setPreferredAppstore NOTIFY preferredAppstoreChanged)
     Q_PROPERTY(QString version READ version NOTIFY versionChanged)
     Q_PROPERTY(int count READ rowCount NOTIFY countChanged)
     Q_PROPERTY(bool scanning READ scanning NOTIFY scanningChanged)
@@ -36,6 +38,9 @@ public:
 
     bool connectedToService();
     QString version() const;
+    bool savingAppstore() const { return m_savingAppstore; }
+    QString preferredAppstore() const { return m_preferredAppstore; }
+    void setPreferredAppstore(const QString &store);
 
     Q_INVOKABLE Pebble *get(int index) const;
     int find(const QString &address) const;
@@ -57,6 +62,8 @@ public:
 signals:
     void connectedToServiceChanged();
     void versionChanged();
+    void preferredAppstoreChanged();
+    void savingAppstoreChanged();
     void countChanged();
     void pebbleIdentityAvailable(const QString &address);
     void scanningChanged();
@@ -66,6 +73,7 @@ private slots:
     void refresh();
     void watchListReplyFinished(QDBusPendingCallWatcher *watcher);
     void refreshVersion();
+    void onPreferredAppstoreChanged(const QString &store);
     void versionReplyFinished(QDBusPendingCallWatcher *watcher);
 
     void pebbleIdentityChanged();
@@ -85,6 +93,10 @@ private:
     static bool sortPebbles(Pebble *a, Pebble *b);
 
 private:
+    void refreshPreferredAppstore();
+    QString m_preferredAppstore;
+    bool m_savingAppstore = false;
+    quint64 m_preferenceEpoch = 0;
     bool m_connectedToService = false;
     QString m_version;
     QList<Pebble*> m_pebbles;

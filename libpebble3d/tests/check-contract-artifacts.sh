@@ -3275,7 +3275,7 @@ require_fixed 'Q_PROPERTY(QString version READ version NOTIFY versionChanged)' \
 reject_extended '\.call\(' "$rockpool_pebbles" \
     'blocking compatibility-manager GUI-thread D-Bus call'
 manager_signal_hooks=$(grep -c 'QDBusConnection::sessionBus().connect' "$rockpool_pebbles")
-if [ "$manager_signal_hooks" -ne 3 ]; then
+if [ "$manager_signal_hooks" -ne 4 ]; then
     fail "compatibility-manager signals must be installed exactly once in $rockpool_pebbles"
 fi
 require_fixed 'QDBusConnectionInterface::ReplaceExistingService' \

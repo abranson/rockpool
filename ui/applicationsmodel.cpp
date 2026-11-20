@@ -153,6 +153,11 @@ bool ApplicationsModel::contains(const QString &storeId) const
     return false;
 }
 
+bool ApplicationsModel::containsApp(const QString &storeId, const QString &uuid) const
+{
+    return (!uuid.isEmpty() && findByUuid(uuid)) || contains(storeId);
+}
+
 int ApplicationsModel::indexOf(AppItem *item) const
 {
     return m_apps.indexOf(item);
@@ -391,7 +396,10 @@ void AppItem::setHasSettings(bool hasSettings)
 
 void AppItem::setCompanion(bool companion)
 {
-    m_companion = companion;
+    if (m_companion != companion) {
+        m_companion = companion;
+        emit companionChanged();
+    }
 }
 
 void AppItem::setCategory(const QString &category)

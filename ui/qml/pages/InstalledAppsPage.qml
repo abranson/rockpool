@@ -11,6 +11,7 @@ Page {
     property var model: showWatchApps ? pebble.installedApps : pebble.installedWatchfaces
     property bool appMutationsAllowed: rockPool.knownPebbleCount === 1
     property bool appOrderChanged
+    property int storeSource: rockPool.preferredAppstore === "core" ? AppStoreClient.CoreDevices : AppStoreClient.Rebble
     property bool storeRequestPending
     property string storeError
 
@@ -21,6 +22,7 @@ Page {
 
     AppStoreClient {
         id: storeClient
+        source: root.storeSource
 
         hardwarePlatform: root.pebble ? root.pebble.hardwarePlatform : ""
         onBusyChanged: {
@@ -47,6 +49,7 @@ Page {
 
     AppStoreClient {
         id: client
+        source: root.storeSource
         hardwarePlatform: pebble.hardwarePlatform
         model: root.model
     }
@@ -57,7 +60,9 @@ Page {
         PullDownMenu {
             MenuItem {
                 text: qsTr("Add New")
+                enabled: rockPool.preferredAppstore.length > 0
                 onClicked: pageStack.push(Qt.resolvedUrl("AppStorePage.qml"), {
+                                              storeSource: root.storeSource,
                                               pebble: root.pebble,
                                               showWatchApps: root.showWatchApps,
                                               showWatchFaces: root.showWatchFaces
@@ -109,12 +114,13 @@ Page {
         clip: true
 
         delegate: InstalledAppDelegate {
+            id: installedDelegate
             storeId: model.storeId
             uuid: model.uuid
             name: model.name
             vendor: model.vendor
             version: model.version
-            candidate: (model.latest && model.latest !== model.version)?model.latest:""
+            candidate: model.latest
             iconSource: model.icon
             isLastApp: !listView.model.get(index+1)
             isSystemApp: model.isSystemApp
@@ -138,8 +144,7 @@ Page {
                     return
                 root.storeError = ""
                 root.storeRequestPending = true
-                storeClient.fetchLink("https://appstore-api.rebble.io/api/v1/apps/id/"
-                                      + encodeURIComponent(model.storeId))
+                storeClient.fetchInstalledListing(root.model.get(index), rockPool.preferredAppstore, true)
             }
             onConfigureApp: root.configureApp(model.uuid)
             onReviewPermissions: pageStack.push(Qt.resolvedUrl("AppPermissionsPage.qml"), {
@@ -150,11 +155,22 @@ Page {
                 if (root.appMutationsAllowed)
                     root.moveApp(index,dir)
             }
-            Component.onCompleted: if(!model.isSystemApp && !model.latest) { client.fetchAppDetails(model.storeId) }
+            function checkForUpdate() {
+                if (!model.isSystemApp && model.storeId)
+                    client.fetchInstalledListing(root.model.get(index), rockPool.preferredAppstore, false)
+            }
+            Component.onCompleted: checkForUpdate()
+            Connections {
+                target: rockPool
+                onPreferredAppstoreChanged: installedDelegate.checkForUpdate()
+            }
+            Connections {
+                target: client
+                onHardwarePlatformChanged: installedDelegate.checkForUpdate()
+            }
             onUpgrade: pageStack.push(Qt.resolvedUrl("AppUpgradePage.qml"), {
                                            pebble: root.pebble,
-                                           app_model: root.model,
-                                           app_index: index
+                                           app_uuid: model.uuid
                                       })
         }
         VerticalScrollDecorator {}

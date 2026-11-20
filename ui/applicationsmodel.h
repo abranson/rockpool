@@ -24,12 +24,13 @@ class AppItem: public QObject
     Q_PROPERTY(bool isWatchFace MEMBER m_isWatchFace NOTIFY isWatchFaceChanged)
     Q_PROPERTY(bool isSystemApp MEMBER m_isSystemApp CONSTANT)
     Q_PROPERTY(bool hasSettings MEMBER m_hasSettings CONSTANT)
-    Q_PROPERTY(bool companion MEMBER m_companion CONSTANT)
+    Q_PROPERTY(bool companion MEMBER m_companion NOTIFY companionChanged)
 
     Q_PROPERTY(QString groupId READ groupId NOTIFY groupIdChanged)
     Q_PROPERTY(QString groupKind READ groupKind NOTIFY groupKindChanged)
 
     Q_PROPERTY(QVariantList changeLog READ changeLog NOTIFY changeLogChanged)
+    Q_PROPERTY(QString updateStoreId MEMBER m_updateStoreId NOTIFY latestChanged)
     Q_PROPERTY(QString latest READ latest WRITE setLatest NOTIFY latestChanged)
     Q_PROPERTY(QVariantMap compatibility READ compatibility NOTIFY compatibilityChanged)
 
@@ -86,6 +87,7 @@ public:
     QVariantList changeLog() const;
     QVariantMap compatibility() const;
     QString latest() const;
+    void setUpdateStoreId(const QString &id) { m_updateStoreId = id; }
     void setLatest(const QString version);
     void setCompatibility(const QVariantMap &map);
     void setChangeLog(const QVariantList &log);
@@ -99,6 +101,7 @@ signals:
     void groupKindChanged();
     void changeLogChanged();
     void latestChanged();
+    void companionChanged();
     void compatibilityChanged();
 
 private:
@@ -125,6 +128,7 @@ private:
 
     QVariantList m_changeLog;
     QString m_latest;
+    QString m_updateStoreId;
     QVariantMap m_compatibility;
 };
 
@@ -169,6 +173,7 @@ public:
     AppItem* findByStoreId(const QString &storeId) const;
     AppItem* findByUuid(const QString &uuid) const;
     Q_INVOKABLE bool contains(const QString &storeId) const;
+    Q_INVOKABLE bool containsApp(const QString &storeId, const QString &uuid) const;
     int indexOf(AppItem *item) const;
 
     Q_INVOKABLE QString groupName(const QString &groupId) const;

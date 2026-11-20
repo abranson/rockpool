@@ -24,18 +24,18 @@ Page {
                                                : (root.app.companion ? qsTr("Needs Companion")
                                                                      : (installed ? qsTr("Installed") : qsTr("Install")))
                 property bool installing
-                property bool installed: root.pebble.installedApps.contains(root.app.storeId) || root.pebble.installedWatchfaces.contains(root.app.storeId)
+                property bool installed: root.pebble.installedApps.containsApp(root.app.storeId, root.app.uuid) || root.pebble.installedWatchfaces.containsApp(root.app.storeId, root.app.uuid)
                 Connections {
                     target: root.pebble.installedApps
                     onChanged: {
-                        installMenuItem.installed = root.pebble.installedApps.contains(root.app.storeId) || root.pebble.installedWatchfaces.contains(root.app.storeId)
+                        installMenuItem.installed = root.pebble.installedApps.containsApp(root.app.storeId, root.app.uuid) || root.pebble.installedWatchfaces.containsApp(root.app.storeId, root.app.uuid)
                     }
                 }
 
                 Connections {
                     target: root.pebble.installedWatchfaces
                     onChanged: {
-                        installMenuItem.installed = root.pebble.installedApps.contains(root.app.storeId) || root.pebble.installedWatchfaces.contains(root.app.storeId)
+                        installMenuItem.installed = root.pebble.installedApps.containsApp(root.app.storeId, root.app.uuid) || root.pebble.installedWatchfaces.containsApp(root.app.storeId, root.app.uuid)
                     }
                 }
 

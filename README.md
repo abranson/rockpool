@@ -63,6 +63,12 @@ controls when off. Turning it back on restores the saved weekday/weekend
 selection; the time ranges are retained. Manual Quiet Time and calendar events
 remain independent of this switch.
 
+Choose **Rebble** (the default) or **Core Devices** under **Settings → Appstore**.
+In Apps or Watchfaces, **Add New** opens that store for browsing, search and
+installation without signing in. Rockpool checks installed store apps against
+the selected catalogue by app UUID. When it has a newer compatible release,
+you can upgrade in place, including across stores.
+
 The background service checks installed store apps and watchfaces for updates
 every six hours, including with the app window closed. Each available version
 is announced once per app; restarting the service does not repeat the alert.

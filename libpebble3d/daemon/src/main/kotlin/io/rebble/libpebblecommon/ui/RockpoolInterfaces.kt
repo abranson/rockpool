@@ -16,6 +16,9 @@ interface RockpoolManager : DBusInterface {
     fun GrantAppFolder(uuid: String, path: String, writable: Boolean): Boolean
     fun RevokeAppFolder(uuid: String, scope: String): Boolean
     fun AnswerInstallReview(token: String, decisionsJson: String): Boolean
+    fun GetPreferredAppstore(): String
+    fun SetPreferredAppstore(source: String): Boolean
+    fun GetAppStoreListing(uuid: String, storeId: String, hardware: String, source: String, version: String): String
     fun GetAppPermissions(uuid: String): String
     fun SetAppPermission(uuid: String, key: String, granted: Boolean): Boolean
     fun Version(): String
@@ -48,6 +51,7 @@ interface RockpoolManager : DBusInterface {
      */
     fun ForgetWatch(address: String)
 
+    class PreferredAppstoreChanged(path: String, source: String) : DBusSignal(path, source)
     class PebblesChanged(path: String) : DBusSignal(path)
     class ScanningChanged(path: String, scanning: Boolean) : DBusSignal(path, scanning)
     class ScanResultsChanged(path: String) : DBusSignal(path)
@@ -151,6 +155,7 @@ interface RockpoolPebble : DBusInterface {
 
     // Apps / watchfaces
     fun InstallApp(id: String)
+    fun UpgradeApp(uuid: String, storeId: String)
     fun SideloadApp(packageFile: String)
     fun InstalledAppIds(): List<String>
 

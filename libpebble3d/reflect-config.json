@@ -281,6 +281,11 @@
     "allPublicMethods": true
   },
   {
+    "name": "io.rebble.libpebblecommon.ui.RockpoolManager$PreferredAppstoreChanged",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true
+  },
+  {
     "name": "io.rebble.libpebblecommon.ui.RockpoolManager$PebblesChanged",
     "allDeclaredConstructors": true,
     "allPublicMethods": true

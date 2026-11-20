@@ -2,25 +2,13 @@
 package io.rebble.libpebblecommon.ui
 
 import co.touchlab.kermit.Logger
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
-import io.ktor.client.plugins.HttpTimeout
-import io.ktor.client.request.get
-import io.ktor.client.request.parameter
-import io.ktor.client.statement.bodyAsText
-import io.ktor.http.isSuccess
+import io.rebble.libpebblecommon.linux.web.AppstoreListingId
 import io.rebble.libpebblecommon.locker.AppType
 import io.rebble.libpebblecommon.locker.LockerWrapper
 import io.rebble.libpebblecommon.metadata.WatchType
 import io.rebble.libpebblecommon.rockpool.RockpoolSettings
 import io.rebble.libpebblecommon.rockpool.rockpoolApplicationIsInstalledOnWatch
 import kotlinx.coroutines.CancellationException
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.booleanOrNull
-import kotlinx.serialization.json.contentOrNull
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder
 import org.freedesktop.dbus.types.UInt32
 import org.freedesktop.dbus.types.Variant
@@ -34,6 +22,7 @@ internal data class RockpoolAppUpdateTarget(
     val type: AppType,
     val address: String,
     val hardware: String,
+    val pbwUrl: String? = null,
 )
 
 internal fun rockpoolAppUpdateTargets(
@@ -41,79 +30,59 @@ internal fun rockpoolAppUpdateTargets(
     watches: List<Pair<String, WatchType>>,
 ): List<RockpoolAppUpdateTarget> = apps.filterIsInstance<LockerWrapper.NormalApp>().flatMap { app ->
     val properties = app.properties
-    val storeId = properties.storeId?.takeIf { Regex("[0-9a-fA-F]{24}").matches(it) }
+    val storeId = properties.storeId?.let(AppstoreListingId::parse)?.value
     val version = properties.version?.takeIf { it.isNotBlank() }
     if (storeId == null || version == null) emptyList() else watches.mapNotNull { (address, type) ->
         if (!rockpoolApplicationIsInstalledOnWatch(app, type)) null else RockpoolAppUpdateTarget(
             properties.id, storeId, properties.title, version, properties.type, address, type.codename,
+            properties.pbwUrl,
         )
     }
-}
-
-/** Match the installed-list version comparison, but reject unrelated or incompatible store data. */
-internal fun rockpoolAppUpdateVersion(body: String, target: RockpoolAppUpdateTarget): String? {
-    val records = Json.parseToJsonElement(body).jsonObject["data"]?.jsonArray ?: return null
-    val record = records.map { it.jsonObject }.firstOrNull {
-        it["uuid"]?.jsonPrimitive?.contentOrNull.equals(target.uuid.toString(), ignoreCase = true)
-    } ?: return null
-    val compatibility = record["compatibility"]?.jsonObject ?: return null
-    val variants = WatchType.fromCodename(target.hardware)?.getCompatibleAppVariants() ?: return null
-    if (variants.none {
-        compatibility[it.codename]?.jsonObject?.get("supported")?.jsonPrimitive?.booleanOrNull == true
-    }) return null
-    return record["latest_release"]?.jsonObject?.get("version")?.jsonPrimitive?.contentOrNull
-        ?.takeIf { it.isNotBlank() }
-}
-
-private val appUpdateClient by lazy {
-    HttpClient(CIO) {
-        install(HttpTimeout) {
-            requestTimeoutMillis = 15_000L
-            connectTimeoutMillis = 5_000L
-            socketTimeoutMillis = 10_000L
-        }
-    }
-}
-
-private suspend fun lookupAppUpdate(target: RockpoolAppUpdateTarget): String? {
-    val response = appUpdateClient.get("https://appstore-api.rebble.io/api/v1/apps/id/${target.storeId}") {
-        parameter("hardware", target.hardware)
-    }
-    check(response.status.isSuccess()) { "Store lookup returned ${response.status}" }
-    return rockpoolAppUpdateVersion(response.bodyAsText(), target)
 }
 
 /** Called serially by the locker observer. Successful lookups are reused for six hours. */
 internal class RockpoolAppUpdateNotification(
     private val settings: RockpoolSettings,
-    private val lookup: suspend (RockpoolAppUpdateTarget) -> String? = ::lookupAppUpdate,
+    private val appStore: RockpoolAppStore,
     private val publish: suspend (RockpoolAppUpdateTarget, String, () -> Boolean) -> Boolean =
         ::publishAppUpdateNotification,
     private val now: () -> Long = { System.nanoTime() / 1_000_000 },
 ) {
-    private data class CacheKey(val uuid: Uuid, val storeId: String, val hardware: String, val installedVersion: String)
+    private data class CacheKey(val target: RockpoolAppUpdateTarget, val source: RockpoolAppStoreSource)
     private data class CachedVersion(val version: String?, val expires: Long)
     private val cache = mutableMapOf<CacheKey, CachedVersion>()
+    private var previousSelection: RockpoolAppStore.Selection? = null
     private val logger = Logger.withTag("RockpoolAppUpdates")
 
     suspend fun update(
         targets: List<RockpoolAppUpdateTarget>,
+        selection: RockpoolAppStore.Selection,
         stillInstalled: suspend (RockpoolAppUpdateTarget) -> Boolean,
     ) {
-        cache.keys.retainAll(targets.map { CacheKey(it.uuid, it.storeId, it.hardware, it.version) }.toSet())
+        if (previousSelection !== selection) {
+            cache.clear()
+            previousSelection = selection
+        }
+        cache.keys.retainAll(targets.map { CacheKey(it, selection.source) }.toSet())
         for (target in targets) {
-            val cacheKey = CacheKey(target.uuid, target.storeId, target.hardware, target.version)
+            if (!appStore.isCurrent(selection)) return
+            val cacheKey = CacheKey(target, selection.source)
             val checkedAt = now()
             try {
                 val cached = cache[cacheKey]?.takeIf { checkedAt < it.expires } ?: run {
-                    CachedVersion(lookup(target), checkedAt + 6 * 60 * 60 * 1000L).also { cache[cacheKey] = it }
+                    val version = appStore.lookup(selection, target)?.takeIf { it.updateAvailable }?.version
+                    CachedVersion(version, checkedAt + 6 * 60 * 60 * 1000L).also { cache[cacheKey] = it }
                 }
                 val version = cached.version ?: continue
-                if (version == target.version) continue
-                // The locker is account-global: one alert per app release, even with several watches.
-                val key = "app.${target.uuid}.notifiedVersion"
-                if (settings.get(key) == version || !stillInstalled(target)) continue
-                publish(target, version) { settings.setChecked(key, version) }
+                // The locker is account-global: one alert per store and release, even with several watches.
+                val key = "app.${target.uuid}.notifiedVersion.${selection.source.value}"
+                val previousRebbleVersion = if (selection.source == RockpoolAppStoreSource.Rebble) {
+                    settings.get("app.${target.uuid}.notifiedVersion")
+                } else ""
+                if (settings.get(key, previousRebbleVersion) == version || !stillInstalled(target) ||
+                    !appStore.isCurrent(selection)
+                ) continue
+                publish(target, version) { appStore.rememberUpdate(selection, key, version) }
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {

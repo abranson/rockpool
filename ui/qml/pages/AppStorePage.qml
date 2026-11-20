@@ -1,10 +1,11 @@
-import QtQuick 2.2
+import QtQuick 2.6
 import Sailfish.Silica 1.0
 import RockPool 1.0
 
 Page {
     id: root
 
+    property alias storeSource: client.source
     property var pebble: null
     property bool showWatchApps: false
     property bool showWatchFaces: false
@@ -18,6 +19,7 @@ Page {
 
     AppStoreClient {
         id: client
+
         hardwarePlatform: pebble.hardwarePlatform
         enableCategories: root.enableCategories
     }
@@ -56,7 +58,8 @@ Page {
         }
 
         header: PageHeader {
-            title: (grpName)? grpName :((showWatchApps ? qsTr("Watchapps") : qsTr("Watchfaces"))+": "+(showCategories ? qsTr("Categories") : qsTr("Collections")))
+            title: root.grpName || (root.showCategories ? qsTr("Categories") : qsTr("Collections"))
+            description: root.storeSource === AppStoreClient.CoreDevices ? "Core Devices" : "Rebble"
         }
 
         model: ApplicationsFilterModel {
@@ -114,6 +117,8 @@ Page {
             onClicked: {
                 pageStack.push(Qt.resolvedUrl("AppStorePage.qml"), {
                                    pebble: root.pebble,
+                                   storeSource: root.storeSource,
+                                   showWatchApps: root.showWatchApps,
                                    link: client.model.groupLink(section),
                                    grpName: client.model.groupName(section),
                                    enableCategories: false
@@ -186,18 +191,18 @@ Page {
                         Image {
                             id: tickIcon
                             source: "image://theme/icon-s-installed"
-                            visible: root.pebble.installedApps.contains(model.storeId) || root.pebble.installedWatchfaces.contains(model.storeId)
+                            visible: root.pebble.installedApps.containsApp(model.storeId, model.uuid) || root.pebble.installedWatchfaces.containsApp(model.storeId, model.uuid)
                             Connections {
                                 target: root.pebble.installedApps
                                 onChanged: {
-                                    tickIcon.visible = root.pebble.installedApps.contains(model.storeId) || root.pebble.installedWatchfaces.contains(model.storeId)
+                                    tickIcon.visible = root.pebble.installedApps.containsApp(model.storeId, model.uuid) || root.pebble.installedWatchfaces.containsApp(model.storeId, model.uuid)
                                 }
                             }
 
                             Connections {
                                 target: root.pebble.installedWatchfaces
                                 onChanged: {
-                                    tickIcon.visible = root.pebble.installedApps.contains(model.storeId) || root.pebble.installedWatchfaces.contains(model.storeId)
+                                    tickIcon.visible = root.pebble.installedApps.containsApp(model.storeId, model.uuid) || root.pebble.installedWatchfaces.containsApp(model.storeId, model.uuid)
                                 }
                             }
                         }
@@ -238,6 +243,7 @@ Page {
             // Open in a new page to be able to cancel the search.
             pageStack.push(Qt.resolvedUrl("AppStorePage.qml"), {
                                pebble: root.pebble,
+                               storeSource: root.storeSource,
                                search: text,
                                showWatchApps: root.showWatchApps,
                                grpName: qsTr("Search Results"),

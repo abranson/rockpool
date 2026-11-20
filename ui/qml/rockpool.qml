@@ -10,6 +10,9 @@ import "pages"
 
 ApplicationWindow {
     id: rockPool
+
+    property alias savingAppstore: pebbles.savingAppstore
+    property alias preferredAppstore: pebbles.preferredAppstore
     initialPage: Qt.resolvedUrl("pages/LoadingPage.qml")
     cover: Qt.resolvedUrl("cover/CoverPage.qml")
     property int curPebble: -1

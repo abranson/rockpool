@@ -15,16 +15,16 @@ Page {
 
     AppStoreClient {
         id: client
+        source: rockPool.preferredAppstore === "core" ? AppStoreClient.CoreDevices : AppStoreClient.Rebble
 
         hardwarePlatform: root.pebble ? root.pebble.hardwarePlatform : ""
         model: root.app_model
     }
 
-    function resolveRequestedApp() {
+    function resolveRequestedApp(force) {
         if (!app_uuid || !pebble)
             return
 
-        var previous = app
         var models = [pebble.installedApps, pebble.installedWatchfaces]
         for (var m = 0; m < models.length; ++m) {
             for (var i = 0; ; ++i) {
@@ -32,11 +32,12 @@ Page {
                 if (!item)
                     break
                 if (item.uuid.toLowerCase() === app_uuid.toLowerCase()) {
+                    if (!force && item === app)
+                        return
                     app_index = -1
                     app_model = models[m]
                     app_index = i
-                    if (item !== previous && item.storeId)
-                        client.fetchAppDetails(item.storeId)
+                    client.fetchInstalledListing(item, rockPool.preferredAppstore, false)
                     return
                 }
             }
@@ -61,6 +62,14 @@ Page {
             else
                 root.resolveRequestedApp()
         }
+    }
+    Connections {
+        target: rockPool
+        onPreferredAppstoreChanged: root.resolveRequestedApp(true)
+    }
+    Connections {
+        target: client
+        onHardwarePlatformChanged: root.resolveRequestedApp(true)
     }
     Component.onCompleted: resolveRequestedApp()
     property var compatibilityPlatforms: [
@@ -142,7 +151,7 @@ Page {
                             anchors.horizontalCenter: parent.horizontalCenter
                         }
                         Label {
-                            text: app ? app.version : ""
+                            text: app ? (app.latest ? app.version + " → " + app.latest : app.version) : ""
                             anchors.horizontalCenter: parent.horizontalCenter
                         }
                     }
@@ -166,6 +175,7 @@ Page {
 
                 width: parent.width
                 enabled: root.appInstallationAllowed && root.app && !installing && !root.app.companion
+                         && root.app.updateStoreId.length > 0
                 property bool installing: false
                 text: installing ? qsTr("Upgrading...")
                                  : (root.app && root.app.companion ? qsTr("Needs Companion") : qsTr("Upgrade"))
@@ -173,7 +183,7 @@ Page {
                     if (!root.appInstallationAllowed || !root.app)
                         return
 
-                    root.pebble.installApp(root.app.storeId)
+                    root.pebble.upgradeApp(root.app.uuid, root.app.updateStoreId)
                     installButton.installing = true
                 }
             }

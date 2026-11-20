@@ -4,6 +4,10 @@ import io.rebble.libpebblecommon.rockpool.NotificationIconColors
 import io.rebble.libpebblecommon.rockpool.notificationAppDefaults
 
 import co.touchlab.kermit.Logger
+import io.rebble.libpebblecommon.linux.web.AppstoreListingId
+import io.rebble.libpebblecommon.metadata.WatchType
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.collectLatest
 import io.rebble.libpebblecommon.connection.LibPebble3
 import io.rebble.libpebblecommon.locker.LockerWrapper
 import io.rebble.libpebblecommon.permissions.readFilesKey
@@ -117,6 +121,7 @@ internal class RockpoolUiService(
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val quietTimeSchedules = QuietTimeSchedules(settings, libPebble)
     private val installReviews = RockpoolInstallReviews()
+    private val appStore = RockpoolAppStore(settings)
     private val reconnecting = AtomicBoolean(false)
     private val observersStarted = AtomicBoolean(false)
     private val connectionLock = Any()
@@ -311,6 +316,46 @@ internal class RockpoolUiService(
 
         override fun AnswerInstallReview(token: String, decisionsJson: String): Boolean {
             return installReviews.answer(requirePermissionEditor(), token, decisionsJson)
+        }
+
+        override fun GetPreferredAppstore(): String = appStore.selection.value.source.value
+
+        override fun SetPreferredAppstore(source: String): Boolean {
+            val wanted = RockpoolAppStoreSource.parse(source) ?: return false
+            return appStore.select(wanted) {
+                emitSignal(RockpoolManager.PreferredAppstoreChanged(MANAGER_PATH, wanted.value))
+            }
+        }
+
+        override fun GetAppStoreListing(
+            uuid: String, storeId: String, hardware: String, source: String, version: String,
+        ): String {
+            val selection = appStore.selection.value
+            if (selection.source.value != source) return ""
+            val appId = runCatching { parseRockpoolAppUuid(uuid) }.getOrNull() ?: return ""
+            val installedStoreId = AppstoreListingId.parse(storeId) ?: return ""
+            val watchType = WatchType.fromCodename(hardware)?.takeIf { it.codename == hardware } ?: return ""
+            return runBlocking {
+                suspend fun installedTarget(): RockpoolAppUpdateTarget? {
+                    val watches = libPebble.watches.value.filterIsInstance<KnownPebbleDevice>()
+                        .filter { it.watchType.watchType == watchType }
+                        .map { it.identifier.asString to watchType }
+                    val app = libPebble.getLockerApp(appId).first() ?: return null
+                    return rockpoolAppUpdateTargets(listOf(app), watches).firstOrNull {
+                        it.storeId == installedStoreId.value && it.version == version
+                    }
+                }
+                try {
+                    val installed = installedTarget() ?: return@runBlocking ""
+                    val listing = appStore.lookup(selection, installed) ?: return@runBlocking ""
+                    if (installedTarget() == installed && appStore.isCurrent(selection)) listing.toJson() else ""
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    logger.w { "App store listing lookup failed for $appId: ${e.message}" }
+                    ""
+                }
+            }
         }
 
         override fun GetAppPermissions(uuid: String): String {
@@ -655,6 +700,7 @@ internal class RockpoolUiService(
                                 iconColors = iconColors,
                                 quietTimeSchedules = quietTimeSchedules,
                                 reviewInstall = ::reviewInstall,
+                                appStore = appStore,
                             )
                             runCatching { connection?.exportObject(path, obj) }
                                 .onFailure { logger.e("export $path failed", it) }
@@ -838,7 +884,7 @@ internal class RockpoolUiService(
     }
 
     private fun watchLocker() {
-        val appUpdates = RockpoolAppUpdateNotification(settings)
+        val appUpdates = RockpoolAppUpdateNotification(settings, appStore)
         scope.launch(Dispatchers.IO) {
             val targets = combine(
                 libPebble.getLocker(AppType.Watchapp, null, Int.MAX_VALUE),
@@ -856,16 +902,17 @@ internal class RockpoolUiService(
                     delay(15 * 60 * 1000L)
                 }
             }
-            combine(targets, ticks) { current, _ -> current }.collect { current ->
-                appUpdates.update(current) { target ->
-                    // Network requests can overlap app removal, an upgrade or forgetting a watch.
-                    val app = libPebble.getLockerApp(target.uuid).first()
-                    val watches = libPebble.watches.value.filterIsInstance<KnownPebbleDevice>().map {
-                        it.identifier.asString to it.watchType.watchType
+            combine(targets, ticks, appStore.selection) { current, _, selection -> current to selection }
+                .collectLatest { (current, selection) ->
+                    appUpdates.update(current, selection) { target ->
+                        // Network requests can overlap app removal, an upgrade or forgetting a watch.
+                        val app = libPebble.getLockerApp(target.uuid).first()
+                        val watches = libPebble.watches.value.filterIsInstance<KnownPebbleDevice>().map {
+                            it.identifier.asString to it.watchType.watchType
+                        }
+                        app != null && target in rockpoolAppUpdateTargets(listOf(app), watches)
                     }
-                    app != null && target in rockpoolAppUpdateTargets(listOf(app), watches)
                 }
-            }
         }
         val storeAssociations = RockpoolStoreAssociations(libPebble, changed = {
             broadcastSignal { path -> RockpoolPebble.InstalledAppsChanged(path) }
