@@ -16,6 +16,11 @@ interface RockpoolManager : DBusInterface {
     fun GrantAppFolder(uuid: String, path: String, writable: Boolean): Boolean
     fun RevokeAppFolder(uuid: String, scope: String): Boolean
     fun AnswerInstallReview(token: String, decisionsJson: String): Boolean
+    fun GetCoreAccount(): List<String>
+    fun SetCoreAccount(refreshToken: String, uid: String, displayName: String, email: String): Boolean
+    fun ClearCoreAccount(): Boolean
+    class CoreAccountChanged(path: String) : DBusSignal(path)
+
     fun GetPreferredAppstore(): String
     fun SetPreferredAppstore(source: String): Boolean
     fun GetAppStoreListing(uuid: String, storeId: String, hardware: String, source: String, version: String): String

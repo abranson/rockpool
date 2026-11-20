@@ -69,6 +69,12 @@ installation without signing in. Rockpool checks installed store apps against
 the selected catalogue by app UUID. When it has a newer compatible release,
 you can upgrade in place, including across stores.
 
+Settings shows the sign-in status for the selected store. Tap the account row
+to sign in. Core Devices opens the Pebble sign-in page in your browser. Return
+to Rockpool after signing in to see your account name or email. You can stay
+signed in to both stores and switch between them. Choose **Logout** on the
+account row to sign out of that store.
+
 The background service checks installed store apps and watchfaces for updates
 every six hours, including with the app window closed. Each available version
 is announced once per app; restarting the service does not repeat the alert.

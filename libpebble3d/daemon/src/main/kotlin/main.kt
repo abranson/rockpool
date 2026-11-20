@@ -24,6 +24,7 @@ import io.rebble.libpebblecommon.rockpool.ProfileSwitchCoordinator
 import io.rebble.libpebblecommon.rockpool.ProfileSetter
 import io.rebble.libpebblecommon.rockpool.ProfileSettingsCoordinator
 import io.rebble.libpebblecommon.rockpool.PrimaryCannedResponsesReconciler
+import io.rebble.libpebblecommon.rockpool.CoreStoreCredentials
 import io.rebble.libpebblecommon.rockpool.AccountSettingsCoordinator
 import io.rebble.libpebblecommon.rockpool.AccountIdentityCoordinator
 import io.rebble.libpebblecommon.rockpool.HealthSettingsCoordinator
@@ -101,6 +102,7 @@ fun main() {
     // One boot-config fetch shared by every Rebble-backed feature: firmware/locker (web services),
     // the account dev token (getAccountToken), and the ASR voice endpoints.
     val bootConfig = RebbleBootConfigProvider(oauthToken)
+    val coreCredentials = CoreStoreCredentials(settings)
     val webServices = RebbleWebServices(oauthToken, bootConfig)
     val accountIdentityProvider = RebbleAccountIdentityProvider(oauthToken, bootConfig)
     // Tracing hook: record ktor/TLS reflection in the native-image metadata (build-native.sh).
@@ -322,6 +324,7 @@ fun main() {
         libPebble.watches.map { Unit },
     ))
     val rockpoolUiService = RockpoolUiService(
+        coreCredentials,
         libPebble,
         bondedWatchImporter,
         bondedWatchForget,

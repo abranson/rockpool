@@ -9,6 +9,7 @@
 #include "applicationsmodel.h"
 #include "applicationsfiltermodel.h"
 #include "appstoreclient.h"
+#include "corestoreaccount.h"
 #include "screenshotmodel.h"
 #include "uiactivation.h"
 #include <QDBusConnection>
@@ -22,7 +23,7 @@ int main(int argc, char *argv[])
 {
     QScopedPointer<const QGuiApplication> app(SailfishApp::application(argc, argv));
     QGuiApplication::setApplicationName("Rockpool");
-    QGuiApplication::setOrganizationName("Rockpool");
+    QGuiApplication::setOrganizationName("uk.co.nationalfantastic");
 
     QSettings ini(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)+"/"+app->applicationName()+"/app.ini",QSettings::IniFormat);
     QString locale = ini.contains("LANG") ? ini.value("LANG").toString() : QLocale::system().name();
@@ -37,6 +38,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<Pebbles>("RockPool", 1, 0, "Pebbles");
     qmlRegisterUncreatableType<NotificationSourceModel>("RockPool", 1, 0, "NotificationSourceModel", "Get it from a Pebble object");
     qmlRegisterType<ServiceControl>("RockPool", 1, 0, "ServiceController");
+    qmlRegisterType<CoreStoreAccount>("RockPool", 1, 0, "CoreStoreAccount");
     qmlRegisterType<AppStoreClient>("RockPool", 1, 0, "AppStoreClient");
     qmlRegisterType<ScreenshotModel>("RockPool", 1, 0, "ScreenshotModel");
 

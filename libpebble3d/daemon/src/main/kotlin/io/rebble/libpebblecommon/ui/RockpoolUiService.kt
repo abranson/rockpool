@@ -43,6 +43,7 @@ import io.rebble.libpebblecommon.rockpool.SendTextConfigurationCoordinator
 import io.rebble.libpebblecommon.util.GeolocationPositionResult
 import io.rebble.libpebblecommon.util.SystemGeolocation
 import io.rebble.libpebblecommon.rockpool.DevConnectionStateObserver
+import io.rebble.libpebblecommon.rockpool.CoreStoreCredentials
 import io.rebble.libpebblecommon.rockpool.AccountSettingsCoordinator
 import io.rebble.libpebblecommon.rockpool.BondedWatchForgetCoordinator
 import io.rebble.libpebblecommon.rockpool.BondedWatchForgetOutcome
@@ -100,6 +101,7 @@ private fun rockpoolFirmwareStatus(device: PebbleDevice?): RockpoolFirmwareStatu
  * per known watch for the Rockpool Silica UI.
  */
 internal class RockpoolUiService(
+    private val coreCredentials: CoreStoreCredentials,
     private val libPebble: LibPebble,
     private val importBondedWatches:
         suspend (beginCommit: () -> Boolean) -> BondedWatchImportOutcome,
@@ -318,6 +320,13 @@ internal class RockpoolUiService(
             return installReviews.answer(requirePermissionEditor(), token, decisionsJson)
         }
 
+        override fun GetCoreAccount(): List<String> = coreCredentials.profile()
+
+        override fun SetCoreAccount(refreshToken: String, uid: String, displayName: String, email: String): Boolean =
+            coreCredentials.save(refreshToken, uid, displayName, email)
+
+        override fun ClearCoreAccount(): Boolean = coreCredentials.clear()
+
         override fun GetPreferredAppstore(): String = appStore.selection.value.source.value
 
         override fun SetPreferredAppstore(source: String): Boolean {
@@ -533,6 +542,9 @@ internal class RockpoolUiService(
 
     private fun startObservers() {
         if (!observersStarted.compareAndSet(false, true)) return
+        scope.launch {
+            coreCredentials.changes.collect { emitSignal(RockpoolManager.CoreAccountChanged(MANAGER_PATH)) }
+        }
         quietTimeSchedules.start(scope)
         notificationSourcePublisher.start(scope)
         watchWatches()

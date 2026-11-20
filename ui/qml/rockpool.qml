@@ -13,6 +13,7 @@ ApplicationWindow {
 
     property alias savingAppstore: pebbles.savingAppstore
     property alias preferredAppstore: pebbles.preferredAppstore
+    property alias coreAccount: coreAccountSession
     initialPage: Qt.resolvedUrl("pages/LoadingPage.qml")
     cover: Qt.resolvedUrl("cover/CoverPage.qml")
     property int curPebble: -1
@@ -32,6 +33,20 @@ ApplicationWindow {
                 activeInstallReview = null
             }
         }
+    }
+
+    CoreStoreAccount {
+        id: coreAccountSession
+
+        onOpenBrowser: {
+            if (!Qt.openUrlExternally(url))
+                coreAccountSession.browserOpenFailed()
+        }
+    }
+
+    onPreferredAppstoreChanged: {
+        if (preferredAppstore !== "core" && coreAccountSession && coreAccountSession.busy)
+            coreAccountSession.cancelLogin()
     }
 
     ServiceController {

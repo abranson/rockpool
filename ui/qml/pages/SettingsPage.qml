@@ -8,13 +8,35 @@ Page {
     property string connectedProfile: pebble ? pebble.profileWhenConnected : ""
     property string disconnectedProfile: pebble ? pebble.profileWhenDisconnected : ""
     property bool settingsReady: pebble && pebble.settingsPageReady
-    property bool accountAuthenticated: pebble ? pebble.accountAuthenticated : false
+    readonly property bool coreSelected: rockPool.preferredAppstore === "core"
+    readonly property bool accountReady: rockPool.preferredAppstore.length > 0 && !rockPool.savingAppstore
+    readonly property bool accountAuthenticated: coreSelected ? rockPool.coreAccount.signedIn
+                                                            : !!pebble && pebble.accountAuthenticated
+    readonly property bool accountPending: coreSelected ? rockPool.coreAccount.busy
+                                                      : !!pebble && pebble.accountTokenPending
+    readonly property string accountName: coreSelected ? rockPool.coreAccount.displayName : (pebble ? pebble.accountName : "")
+    readonly property string accountEmail: coreSelected ? rockPool.coreAccount.email : (pebble ? pebble.accountEmail : "")
+    readonly property string accountError: coreSelected ? rockPool.coreAccount.error : (pebble ? pebble.accountTokenError : "")
     property var cannedResponses: pebble ? pebble.cannedResponses : {}
     property bool cannedResponsesReady: pebble && pebble.cannedResponsesReady
     property var notificationsMap: pebble ? pebble.notificationsFilter:{}
     property var lowBatteryOptions: [0, 5, 10, 15, 20, 25, 30, 40, 50]
 
     property var pendingLanguage
+
+    function signIn() {
+        if (!accountReady || accountPending || accountAuthenticated)
+            return
+        if (coreSelected) {
+            rockPool.coreAccount.login()
+        } else if (pebble) {
+            pageStack.push(Qt.resolvedUrl("AppSettingsPage.qml"), {
+                               url: "https://boot.rebble.io",
+                               pebble: root.pebble,
+                               oauthBootFlow: true
+                           })
+        }
+    }
 
     function showLanguageRemorse() {
         if (status !== PageStatus.Active || !pendingLanguage) {
@@ -62,13 +84,8 @@ Page {
             }
             MenuItem {
                 text: qsTr("Login")
-                visible: !root.accountAuthenticated
-                enabled: root.pebble && !root.pebble.accountTokenPending
-                onClicked: pageStack.push(Qt.resolvedUrl("AppSettingsPage.qml"), {
-                                             url: "https://boot.rebble.io",
-                                             pebble: root.pebble,
-                                             oauthBootFlow: true
-                                         })
+                visible: root.accountReady && !root.accountAuthenticated && !root.accountPending
+                onClicked: root.signIn()
             }
         }
 
@@ -100,6 +117,88 @@ Page {
                     }
                 }
             }
+            SectionHeader {
+                visible: root.accountReady
+                text: root.coreSelected ? qsTr("Core Devices account") : qsTr("Rebble account")
+            }
+            ListItem {
+                id: accountItem
+
+                width: parent.width
+                contentHeight: accountDetails.height + 2 * Theme.paddingMedium
+                visible: root.accountReady
+                enabled: root.accountReady && !root.accountPending
+                onClicked: {
+                    if (root.accountAuthenticated)
+                        showMenu()
+                    else
+                        root.signIn()
+                }
+                menu: ContextMenu {
+                    MenuItem {
+                        text: qsTr("Logout")
+                        visible: root.accountAuthenticated && root.accountReady
+                        onClicked: {
+                            if (root.coreSelected)
+                                rockPool.coreAccount.logout()
+                            else if (root.pebble)
+                                root.pebble.setOAuthToken("")
+                        }
+                    }
+                }
+
+                Column {
+                    id: accountDetails
+
+                    x: Theme.horizontalPageMargin
+                    width: parent.width - 2 * x
+                    y: Theme.paddingMedium
+                    spacing: Theme.paddingSmall
+
+                    Label {
+                        width: parent.width
+                        wrapMode: Text.Wrap
+                        textFormat: Text.PlainText
+                        text: root.accountAuthenticated ? (root.accountName || root.accountEmail || qsTr("Signed in"))
+                                                        : (root.coreSelected && root.accountPending
+                                                           ? qsTr("Finish signing in in your browser.")
+                                                           : qsTr("Not signed in"))
+                        color: accountItem.highlighted ? Theme.highlightColor : Theme.primaryColor
+                    }
+                    Label {
+                        width: parent.width
+                        visible: root.accountAuthenticated && root.accountName.length > 0
+                                 && root.accountEmail.length > 0 && root.accountEmail !== root.accountName
+                        textFormat: Text.PlainText
+                        text: root.accountEmail
+                        color: accountItem.highlighted ? Theme.secondaryHighlightColor : Theme.secondaryColor
+                        font.pixelSize: Theme.fontSizeSmall
+                        wrapMode: Text.Wrap
+                    }
+                }
+            }
+            BusyIndicator {
+                anchors.horizontalCenter: parent.horizontalCenter
+                running: root.accountReady && root.accountPending
+                size: BusyIndicatorSize.Small
+                visible: running
+            }
+            Label {
+                x: Theme.horizontalPageMargin
+                width: parent.width - 2 * x
+                visible: root.accountReady && root.accountError.length > 0
+                text: root.accountError
+                color: Theme.errorColor
+                wrapMode: Text.Wrap
+            }
+
+            Button {
+                anchors.horizontalCenter: parent.horizontalCenter
+                visible: root.coreSelected && rockPool.coreAccount.busy
+                text: qsTr("Cancel sign-in")
+                onClicked: rockPool.coreAccount.cancelLogin()
+            }
+
             SectionHeader {
                 text: qsTr("General")
             }
@@ -224,61 +323,6 @@ Page {
                     source: "image://theme/icon-m-right"
                     highlighted: timelineWindowItem.highlighted
                 }
-            }
-
-            SectionHeader {
-                text: qsTr("Rebble account")
-            }
-            ListItem {
-                id: accountItem
-
-                width: parent.width
-                contentHeight: accountDetails.height + 2 * Theme.paddingMedium
-                enabled: root.accountAuthenticated && root.pebble && !root.pebble.accountTokenPending
-                menu: ContextMenu {
-                    MenuItem {
-                        text: qsTr("Logout")
-                        onClicked: root.pebble.setOAuthToken("")
-                    }
-                }
-
-                Column {
-                    id: accountDetails
-
-                    x: Theme.horizontalPageMargin
-                    width: parent.width - 2 * x
-                    y: Theme.paddingMedium
-                    spacing: Theme.paddingSmall
-
-                    Label {
-                        width: parent.width
-                        wrapMode: Text.Wrap
-                        text: root.accountAuthenticated ? root.pebble.accountName : qsTr("Not signed in")
-                        color: accountItem.highlighted ? Theme.highlightColor : Theme.primaryColor
-                    }
-                    Label {
-                        width: parent.width
-                        visible: root.accountAuthenticated
-                        text: visible ? root.pebble.accountEmail : ""
-                        color: accountItem.highlighted ? Theme.secondaryHighlightColor : Theme.secondaryColor
-                        font.pixelSize: Theme.fontSizeSmall
-                        wrapMode: Text.Wrap
-                    }
-                }
-            }
-            BusyIndicator {
-                anchors.horizontalCenter: parent.horizontalCenter
-                running: pebble && pebble.accountTokenPending
-                size: BusyIndicatorSize.Small
-                visible: running
-            }
-            Label {
-                x: Theme.horizontalPageMargin
-                width: parent.width - 2 * x
-                visible: pebble && pebble.accountTokenError.length > 0
-                text: visible ? pebble.accountTokenError : ""
-                color: Theme.errorColor
-                wrapMode: Text.Wrap
             }
 
             SectionHeader {

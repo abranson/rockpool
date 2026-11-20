@@ -16,6 +16,7 @@ HEADERS += \
     applicationsmodel.h \
     applicationsfiltermodel.h \
     appstoreclient.h \
+    corestoreaccount.h \
     screenshotmodel.h
 
 SOURCES += main.cpp \
@@ -28,6 +29,7 @@ SOURCES += main.cpp \
     applicationsmodel.cpp \
     applicationsfiltermodel.cpp \
     appstoreclient.cpp \
+    corestoreaccount.cpp \
     screenshotmodel.cpp
 
 RESOURCES += rockpool.qrc
