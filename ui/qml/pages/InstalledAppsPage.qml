@@ -115,12 +115,14 @@ Page {
 
         delegate: InstalledAppDelegate {
             id: installedDelegate
-            storeId: model.storeId
             uuid: model.uuid
             name: model.name
             vendor: model.vendor
             version: model.version
             candidate: model.latest
+            installedStoreSource: model.storeSource
+            candidateStoreSource: model.updateStoreSource
+            switchAvailable: model.switchAvailable
             iconSource: model.icon
             isLastApp: !listView.model.get(index+1)
             isSystemApp: model.isSystemApp
@@ -140,7 +142,7 @@ Page {
                     pebble.launchApp(model.uuid)
             }
             onOpenStore: {
-                if (!model.storeId || storeClient.busy)
+                if (!model.storeSource || storeClient.busy)
                     return
                 root.storeError = ""
                 root.storeRequestPending = true
@@ -156,7 +158,7 @@ Page {
                     root.moveApp(index,dir)
             }
             function checkForUpdate() {
-                if (!model.isSystemApp && model.storeId)
+                if (!model.isSystemApp && model.storeSource)
                     client.fetchInstalledListing(root.model.get(index), rockPool.preferredAppstore, false)
             }
             Component.onCompleted: checkForUpdate()

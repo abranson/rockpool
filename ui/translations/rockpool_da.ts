@@ -432,6 +432,46 @@
         <source>Change Log</source>
         <translation>Ændringslog</translation>
     </message>
+    <message>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="39"/>
+        <source>Switch build to %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="41"/>
+        <source>Upgrade from %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="85"/>
+        <source>Switch build</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="90"/>
+        <source>Install the %1 build of version %2?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="152"/>
+        <source>Could not install the selected build.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="284"/>
+        <source>Linked to %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="290"/>
+        <source>Selected build from %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="311"/>
+        <source>Switching build…</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ContentPeerPickerPage</name>
@@ -1242,6 +1282,16 @@
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="79"/>
         <source>Move Down</source>
         <translation>Flyt Ned</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="24"/>
+        <source>Switch build to %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="26"/>
+        <source>Upgrade from %1</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2067,37 +2117,37 @@
 <context>
     <name>SettingsPage</name>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="91"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="171"/>
         <source>Appstore</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="92"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="172"/>
         <source>Browse and check for updates in this store.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="83"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="166"/>
         <source>Settings</source>
         <translation>Indstillinger</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="87"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="295"/>
         <source>General</source>
         <translation>Generelt</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="91"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="299"/>
         <source>Distance Units</source>
         <translation>Længdeenheder</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="95"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="303"/>
         <source>Metric</source>
         <translation>SI</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="99"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="307"/>
         <source>Imperial</source>
         <translation>Imperial</translation>
     </message>
@@ -2106,22 +2156,22 @@
         <translation type="vanished">Sprog</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="163"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="371"/>
         <source>Timeline</source>
         <translation>Tidslinje</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="168"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="376"/>
         <source>Sync calendar to timeline</source>
         <translation>Synkronisér kalender til tidslinje</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="177"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="270"/>
         <source>Sync Apps from Cloud</source>
         <translation>Synkroniser Applikationer fra Skyen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="59"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="147"/>
         <source>Reset Timeline</source>
         <translation>Nulstil Tidslinje</translation>
     </message>
@@ -2146,22 +2196,22 @@
         <translation type="vanished">Aktiv Tidslinje &quot;WebSync&quot; konto</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="223"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="205"/>
         <source>Logout</source>
         <translation>Log ud</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="64"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="152"/>
         <source>Login</source>
         <translation>Log ind</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="25"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="113"/>
         <source>Changing watch language to %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="116"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="324"/>
         <source>Low battery warning</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2178,52 +2228,87 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="147"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="355"/>
         <source>Quiet Time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="197"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="396"/>
         <source>Timeline window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="213"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="188"/>
         <source>Rebble account</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="239"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="231"/>
         <source>Not signed in</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="268"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="412"/>
         <source>Automatic Profile</source>
         <translation>Automatisk Profil</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="272"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="416"/>
         <source>Connected</source>
         <translation>Forbundet</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="276"/>
-        <location filename="../qml/pages/SettingsPage.qml" line="289"/>
-        <location filename="../qml/pages/SettingsPage.qml" line="297"/>
-        <location filename="../qml/pages/SettingsPage.qml" line="310"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="285"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="298"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="306"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="319"/>
         <source>no change</source>
         <translation>ingen ændringer</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="293"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="437"/>
         <source>Disconnected</source>
         <translation>Ikke forbundet</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="313"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="457"/>
         <source>Canned Messages</source>
         <translation>Beskedder på dåse</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="45"/>
+        <source>Could not finish. Check the locker again.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="57"/>
+        <source>Locker updated.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="63"/>
+        <source>No eligible installed apps to add.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="281"/>
+        <source>Adding apps…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="281"/>
+        <source>Checking locker…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="282"/>
+        <source>Add to %1 (%2)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="283"/>
+        <source>Check for missing apps</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

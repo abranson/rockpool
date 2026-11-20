@@ -120,6 +120,7 @@ internal class LibPebble3Service(
     private val sendTextConfiguration: SendTextConfigurationCoordinator,
     private val classicAvailable: Boolean,
     private val coreCredentials: CoreStoreCredentials,
+    private val selectedLocker: SelectedLocker,
     private val reviewInstall: suspend (InstallReview) -> Map<String, Boolean>? = { null },
 ) {
     private val logger = Logger.withTag("LibPebble3Service")
@@ -364,6 +365,7 @@ internal class LibPebble3Service(
         applicationPropertiesChanged()
         if (change.token.isNotBlank()) {
             scope.launch {
+                if (selectedLocker.currentLockerSession()?.rebble == null) return@launch
                 val result = accountSyncCoordinator.synchronize(
                     beginCommit = { true },
                     start = libPebble::requestLockerSync,
@@ -906,7 +908,7 @@ internal class LibPebble3Service(
         }
 
         override fun Sync(): DBusPath = operation("account.sync") {
-            if (settings.get("account.oauthToken").isEmpty()) {
+            if (selectedLocker.currentLockerSession() == null) {
                 fail(ERROR_AUTHENTICATION_FAILED, "account sign-in is required")
                 return@operation
             }

@@ -1,5 +1,6 @@
 package io.rebble.libpebblecommon.ui
 
+import io.rebble.libpebblecommon.rockpool.SelectedLocker
 import io.rebble.libpebblecommon.rockpool.NotificationIconColors
 import io.rebble.libpebblecommon.rockpool.notificationAppDefaults
 
@@ -105,6 +106,8 @@ private fun rockpoolFirmwareStatus(device: PebbleDevice?, coreRevision: Long): R
  * per known watch for the Rockpool Silica UI.
  */
 internal class RockpoolUiService(
+    private val appStore: RockpoolAppStore,
+    private val selectedLocker: SelectedLocker,
     private val coreCredentials: CoreStoreCredentials,
     private val libPebble: LibPebble,
     private val importBondedWatches:
@@ -127,7 +130,7 @@ internal class RockpoolUiService(
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val quietTimeSchedules = QuietTimeSchedules(settings, libPebble)
     private val installReviews = RockpoolInstallReviews()
-    private val appStore = RockpoolAppStore(settings)
+    private val lockerCopy = LockerCopy(libPebble, selectedLocker)
     private val reconnecting = AtomicBoolean(false)
     private val observersStarted = AtomicBoolean(false)
     private val connectionLock = Any()
@@ -328,20 +331,34 @@ internal class RockpoolUiService(
 
         override fun SetCoreAccount(refreshToken: String, uid: String, displayName: String, email: String): Boolean {
             requireRockpoolUi()
-            return coreCredentials.save(refreshToken, uid, displayName, email)
+            return runBlocking { libPebble.transitionLockerSelection { coreCredentials.save(refreshToken, uid, displayName, email) } }
         }
 
         override fun ClearCoreAccount(): Boolean {
             requireRockpoolUi()
-            return coreCredentials.clear()
+            return runBlocking { libPebble.transitionLockerSelection(coreCredentials::clear) }
+        }
+
+        override fun PreviewLockerCopy(source: String): String {
+            requireRockpoolUi()
+            return runBlocking { lockerCopy.preview(source) }
+        }
+
+        override fun CopyLockerApp(preview: String): Int {
+            requireRockpoolUi()
+            return runBlocking { lockerCopy.copy(preview) }
         }
 
         override fun GetPreferredAppstore(): String = appStore.selection.value.source.value
 
         override fun SetPreferredAppstore(source: String): Boolean {
             val wanted = RockpoolAppStoreSource.parse(source) ?: return false
-            return appStore.select(wanted) {
-                emitSignal(RockpoolManager.PreferredAppstoreChanged(MANAGER_PATH, wanted.value))
+            return runBlocking {
+                libPebble.transitionLockerSelection {
+                    appStore.select(wanted) {
+                        emitSignal(RockpoolManager.PreferredAppstoreChanged(MANAGER_PATH, wanted.value))
+                    }
+                }
             }
         }
 
@@ -554,6 +571,21 @@ internal class RockpoolUiService(
         scope.launch {
             coreCredentials.changes.collect { emitSignal(RockpoolManager.CoreAccountChanged(MANAGER_PATH)) }
         }
+        scope.launch {
+            combine(appStore.selection, coreCredentials.changes) { selection, revision ->
+                selection to if (selection.source.core) revision else 0L
+            }.distinctUntilChanged().collectLatest {
+                if (selectedLocker.currentLockerSession() != null) {
+                    try {
+                        libPebble.requestLockerSync().await()
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (_: Exception) {
+                        logger.w { "Could not sync selected app locker" }
+                    }
+                }
+            }
+        }
         quietTimeSchedules.start(scope)
         notificationSourcePublisher.start(scope)
         watchWatches()
@@ -722,6 +754,7 @@ internal class RockpoolUiService(
                                 quietTimeSchedules = quietTimeSchedules,
                                 reviewInstall = ::reviewInstall,
                                 appStore = appStore,
+                                selectedLocker = selectedLocker,
                                 coreAccountRevision = { coreCredentials.changes.value },
                             )
                             runCatching { connection?.exportObject(path, obj) }

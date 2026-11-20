@@ -206,6 +206,7 @@ public:
 public slots:
     void removeApp(const QString &uuid);
     void upgradeApp(const QString &uuid, const QString &storeId);
+    void switchAppBuild(const QString &uuid, const QString &storeId);
     void installApp(const QString &storeId);
     void sideloadApp(const QString &packageFile);
     void requestConfigurationURL(const QString &uuid);

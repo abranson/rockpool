@@ -203,8 +203,7 @@ void AppStoreClient::fetchInstalledListing(AppItem *item, const QString &store, 
         m_model->clear();
         setBusy(true);
     } else if (item) {
-        item->setUpdateStoreId(QString());
-        item->setLatest(QString());
+        item->setUpdateCandidate(QString(), QString());
         item->setChangeLog({});
         item->setCompatibility({});
         const QModelIndex index = model()->index(model()->indexOf(item));
@@ -212,7 +211,7 @@ void AppStoreClient::fetchInstalledListing(AppItem *item, const QString &store, 
             emit model()->dataChanged(index, index);
     }
 
-    if (!item || item->isSystemApp() || item->storeId().isEmpty() || m_hardwarePlatform.isEmpty()
+    if (!item || item->isSystemApp() || item->storeSource().isEmpty() || m_hardwarePlatform.isEmpty()
             || (store != QStringLiteral("core") && store != QStringLiteral("rebble"))) {
         if (openPage)
             setBusy(false);
@@ -233,11 +232,20 @@ void AppStoreClient::fetchInstalledListing(AppItem *item, const QString &store, 
         watcher->deleteLater();
         const QVariantMap result = QJsonDocument::fromJson(reply.value().toUtf8()).toVariant().toMap();
         const QVariantMap app = result.value("app").toMap();
+        const QString id = app.value("id").toString();
+        const QString candidateId = source == CoreDevices ? corePrefix + id : id;
+        const QString candidateSource = AppItem::sourceForStoreId(candidateId);
+        const QString candidateVersion = app.value("latest_release").toMap().value("version").toString();
+        const QUuid candidateUuid(app.value("uuid").toString());
         if (installed && installed->version() == version && source == m_source && catalogueEpoch == m_catalogueEpoch
-                && !app.value("id").toString().isEmpty() && QUuid(app.value("uuid").toString()) == QUuid(installed->uuid())) {
+                && candidateSource == (source == CoreDevices ? QStringLiteral("core") : QStringLiteral("rebble"))
+                && !candidateUuid.isNull() && candidateUuid == QUuid(installed->uuid())) {
+            const bool update = result.value("updateAvailable").toBool();
+            const bool switchBuild = !update && result.value("switchAvailable").toBool()
+                    && installed->storeSource() != candidateSource;
             if (openPage) {
                 m_model->insert(parseAppItem(app, source));
-            } else if (result.value("updateAvailable").toBool()) {
+            } else if ((update || switchBuild) && !candidateVersion.isEmpty()) {
                 const QVariantMap platforms = app.value("compatibility").toMap();
                 QVariantMap compatibility;
                 for (auto it = platforms.constBegin(); it != platforms.constEnd(); ++it) {
@@ -245,13 +253,11 @@ void AppStoreClient::fetchInstalledListing(AppItem *item, const QString &store, 
                     if (platform.value("supported").toBool())
                         compatibility.insert(it.key(), platform.value("firmware").toMap().value("major", 1));
                 }
-                const QString id = app.value("id").toString();
-                installed->setUpdateStoreId(source == CoreDevices ? corePrefix + id : id);
                 installed->setCompatibility(compatibility);
                 installed->setChangeLog(app.value("changelog").toList());
                 const QVariantMap companions = app.value("companions").toMap();
                 installed->setCompanion(!companions.value("android").isNull() || !companions.value("ios").isNull());
-                installed->setLatest(app.value("latest_release").toMap().value("version").toString());
+                installed->setUpdateCandidate(candidateId, candidateVersion, switchBuild);
                 const QModelIndex index = model()->index(model()->indexOf(installed));
                 if (index.isValid())
                     emit model()->dataChanged(index, index);

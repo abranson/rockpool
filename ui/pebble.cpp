@@ -2598,6 +2598,11 @@ void Pebble::upgradeApp(const QString &uuid, const QString &storeId)
     sendVoidCommand(QStringLiteral("UpgradeApp"), QVariantList() << uuid << storeId);
 }
 
+void Pebble::switchAppBuild(const QString &uuid, const QString &storeId)
+{
+    sendVoidCommand(QStringLiteral("SwitchAppBuild"), QVariantList() << uuid << storeId);
+}
+
 void Pebble::installApp(const QString &storeId)
 {
     qDebug() << "should install app" << storeId;

@@ -1,6 +1,7 @@
 #include "applicationsmodel.h"
 
 #include <QDebug>
+#include <QRegularExpression>
 
 
 ApplicationsModel::ApplicationsModel(QObject *parent):
@@ -53,6 +54,12 @@ QVariant ApplicationsModel::data(const QModelIndex &index, int role) const
         return m_apps.at(index.row())->latest();
     case RoleCompatibility:
         return m_apps.at(index.row())->compatibility();
+    case RoleStoreSource:
+        return m_apps.at(index.row())->storeSource();
+    case RoleUpdateStoreSource:
+        return m_apps.at(index.row())->updateStoreSource();
+    case RoleSwitchAvailable:
+        return m_apps.at(index.row())->switchAvailable();
     }
 
     return QVariant();
@@ -79,6 +86,9 @@ QHash<int, QByteArray> ApplicationsModel::roleNames() const
     roles.insert(RoleChangeLog,"changeLog");
     roles.insert(RoleLatest,"latest");
     roles.insert(RoleCompatibility,"compatibility");
+    roles.insert(RoleStoreSource, "storeSource");
+    roles.insert(RoleUpdateStoreSource, "updateStoreSource");
+    roles.insert(RoleSwitchAvailable, "switchAvailable");
     return roles;
 }
 
@@ -450,6 +460,32 @@ QString AppItem::headerImage() const
 QVariantList AppItem::changeLog() const
 {
     return m_changeLog;
+}
+
+QString AppItem::sourceForStoreId(const QString &id)
+{
+    static const QRegularExpression scopedId(QStringLiteral("\\A(core:)?[0-9a-fA-F]{24}\\z"));
+    const auto match = scopedId.match(id);
+    if (!match.hasMatch())
+        return QString();
+    return match.captured(1).isEmpty() ? QStringLiteral("rebble") : QStringLiteral("core");
+}
+
+QString AppItem::storeSource() const
+{
+    return sourceForStoreId(m_storeId);
+}
+
+QString AppItem::updateStoreSource() const
+{
+    return sourceForStoreId(m_updateStoreId);
+}
+
+void AppItem::setUpdateCandidate(const QString &id, const QString &version, bool switchAvailable)
+{
+    m_updateStoreId = id;
+    m_switchAvailable = switchAvailable;
+    setLatest(version);
 }
 
 QString AppItem::latest() const

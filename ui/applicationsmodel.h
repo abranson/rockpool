@@ -10,6 +10,7 @@ class AppItem: public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString storeId MEMBER m_storeId CONSTANT)
+    Q_PROPERTY(QString storeSource READ storeSource CONSTANT)
     Q_PROPERTY(QString uuid MEMBER m_uuid CONSTANT)
     Q_PROPERTY(QString name MEMBER m_name CONSTANT)
     Q_PROPERTY(QString icon MEMBER m_icon CONSTANT)
@@ -31,6 +32,8 @@ class AppItem: public QObject
 
     Q_PROPERTY(QVariantList changeLog READ changeLog NOTIFY changeLogChanged)
     Q_PROPERTY(QString updateStoreId MEMBER m_updateStoreId NOTIFY latestChanged)
+    Q_PROPERTY(QString updateStoreSource READ updateStoreSource NOTIFY latestChanged)
+    Q_PROPERTY(bool switchAvailable READ switchAvailable NOTIFY latestChanged)
     Q_PROPERTY(QString latest READ latest WRITE setLatest NOTIFY latestChanged)
     Q_PROPERTY(QVariantMap compatibility READ compatibility NOTIFY compatibilityChanged)
 
@@ -38,6 +41,8 @@ public:
     AppItem(QObject *parent = 0);
 
     QString storeId() const;
+    QString storeSource() const;
+    static QString sourceForStoreId(const QString &id);
     QString uuid() const;
     QString name() const;
     QString icon() const;
@@ -87,7 +92,9 @@ public:
     QVariantList changeLog() const;
     QVariantMap compatibility() const;
     QString latest() const;
-    void setUpdateStoreId(const QString &id) { m_updateStoreId = id; }
+    QString updateStoreSource() const;
+    bool switchAvailable() const { return m_switchAvailable; }
+    void setUpdateCandidate(const QString &id, const QString &version, bool switchAvailable = false);
     void setLatest(const QString version);
     void setCompatibility(const QVariantMap &map);
     void setChangeLog(const QVariantList &log);
@@ -130,6 +137,7 @@ private:
     QVariantList m_changeLog;
     QString m_latest;
     QString m_updateStoreId;
+    bool m_switchAvailable = false;
     QVariantMap m_compatibility;
 };
 
@@ -157,7 +165,10 @@ public:
         RoleHasCompanion,
         RoleChangeLog,
         RoleLatest,
-        RoleCompatibility
+        RoleCompatibility,
+        RoleStoreSource,
+        RoleUpdateStoreSource,
+        RoleSwitchAvailable
     };
 
     ApplicationsModel(QObject *parent = nullptr);

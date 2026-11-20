@@ -21,6 +21,8 @@ interface RockpoolManager : DBusInterface {
     fun ClearCoreAccount(): Boolean
     class CoreAccountChanged(path: String) : DBusSignal(path)
 
+    fun PreviewLockerCopy(source: String): String
+    fun CopyLockerApp(preview: String): Int
     fun GetPreferredAppstore(): String
     fun SetPreferredAppstore(source: String): Boolean
     fun GetAppStoreListing(uuid: String, storeId: String, hardware: String, source: String, version: String): String
@@ -162,6 +164,7 @@ interface RockpoolPebble : DBusInterface {
     // Apps / watchfaces
     fun InstallApp(id: String)
     fun UpgradeApp(uuid: String, storeId: String)
+    fun SwitchAppBuild(uuid: String, storeId: String)
     fun SideloadApp(packageFile: String)
     fun InstalledAppIds(): List<String>
 

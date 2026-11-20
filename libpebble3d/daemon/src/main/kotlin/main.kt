@@ -5,6 +5,8 @@
 
 package io.rebble.libpebblecommon
 
+import io.rebble.libpebblecommon.rockpool.SelectedLocker
+import io.rebble.libpebblecommon.ui.RockpoolAppStore
 import co.touchlab.kermit.Logger
 import co.touchlab.kermit.Severity
 import io.rebble.libpebblecommon.connection.AppContext
@@ -103,11 +105,13 @@ fun main() {
     // the account dev token (getAccountToken), and the ASR voice endpoints.
     val bootConfig = RebbleBootConfigProvider(oauthToken)
     val coreCredentials = CoreStoreCredentials(settings)
-    val webServices = RebbleWebServices(oauthToken, bootConfig, coreCredentials::token, coreCredentials.changes)
+    val rebbleWebServices = RebbleWebServices(oauthToken, bootConfig, coreCredentials::token, coreCredentials.changes)
+    val storeSelection = RockpoolAppStore(settings)
+    val webServices = SelectedLocker(rebbleWebServices, storeSelection, coreCredentials, oauthToken)
     val accountIdentityProvider = RebbleAccountIdentityProvider(oauthToken, bootConfig)
     // Tracing hook: record ktor/TLS reflection in the native-image metadata (build-native.sh).
     if (System.getenv("LIBPEBBLE3D_TRACE_HTTP") == "1") {
-        runBlocking { runCatching { webServices.selfTest() }.onFailure { it.printStackTrace() } }
+        runBlocking { runCatching { rebbleWebServices.selfTest() }.onFailure { it.printStackTrace() } }
     }
 
     val platformProvider = PlatformProviderController()
@@ -303,7 +307,10 @@ fun main() {
                 ACCOUNT_LOCKER_SESSION_GATE_COMPLETE,
             )
         },
-        requestSync = libPebble::requestLockerSync,
+        requestSync = {
+            check(!storeSelection.selection.value.source.core)
+            libPebble.requestLockerSync()
+        },
     )
     accountSettings.addListener(accountLockerUpgradeReconciler::accountChanged)
     accountLockerUpgradeReconciler.start()
@@ -324,6 +331,7 @@ fun main() {
         libPebble.watches.map { Unit },
     ))
     val rockpoolUiService = RockpoolUiService(
+        storeSelection, webServices,
         coreCredentials,
         libPebble,
         bondedWatchImporter,
@@ -361,6 +369,7 @@ fun main() {
         sendTextConfiguration,
         rfcommSocketFactory.available,
         coreCredentials,
+        webServices,
         rockpoolUiService::reviewInstall,
     ).start()
     rockpoolUiService.start()

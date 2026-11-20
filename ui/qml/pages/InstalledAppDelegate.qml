@@ -4,13 +4,30 @@ import Sailfish.Silica 1.0
 ListItem {
     id: root
 
-    property string storeId
     property string uuid: ""
     property string name: ""
     property string iconSource: ""
     property string vendor: ""
     property string version: ""
     property string candidate: ""
+    property string installedStoreSource
+    property string candidateStoreSource
+    property bool switchAvailable
+    readonly property bool crossStore: installedStoreSource.length > 0 && candidateStoreSource.length > 0
+                                       && installedStoreSource !== candidateStoreSource
+    readonly property bool hasUpgrade: candidate.length > 0 && !switchAvailable && candidate !== version
+                                       && installedStoreSource.length > 0 && candidateStoreSource.length > 0
+
+    function versionActionText() {
+        var sourceName = candidateStoreSource === "core" ? "Core Devices" : "Rebble"
+        if (switchAvailable && crossStore)
+            return qsTr("Switch build to %1").arg(sourceName)
+        if (hasUpgrade && crossStore)
+            return qsTr("Upgrade from %1").arg(sourceName)
+        if (hasUpgrade)
+            return qsTr("Upgrade") + " " + version + " >> " + candidate
+        return qsTr("Version") + " " + version
+    }
     property bool hasSettings: false
     property bool isSystemApp: false
     property bool isLastApp: true
@@ -32,15 +49,15 @@ ListItem {
     menu: ContextMenu {
         closeOnActivation: true
         MenuItem {
-            text: (candidate ? qsTr("Upgrade") + " " + version +  " >> " + candidate : qsTr("Version") + " " + version)
+            text: root.versionActionText()
             onClicked: root.upgrade()
-            enabled: candidate && candidate != version
+            enabled: root.hasUpgrade || (root.switchAvailable && root.crossStore)
             visible: !isSystemApp
         }
 
         MenuItem {
             text: qsTr("Open in store")
-            visible: !root.isSystemApp && root.storeId.length > 0
+            visible: !root.isSystemApp && root.installedStoreSource.length > 0
             onClicked: root.openStore()
         }
         MenuItem {
@@ -109,7 +126,7 @@ ListItem {
         }
         Image {
             source: "image://theme/icon-s-update"
-            visible: candidate && candidate != version
+            visible: root.hasUpgrade
             anchors.verticalCenter: parent.verticalCenter
         }
     }

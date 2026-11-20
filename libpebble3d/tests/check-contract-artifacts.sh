@@ -3170,7 +3170,9 @@ require_fixed 'property int app_index: -1' "$app_upgrade_page" \
     'safe app-upgrade index before page parameters arrive'
 require_fixed 'app_model && app_index >= 0 ? app_model.get(app_index) : null' \
     "$app_upgrade_page" 'null-safe app-upgrade model lookup'
-require_fixed 'enabled: root.appInstallationAllowed && root.app && !installing && !root.app.companion' \
+require_fixed 'canInstallCandidate: appInstallationAllowed && app !== null && !app.companion' \
+    "$app_upgrade_page" 'null-safe install candidate'
+require_fixed 'enabled: root.canInstallCandidate && !installing' \
     "$app_upgrade_page" 'null-safe app-upgrade action'
 reject_extended 'property var app:[[:space:]]*app_model\.get\(app_index\)' \
     "$app_upgrade_page" 'unguarded app-upgrade model lookup'
@@ -3979,7 +3981,9 @@ require_fixed 'enabled: root.appMutationsAllowed' "$installed_apps_page" \
     'application-order commit guard'
 require_fixed 'property bool appInstallationAllowed: appMutationsAllowed && pebble && pebble.connected' \
     "$app_upgrade_page" 'connected-watch application-upgrade gate'
-require_fixed 'enabled: root.appInstallationAllowed && root.app && !installing && !root.app.companion' \
+require_fixed 'canInstallCandidate: appInstallationAllowed && app !== null && !app.companion' \
+    "$app_upgrade_page" 'null-safe install candidate'
+require_fixed 'enabled: root.canInstallCandidate && !installing' \
     "$app_upgrade_page" 'application-upgrade guard'
 require_fixed 'property bool appInstallationAllowed: appMutationsAllowed && pebble && pebble.connected' \
     "$app_store_details_page" 'connected-watch application-install gate'

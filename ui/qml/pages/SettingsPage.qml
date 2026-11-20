@@ -1,8 +1,74 @@
 import QtQuick 2.6
 import Sailfish.Silica 1.0
+import Nemo.DBus 2.0
 
 Page {
     id: root
+
+    property int lockerEpoch
+    property string lockerPreview
+    property int lockerCount
+    property bool lockerBusy
+    property string lockerMessage
+
+    function resetLocker() {
+        ++lockerEpoch
+        lockerPreview = ""
+        lockerCount = 0
+        lockerMessage = ""
+        lockerBusy = false
+    }
+
+    onCoreSelectedChanged: resetLocker()
+    onAccountAuthenticatedChanged: resetLocker()
+    onAccountPendingChanged: resetLocker()
+    onAccountEmailChanged: resetLocker()
+
+    DBusInterface {
+        id: lockerManager
+
+        service: "org.rockpool"
+        path: "/org/rockpool/Manager"
+        iface: "org.rockpool.Manager"
+        propertiesEnabled: false
+        signalsEnabled: false
+    }
+
+    function checkOrCopyLocker() {
+        var request = ++lockerEpoch
+        var copying = lockerPreview.length > 0
+        lockerBusy = true
+        lockerMessage = ""
+        function failed() {
+            if (request !== lockerEpoch) return
+            resetLocker()
+            lockerMessage = qsTr("Could not finish. Check the locker again.")
+        }
+        function next() {
+            if (request !== lockerEpoch) return
+            var method = copying ? "CopyLockerApp" : "PreviewLockerCopy"
+            var arg = copying ? lockerPreview : rockPool.preferredAppstore
+            var sent = lockerManager.typedCall(method, [{type: "s", value: arg}], function(reply) {
+                if (request !== lockerEpoch) return
+                if (copying) {
+                    if (reply > 0) { next(); return }
+                    if (reply < 0) { failed(); return }
+                    resetLocker()
+                    lockerMessage = qsTr("Locker updated.")
+                } else {
+                    try {
+                        var preview = JSON.parse(reply)
+                        lockerCount = preview.count
+                        lockerPreview = lockerCount > 0 ? preview.key : ""
+                        lockerMessage = lockerCount > 0 ? "" : qsTr("No eligible installed apps to add.")
+                        lockerBusy = false
+                    } catch (e) { failed() }
+                }
+            }, failed)
+            if (!sent) failed()
+        }
+        next()
+    }
 
     property var pebble: null
     property string connectedProfile: pebble ? pebble.profileWhenConnected : ""
@@ -199,6 +265,32 @@ Page {
                 onClicked: rockPool.coreAccount.cancelLogin()
             }
 
+            TextSwitch {
+                width: parent.width
+                text: qsTr("Sync Apps from Cloud")
+                enabled: root.settingsReady
+                automaticCheck: false
+                checked: root.pebble ? root.pebble.syncAppsFromCloud : false
+                onClicked: root.pebble.syncAppsFromCloud =
+                           !root.pebble.syncAppsFromCloud
+            }
+            Button {
+                anchors.horizontalCenter: parent.horizontalCenter
+                visible: root.accountReady && root.accountAuthenticated && rockPool.knownPebbleCount === 1
+                enabled: !root.accountPending && !root.lockerBusy
+                text: root.lockerBusy ? (root.lockerPreview.length ? qsTr("Adding apps…") : qsTr("Checking locker…"))
+                                      : root.lockerPreview.length ? qsTr("Add to %1 (%2)").arg(root.coreSelected ? "Core Devices" : "Rebble").arg(root.lockerCount)
+                                                                  : qsTr("Check for missing apps")
+                onClicked: root.checkOrCopyLocker()
+            }
+            Label {
+                x: Theme.horizontalPageMargin
+                width: parent.width - 2 * x
+                visible: root.lockerMessage.length > 0
+                text: root.lockerMessage
+                wrapMode: Text.Wrap
+            }
+
             SectionHeader {
                 text: qsTr("General")
             }
@@ -287,15 +379,6 @@ Page {
                 checked: root.pebble ? root.pebble.calendarSyncEnabled : false
                 onClicked: root.pebble.calendarSyncEnabled =
                            !root.pebble.calendarSyncEnabled
-            }
-            TextSwitch {
-                width: parent.width
-                text: qsTr("Sync Apps from Cloud")
-                enabled: root.settingsReady
-                automaticCheck: false
-                checked: root.pebble ? root.pebble.syncAppsFromCloud : false
-                onClicked: root.pebble.syncAppsFromCloud =
-                           !root.pebble.syncAppsFromCloud
             }
             BackgroundItem {
                 id: timelineWindowItem

@@ -12,6 +12,88 @@ Page {
     property var app: app_model && app_index >= 0 ? app_model.get(app_index) : null
     property bool appMutationsAllowed: rockPool.knownPebbleCount === 1
     property bool appInstallationAllowed: appMutationsAllowed && pebble && pebble.connected
+    readonly property string installedSource: app ? app.storeSource : ""
+    readonly property string candidateSource: app ? app.updateStoreSource : ""
+    readonly property bool crossStore: installedSource.length > 0 && candidateSource.length > 0
+                                       && installedSource !== candidateSource
+    readonly property bool switchBuild: crossStore && app.switchAvailable
+    readonly property bool canInstallCandidate: appInstallationAllowed && app !== null && !app.companion
+                                                && installedSource.length > 0 && candidateSource.length > 0
+                                                && candidateSource === rockPool.preferredAppstore
+                                                && app.updateStoreId.length > 0
+                                                && (switchBuild || (!app.switchAvailable && app.latest !== app.version))
+    property string expectedStoreId
+    property string expectedVersion
+    property string installError
+
+    function storeName(source) {
+        if (source === "core")
+            return "Core Devices"
+        if (source === "rebble")
+            return "Rebble"
+        return ""
+    }
+
+    function candidateActionText() {
+        if (switchBuild)
+            return qsTr("Switch build to %1").arg(storeName(candidateSource))
+        if (crossStore)
+            return qsTr("Upgrade from %1").arg(storeName(candidateSource))
+        return qsTr("Upgrade")
+    }
+
+    function installCandidate(switching) {
+        if (!canInstallCandidate || installButton.installing || switching !== switchBuild)
+            return
+        installError = ""
+        expectedStoreId = app.updateStoreId
+        expectedVersion = app.latest
+        installButton.switching = switching
+        installButton.installing = true
+        if (switching)
+            pebble.switchAppBuild(app.uuid, expectedStoreId)
+        else
+            pebble.upgradeApp(app.uuid, expectedStoreId)
+    }
+
+    Component {
+        id: switchConfirmation
+
+        Dialog {
+            id: confirmation
+
+            property string targetUuid
+            property string installedId
+            property string installedVersion
+            property string candidateId
+            property string candidateVersion
+            property string candidateSourceName
+            canAccept: root.canInstallCandidate && root.switchBuild && !installButton.installing
+                       && root.app.uuid === targetUuid && root.app.storeId === installedId
+                       && root.app.version === installedVersion && root.app.updateStoreId === candidateId
+                       && root.app.latest === candidateVersion
+            onAccepted: {
+                if (canAccept)
+                    root.installCandidate(true)
+            }
+
+            Column {
+                width: parent.width
+                spacing: Theme.paddingMedium
+
+                DialogHeader {
+                    acceptText: qsTr("Switch build")
+                }
+                Label {
+                    width: parent.width - 2 * Theme.horizontalPageMargin
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    text: qsTr("Install the %1 build of version %2?").arg(confirmation.candidateSourceName).arg(confirmation.candidateVersion)
+                    wrapMode: Text.Wrap
+                    textFormat: Text.PlainText
+                }
+            }
+        }
+    }
 
     AppStoreClient {
         id: client
@@ -21,9 +103,9 @@ Page {
         model: root.app_model
     }
 
-    function resolveRequestedApp(force) {
+    function findRequestedApp() {
         if (!app_uuid || !pebble)
-            return
+            return null
 
         var models = [pebble.installedApps, pebble.installedWatchfaces]
         for (var m = 0; m < models.length; ++m) {
@@ -31,37 +113,58 @@ Page {
                 var item = models[m].get(i)
                 if (!item)
                     break
-                if (item.uuid.toLowerCase() === app_uuid.toLowerCase()) {
-                    if (!force && item === app)
-                        return
-                    app_index = -1
-                    app_model = models[m]
-                    app_index = i
-                    client.fetchInstalledListing(item, rockPool.preferredAppstore, false)
-                    return
-                }
+                if (item.uuid.toLowerCase() === app_uuid.toLowerCase())
+                    return { model: models[m], index: i, item: item }
             }
         }
+        return null
+    }
+
+    function resolveRequestedApp(force) {
+        var requested = findRequestedApp()
+        if (!requested) {
+            app_index = -1
+            return
+        }
+        if (!force && requested.item === app)
+            return
+
         app_index = -1
+        app_model = requested.model
+        app_index = requested.index
+        client.fetchInstalledListing(requested.item, rockPool.preferredAppstore, false)
+    }
+
+    // The two models are cleared and repopulated together by a single D-Bus reply.
+    Timer {
+        id: applicationsReloaded
+
+        interval: 0
+        onTriggered: {
+            var requested = root.findRequestedApp()
+            if (installButton.installing) {
+                installButton.installing = false
+                if (requested && requested.item.storeId.toLowerCase() === root.expectedStoreId.toLowerCase()
+                        && requested.item.version === root.expectedVersion) {
+                    if (pageStack.currentPage === root)
+                        pageStack.pop()
+                } else {
+                    root.installError = qsTr("Could not install the selected build.")
+                }
+                root.expectedStoreId = ""
+                root.expectedVersion = ""
+            }
+            root.resolveRequestedApp()
+        }
     }
 
     Connections {
         target: root.pebble ? root.pebble.installedApps : null
-        onChanged: {
-            if (installButton.installing)
-                pageStack.pop()
-            else
-                root.resolveRequestedApp()
-        }
+        onChanged: applicationsReloaded.restart()
     }
     Connections {
         target: root.pebble ? root.pebble.installedWatchfaces : null
-        onChanged: {
-            if (installButton.installing)
-                pageStack.pop()
-            else
-                root.resolveRequestedApp()
-        }
+        onChanged: applicationsReloaded.restart()
     }
     Connections {
         target: rockPool
@@ -151,7 +254,7 @@ Page {
                             anchors.horizontalCenter: parent.horizontalCenter
                         }
                         Label {
-                            text: app ? (app.latest ? app.version + " → " + app.latest : app.version) : ""
+                            text: app ? (app.latest && !root.switchBuild ? app.version + " → " + app.latest : app.version) : ""
                             anchors.horizontalCenter: parent.horizontalCenter
                         }
                     }
@@ -170,24 +273,63 @@ Page {
                     }
                 }
             }
+            Column {
+                width: parent.width - 2 * Theme.horizontalPageMargin
+                anchors.horizontalCenter: parent.horizontalCenter
+                visible: root.crossStore
+                spacing: Theme.paddingSmall
+
+                Label {
+                    width: parent.width
+                    text: qsTr("Linked to %1").arg(root.storeName(root.installedSource))
+                    color: Theme.secondaryColor
+                    wrapMode: Text.Wrap
+                }
+                Label {
+                    width: parent.width
+                    text: qsTr("Selected build from %1").arg(root.storeName(root.candidateSource))
+                    color: Theme.secondaryColor
+                    wrapMode: Text.Wrap
+                }
+            }
+            Label {
+                width: parent.width - 2 * Theme.horizontalPageMargin
+                anchors.horizontalCenter: parent.horizontalCenter
+                visible: root.installError.length > 0
+                text: root.installError
+                wrapMode: Text.Wrap
+            }
             Button {
                 id: installButton
 
                 width: parent.width
-                enabled: root.appInstallationAllowed && root.app && !installing && !root.app.companion
-                         && root.app.updateStoreId.length > 0
-                property bool installing: false
-                text: installing ? qsTr("Upgrading...")
-                                 : (root.app && root.app.companion ? qsTr("Needs Companion") : qsTr("Upgrade"))
+                enabled: root.canInstallCandidate && !installing
+                property bool installing
+                property bool switching
+                text: {
+                    if (installing)
+                        return switching ? qsTr("Switching build…") : qsTr("Upgrading...")
+                    if (root.app && root.app.companion)
+                        return qsTr("Needs Companion")
+                    return root.candidateActionText()
+                }
                 onClicked: {
-                    if (!root.appInstallationAllowed || !root.app)
+                    if (!root.canInstallCandidate)
                         return
-
-                    root.pebble.upgradeApp(root.app.uuid, root.app.updateStoreId)
-                    installButton.installing = true
+                    if (!root.switchBuild) {
+                        root.installCandidate(false)
+                        return
+                    }
+                    pageStack.push(switchConfirmation, {
+                        targetUuid: root.app.uuid,
+                        installedId: root.app.storeId,
+                        installedVersion: root.app.version,
+                        candidateId: root.app.updateStoreId,
+                        candidateVersion: root.app.latest,
+                        candidateSourceName: root.storeName(root.candidateSource)
+                    })
                 }
             }
-
             Label {
                 text: qsTr("Compatibility")
             }

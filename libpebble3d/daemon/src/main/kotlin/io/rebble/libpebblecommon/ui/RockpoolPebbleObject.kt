@@ -1,5 +1,8 @@
 package io.rebble.libpebblecommon.ui
 
+import io.rebble.libpebblecommon.rockpool.rockpoolApplicationIsInstalledOnWatch
+import io.rebble.libpebblecommon.rockpool.SelectedLocker
+import io.rebble.libpebblecommon.rockpool.REBBLE_FEED
 import io.rebble.libpebblecommon.connection.endpointmanager.FirmwareUpdateTrigger
 import io.rebble.libpebblecommon.rockpool.NotificationIconColors
 import io.rebble.libpebblecommon.rockpool.notificationAppDefaults
@@ -122,6 +125,7 @@ internal class RockpoolPebbleObject(
     private val quietTimeSchedules: QuietTimeSchedules? = null,
     private val reviewInstall: suspend (InstallReview) -> Map<String, Boolean>? = { null },
     private val appStore: RockpoolAppStore = RockpoolAppStore(settings),
+    private val selectedLocker: SelectedLocker? = null,
     private val coreAccountRevision: () -> Long = { 0L },
 ) : RockpoolPebble {
     private val logger = Logger.withTag("RockpoolPebble")
@@ -195,7 +199,11 @@ internal class RockpoolPebbleObject(
         val decisions = libPebble.reviewPbwPermissions(pbw, reviewInstall) ?: return@withLock false
         if (!canMutateGlobalAppState("SideloadApp") || connected() == null || !stillAllowed()) return@withLock false
         if (storeMetadata == null) libPebble.sideloadApp(path, granted = decisions)
-        else libPebble.sideloadApp(path, storeMetadata, decisions)
+        else {
+            val installed = if (storeId?.core == false) storeMetadata.copy(appstoreData =
+                storeMetadata.appstoreData.copy(sourceLink = REBBLE_FEED)) else storeMetadata
+            libPebble.sideloadApp(path, installed, decisions)
+        }
     }
 
     // Keep the reviewed bytes stable through import, including when two store downloads overlap.
@@ -806,6 +814,8 @@ internal class RockpoolPebbleObject(
     }
 
     override fun InstallApp(id: String) {
+        val selection = appStore.selection.value
+        val cloud = selectedLocker?.currentLockerSession()
         scope.launch {
             if (!canMutateGlobalAppState("InstallApp")) return@launch
             val watch = connected()
@@ -813,7 +823,6 @@ internal class RockpoolPebbleObject(
                 logger.w { "InstallApp($id): watch is not connected" }
                 return@launch
             }
-            val selection = appStore.selection.value
             val storeId = AppstoreListingId.parse(id)
             if (storeId == null || storeId.core != selection.source.core) {
                 logger.w { "InstallApp: store ID does not belong to the selected store" }
@@ -829,25 +838,17 @@ internal class RockpoolPebbleObject(
                     } ?: return@withInstallFile null
                     metadata.uuid.takeIf {
                         sideloadAppForThisWatch(Path(file.absolutePath), metadata) {
-                            appStore.isCurrent(selection)
+                            val existing = libPebble.getLockerApp(metadata.uuid).first()
+                            appStore.isCurrent(selection) && (existing == null ||
+                                (existing is LockerWrapper.NormalApp && existing.properties.storeId == storeId.value &&
+                                    !rockpoolApplicationIsInstalledOnWatch(existing, watch.watchType.watchType)))
                         }
                     }
                 }
                 val installed = uuid != null
-                if (uuid != null && !storeId.core && appStore.isCurrent(selection)) {
-                    // Also add it to the Rebble locker so it becomes a real locker member with a
-                    // timeline user_token, then refresh so getTimelineToken sees it. Best-effort:
-                    // the sandbox-token path still covers apps that don't make it into the locker.
-                    val token = settings.get("account.oauthToken").ifEmpty { null }
-                    if (canMutateGlobalAppState("InstallApp") &&
-                        RebbleAppstore.addToLocker(uuid.toString(), token)
-                    ) {
-                        // RequestLockerSync also works on account-global state; do not dispatch
-                        // it if a second watch appeared during the service call above.
-                        if (!canMutateGlobalAppState("InstallApp")) return@launch
-                        libPebble.requestLockerSync()
-                    }
-                }
+                if (uuid != null && cloud != null && appStore.isCurrent(selection) &&
+                    selectedLocker?.add(cloud, uuid, storeId) == true
+                ) libPebble.requestLockerSync()
                 installed
             } catch (e: CancellationException) {
                 throw e
@@ -860,42 +861,57 @@ internal class RockpoolPebbleObject(
         }
     }
 
-    override fun UpgradeApp(uuid: String, storeId: String) {
+    override fun UpgradeApp(uuid: String, storeId: String) = replaceStoreBuild(uuid, storeId, false)
+
+    override fun SwitchAppBuild(uuid: String, storeId: String) = replaceStoreBuild(uuid, storeId, true)
+
+    private fun replaceStoreBuild(uuid: String, storeId: String, switchBuild: Boolean) {
+        val selection = appStore.selection.value
+        val cloud = selectedLocker?.currentLockerSession()
         scope.launch {
-            if (!canMutateGlobalAppState("UpgradeApp")) return@launch
-            val appId = runCatching { parseRockpoolAppUuid(uuid) }.getOrNull() ?: return@launch
-            val selection = appStore.selection.value
-            val candidate = AppstoreListingId.parse(storeId) ?: return@launch
-            if (candidate.core != selection.source.core) return@launch
+            try {
+                if (!canMutateGlobalAppState("UpgradeApp")) return@launch
+                val appId = runCatching { parseRockpoolAppUuid(uuid) }.getOrNull() ?: return@launch
+                val candidate = AppstoreListingId.parse(storeId) ?: return@launch
+                if (candidate.core != selection.source.core) return@launch
 
-            suspend fun installedTarget(): RockpoolAppUpdateTarget? {
-                val hardware = connected()?.watchType?.watchType ?: return null
-                val app = libPebble.getLockerApp(appId).first() ?: return null
-                return rockpoolAppUpdateTargets(listOf(app), listOf(address to hardware)).singleOrNull()
-            }
+                suspend fun installedTarget(): RockpoolAppUpdateTarget? {
+                    val hardware = connected()?.watchType?.watchType ?: return null
+                    val app = libPebble.getLockerApp(appId).first() ?: return null
+                    return rockpoolAppUpdateTargets(listOf(app), listOf(address to hardware)).singleOrNull()
+                }
 
-            val ok = try {
-                val target = installedTarget()
-                val listing = target?.let { appStore.lookup(selection, it) }
-                if (target == null || listing?.updateAvailable != true || listing.id.value != candidate.value) {
-                    false
-                } else {
-                    withInstallFile { file ->
-                        val metadata = appStore.download(listing, file) ?: return@withInstallFile false
-                        val upgrade = StorePbwMetadata.InstalledRelease(target.storeId, target.version)
-                        sideloadAppForThisWatch(Path(file.absolutePath), metadata.copy(upgradeFrom = upgrade)) {
-                            appStore.isCurrent(selection) && installedTarget() == target && appStore.isCurrent(selection)
+                val ok = try {
+                    val target = installedTarget()
+                    val listing = target?.let { appStore.lookup(selection, it) }
+                    if (target == null || listing == null || !(if (switchBuild) listing.switchAvailable else listing.updateAvailable) || listing.id.value != candidate.value) {
+                        false
+                    } else {
+                        withInstallFile { file ->
+                            val metadata = appStore.download(listing, file) ?: return@withInstallFile false
+                            val upgrade = StorePbwMetadata.InstalledRelease(target.storeId, target.version)
+                            val installed = sideloadAppForThisWatch(Path(file.absolutePath), metadata.copy(upgradeFrom = upgrade)) {
+                                appStore.isCurrent(selection) && installedTarget() == target && appStore.isCurrent(selection)
+                            }
+                            if (installed && cloud != null && candidate.value != target.storeId) {
+                                val from = checkNotNull(AppstoreListingId.parse(target.storeId))
+                                if (selectedLocker?.replace(cloud, appId, from, candidate) != true) {
+                                    logger.w { "Installed build changed but the selected locker was not updated" }
+                                }
+                            }
+                            installed
                         }
                     }
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    logger.e("UpgradeApp failed", e)
+                    false
                 }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                logger.e("UpgradeApp failed", e)
-                false
+                logger.i { "UpgradeApp($appId): $ok" }
+            } finally {
+                emit(RockpoolPebble.InstalledAppsChanged(path))
             }
-            logger.i { "UpgradeApp($appId): $ok" }
-            emit(RockpoolPebble.InstalledAppsChanged(path))
         }
     }
 

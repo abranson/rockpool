@@ -103,10 +103,12 @@ internal data class RockpoolStoreListing(
     val uuid: Uuid,
     val version: String,
     val updateAvailable: Boolean,
+    val switchAvailable: Boolean,
 ) {
     fun toJson(): String = JsonObject(mapOf(
         "app" to app,
         "updateAvailable" to JsonPrimitive(updateAvailable),
+        "switchAvailable" to JsonPrimitive(switchAvailable),
     )).toString()
 }
 
@@ -134,10 +136,14 @@ internal fun rockpoolStoreListing(
         val release = app["latest_release"] as? JsonObject ?: return@firstNotNullOfOrNull null
         val version = release.string("version")?.takeIf { it.isNotBlank() } ?: return@firstNotNullOfOrNull null
         val pbw = release.string("pbw_file")
+        val installed = AppstoreListingId.parse(target.storeId) ?: return@firstNotNullOfOrNull null
+        val downloadable = pbw?.let(::httpsPackageUrl) == true
+        val comparison = compareRockpoolVersions(version, target.version)
         val samePackage = id.value.equals(target.storeId, ignoreCase = true) && pbw == target.pbwUrl
         RockpoolStoreListing(
             app, id, target.uuid, version,
-            !samePackage && pbw?.let(::httpsPackageUrl) == true && rockpoolVersionIsNewer(version, target.version),
+            !samePackage && downloadable && comparison == 1,
+            installed.core != id.core && downloadable && (version == target.version || comparison == 0),
         )
     }
 }
@@ -153,19 +159,22 @@ private fun httpsPackageUrl(value: String): Boolean {
 private val numericVersion = Regex("[0-9]+(?:\\.[0-9]+)*")
 
 /** Compare dotted numeric release labels, treating a missing component as zero. */
-internal fun rockpoolVersionIsNewer(candidate: String, installed: String): Boolean {
+internal fun rockpoolVersionIsNewer(candidate: String, installed: String): Boolean =
+    compareRockpoolVersions(candidate, installed) == 1
+
+private fun compareRockpoolVersions(candidate: String, installed: String): Int? {
     if (candidate.length > 128 || installed.length > 128 ||
         !numericVersion.matches(candidate) || !numericVersion.matches(installed)
-    ) return false
+    ) return null
     val newer = candidate.split('.')
     val older = installed.split('.')
     for (index in 0 until maxOf(newer.size, older.size)) {
         val left = newer.getOrElse(index) { "" }.trimStart('0')
         val right = older.getOrElse(index) { "" }.trimStart('0')
-        if (left.length != right.length) return left.length > right.length
-        if (left != right) return left > right
+        if (left.length != right.length) return left.length.compareTo(right.length)
+        if (left != right) return left.compareTo(right).compareTo(0)
     }
-    return false
+    return 0
 }
 
 private val appStoreClient by lazy {

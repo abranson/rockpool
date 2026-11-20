@@ -67,7 +67,19 @@ Choose **Rebble** (the default) or **Core Devices** under **Settings → Appstor
 In Apps or Watchfaces, **Add New** opens that store for browsing, search and
 installation without signing in. Rockpool checks installed store apps against
 the selected catalogue by app UUID. When it has a newer compatible release,
-you can upgrade in place, including across stores.
+you can upgrade in place. Cross-store upgrades identify the destination store.
+If both versions are equal, the installed app details offer an explicit build
+switch with confirmation. A store switch alone keeps the installed PBW and its data.
+
+The selected store also supplies the active cloud locker when signed in.
+Locker sync keeps existing installed builds, even if a UUID is missing from
+the selected locker or its saved build comes from another store. In Settings,
+**Check for missing apps** previews eligible installed apps missing from that
+locker, even when **Sync Apps from Cloud** is off. Confirm the store and
+count to add their entries. Core can record both Core and
+Rebble sources. Rebble can accept Rebble builds. Apps without a confirmed
+source are skipped. The watchapp account identifier is independent of the
+store selection.
 
 Settings shows the sign-in status for the selected store. Tap the account row
 to sign in. Core Devices opens the Pebble sign-in page in your browser. Return
