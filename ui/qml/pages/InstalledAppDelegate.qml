@@ -21,6 +21,7 @@ ListItem {
     signal launchApp
     signal deleteApp
     signal configureApp
+    signal reviewPermissions
     signal moveApp(int dir)
     signal openStore
     signal upgrade
@@ -52,6 +53,11 @@ ListItem {
             visible: root.hasSettings || root.offlineSettingsAvailable
             enabled: root.watchConnected || root.offlineSettingsAvailable
             onClicked: root.configureApp()
+        }
+        MenuItem {
+            text: qsTr("Permissions")
+            visible: !root.isSystemApp
+            onClicked: root.reviewPermissions()
         }
         MenuItem {
             text: qsTr("Delete")

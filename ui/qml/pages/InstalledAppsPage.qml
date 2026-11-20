@@ -142,6 +142,10 @@ Page {
                                       + encodeURIComponent(model.storeId))
             }
             onConfigureApp: root.configureApp(model.uuid)
+            onReviewPermissions: pageStack.push(Qt.resolvedUrl("AppPermissionsPage.qml"), {
+                                                    appUuid: model.uuid,
+                                                    appName: model.name
+                                                })
             onMoveApp: {
                 if (root.appMutationsAllowed)
                     root.moveApp(index,dir)

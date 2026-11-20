@@ -22,6 +22,13 @@ ApplicationWindow {
         target: uiActivation
         onFirmwareRequested: stackReloadTimer.restart()
         onAppUpdatesRequested: stackReloadTimer.restart()
+        onInstallReviewRequested: installReviewTimer.restart()
+        onInstallReviewDaemonChanged: {
+            if (activeInstallReview) {
+                activeInstallReview.discard()
+                activeInstallReview = null
+            }
+        }
     }
 
     ServiceController {
@@ -119,7 +126,13 @@ ApplicationWindow {
         pebbles.connectWatch(address)
     }
 
+    property bool reloadAfterReview: false
+
     function loadStack() {
+        if (activeInstallReview) {
+            reloadAfterReview = true
+            return
+        }
         if (pebbles.connectedToService) {
             pageStack.clear()
             if (pebbles.count === 1) {
@@ -156,7 +169,75 @@ ApplicationWindow {
             }
         }
     }
-    Component.onCompleted: loadStack()
+    Component.onCompleted: {
+        loadStack()
+        openRequestedInstallReview()
+    }
+
+    property var activeInstallReview: null
+
+    Component {
+        id: installReviewDialog
+        InstallReviewDialog {}
+    }
+
+    Timer {
+        id: installReviewTimer
+        interval: 0
+        onTriggered: openRequestedInstallReview()
+    }
+
+    Connections {
+        target: pageStack
+        onBusyChanged: if (!pageStack.busy && uiActivation.installReviewToken)
+                           installReviewTimer.restart()
+    }
+
+    function openRequestedInstallReview() {
+        var token = uiActivation.installReviewToken
+        var json = uiActivation.installReviewJson
+        var owner = uiActivation.installReviewOwner
+        if (!token || !json || pageStack.busy)
+            return
+        var review
+        try {
+            review = JSON.parse(json)
+        } catch (error) {
+            uiActivation.consumeInstallReview()
+            return
+        }
+        if (!review || typeof review.appName !== "string" || !Array.isArray(review.permissions)) {
+            uiActivation.consumeInstallReview()
+            return
+        }
+        if (activeInstallReview) {
+            if (activeInstallReview.token)
+                activeInstallReview.discard()
+            return
+        }
+        var dialog = pageStack.push(installReviewDialog, {
+            token: token,
+            owner: owner,
+            host: rockPool,
+            review: review
+        })
+        if (dialog) {
+            activeInstallReview = dialog
+            uiActivation.consumeInstallReview()
+        }
+    }
+
+    function installReviewClosed(dialog) {
+        if (activeInstallReview === dialog)
+            activeInstallReview = null
+        if (uiActivation.installReviewToken)
+            installReviewTimer.restart()
+        if (reloadAfterReview && !activeInstallReview) {
+            reloadAfterReview = false
+            stackReloadTimer.restart()
+        }
+    }
+
     function openRequestedAppUpdates() {
         var address = uiActivation.appUpdateAddress
         if (!address || !pebbles.connectedToService) {

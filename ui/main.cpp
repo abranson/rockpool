@@ -58,6 +58,11 @@ int main(int argc, char *argv[])
         view->raise();
         view->requestActivate();
     });
+    QObject::connect(&activation, &UiActivation::installReviewRequested, view.data(), [&view]() {
+        view->show();
+        view->raise();
+        view->requestActivate();
+    });
     view->rootContext()->setContextProperty("uiActivation", &activation);
     view->rootContext()->setContextProperty("version", QStringLiteral(VERSION));
     view->rootContext()->setContextProperty("locale", locale);
