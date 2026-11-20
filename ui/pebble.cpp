@@ -3461,6 +3461,12 @@ void Pebble::removeScreenshot(const QString &filename)
     sendVoidCommand(QStringLiteral("RemoveScreenshot"), QVariantList() << filename);
 }
 
+void Pebble::checkFirmwareUpdate()
+{
+    if (connected() && !m_upgradingFirmware)
+        sendVoidCommand(QStringLiteral("CheckFirmwareUpdate"));
+}
+
 void Pebble::performFirmwareUpgrade()
 {
     if (m_upgradingFirmware) {

@@ -340,6 +340,10 @@ internal class RockpoolPebbleObject(
         foundUpdate()?.version?.stringVersion ?: ""
 
     override fun FirmwareReleaseNotes(): String = foundUpdate()?.notes ?: ""
+    override fun CheckFirmwareUpdate() {
+        commonConnected()?.checkforFirmwareUpdate(force = true)
+    }
+
     override fun PerformFirmwareUpgrade() {
         val update = foundUpdate() ?: return
         commonConnected()?.updateFirmware(update, FirmwareUpdateTrigger.Ui)
@@ -347,7 +351,7 @@ internal class RockpoolPebbleObject(
     }
 
     override fun FirmwareUpdateError(): String =
-        rockpoolFirmwareUpdateError(commonConnected()?.firmwareUpdateState)
+        firmwareErrorForWatch(commonConnected())
 
     override fun UpgradingFirmware(): Boolean =
         commonConnected()?.firmwareUpdateState is FirmwareUpdater.FirmwareUpdateStatus.Active

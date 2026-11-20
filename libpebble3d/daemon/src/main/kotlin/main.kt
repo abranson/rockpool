@@ -103,7 +103,7 @@ fun main() {
     // the account dev token (getAccountToken), and the ASR voice endpoints.
     val bootConfig = RebbleBootConfigProvider(oauthToken)
     val coreCredentials = CoreStoreCredentials(settings)
-    val webServices = RebbleWebServices(oauthToken, bootConfig)
+    val webServices = RebbleWebServices(oauthToken, bootConfig, coreCredentials::token)
     val accountIdentityProvider = RebbleAccountIdentityProvider(oauthToken, bootConfig)
     // Tracing hook: record ktor/TLS reflection in the native-image metadata (build-native.sh).
     if (System.getenv("LIBPEBBLE3D_TRACE_HTTP") == "1") {

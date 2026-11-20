@@ -38,6 +38,14 @@ ApplicationWindow {
     CoreStoreAccount {
         id: coreAccountSession
 
+        property bool firmwareSignedIn: signedIn
+        onFirmwareSignedInChanged: {
+            if (pebbles && pebbles.connectedToService) {
+                for (var i = 0; i < pebbles.count; ++i)
+                    pebbles.get(i).checkFirmwareUpdate()
+            }
+        }
+
         onOpenBrowser: {
             if (!Qt.openUrlExternally(url))
                 coreAccountSession.browserOpenFailed()

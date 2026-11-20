@@ -6,6 +6,17 @@ package io.rebble.libpebblecommon.ui
 import io.rebble.libpebblecommon.connection.endpointmanager.FirmwareUpdateErrorStarting
 import io.rebble.libpebblecommon.connection.endpointmanager.FirmwareUpdater.FirmwareUpdateStatus
 
+import io.rebble.libpebblecommon.connection.CommonConnectedDevice
+import io.rebble.libpebblecommon.connection.FirmwareUpdateCheckResult
+
+internal fun firmwareErrorForWatch(watch: CommonConnectedDevice?): String {
+    val updateError = rockpoolFirmwareUpdateError(watch?.firmwareUpdateState)
+    if (updateError.isNotEmpty()) return updateError
+    return if (watch?.firmwareUpdateAvailable?.result is FirmwareUpdateCheckResult.UpdateCheckFailed) {
+        "check-failed"
+    } else ""
+}
+
 // Stable UI codes, without exception messages or download URLs.
 internal fun rockpoolFirmwareUpdateError(state: FirmwareUpdateStatus?): String = when (state) {
     is FirmwareUpdateStatus.NotInProgress.ErrorStarting -> when (state.error) {

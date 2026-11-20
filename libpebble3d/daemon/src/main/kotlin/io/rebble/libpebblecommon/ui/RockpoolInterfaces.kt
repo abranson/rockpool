@@ -91,6 +91,7 @@ interface RockpoolPebble : DBusInterface {
     fun FirmwareUpgradeAvailable(): Boolean
     fun CandidateFirmwareVersion(): String
     fun FirmwareReleaseNotes(): String
+    fun CheckFirmwareUpdate()
     fun PerformFirmwareUpgrade()
     fun FirmwareUpdateError(): String
     fun UpgradingFirmware(): Boolean

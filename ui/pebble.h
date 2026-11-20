@@ -211,6 +211,7 @@ public slots:
     void requestConfigurationURL(const QString &uuid);
     void configurationClosed(const QString &uuid, const QString &url);
     void launchApp(const QString &uuid);
+    void checkFirmwareUpdate();
     void performFirmwareUpgrade();
     void loadLanguagePack(const QString &pblFile);
 

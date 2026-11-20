@@ -16,6 +16,11 @@ Page {
 
         PullDownMenu {
             MenuItem {
+                text: qsTr("Check for updates")
+                enabled: root.pebble && root.pebble.connected && !root.pebble.upgradingFirmware
+                onClicked: root.pebble.checkFirmwareUpdate()
+            }
+            MenuItem {
                 text: qsTr("PebbleOS changelog")
                 onClicked: Qt.openUrlExternally("https://ndocs.repebble.com/pebbleos-changelog")
             }
@@ -48,7 +53,9 @@ Page {
 
                     Label {
                         width: parent.width
-                        text: root.updateAvailable ? qsTr("Update available") : qsTr("Firmware is Up-To-Date")
+                        text: root.pebble && root.pebble.firmwareUpdateError === "check-failed"
+                              ? qsTr("Could not check for firmware updates")
+                              : root.updateAvailable ? qsTr("Update available") : qsTr("Firmware is Up-To-Date")
                         font.pixelSize: Theme.fontSizeLarge
                         color: Theme.highlightColor
                         wrapMode: Text.Wrap
@@ -97,6 +104,7 @@ Page {
                     Label {
                         width: parent.width
                         visible: root.pebble && root.pebble.firmwareUpdateError.length > 0
+                                 && root.pebble.firmwareUpdateError !== "check-failed"
                         color: Theme.errorColor
                         wrapMode: Text.Wrap
                         text: {

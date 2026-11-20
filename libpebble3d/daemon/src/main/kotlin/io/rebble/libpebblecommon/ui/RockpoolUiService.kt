@@ -765,7 +765,7 @@ internal class RockpoolUiService(
                             )
                             val upgrading = (common?.firmwareUpdateState
                                 is FirmwareUpdater.FirmwareUpdateStatus.Active)
-                            val firmwareError = rockpoolFirmwareUpdateError(common?.firmwareUpdateState)
+                            val firmwareError = firmwareErrorForWatch(common)
                             if (watch.upgradingFirmware != upgrading || watch.firmwareUpdateError != firmwareError) {
                                 watch.upgradingFirmware = upgrading
                                 watch.firmwareUpdateError = firmwareError
