@@ -16,6 +16,246 @@
     </message>
 </context>
 <context>
+    <name>AppPermissionsPage</name>
+    <message>
+        <location filename="../qml/pages/AppPermissionsPage.qml" line="109"/>
+        <source>Choose a folder for reading and writing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppPermissionsPage.qml" line="109"/>
+        <source>Choose a folder for reading</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppPermissionsPage.qml" line="137"/>
+        <source>Could not change the permission.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PermissionLabels.js" line="8"/>
+        <source>Internet access</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PermissionLabels.js" line="9"/>
+        <source>Internet access to all sites</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PermissionLabels.js" line="10"/>
+        <source>Local network access</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PermissionLabels.js" line="11"/>
+        <source>Location</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PermissionLabels.js" line="12"/>
+        <source>Watch microphone</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PermissionLabels.js" line="13"/>
+        <source>Health data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PermissionLabels.js" line="14"/>
+        <source>Read notifications</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PermissionLabels.js" line="15"/>
+        <source>Show notifications</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PermissionLabels.js" line="16"/>
+        <source>Read calendar events</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PermissionLabels.js" line="17"/>
+        <source>Read contacts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PermissionLabels.js" line="18"/>
+        <source>Write timeline pins</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PermissionLabels.js" line="19"/>
+        <source>Read watch settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PermissionLabels.js" line="20"/>
+        <source>Change watch settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PermissionLabels.js" line="21"/>
+        <source>Read music playback</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PermissionLabels.js" line="22"/>
+        <source>Control music playback</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PermissionLabels.js" line="23"/>
+        <source>List installed apps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PermissionLabels.js" line="24"/>
+        <source>Launch watch apps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PermissionLabels.js" line="25"/>
+        <source>Find my phone</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PermissionLabels.js" line="26"/>
+        <source>Set Index alarms</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PermissionLabels.js" line="27"/>
+        <source>Send messages through Beeper</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PermissionLabels.js" line="28"/>
+        <source>Write Index notes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PermissionLabels.js" line="29"/>
+        <source>Write Index reminders</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PermissionLabels.js" line="30"/>
+        <source>Read files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PermissionLabels.js" line="31"/>
+        <source>Write files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PermissionLabels.js" line="32"/>
+        <source>Connect to legacy companion apps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/PermissionLabels.js" line="33"/>
+        <source>Connect to companion apps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppPermissionsPage.qml" line="156"/>
+        <location filename="../qml/pages/InstallReviewDialog.qml" line="160"/>
+        <source>Allowed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppPermissionsPage.qml" line="157"/>
+        <location filename="../qml/pages/InstallReviewDialog.qml" line="161"/>
+        <source>Denied</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppPermissionsPage.qml" line="158"/>
+        <source>Allowed automatically</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppPermissionsPage.qml" line="159"/>
+        <source>Awaiting a decision</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppPermissionsPage.qml" line="160"/>
+        <source>Status unavailable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppPermissionsPage.qml" line="177"/>
+        <source>App permissions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppPermissionsPage.qml" line="195"/>
+        <source>Permission changes apply to this app on all watches.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppPermissionsPage.qml" line="222"/>
+        <source>Could not load permissions.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppPermissionsPage.qml" line="224"/>
+        <source>Permission information is unavailable for this app.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppPermissionsPage.qml" line="226"/>
+        <source>This app has no permissions to review.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppPermissionsPage.qml" line="233"/>
+        <source>Retry</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppPermissionsPage.qml" line="268"/>
+        <source>Unavailable folder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppPermissionsPage.qml" line="286"/>
+        <source>Required by the app</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppPermissionsPage.qml" line="287"/>
+        <source>Optional</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppPermissionsPage.qml" line="304"/>
+        <source>Choose folder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppPermissionsPage.qml" line="328"/>
+        <source>Allow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppPermissionsPage.qml" line="343"/>
+        <source>Deny</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppPermissionsPage.qml" line="357"/>
+        <source>Remove folder access</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>AppSettingsPage</name>
     <message>
         <location filename="../qml/pages/AppSettingsPage.qml" line="80"/>
@@ -871,49 +1111,122 @@
     </message>
 </context>
 <context>
+    <name>InstallReviewDialog</name>
+    <message>
+        <location filename="../qml/pages/InstallReviewDialog.qml" line="112"/>
+        <source>Install %1?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/InstallReviewDialog.qml" line="112"/>
+        <source>app</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/InstallReviewDialog.qml" line="113"/>
+        <source>Install</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/InstallReviewDialog.qml" line="114"/>
+        <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/InstallReviewDialog.qml" line="120"/>
+        <source>Review what this app can access on your phone.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/InstallReviewDialog.qml" line="153"/>
+        <source>Required by the app</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/InstallReviewDialog.qml" line="153"/>
+        <source>Optional</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/InstallReviewDialog.qml" line="162"/>
+        <source>Allowed automatically</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/InstallReviewDialog.qml" line="163"/>
+        <source>Choose whether to allow this</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/InstallReviewDialog.qml" line="163"/>
+        <source>Optional decision</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/InstallReviewDialog.qml" line="172"/>
+        <source>Scope: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/InstallReviewDialog.qml" line="186"/>
+        <source>Allow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/InstallReviewDialog.qml" line="194"/>
+        <source>Deny</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>InstalledAppDelegate</name>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="34"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="35"/>
         <source>Upgrade</source>
         <translation>Aktualisierung</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="34"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="35"/>
         <source>Version</source>
         <translation>Version</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="41"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="42"/>
         <source>Open in store</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="46"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="47"/>
         <source>Launch</source>
         <translation>Starten</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="51"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="52"/>
         <source>Settings</source>
         <translation>Einstellungen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="57"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="58"/>
+        <source>Permissions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="63"/>
         <source>Delete</source>
         <translation>Löschen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="61"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="67"/>
         <source>Really Delete?</source>
         <translation>Wirklich löschen?</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="67"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="73"/>
         <source>Move Up</source>
         <translation>Nach oben verschieben</translation>
     </message>
     <message>
-        <location filename="../qml/pages/InstalledAppDelegate.qml" line="73"/>
+        <location filename="../qml/pages/InstalledAppDelegate.qml" line="79"/>
         <source>Move Down</source>
         <translation>Nach unten verschieben</translation>
     </message>
@@ -1740,6 +2053,16 @@
 </context>
 <context>
     <name>SettingsPage</name>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="91"/>
+        <source>Appstore</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="92"/>
+        <source>Browse and check for updates in this store.</source>
+        <translation type="unfinished"></translation>
+    </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="83"/>
         <source>Settings</source>
