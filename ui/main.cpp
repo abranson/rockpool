@@ -25,7 +25,8 @@ int main(int argc, char *argv[])
     QGuiApplication::setApplicationName("Rockpool");
     QGuiApplication::setOrganizationName("uk.co.nationalfantastic");
 
-    QSettings ini(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)+"/"+app->applicationName()+"/app.ini",QSettings::IniFormat);
+    QSettings ini(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation)
+                  + QStringLiteral("/app.ini"), QSettings::IniFormat);
     QString locale = ini.contains("LANG") ? ini.value("LANG").toString() : QLocale::system().name();
     QTranslator i18n;
     i18n.load("rockpool_"+locale,QString(ROCKPOOL_DATA_PATH)+QString("translations"));
