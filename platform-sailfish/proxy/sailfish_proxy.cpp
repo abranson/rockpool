@@ -68,6 +68,8 @@ struct Pending {
     bool complete;
     int32_t status;
     int32_t iconColor;
+    bool secretFound;
+    std::vector<uint8_t> secretValue;
     lp3wire::TimeState time;
     lp3wire::LocationData location;
     lp3wire::CalendarReplyData calendar;
@@ -75,7 +77,7 @@ struct Pending {
 
     explicit Pending(uint16_t requestOperation)
         : operation(requestOperation), complete(false),
-          status(LP3_PLATFORM_UNAVAILABLE), iconColor(-1) {
+          status(LP3_PLATFORM_UNAVAILABLE), iconColor(-1), secretFound(false) {
         memset(&time, 0, sizeof(time));
         memset(&location, 0, sizeof(location));
         calendar.kind = lp3wire::CalendarQueryCalendars;
@@ -610,7 +612,8 @@ bool decodeCompletion(uint16_t operation, const std::vector<uint8_t> &payload,
                       int32_t *status, lp3wire::TimeState *time,
                       lp3wire::LocationData *location,
                       lp3wire::CalendarReplyData *calendar,
-                      lp3wire::ContactReplyData *contacts, int32_t *color = NULL) {
+                      lp3wire::ContactReplyData *contacts, int32_t *color = NULL,
+                      bool *found = NULL, std::vector<uint8_t> *value = NULL) {
     uint32_t decodedStatus;
     if (status == NULL || time == NULL || location == NULL || calendar == NULL ||
         contacts == NULL) {
@@ -647,6 +650,9 @@ bool decodeCompletion(uint16_t operation, const std::vector<uint8_t> &payload,
         memset(location, 0, sizeof(*location));
         calendar->calendars.clear();
         calendar->events.clear();
+    } else if (operation == lp3wire::SecureStorage) {
+        if (!lp3wire::decodeSecureStorageReply(payload, &decodedStatus, found, value))
+            return false;
     } else if (operation == lp3wire::IconColorQuery) {
         int32_t decodedColor;
         if (!lp3wire::decodeIconColorReply(payload, &decodedStatus, &decodedColor)) {
@@ -964,10 +970,11 @@ bool dispatchFrame(SailfishInstance *instance, const lp3wire::Frame &frame) {
             return false;
         }
         if (frame.type == lp3wire::Complete) {
-            lp3wire::TimeState time;
+            lp3wire::TimeState time = {};
             if (!decodeCompletion(pending->second->operation, frame.payload,
                                   &locationStatus, &time, &location,
-                                  &calendar, &contacts, &pending->second->iconColor)) {
+                                  &calendar, &contacts, &pending->second->iconColor,
+                                  &pending->second->secretFound, &pending->second->secretValue)) {
                 return false;
             }
             pending->second->status = locationStatus;
@@ -2057,20 +2064,11 @@ int32_t iconColor(lp3_platform_instance *raw, lp3_platform_string source,
     return LP3_PLATFORM_OK;
 }
 
-int32_t phoneCommand(lp3_platform_instance *raw, uint16_t operation,
-                     lp3_platform_string value) {
-    SailfishInstance *instance = static_cast<SailfishInstance *>(raw);
-    std::vector<uint8_t> payload;
+int32_t queryHelper(SailfishInstance *instance, const std::shared_ptr<Pending> &pending,
+                    const std::vector<uint8_t> &payload, std::chrono::seconds timeout) {
+    const uint16_t operation = pending->operation;
     std::vector<uint8_t> frame;
-    std::shared_ptr<Pending> pending(new Pending(operation));
     uint64_t requestId;
-
-    if (instance == NULL || value.data == NULL || value.size == 0 || value.size > 128) {
-        return LP3_PLATFORM_INVALID_ARGUMENT;
-    }
-    if (!lp3wire::encodePhoneCommand(operation, std::string(value.data, value.size), &payload)) {
-        return LP3_PLATFORM_INVALID_ARGUMENT;
-    }
     std::unique_lock<std::mutex> lock(instance->mutex);
     if (instance->stopping.load() || instance->socket < 0 || instance->latched) {
         return LP3_PLATFORM_UNAVAILABLE;
@@ -2085,10 +2083,10 @@ int32_t phoneCommand(lp3_platform_instance *raw, uint16_t operation,
         return LP3_PLATFORM_INTERNAL_ERROR;
     }
     instance->pending[requestId] = pending;
-    instance->outgoing.push_back(frame);
+    instance->outgoing.push_back(std::move(frame));
     wakeWorker(instance);
 
-    if (!pending->condition.wait_for(lock, std::chrono::seconds(4),
+    if (!pending->condition.wait_for(lock, timeout,
                                      [pending, instance] {
                                          return pending->complete || instance->stopping.load();
                                      })) {
@@ -2123,6 +2121,51 @@ int32_t phoneCommand(lp3_platform_instance *raw, uint16_t operation,
     if (pending->status != LP3_PLATFORM_OK) {
         return pending->status;
     }
+    return LP3_PLATFORM_OK;
+}
+
+int32_t phoneCommand(lp3_platform_instance *raw, uint16_t operation,
+                     lp3_platform_string value) {
+    SailfishInstance *instance = static_cast<SailfishInstance *>(raw);
+    std::vector<uint8_t> payload;
+    std::shared_ptr<Pending> pending(new Pending(operation));
+
+    if (instance == NULL || value.data == NULL || value.size == 0 || value.size > 128) {
+        return LP3_PLATFORM_INVALID_ARGUMENT;
+    }
+    if (!lp3wire::encodePhoneCommand(operation, std::string(value.data, value.size), &payload)) {
+        return LP3_PLATFORM_INVALID_ARGUMENT;
+    }
+    return queryHelper(instance, pending, payload, std::chrono::seconds(4));
+}
+
+int32_t secureStorage(lp3_platform_instance *raw, lp3_platform_secure_storage_v1 *request) {
+    static_assert(lp3wire::kSecureValueMax == LP3_PLATFORM_SECURE_VALUE_MAX, "value limits differ");
+    if (!raw || !request || request->struct_size < sizeof(*request) ||
+        request->action > LP3_SECRET_DESTROY || !request->uuid.data || request->uuid.size != 36 ||
+        request->key.size != (request->action == LP3_SECRET_DESTROY ? 0u : 64u) ||
+        (request->key.size && !request->key.data) || request->size > request->capacity ||
+        request->size > lp3wire::kSecureValueMax || (request->capacity && !request->value) ||
+        (request->action != LP3_SECRET_SET && request->size))
+        return LP3_PLATFORM_INVALID_ARGUMENT;
+
+    lp3wire::SecureStorageData query;
+    query.action = request->action;
+    query.uuid.assign(request->uuid.data, request->uuid.size);
+    if (request->key.size) query.key.assign(request->key.data, request->key.size);
+    if (request->size) query.value.assign(request->value, request->value + request->size);
+    std::vector<uint8_t> payload;
+    if (!lp3wire::encodeSecureStorage(query, &payload)) return LP3_PLATFORM_INVALID_ARGUMENT;
+
+    std::shared_ptr<Pending> pending(new Pending(lp3wire::SecureStorage));
+    int32_t status = queryHelper(static_cast<SailfishInstance *>(raw), pending, payload,
+                                 std::chrono::seconds(5));
+    if (status != LP3_PLATFORM_OK) return status;
+    if ((pending->secretFound && request->action != LP3_SECRET_GET) ||
+        pending->secretValue.size() > request->capacity) return LP3_PLATFORM_PROTOCOL_ERROR;
+    request->found = pending->secretFound;
+    request->size = static_cast<uint32_t>(pending->secretValue.size());
+    if (request->size) memcpy(request->value, pending->secretValue.data(), request->size);
     return LP3_PLATFORM_OK;
 }
 
@@ -2242,6 +2285,7 @@ const lp3_platform_api_v1 kApi = {
     iconColor,
     getPhoneState,
     requestPairing,
+    secureStorage,
 };
 
 } // namespace

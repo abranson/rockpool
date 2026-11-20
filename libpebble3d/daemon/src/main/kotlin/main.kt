@@ -41,6 +41,8 @@ import io.rebble.libpebblecommon.rockpool.createBluezBondedWatchForgetCoordinato
 import io.rebble.libpebblecommon.rockpool.PrivacyQuietTimeCoordinator
 import io.rebble.libpebblecommon.rockpool.SailfishDeviceActivity
 import io.rebble.libpebblecommon.rockpool.SailfishRfcommSocketFactory
+import io.rebble.libpebblecommon.rockpool.SailfishPluginFileSystem
+import io.rebble.libpebblecommon.rockpool.SailfishSecureStorage
 import io.rebble.libpebblecommon.rockpool.SendTextConfigurationCoordinator
 import io.rebble.libpebblecommon.rockpool.PlatformSystemMessaging
 import io.rebble.libpebblecommon.rockpool.loadPlatformNotificationFilters
@@ -77,6 +79,7 @@ fun main() {
     PlatformProviderController.hardenProcess()
 
     val settings = RockpoolSettings()
+    val pluginFiles = SailfishPluginFileSystem(settings)
 
     Logger.addLogWriter(ServiceLogCapture.writer)
 
@@ -135,7 +138,7 @@ fun main() {
             ),
         ),
         webServices = webServices,
-        appContext = AppContext(),
+        appContext = AppContext(secureStorageProvider = ::SailfishSecureStorage, pluginFileSystem = pluginFiles),
         // Backs Pebble.getAccountToken(): the Rebble account's user id (from users/me).
         tokenProvider = RebbleTokenProvider(oauthToken, bootConfig),
         proxyTokenProvider = MutableStateFlow(null),
@@ -308,26 +311,6 @@ fun main() {
     ProfileSwitchCoordinator(libPebble, settings, ProfileSetter(platformProvider::setProfile)).start()
     Logger.i { "libpebble3 init() complete; idling" }
 
-    // The generic API owns io.rebble.libpebble3. The Rockpool UI facade owns org.rockpool on a
-    // different non-shared connection and is intentionally best-effort: it must never delay
-    // generic API startup if another Rockpool process temporarily owns the UI name.
-    LibPebble3Service(
-        libPebble,
-        concreteLibPebble::requestConnectionImmediately,
-        concreteLibPebble::cancelConnectionImmediately,
-        concreteLibPebble::awaitConnectionRetired,
-        bondedWatchImporter,
-        bondedWatchForget,
-        settings,
-        platformProvider,
-        notificationFilters,
-        accountSettings,
-        profileSettings,
-        healthSettings,
-        cannedResponses,
-        sendTextConfiguration,
-        rfcommSocketFactory.available,
-    ).start()
     val privacyScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     val privacyActive = platformProvider.privacyActive
     val privacyQuietTime = PrivacyQuietTimeCoordinator(
@@ -353,7 +336,29 @@ fun main() {
         sendTextConfiguration,
         privacyQuietTime,
         iconColors,
+        pluginFiles,
     )
+    // The generic API owns io.rebble.libpebble3. The Rockpool UI facade owns org.rockpool on a
+    // different non-shared connection and is intentionally best-effort: it must never delay
+    // generic API startup if another Rockpool process temporarily owns the UI name.
+    LibPebble3Service(
+        libPebble,
+        concreteLibPebble::requestConnectionImmediately,
+        concreteLibPebble::cancelConnectionImmediately,
+        concreteLibPebble::awaitConnectionRetired,
+        bondedWatchImporter,
+        bondedWatchForget,
+        settings,
+        platformProvider,
+        notificationFilters,
+        accountSettings,
+        profileSettings,
+        healthSettings,
+        cannedResponses,
+        sendTextConfiguration,
+        rfcommSocketFactory.available,
+        rockpoolUiService::reviewInstall,
+    ).start()
     rockpoolUiService.start()
     accountIdentity.start()
 

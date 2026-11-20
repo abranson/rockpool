@@ -1,5 +1,12 @@
 [
   {
+    "name": "io.rebble.libpebblecommon.rockpool.PlatformFilesNative",
+    "methods": [{
+      "name": "request",
+      "parameterTypes": ["int", "byte[]", "long", "long", "byte[][]", "byte[]", "boolean"]
+    }]
+  },
+  {
     "name": "io.rebble.libpebblecommon.rockpool.PlatformProviderNative",
     "methods": [
       {
@@ -101,6 +108,10 @@
       {
         "name": "requestPairing",
         "parameterTypes": ["java.lang.String"]
+      },
+      {
+        "name": "secureStorage",
+        "parameterTypes": ["int", "java.lang.String", "java.lang.String", "byte[]"]
       },
       {
         "name": "iconColor",

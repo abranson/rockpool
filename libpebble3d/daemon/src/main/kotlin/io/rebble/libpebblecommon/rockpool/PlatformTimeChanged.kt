@@ -12,6 +12,7 @@ import io.rebble.libpebblecommon.calendar.SystemCalendar
 import io.rebble.libpebblecommon.contacts.SystemContacts
 import io.rebble.libpebblecommon.messaging.SystemMessaging
 import io.rebble.libpebblecommon.linux.LinuxDeviceActivity
+import io.rebble.libpebblecommon.plugin.PhoneSoundPlayer
 import io.rebble.libpebblecommon.time.TimeChanged
 import io.rebble.libpebblecommon.linux.notifications.LinuxNotificationBackend
 import io.rebble.libpebblecommon.linux.music.VolumeControl
@@ -53,6 +54,7 @@ internal fun platformProviderModule(
             supportsBtClassic = rfcommSocketFactory.available,
         )
     }
+    single<PhoneSoundPlayer> { SailfishPhoneSoundPlayer() }
     single { PlatformTimeChanged(controller) } bind TimeChanged::class
     single { PlatformSystemGeolocation(controller::queryLocation) } bind SystemGeolocation::class
     single { PlatformSystemCalendar(controller) } bind SystemCalendar::class

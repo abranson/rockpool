@@ -20,7 +20,7 @@
 namespace lp3wire {
 
 static const uint16_t kMajor = 1;
-static const uint16_t kMinor = 12;
+static const uint16_t kMinor = 13;
 static const size_t kNotificationImageMax = 4 + 128 * 128 * 3;
 static const size_t kHeaderSize = 24;
 static const size_t kMaxFrameSize = 64 * 1024;
@@ -51,6 +51,7 @@ enum Operation {
     IconColorQuery = 11,
     ProfileSet = 12,
     PairingRequest = 13,
+    SecureStorage = 14,
 };
 
 
@@ -1792,6 +1793,85 @@ inline IoResult receiveFrameResult(int fd, Frame *frame, bool nonBlocking) {
 
 inline bool receiveFrame(int fd, Frame *frame) {
     return receiveFrameResult(fd, frame, false) == IoFrame;
+}
+
+struct SecureStorageData {
+    uint32_t action;
+    std::string uuid;
+    std::string key;
+    std::vector<uint8_t> value;
+};
+
+// The fixed UUID and hex digest leave room for the value in a single frame.
+static const size_t kSecureValueMax = 65400;
+static_assert(kHeaderSize + 4 + 36 + 64 + kSecureValueMax <= kMaxFrameSize,
+              "secure storage request must fit in one frame");
+
+inline bool isLowerHex(char c) {
+    return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f');
+}
+
+inline bool validSecureStorage(const SecureStorageData &query) {
+    if (query.action > 3 || query.uuid.size() != 36 ||
+        query.key.size() != (query.action == 3 ? 0u : 64u) ||
+        query.value.size() > kSecureValueMax || (query.action != 1 && !query.value.empty()))
+        return false;
+    for (size_t i = 0; i < query.uuid.size(); ++i) {
+        const bool dash = i == 8 || i == 13 || i == 18 || i == 23;
+        if (dash ? query.uuid[i] != '-' : !isLowerHex(query.uuid[i])) return false;
+    }
+    for (char c : query.key) {
+        if (!isLowerHex(c)) return false;
+    }
+    return true;
+}
+
+inline bool encodeSecureStorage(const SecureStorageData &query, std::vector<uint8_t> *payload) {
+    if (!payload || !validSecureStorage(query)) return false;
+    payload->resize(4);
+    put16(payload->data(), SecureStorage);
+    put16(payload->data() + 2, static_cast<uint16_t>(query.action));
+    payload->insert(payload->end(), query.uuid.begin(), query.uuid.end());
+    payload->insert(payload->end(), query.key.begin(), query.key.end());
+    payload->insert(payload->end(), query.value.begin(), query.value.end());
+    return true;
+}
+
+inline bool decodeSecureStorage(const std::vector<uint8_t> &payload, SecureStorageData *query) {
+    if (!query || payload.size() < 40 || get16(payload.data()) != SecureStorage) return false;
+    query->action = get16(payload.data() + 2);
+    const size_t keySize = query->action == 3 ? 0 : 64;
+    if (payload.size() < 40 + keySize || payload.size() > 40 + keySize + kSecureValueMax)
+        return false;
+    query->uuid.assign(payload.begin() + 4, payload.begin() + 40);
+    query->key.assign(payload.begin() + 40, payload.begin() + 40 + keySize);
+    query->value.assign(payload.begin() + 40 + keySize, payload.end());
+    return validSecureStorage(*query);
+}
+
+inline bool encodeSecureStorageReply(uint32_t status, bool found, const std::vector<uint8_t> &value,
+                                     std::vector<uint8_t> *payload) {
+    if (!payload || !validStatus(status) || (status != 0 && found) ||
+        (!found && !value.empty()) || value.size() > kSecureValueMax) return false;
+    payload->resize(8);
+    put16(payload->data(), SecureStorage);
+    put16(payload->data() + 2, found ? 1 : 0);
+    put32(payload->data() + 4, status);
+    payload->insert(payload->end(), value.begin(), value.end());
+    return true;
+}
+
+inline bool decodeSecureStorageReply(const std::vector<uint8_t> &payload, uint32_t *status,
+                                     bool *found, std::vector<uint8_t> *value) {
+    if (payload.size() < 8 || payload.size() > 8 + kSecureValueMax ||
+        get16(payload.data()) != SecureStorage) return false;
+    *status = get32(payload.data() + 4);
+    const uint16_t flag = get16(payload.data() + 2);
+    if (!validStatus(*status) || flag > 1 || (flag && *status != 0) ||
+        (!flag && payload.size() != 8)) return false;
+    if (found) *found = flag != 0;
+    if (value) value->assign(payload.begin() + 8, payload.end());
+    return true;
 }
 
 struct IconColorQueryData { std::string source; std::string icon; };

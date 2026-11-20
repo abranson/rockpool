@@ -223,5 +223,15 @@
     "interfaces": [
       "io.rebble.libpebblecommon.ui.RockpoolBatteryNotifications"
     ]
+  },
+  {
+    "interfaces": [
+      "io.rebble.libpebblecommon.rockpool.SailfishNonGraphicFeedback"
+    ]
+  },
+  {
+    "interfaces": [
+      "io.rebble.libpebblecommon.ui.RockpoolInstallReviewUi"
+    ]
   }
 ]

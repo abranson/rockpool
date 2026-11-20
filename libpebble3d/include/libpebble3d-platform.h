@@ -21,7 +21,8 @@ extern "C" {
 #endif
 
 #define LP3_PLATFORM_ABI_MAJOR 1u
-#define LP3_PLATFORM_ABI_MINOR 11u
+#define LP3_PLATFORM_ABI_MINOR 12u
+#define LP3_PLATFORM_SECURE_VALUE_MAX 65400u
 #define LP3_PLATFORM_ICON_COLOR_SOURCE_MAX 256u
 #define LP3_PLATFORM_ICON_COLOR_ICON_MAX 1024u
 
@@ -55,6 +56,10 @@ extern "C" {
 #define LP3_PLATFORM_CONTACT_NUMBER_MAX 256u
 #define LP3_PLATFORM_CONTACT_AVATAR_MAX (16u * 1024u)
 #define LP3_PLATFORM_CONTACT_PAGE_MAX 64u
+
+enum lp3_secure_storage_action {
+    LP3_SECRET_GET, LP3_SECRET_SET, LP3_SECRET_REMOVE, LP3_SECRET_DESTROY
+};
 
 enum lp3_platform_status {
     LP3_PLATFORM_OK = 0,
@@ -159,6 +164,20 @@ struct lp3_platform_bytes {
 struct lp3_platform_string {
     const char *data;
     uint32_t size;
+};
+
+/* ABI 1.12. uuid identifies the plugin, key is a SHA-256 hex digest.
+ * value holds SET input or receives GET output, bounded by capacity.
+ * On GET, found distinguishes an empty value from an absent key. */
+struct lp3_platform_secure_storage_v1 {
+    uint32_t struct_size;
+    uint32_t action;
+    struct lp3_platform_string uuid;
+    struct lp3_platform_string key;
+    uint8_t *value;
+    uint32_t capacity;
+    uint32_t size;
+    uint32_t found;
 };
 
 struct lp3_platform_notification_v1 {
@@ -521,7 +540,8 @@ struct lp3_platform_api_v1 {
     /* Dispatches a fixed platform pairing request; it does not wait for pairing. */
     int32_t (*request_pairing)(struct lp3_platform_instance *instance,
                                struct lp3_platform_string address);
-
+    int32_t (*secure_storage)(struct lp3_platform_instance *instance,
+                              struct lp3_platform_secure_storage_v1 *request);
 };
 
 int32_t lp3_platform_get_api(uint32_t host_abi_major,

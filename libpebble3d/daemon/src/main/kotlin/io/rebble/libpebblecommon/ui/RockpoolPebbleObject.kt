@@ -1,5 +1,6 @@
 package io.rebble.libpebblecommon.ui
 
+import io.rebble.libpebblecommon.connection.endpointmanager.FirmwareUpdateTrigger
 import io.rebble.libpebblecommon.rockpool.NotificationIconColors
 import io.rebble.libpebblecommon.rockpool.notificationAppDefaults
 
@@ -12,6 +13,7 @@ import io.rebble.libpebblecommon.connection.FirmwareUpdateCheckResult
 import io.rebble.libpebblecommon.connection.endpointmanager.FirmwareUpdater
 import io.rebble.libpebblecommon.connection.KnownPebbleDevice
 import io.rebble.libpebblecommon.connection.LibPebble
+import io.rebble.libpebblecommon.permissions.InstallReview
 import io.rebble.libpebblecommon.connection.PebbleDevice
 import io.rebble.libpebblecommon.database.entity.MuteState
 import io.rebble.libpebblecommon.disk.pbw.PbwApp
@@ -115,11 +117,13 @@ internal class RockpoolPebbleObject(
     private val privacyQuietTime: PrivacyQuietTimeCoordinator? = null,
     private val iconColors: NotificationIconColors? = null,
     private val quietTimeSchedules: QuietTimeSchedules? = null,
+    private val reviewInstall: suspend (InstallReview) -> Map<String, Boolean>? = { null },
 ) : RockpoolPebble {
     private val logger = Logger.withTag("RockpoolPebble")
     private val keyPrefix = address.replace(":", "_")
     private val watchLogDumpMutex = Mutex()
     private val appMessageMutex = Mutex()
+    private val installMutex = Mutex()
     private val devConnectionToggleMutex = Mutex()
     private val devConnectionToggleGeneration = AtomicLong()
     private val healthSyncThrottle = RockpoolHealthSyncThrottle()
@@ -158,21 +162,33 @@ internal class RockpoolPebbleObject(
     private suspend fun sideloadAppForThisWatch(
         path: Path,
         storeMetadata: StorePbwMetadata? = null,
-    ): Boolean {
+    ): Boolean = installMutex.withLock {
         // Pbw installation enters the account-global locker and LibPebble then syncs every
         // connected watch. Recheck immediately before that call: another known watch may have
         // appeared while a download or PBW parse was in progress.
-        if (!canMutateGlobalAppState("SideloadApp")) return false
-        val watch = connected() ?: return false
+        if (!canMutateGlobalAppState("SideloadApp")) return@withLock false
+        val watch = connected() ?: return@withLock false
         val pbw = PbwApp(path)
         if (pbw.bestVariantFor(watch.watchType.watchType) == null) {
             logger.w { "PBW has no compatible build for ${watch.watchType.watchType}" }
-            return false
+            return@withLock false
         }
-        return if (storeMetadata != null) {
-            libPebble.sideloadApp(path, storeMetadata)
-        } else {
-            libPebble.sideloadApp(path)
+        require(storeMetadata == null || storeMetadata.uuid == Uuid.parse(pbw.info.uuid)) {
+            "Store UUID differs from package"
+        }
+        val decisions = libPebble.reviewPbwPermissions(pbw, reviewInstall) ?: return@withLock false
+        if (!canMutateGlobalAppState("SideloadApp") || connected() == null) return@withLock false
+        if (storeMetadata == null) libPebble.sideloadApp(path, granted = decisions)
+        else libPebble.sideloadApp(path, storeMetadata, decisions)
+    }
+
+    // Keep the reviewed bytes stable through import, including when two store downloads overlap.
+    private suspend fun <T> withInstallFile(block: suspend (File) -> T): T = withContext(Dispatchers.IO) {
+        val file = java.nio.file.Files.createTempFile("rockpool-install-", ".pbw").toFile()
+        try {
+            block(file)
+        } finally {
+            file.delete()
         }
     }
 
@@ -312,7 +328,7 @@ internal class RockpoolPebbleObject(
     override fun FirmwareReleaseNotes(): String = foundUpdate()?.notes ?: ""
     override fun PerformFirmwareUpgrade() {
         val update = foundUpdate() ?: return
-        commonConnected()?.updateFirmware(update)
+        commonConnected()?.updateFirmware(update, FirmwareUpdateTrigger.Ui)
         emit(RockpoolPebble.UpgradingFirmwareChanged(path))
     }
 
@@ -777,10 +793,12 @@ internal class RockpoolPebbleObject(
                 return@launch
             }
             val ok = try {
-                val app = RebbleAppstore.downloadPbw(id)
-                val installed = app != null && sideloadAppForThisWatch(app.path, app.storeMetadata)
-                val uuid = app?.uuid
-                if (installed && uuid != null) {
+                val uuid = withInstallFile { file ->
+                    val app = RebbleAppstore.downloadPbw(id, file) ?: return@withInstallFile null
+                    if (sideloadAppForThisWatch(app.path, app.storeMetadata)) app.storeMetadata.uuid.toString() else null
+                }
+                val installed = uuid != null
+                if (uuid != null) {
                     // Also add it to the Rebble locker so it becomes a real locker member with a
                     // timeline user_token, then refresh so getTimelineToken sees it. Best-effort:
                     // the sandbox-token path still covers apps that don't make it into the locker.
@@ -814,7 +832,14 @@ internal class RockpoolPebbleObject(
                 return@launch
             }
             val ok = try {
-                sideloadAppForThisWatch(Path(localPath(packageFile)))
+                withInstallFile { file ->
+                    val source = File(localPath(packageFile))
+                    require(source.isFile) { "Select a PBW file to install" }
+                    source.inputStream().use { input ->
+                        file.outputStream().use { output -> input.copyTo(output) }
+                    }
+                    sideloadAppForThisWatch(Path(file.absolutePath))
+                }
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {

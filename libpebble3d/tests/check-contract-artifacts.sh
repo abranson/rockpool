@@ -697,11 +697,11 @@ require_fixed 'release packaging requires committed Native Image input' \
     'committed Native Image provenance gate'
 require_fixed "require_line 'format=3'" "$native_verifier" \
     'versioned Native Image provenance format'
-require_fixed "require_line 'platform_abi=1.11'" "$native_verifier" \
+require_fixed "require_line 'platform_abi=1.12'" "$native_verifier" \
     'packaged public platform ABI identity'
 require_fixed "require_line 'launcher_abi=1'" "$native_verifier" \
     'packaged launcher ABI identity'
-require_fixed "require_line 'sailfish_wire=1.12'" "$native_verifier" \
+require_fixed "require_line 'sailfish_wire=1.13'" "$native_verifier" \
     'packaged private Sailfish wire identity'
 require_fixed 'mv "$temporary" "$destination"' "$native_stager" \
     'atomic verified Native Image input staging'
@@ -1871,14 +1871,14 @@ do
 done
 reject_extended '^BuildRequires:[[:space:]]+pkgconfig\(libpebble3d-platform\)' \
     "$rockpool_spec" 'self-referential platform ABI BuildRequires'
-require_fixed '#define LP3_PLATFORM_ABI_MINOR 11u' "$header" \
-    'public platform ABI minor 1.11'
-require_fixed '"1.11"' "$loader" \
-    'native platform snapshot ABI version 1.11'
-require_fixed 'val abiVersion: String = "1.11"' "$platform_provider_controller" \
-    'daemon platform snapshot ABI default 1.11'
-require_fixed 'field(3).ifEmpty { "1.11" }' "$platform_provider_controller" \
-    'daemon platform snapshot ABI fallback 1.11'
+require_fixed '#define LP3_PLATFORM_ABI_MINOR 12u' "$header" \
+    'public platform ABI minor 1.12'
+require_fixed '"1.12"' "$loader" \
+    'native platform snapshot ABI version 1.12'
+require_fixed 'val abiVersion: String = "1.12"' "$platform_provider_controller" \
+    'daemon platform snapshot ABI default 1.12'
+require_fixed 'field(3).ifEmpty { "1.12" }' "$platform_provider_controller" \
+    'daemon platform snapshot ABI fallback 1.12'
 require_fixed 'api->info.abi_minor < 6' "$loader" \
     'Contacts domain ABI-minor admission gate'
 require_fixed 'api->info.abi_minor >= 8' "$loader" \
@@ -1897,8 +1897,8 @@ require_fixed 'BuildRequires:  pkgconfig(Qt5Contacts)' "$rockpool_spec" \
     'Sailfish QtContacts build dependency'
 require_fixed 'QT += core dbus positioning contacts' "$helper_project" \
     'Qt Positioning linked only into the privileged Sailfish helper'
-require_fixed 'static const uint16_t kMinor = 12;' "$wire_header" \
-    'private provider wire minor 1.12'
+require_fixed 'static const uint16_t kMinor = 13;' "$wire_header" \
+    'private provider wire minor 1.13'
 require_fixed 'MessageReply = 5,' "$wire_header" \
     'private typed message-reply operation'
 require_fixed 'MessageSend = 9,' "$wire_header" \

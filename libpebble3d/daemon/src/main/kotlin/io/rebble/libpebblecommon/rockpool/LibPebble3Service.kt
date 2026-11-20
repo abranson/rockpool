@@ -3,6 +3,7 @@
  */
 package io.rebble.libpebblecommon.rockpool
 
+import io.rebble.libpebblecommon.connection.endpointmanager.FirmwareUpdateTrigger
 import co.touchlab.kermit.Logger
 import io.rebble.libpebblecommon.connection.ActiveDevice
 import io.rebble.libpebblecommon.connection.BleDiscoveredPebbleDevice
@@ -23,6 +24,8 @@ import io.rebble.libpebblecommon.connection.PebbleDevice
 import io.rebble.libpebblecommon.connection.PebbleIdentifier
 import io.rebble.libpebblecommon.connection.bt.ble.bluez.BluezManager
 import io.rebble.libpebblecommon.connection.endpointmanager.LanguagePackInstallState
+import io.rebble.libpebblecommon.permissions.InstallReview
+import io.rebble.libpebblecommon.ui.reviewPbwPermissions
 import io.rebble.libpebblecommon.disk.pbw.PbwApp
 import io.rebble.libpebblecommon.disk.pbw.bestVariantFor
 import io.rebble.libpebblecommon.disk.pbz.PbzFirmware
@@ -114,6 +117,7 @@ internal class LibPebble3Service(
     private val cannedResponsesReconciler: PrimaryCannedResponsesReconciler,
     private val sendTextConfiguration: SendTextConfigurationCoordinator,
     private val classicAvailable: Boolean,
+    private val reviewInstall: suspend (InstallReview) -> Map<String, Boolean>? = { null },
 ) {
     private val logger = Logger.withTag("LibPebble3Service")
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -1331,7 +1335,7 @@ internal class LibPebble3Service(
                         initial = initial,
                         states = firmwareInstallStates(),
                     ) {
-                        connected.sideloadFirmware(firmwarePath)
+                        connected.sideloadFirmware(firmwarePath, FirmwareUpdateTrigger.Sideload)
                     }
                 }
             }
@@ -1457,8 +1461,8 @@ internal class LibPebble3Service(
                 return@descriptorInstallOperation
             }
             val pbwPath = kotlinx.io.files.Path(staged.toString())
+            val candidate = PbwApp(pbwPath)
             val applicationId = try {
-                val candidate = PbwApp(pbwPath)
                 require(candidate.bestVariantFor(connected.watchType.watchType) != null)
                 Uuid.parse(candidate.info.uuid)
             } catch (e: Exception) {
@@ -1467,10 +1471,22 @@ internal class LibPebble3Service(
                 return@descriptorInstallOperation
             }
             setProgress(0.25)
+            val decisions = libPebble.reviewPbwPermissions(candidate, reviewInstall)
+            if (decisions == null) {
+                fail(ERROR_CANCELLED, "application permission review cancelled")
+                return@descriptorInstallOperation
+            }
+            if (device() !is ConnectedPebbleDevice ||
+                libPebble.watches.value.filterIsInstance<KnownPebbleDevice>()
+                    .any { !it.identifier.asString.equals(address, ignoreCase = true) }
+            ) {
+                fail(ERROR_NOT_SUPPORTED, "watch availability changed during permission review")
+                return@descriptorInstallOperation
+            }
             if (!beginCommit()) return@descriptorInstallOperation
             val installed = withContext(NonCancellable) {
                 withTimeoutOrNull(APP_INSTALL_TIMEOUT) {
-                    libPebble.sideloadApp(pbwPath)
+                    libPebble.sideloadApp(pbwPath, granted = decisions)
                 }
             } ?: false
             if (!installed) {

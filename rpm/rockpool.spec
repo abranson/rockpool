@@ -14,10 +14,13 @@ Source0:    %{name}-%{version}.tar.xz
 Requires:   systemd-user-session-targets
 Requires:   qt5-plugin-position-geoclue
 Requires:   geoclue
+Requires:   ngfd
 Requires:   sailfish-components-webview-qt5
+Requires:   sailfish-components-pickers-qt5
 Requires:   sailfishshare-components
 Requires:   qt5-qtsvg-plugin-imageformat-svg
 Recommends: geoclue-provider-geonames-offline
+Recommends: sailfishsecretsdaemon-secretsplugin-common
 Provides:   libpebble3-dbus-api = 1
 Provides:   rockpool-ui-dbus-api = 1
 Provides:   libpebble3d-platform-sailfish = %{version}-%{release}
@@ -38,6 +41,7 @@ BuildRequires:  pkgconfig(dbus-1)
 BuildRequires:  pkgconfig(mlite5)
 BuildRequires:  pkgconfig(libmkcal-qt5)
 BuildRequires:  pkgconfig(KF5CalendarCore)
+BuildRequires:  pkgconfig(sailfishsecrets)
 BuildRequires:  pkgconfig(sailfishapp) >= 0.0.10
 BuildRequires:  desktop-file-utils
 BuildRequires:  qt5-qttools-linguist
@@ -178,6 +182,8 @@ for library in rpm/native/*.so; do
     install -m 0755 "$library" \
         %{buildroot}%{_libexecdir}/libpebble3d/"${library##*/}"
 done
+install -D -m 0644 platform-sailfish/rockpool-find-phone.ini \
+    %{buildroot}%{_datadir}/ngfd/events.d/rockpool-find-phone.ini
 mkdir -p %{buildroot}%{_bindir}
 ln -s ../libexec/libpebble3d/libpebble3d \
     %{buildroot}%{_bindir}/libpebble3d
@@ -216,6 +222,8 @@ desktop-file-install --delete-original       \
    %{buildroot}%{_datadir}/applications/*.desktop
 
 %pre
+sha256sum %{_datadir}/ngfd/events.d/rockpool-find-phone.ini 2>/dev/null \
+    > /run/%{name}-finder-event.sha256 || :
 systemctl-user stop rockpoold.service || :
 systemctl-user disable rockpoold.service || :
 # Remember the installed override before RPM replaces it, including reinstalls.
@@ -224,6 +232,10 @@ sha256sum %{_sysconfdir}/systemd/system/bluetooth.service.d/50-libpebble3d.conf 
 
 %post
 update-desktop-database
+if ! sha256sum --check --status /run/%{name}-finder-event.sha256 2>/dev/null; then
+    systemctl-user kill --kill-who=main --signal=USR2 ngfd.service || :
+fi
+rm -f /run/%{name}-finder-event.sha256
 systemctl daemon-reload || :
 # Applying a new override needs a restart; unchanged upgrades must preserve links.
 if ! sha256sum --check --status /run/%{name}-bluetooth-override.sha256 2>/dev/null; then
@@ -245,11 +257,13 @@ fi
 %postun
 systemctl-user daemon-reload || :
 if [ "$1" = "0" ]; then
+    systemctl-user kill --kill-who=main --signal=USR2 ngfd.service || :
     systemctl daemon-reload || :
     systemctl try-restart bluetooth.service || :
 fi
 
 %files
+%{_datadir}/ngfd/events.d/rockpool-find-phone.ini
 %{_datadir}/dbus-1/services/org.rockpool.UI.service
 %defattr(-,root,root,-)
 %{_bindir}/rockpool

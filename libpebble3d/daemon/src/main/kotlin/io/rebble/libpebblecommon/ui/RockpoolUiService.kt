@@ -4,6 +4,18 @@ import io.rebble.libpebblecommon.rockpool.NotificationIconColors
 import io.rebble.libpebblecommon.rockpool.notificationAppDefaults
 
 import co.touchlab.kermit.Logger
+import io.rebble.libpebblecommon.connection.LibPebble3
+import io.rebble.libpebblecommon.locker.LockerWrapper
+import io.rebble.libpebblecommon.permissions.readFilesKey
+import io.rebble.libpebblecommon.permissions.writeFilesKey
+import io.rebble.libpebblecommon.permissions.fileScopeOf
+import io.rebble.libpebblecommon.permissions.InstallReview
+import io.rebble.libpebblecommon.permissions.PermissionStatus
+import io.rebble.libpebblecommon.plugin.files.FileAccessMode
+import io.rebble.libpebblecommon.rockpool.SailfishPluginFileSystem
+import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.*
+import kotlin.uuid.Uuid
 import io.rebble.libpebblecommon.LibPebbleConfig
 import io.rebble.libpebblecommon.connection.ActiveDevice
 import io.rebble.libpebblecommon.connection.BleDiscoveredPebbleDevice
@@ -99,10 +111,12 @@ internal class RockpoolUiService(
     private val sendTextConfiguration: SendTextConfigurationCoordinator? = null,
     private val privacyQuietTime: PrivacyQuietTimeCoordinator? = null,
     private val iconColors: NotificationIconColors? = null,
+    private val pluginFiles: SailfishPluginFileSystem? = null,
 ) {
     private val logger = Logger.withTag("RockpoolUiService")
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val quietTimeSchedules = QuietTimeSchedules(settings, libPebble)
+    private val installReviews = RockpoolInstallReviews()
     private val reconnecting = AtomicBoolean(false)
     private val observersStarted = AtomicBoolean(false)
     private val connectionLock = Any()
@@ -287,6 +301,84 @@ internal class RockpoolUiService(
     internal inner class ManagerObject : RockpoolManager {
         override fun getObjectPath() = MANAGER_PATH
         override fun isRemote() = false
+        private fun requirePermissionEditor(): String {
+            val sender = DBusConnection.getCallInfo()?.source
+            check(sender != null && sender == connection?.getDBusOwnerName("org.rockpool.UI")) {
+                "Permission review requires the Rockpool UI"
+            }
+            return sender
+        }
+
+        override fun AnswerInstallReview(token: String, decisionsJson: String): Boolean {
+            return installReviews.answer(requirePermissionEditor(), token, decisionsJson)
+        }
+
+        override fun GetAppPermissions(uuid: String): String {
+            requirePermissionEditor()
+            val id = Uuid.parse(uuid.removeSurrounding("{", "}"))
+            return runBlocking {
+                check(libPebble.getLockerApp(id).first() is LockerWrapper.NormalApp) { "App is no longer installed" }
+                val rows = libPebble.appPermissionStatuses(id).first()
+                val plugins = libPebble.pluginPermissions().first()
+                val folders = rows.orEmpty().filter { fileScopeOf(it.permission) != null }
+                    .groupBy { fileScopeOf(it.permission)!! }
+                val handles = if (folders.isEmpty()) emptyMap() else libPebble.pluginFileHandles(id).associateBy { it.id }
+                val selected = folders.map { (scope, choices) ->
+                    val handle = handles[scope]
+                    val key = when (handle?.mode) {
+                        FileAccessMode.Read -> readFilesKey(scope)
+                        FileAccessMode.ReadWrite -> writeFilesKey(scope)
+                        null -> choices.first().permission
+                    }
+                    val row = choices.firstOrNull { it.permission == key } ?: choices.first()
+                    row.copy(permission = key, status = if (handle == null) PermissionStatus.Denied else PermissionStatus.Granted)
+                }
+                val permissions = rows.orEmpty().filter { fileScopeOf(it.permission) == null } + selected
+                buildJsonObject {
+                    put("known", rows != null)
+                    putJsonArray("permissions") {
+                        permissions.sortedBy { it.permission }.forEach { row ->
+                            addJsonObject {
+                                put("key", row.permission)
+                                put("label", plugins[row.permission]?.label.orEmpty())
+                                put("status", row.status.name)
+                                put("reason", row.reason.orEmpty())
+                                put("required", JsonPrimitive(row.required))
+                                put("editable", fileScopeOf(row.permission) == null)
+                                fileScopeOf(row.permission)?.let { scope ->
+                                    put("folderPath", pluginFiles?.pathForScope(scope).orEmpty())
+                                }
+                            }
+                        }
+                    }
+                }.toString()
+            }
+        }
+
+        override fun SetAppPermission(uuid: String, key: String, granted: Boolean): Boolean {
+            requirePermissionEditor()
+            val id = Uuid.parseOrNull(uuid.removeSurrounding("{", "}")) ?: return false
+            if (fileScopeOf(key) != null) return false
+            return runBlocking { (libPebble as? LibPebble3)?.setInstalledAppPermission(id, key, granted) == true }
+        }
+
+        override fun GrantAppFolder(uuid: String, path: String, writable: Boolean): Boolean {
+            requirePermissionEditor()
+            val id = Uuid.parseOrNull(uuid.removeSurrounding("{", "}")) ?: return false
+            val files = pluginFiles ?: return false
+            return runBlocking {
+                val scope = files.scopeForFolder(path) ?: return@runBlocking false
+                val mode = if (writable) FileAccessMode.ReadWrite else FileAccessMode.Read
+                (libPebble as? LibPebble3)?.grantInstalledAppFolder(id, scope, mode, path) == true
+            }
+        }
+
+        override fun RevokeAppFolder(uuid: String, scope: String): Boolean {
+            requirePermissionEditor()
+            val id = Uuid.parseOrNull(uuid.removeSurrounding("{", "}")) ?: return false
+            return runBlocking { (libPebble as? LibPebble3)?.revokeInstalledAppFolder(id, scope) == true }
+        }
+
         override fun Version(): String = VERSION
         override fun ListWatches(): List<DBusPath> =
             synchronized(exported) { exported.values.map { DBusPath(it.path) } }
@@ -375,6 +467,11 @@ internal class RockpoolUiService(
 
     private val manager = ManagerObject()
 
+    suspend fun reviewInstall(review: InstallReview): Map<String, Boolean>? {
+        val conn = checkNotNull(connection) { "Permission review service is unavailable" }
+        return installReviews.request(conn, review, libPebble.pluginPermissions().first())
+    }
+
     fun start() {
         startObservers()
         ensureConnection()
@@ -462,6 +559,7 @@ internal class RockpoolUiService(
         try {
             // Fails while rockpoold still owns the name: intentional, rockpoold keeps priority.
             conn.requestBusName(BUS_NAME)
+            installReviews.watchUiOwner(conn)
             conn.exportObject(MANAGER_PATH, manager)
             synchronized(exported) {
                 exported.values.forEach { conn.exportObject(it.path, it.obj) }
@@ -501,6 +599,7 @@ internal class RockpoolUiService(
             }
         }
         if (!detached) return
+        installReviews.disconnected(conn)
         runCatching { conn.disconnect() }
         logger.w { "org.rockpool session-bus connection lost; reconnecting" }
         ensureConnection()
@@ -555,6 +654,7 @@ internal class RockpoolUiService(
                                 privacyQuietTime = privacyQuietTime,
                                 iconColors = iconColors,
                                 quietTimeSchedules = quietTimeSchedules,
+                                reviewInstall = ::reviewInstall,
                             )
                             runCatching { connection?.exportObject(path, obj) }
                                 .onFailure { logger.e("export $path failed", it) }

@@ -32,7 +32,7 @@ import kotlin.time.Duration.Companion.seconds
 internal data class PlatformProviderSnapshot(
     val state: String,
     val provider: String = "",
-    val abiVersion: String = "1.11",
+    val abiVersion: String = "1.12",
     val buildId: String = "",
     val domains: Long = 0,
     val supportedDomains: Long = 0,
@@ -1397,7 +1397,7 @@ internal class PlatformProviderController(
             state = field(0).ifEmpty { "failed" },
             provider = field(1),
             buildId = field(2),
-            abiVersion = field(3).ifEmpty { "1.11" },
+            abiVersion = field(3).ifEmpty { "1.12" },
             domains = field(4).toLongOrNull() ?: 0,
             helperPid = field(5).toLongOrNull() ?: 0,
             error = field(6),
@@ -1660,6 +1660,9 @@ internal object PlatformProviderNative {
 
     @JvmStatic
     external fun requestPairing(address: String): Int
+
+    @JvmStatic
+    external fun secureStorage(operation: Int, uuid: String, key: String?, value: ByteArray?): ByteArray?
 
     @JvmStatic
     external fun iconColor(source: String, icon: String): Int

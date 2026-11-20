@@ -13,6 +13,11 @@ import org.freedesktop.dbus.types.Variant
  */
 @DBusInterfaceName("org.rockpool.Manager")
 interface RockpoolManager : DBusInterface {
+    fun GrantAppFolder(uuid: String, path: String, writable: Boolean): Boolean
+    fun RevokeAppFolder(uuid: String, scope: String): Boolean
+    fun AnswerInstallReview(token: String, decisionsJson: String): Boolean
+    fun GetAppPermissions(uuid: String): String
+    fun SetAppPermission(uuid: String, key: String, granted: Boolean): Boolean
     fun Version(): String
     fun ListWatches(): List<DBusPath>
 

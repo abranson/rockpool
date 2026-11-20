@@ -54,6 +54,7 @@
 #include "mainvolumemonitor.h"
 #include "notificationmonitor.h"
 #include "pebblebondremover.h"
+#include "securestorage.h"
 #include "timeinterface.h"
 #include "wire.h"
 
@@ -312,7 +313,11 @@ public:
           m_phone([this](uint32_t flags) { emitPhoneState(flags); },
                   [this](quint64 id, uint16_t operation, int32_t status) {
                       completePhoneCommand(id, operation, status);
-                  }, this) {
+                  }, this),
+          m_secureStorage([this](uint64_t id, uint32_t status, bool found,
+                                 const std::vector<uint8_t> &value) {
+              completeSecureStorage(id, status, found, value);
+          }, this) {
         const int flags = fcntl(fd, F_GETFL);
         if (flags < 0 || fcntl(fd, F_SETFL, flags | O_NONBLOCK) != 0) {
             QTimer::singleShot(0, QCoreApplication::instance(),
@@ -889,6 +894,17 @@ private:
             !queueFrame(lp3wire::Complete, requestId, &payload[0], payload.size())) failClosed();
     }
 
+    void completeSecureStorage(uint64_t requestId, uint32_t status,
+                               bool found,
+                               const std::vector<uint8_t> &value) {
+        if (!m_pending.remove(requestId)) return;
+        std::vector<uint8_t> payload;
+        if (!lp3wire::encodeSecureStorageReply(status, found, value, &payload) ||
+            !queueFrame(lp3wire::Complete, requestId, &payload[0], payload.size())) {
+            failClosed();
+        }
+    }
+
     bool completeBusy(uint64_t requestId, uint16_t operation,
                       uint32_t calendarKind =
                           lp3wire::CalendarQueryCalendars,
@@ -928,6 +944,12 @@ private:
             reply.nextOffset = 0;
             return lp3wire::encodeContactReply(
                        LP3_PLATFORM_BUSY, reply, &payload) &&
+                queueFrame(lp3wire::Complete, requestId,
+                           &payload[0], payload.size());
+        }
+        if (operation == lp3wire::SecureStorage) {
+            return lp3wire::encodeSecureStorageReply(
+                       LP3_PLATFORM_BUSY, false, std::vector<uint8_t>(), &payload) &&
                 queueFrame(lp3wire::Complete, requestId,
                            &payload[0], payload.size());
         }
@@ -992,6 +1014,7 @@ private:
             lp3wire::CalendarQueryData calendarQuery = {};
             lp3wire::ContactQueryData contactQuery = {};
             lp3wire::IconColorQueryData iconColorQuery;
+            lp3wire::SecureStorageData secureStorage;
             std::string phoneCommand;
             lp3wire::PebbleBondRemoveData pebbleBondRemove = {};
             if ((operation == lp3wire::TimeGet &&
@@ -1015,6 +1038,8 @@ private:
                  !lp3wire::decodeContactQuery(frame.payload, &contactQuery)) ||
                 (operation == lp3wire::IconColorQuery &&
                  !lp3wire::decodeIconColorQuery(frame.payload, &iconColorQuery)) ||
+                (operation == lp3wire::SecureStorage &&
+                 !lp3wire::decodeSecureStorage(frame.payload, &secureStorage)) ||
                 ((operation == lp3wire::ProfileSet || operation == lp3wire::PairingRequest) &&
                  !lp3wire::decodePhoneCommand(frame.payload, operation, &phoneCommand)) ||
                 (operation == lp3wire::PebbleBondRemove &&
@@ -1031,6 +1056,7 @@ private:
                  operation != lp3wire::ContactQuery &&
                  operation != lp3wire::PebbleBondRemove &&
                  operation != lp3wire::IconColorQuery &&
+                 operation != lp3wire::SecureStorage &&
                  operation != lp3wire::ProfileSet &&
                  operation != lp3wire::PairingRequest)) {
                 return false;
@@ -1095,6 +1121,8 @@ private:
             } else if (operation == lp3wire::ProfileSet || operation == lp3wire::PairingRequest) {
                 m_phone.command(frame.requestId, operation,
                                 QString::fromUtf8(phoneCommand.data(), static_cast<int>(phoneCommand.size())));
+            } else if (operation == lp3wire::SecureStorage) {
+                m_secureStorage.request(frame.requestId, secureStorage);
             } else {
                 QTimer::singleShot(
                     0, this,
@@ -1119,6 +1147,7 @@ private:
                 if (m_contactPending.remove(frame.requestId)) {
                     m_contacts.cancel(frame.requestId);
                 }
+                m_secureStorage.cancel(frame.requestId);
                 return queueFrame(lp3wire::Cancelled, frame.requestId, NULL, 0);
             }
             return true;
@@ -1209,6 +1238,7 @@ private:
     bool m_contactsReady;
     IconColorWorker m_iconColor;
     PhoneState m_phone;
+    SecureStorage m_secureStorage;
     QSet<quint64> m_pending;
     QSet<quint64> m_calendarPending;
     QSet<quint64> m_contactPending;

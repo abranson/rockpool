@@ -3,7 +3,7 @@ TARGET = libpebble3d-platform-sailfish-host
 
 QT += core dbus positioning contacts
 QT += gui
-PKGCONFIG += dbus-1 mlite5 libmkcal-qt5 KF5CalendarCore
+PKGCONFIG += dbus-1 mlite5 libmkcal-qt5 KF5CalendarCore sailfishsecrets
 CONFIG += console c++11 link_pkgconfig
 DEFINES += _GNU_SOURCE
 QMAKE_CXXFLAGS += -fPIE
@@ -25,7 +25,8 @@ SOURCES += main.cpp \
     mainvolumemonitor.cpp \
     notificationmonitor.cpp \
     pebblebondremover.cpp \
-    phonestate.cpp
+    phonestate.cpp \
+    securestorage.cpp
 HEADERS += ../common/wire.h \
     ../../libpebble3d/include/libpebble3d-icon-color.h \
     ../../libpebble3d/include/libpebble3d-launcher-wire.h \
@@ -39,6 +40,7 @@ HEADERS += ../common/wire.h \
     notificationmonitor.h \
     pebblebondremover.h \
     phonestate.h \
+    securestorage.h \
     timeinterface.h
 
 isEmpty(LP3_LIBEXECDIR): LP3_LIBEXECDIR = /usr/libexec

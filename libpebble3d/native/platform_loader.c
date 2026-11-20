@@ -356,7 +356,7 @@ static void set_literal(char *destination, size_t destination_size,
 static void set_snapshot_state(const char *state, const char *error) {
     memset(&loader.snapshot, 0, sizeof(loader.snapshot));
     set_literal(loader.snapshot.state, sizeof(loader.snapshot.state), state);
-    set_literal(loader.snapshot.abi_version, sizeof(loader.snapshot.abi_version), "1.11");
+    set_literal(loader.snapshot.abi_version, sizeof(loader.snapshot.abi_version), "1.12");
     set_literal(loader.snapshot.domains, sizeof(loader.snapshot.domains), "0");
     set_literal(loader.snapshot.helper_pid, sizeof(loader.snapshot.helper_pid), "0");
     set_literal(loader.snapshot.supported_domains,
@@ -3019,6 +3019,62 @@ Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_requestPairing(
     JNIEnv *env, jclass klass, jstring address) {
     (void)klass;
     return phone_command(env, address, 1);
+}
+
+/* A successful reply begins with 0 (present or command completed) or 1
+ * (missing key). A null reply is an error, including provider unavailability. */
+JNIEXPORT jbyteArray JNICALL
+Java_io_rebble_libpebblecommon_rockpool_PlatformProviderNative_secureStorage(
+    JNIEnv *env, jclass klass, jint action, jstring uuid, jstring key, jbyteArray value) {
+    struct lp3_platform_secure_storage_v1 request = {0};
+    char uuid_text[37], key_text[65];
+    jbyteArray reply = NULL;
+    (void)klass;
+    if (action < LP3_SECRET_GET || action > LP3_SECRET_DESTROY ||
+        (action == LP3_SECRET_DESTROY) != (key == NULL) ||
+        (action == LP3_SECRET_SET) != (value != NULL) ||
+        !java_string_to_utf8(env, uuid, uuid_text, 36, &request.uuid.size, 0) ||
+        (key && !java_string_to_utf8(env, key, key_text, 64, &request.key.size, 0)))
+        return NULL;
+    request.struct_size = sizeof(request);
+    request.action = (uint32_t)action;
+    request.uuid.data = uuid_text;
+    request.key.data = key ? key_text : NULL;
+    request.size = value ? (uint32_t)(*env)->GetArrayLength(env, value) : 0;
+    if (request.size > LP3_PLATFORM_SECURE_VALUE_MAX) return NULL;
+    request.capacity = action == LP3_SECRET_GET ? LP3_PLATFORM_SECURE_VALUE_MAX : request.size;
+    if (request.capacity) {
+        request.value = malloc(request.capacity);
+        if (!request.value) return NULL;
+    }
+    if (request.size) {
+        (*env)->GetByteArrayRegion(env, value, 0, request.size, (jbyte *)request.value);
+        if ((*env)->ExceptionCheck(env)) goto done;
+    }
+    int32_t status = LP3_PLATFORM_UNAVAILABLE;
+    pthread_mutex_lock(&loader_lock);
+    if (loader.instance && loader.api && loader.api->info.abi_minor >= 12 &&
+        API_HAS_MEMBER(loader.api, secure_storage) && begin_provider_command_dispatch(0)) {
+        status = loader.api->secure_storage(loader.instance, &request);
+        end_provider_command_dispatch();
+    }
+    pthread_mutex_unlock(&loader_lock);
+    if (status == LP3_PLATFORM_OK && request.size <= request.capacity) {
+        jbyte absent = action == LP3_SECRET_GET && !request.found;
+        uint32_t size = action == LP3_SECRET_GET && !absent ? request.size : 0;
+        reply = (*env)->NewByteArray(env, (jsize)size + 1);
+        if (reply) {
+            (*env)->SetByteArrayRegion(env, reply, 0, 1, &absent);
+            if (size && !(*env)->ExceptionCheck(env))
+                (*env)->SetByteArrayRegion(env, reply, 1, size, (const jbyte *)request.value);
+        }
+    }
+done:
+    if (request.value) {
+        explicit_bzero(request.value, request.capacity);
+        free(request.value);
+    }
+    return reply;
 }
 
 JNIEXPORT jint JNICALL

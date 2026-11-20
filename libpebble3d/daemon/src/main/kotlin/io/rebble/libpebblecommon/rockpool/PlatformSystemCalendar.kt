@@ -36,6 +36,7 @@ internal class PlatformSystemCalendar(
                 enabled = calendar.flags and CALENDAR_ENABLED != 0,
                 syncEvents = calendar.flags and CALENDAR_SYNC_EVENTS != 0,
                 visible = calendar.flags and CALENDAR_VISIBLE != 0,
+                writable = false,
             )
         }
     }
@@ -116,7 +117,8 @@ internal class PlatformSystemCalendar(
     override fun hasPermission(): Boolean =
         controller.snapshot().domains and PlatformProviderController.CALENDAR_DOMAIN != 0L
 
-    override suspend fun createEvent(event: NewCalendarEvent): String? = null
+    override suspend fun createEvent(calendarId: String, event: NewCalendarEvent): String? = null
+    override suspend fun defaultCalendarPlatformId(): String? = null
 
     override fun supportsPinActions(): Boolean = false
 

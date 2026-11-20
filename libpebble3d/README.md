@@ -339,6 +339,14 @@ current per-type synchronization limit or built for another watch platform.
 | `systemApp` | `b` | Built into PebbleOS and not removable. |
 | `running` | `b` | This is the application currently running on the addressed watch. |
 
+`Applications1.Install`, Rockpool store installs and file-picker sideloads
+review permissions from the actual PBW before adding it to the locker. The
+dialog shows the reason supplied by the app and accepts either an allow or
+a deny for each required decision. Cancelling leaves the locker and grants
+untouched. Reinstalls reuse saved choices and prompt for new permissions
+according to the current permission policy. Users can change an installed
+app's permissions or select a folder from its Permissions page.
+
 `Applications1.Remove` accepts only the canonical `uuid`. Its successful
 `Operation1.Result` contains that same `uuid` (`s`). Removal is global rather
 than specific to the watch object on which the method was called: it removes
@@ -599,7 +607,7 @@ Each `SOCK_SEQPACKET` packet is exactly one little-endian frame:
 ```text
 u32 total_length       // header + payload, 24..65536
 u16 major              // currently 1
-u16 minor              // currently 8
+u16 minor              // currently 13
 u16 type
 u16 flags              // zero unless specified for type
 u64 request_id         // zero for handshake, Health, and Event frames
@@ -776,6 +784,22 @@ fixed empty-reply `org.sailfishos.Messages` `/`
 `org.sailfishos.Messages.sendMessage(sss)` call with the three bounded values.
 Timeouts and owner or connection generation changes fail without retrying the
 externally visible send.
+
+Minor 13 adds per-plugin secure storage through the optional `secure_storage`
+operation in platform ABI 1.12. The helper uses the Sailfish Secrets Qt API,
+device-lock protection and an owner-only encrypted collection for each plugin.
+The collection name encodes all 128 UUID bits in base32 to fit SQLCipher's
+31-character alphanumeric limit. The original Secrets API only supports
+insertion and deletion. When replacing a value, the helper writes the next
+generation to a second entry before removing the previous one. After an
+interruption, the highest stored generation supplies the value.
+
+A SecureStorage request has a 16-bit operation (14), a 16-bit action (get,
+set, remove or destroy, numbered 0–3), the 36-byte plugin UUID, and a 64-byte
+lowercase hex SHA-256 key digest for all actions except destroy. Set appends
+up to 65,400 bytes of value data. The reply carries the operation, a 16-bit
+found flag, a 32-bit platform status and the value bytes for a successful
+read. The found flag distinguishes an empty value from a missing key.
 
 Minor 12 moves Sailfish privacy-mode and MCE activity monitoring plus profile
 and pairing dispatch into the existing host. Platform ABI 1.11 appends an optional

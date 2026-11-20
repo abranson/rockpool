@@ -27,7 +27,7 @@ ${CC:-cc} -std=c11 -O2 -fPIC -shared -Wall -Wextra -Werror \
   -I"$JAVA_HOME/include" -I"$JAVA_HOME/include/linux" -I/work/include \
   -DLP3_PLATFORM_DIRECTORY=\""$PLATFORM_DIRECTORY"\" \
   -o /out/libpebble3d-platform-loader.so \
-  /work/native/platform_loader.c /work/native/rfcomm_socket.c -ldl -pthread
+  /work/native/platform_loader.c /work/native/rfcomm_socket.c /work/native/plugin_files.c -ldl -pthread
 # The tracing JVM uses the same fixed installation path as the final daemon.
 # It sees /out but RPM installation has not happened yet.
 install -D -m 0755 /out/libpebble3d-platform-loader.so \
