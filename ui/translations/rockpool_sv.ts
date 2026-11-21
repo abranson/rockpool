@@ -20,239 +20,239 @@
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="109"/>
         <source>Choose a folder for reading and writing</source>
-        <translation type="unfinished"></translation>
+        <translation>Välj en mapp för att läsa och skriva</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="109"/>
         <source>Choose a folder for reading</source>
-        <translation type="unfinished"></translation>
+        <translation>Välj en mapp för läsning</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="137"/>
         <source>Could not change the permission.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunde inte ändra rättigheten.</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="8"/>
         <source>Internet access</source>
-        <translation type="unfinished"></translation>
+        <translation>Internetåtkomst</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="9"/>
         <source>Internet access to all sites</source>
-        <translation type="unfinished"></translation>
+        <translation>Internetåtkomst till alla webbplatser</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="10"/>
         <source>Local network access</source>
-        <translation type="unfinished"></translation>
+        <translation>Lokal nätverksåtkomst</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="11"/>
         <source>Location</source>
-        <translation type="unfinished"></translation>
+        <translation>Plats</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="12"/>
         <source>Watch microphone</source>
-        <translation type="unfinished"></translation>
+        <translation>Klockmikrofon</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="13"/>
         <source>Health data</source>
-        <translation type="unfinished"></translation>
+        <translation>Hälsodata</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="14"/>
         <source>Read notifications</source>
-        <translation type="unfinished"></translation>
+        <translation>Läs meddelanden</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="15"/>
         <source>Show notifications</source>
-        <translation type="unfinished">Visa aviseringar</translation>
+        <translation>Visa aviseringar</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="16"/>
         <source>Read calendar events</source>
-        <translation type="unfinished"></translation>
+        <translation>Läs kalenderhändelser</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="17"/>
         <source>Read contacts</source>
-        <translation type="unfinished"></translation>
+        <translation>Läs kontakter</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="18"/>
         <source>Write timeline pins</source>
-        <translation type="unfinished"></translation>
+        <translation>Skriv tidslinjepinnar</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="19"/>
         <source>Read watch settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Läs klockinställningar</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="20"/>
         <source>Change watch settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Ändra klockinställningar</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="21"/>
         <source>Read music playback</source>
-        <translation type="unfinished"></translation>
+        <translation>Läs musikuppspelning</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="22"/>
         <source>Control music playback</source>
-        <translation type="unfinished"></translation>
+        <translation>Kontrollera musikuppspelning</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="23"/>
         <source>List installed apps</source>
-        <translation type="unfinished"></translation>
+        <translation>Lista installerade appar</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="24"/>
         <source>Launch watch apps</source>
-        <translation type="unfinished"></translation>
+        <translation>Starta klockappar</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="25"/>
         <source>Find my phone</source>
-        <translation type="unfinished"></translation>
+        <translation>Hitta min telefon</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="26"/>
         <source>Set Index alarms</source>
-        <translation type="unfinished"></translation>
+        <translation>Ange indexlarm</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="27"/>
         <source>Send messages through Beeper</source>
-        <translation type="unfinished"></translation>
+        <translation>Skicka meddelanden genom Beeper</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="28"/>
         <source>Write Index notes</source>
-        <translation type="unfinished"></translation>
+        <translation>Skriv indexanteckningar</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="29"/>
         <source>Write Index reminders</source>
-        <translation type="unfinished"></translation>
+        <translation>Skriv indexpåminnelser</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="30"/>
         <source>Read files</source>
-        <translation type="unfinished"></translation>
+        <translation>Läs filer</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="31"/>
         <source>Write files</source>
-        <translation type="unfinished"></translation>
+        <translation>Skriv filer</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="32"/>
         <source>Connect to legacy companion apps</source>
-        <translation type="unfinished"></translation>
+        <translation>Anslut till äldre följeslagarappar</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="33"/>
         <source>Connect to companion apps</source>
-        <translation type="unfinished"></translation>
+        <translation>Anslut till följeslagarappar</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="156"/>
         <location filename="../qml/pages/InstallReviewDialog.qml" line="160"/>
         <source>Allowed</source>
-        <translation type="unfinished"></translation>
+        <translation>Tillåten</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="157"/>
         <location filename="../qml/pages/InstallReviewDialog.qml" line="161"/>
         <source>Denied</source>
-        <translation type="unfinished"></translation>
+        <translation>Nekad</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="158"/>
         <source>Allowed automatically</source>
-        <translation type="unfinished"></translation>
+        <translation>Tillåts automatiskt</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="159"/>
         <source>Awaiting a decision</source>
-        <translation type="unfinished"></translation>
+        <translation>Väntar på ett beslut</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="160"/>
         <source>Status unavailable</source>
-        <translation type="unfinished"></translation>
+        <translation>Status ej tillgänglig</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="177"/>
         <source>App permissions</source>
-        <translation type="unfinished"></translation>
+        <translation>Appbehörigheter</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="195"/>
         <source>Permission changes apply to this app on all watches.</source>
-        <translation type="unfinished"></translation>
+        <translation>Behörighetsändringar gäller för denna app på alla klockor.</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="222"/>
         <source>Could not load permissions.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunde inte läsa in behörigheter.</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="224"/>
         <source>Permission information is unavailable for this app.</source>
-        <translation type="unfinished"></translation>
+        <translation>Behörighetsinformation är inte tillgänglig för denna app.</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="226"/>
         <source>This app has no permissions to review.</source>
-        <translation type="unfinished"></translation>
+        <translation>Denna app har inga behörigheter att granska.</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="233"/>
         <source>Retry</source>
-        <translation type="unfinished"></translation>
+        <translation>Försök igen</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="268"/>
         <source>Unavailable folder</source>
-        <translation type="unfinished"></translation>
+        <translation>Otillgänglig mapp</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="286"/>
         <source>Required by the app</source>
-        <translation type="unfinished"></translation>
+        <translation>Krävs av appen</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="287"/>
         <source>Optional</source>
-        <translation type="unfinished"></translation>
+        <translation>Valfritt</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="304"/>
         <source>Choose folder</source>
-        <translation type="unfinished"></translation>
+        <translation>Välj mapp</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="328"/>
         <source>Allow</source>
-        <translation type="unfinished"></translation>
+        <translation>Tillåt</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="343"/>
         <source>Deny</source>
-        <translation type="unfinished"></translation>
+        <translation>Avslå</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="357"/>
         <source>Remove folder access</source>
-        <translation type="unfinished"></translation>
+        <translation>Ta bort mappåtkomst</translation>
     </message>
 </context>
 <context>
@@ -268,7 +268,7 @@
     <message>
         <location filename="../appstoreclient.cpp" line="572"/>
         <source>Could not load or update the vote. Tap to retry.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunde inte läsa in eller uppdatera omröstningen. Tryck på Försök igen.</translation>
     </message>
 </context>
 <context>
@@ -276,7 +276,7 @@
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="214"/>
         <source>Sign in to %1 in Settings to vote.</source>
-        <translation type="unfinished"></translation>
+        <translation>Logga in till %1 i Inställningar för att rösta.</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="310"/>
@@ -433,42 +433,42 @@
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="39"/>
         <source>Switch build to %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Byt kompilering till %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="41"/>
         <source>Upgrade from %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Uppgradering från %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="85"/>
         <source>Switch build</source>
-        <translation type="unfinished"></translation>
+        <translation>Byt kompilering</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="90"/>
         <source>Install the %1 build of version %2?</source>
-        <translation type="unfinished"></translation>
+        <translation>Vill du installera kompilering %1 av version %2?</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="152"/>
         <source>Could not install the selected build.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunde inte installera den valda kompileringen.</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="284"/>
         <source>Linked to %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Länkad till %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="290"/>
         <source>Selected build from %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Vald kompilering från %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="311"/>
         <source>Switching build…</source>
-        <translation type="unfinished"></translation>
+        <translation>Byter kompilering…</translation>
     </message>
 </context>
 <context>
@@ -487,70 +487,70 @@
     <message>
         <location filename="../corestoreaccount.cpp" line="124"/>
         <source>Core Devices sign-in timed out.</source>
-        <translation type="unfinished"></translation>
+        <translation>Tidsgränsen överskreds för kärnenheters inloggning.</translation>
     </message>
     <message>
         <location filename="../corestoreaccount.cpp" line="149"/>
         <location filename="../corestoreaccount.cpp" line="230"/>
         <source>The Rockpool daemon is unavailable.</source>
-        <translation type="unfinished"></translation>
+        <translation>Rockpool-tjänsten är inte tillgänglig.</translation>
     </message>
     <message>
         <location filename="../corestoreaccount.cpp" line="156"/>
         <location filename="../corestoreaccount.cpp" line="193"/>
         <source>Could not start Core Devices sign-in.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunde inte starta kärnenheters inloggning.</translation>
     </message>
     <message>
         <location filename="../corestoreaccount.cpp" line="220"/>
         <source>Could not open the browser for Core Devices sign-in.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunde inte öppna webbläsaren för kärnenheters inloggning.</translation>
     </message>
     <message>
         <location filename="../corestoreaccount.cpp" line="238"/>
         <source>Could not remove the saved Core Devices account.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunde inte ta bort det sparade kontot för kärnenheter.</translation>
     </message>
     <message>
         <location filename="../corestoreaccount.cpp" line="312"/>
         <source>Sign-in was not completed. Return to Rockpool.</source>
-        <translation type="unfinished"></translation>
+        <translation>Inloggningen slutfördes inte. Återvänd till Rockpool.</translation>
     </message>
     <message>
         <location filename="../corestoreaccount.cpp" line="313"/>
         <source>Core Devices sign-in was declined or failed.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kärnenheters inloggning nekades, eller misslyckades.</translation>
     </message>
     <message>
         <location filename="../corestoreaccount.cpp" line="315"/>
         <source>Return to Rockpool to finish signing in.</source>
-        <translation type="unfinished"></translation>
+        <translation>Återvänd till Rockpool för att slutföra inloggningen.</translation>
     </message>
     <message>
         <location filename="../corestoreaccount.cpp" line="347"/>
         <location filename="../corestoreaccount.cpp" line="364"/>
         <source>Could not complete Core Devices sign-in.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunde inte slutföra kärnenheters inloggning.</translation>
     </message>
     <message>
         <location filename="../corestoreaccount.cpp" line="378"/>
         <source>Could not verify the Core Devices account profile.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunde inte verifiera kärnenheters kontoprofil.</translation>
     </message>
     <message>
         <location filename="../corestoreaccount.cpp" line="384"/>
         <source>Could not verify the Core Devices appstore account.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunde inte verifiera kontot i kärnenheters appförråd.</translation>
     </message>
     <message>
         <location filename="../corestoreaccount.cpp" line="392"/>
         <source>Could not save the Core Devices account.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunde inte spara kärnenhetskontot.</translation>
     </message>
     <message>
         <location filename="../corestoreaccount.cpp" line="440"/>
         <source>The Rockpool daemon disconnected during Core Devices sign-in.</source>
-        <translation type="unfinished"></translation>
+        <translation>Rockpooltjänsten kopplade ner under kärnenheters inloggning.</translation>
     </message>
 </context>
 <context>
@@ -751,7 +751,7 @@
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="19"/>
         <source>Check for updates</source>
-        <translation type="unfinished"></translation>
+        <translation>Sök efter uppdateringar</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="24"/>
@@ -766,7 +766,7 @@
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="57"/>
         <source>Could not check for firmware updates</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunde inte söka efter mjukvaruuppdateringar</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="58"/>
@@ -1263,67 +1263,67 @@
     <message>
         <location filename="../qml/pages/InstallReviewDialog.qml" line="112"/>
         <source>Install %1?</source>
-        <translation type="unfinished"></translation>
+        <translation>Vill du installera %1?</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstallReviewDialog.qml" line="112"/>
         <source>app</source>
-        <translation type="unfinished"></translation>
+        <translation>app</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstallReviewDialog.qml" line="113"/>
         <source>Install</source>
-        <translation type="unfinished">Installera</translation>
+        <translation>Installera</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstallReviewDialog.qml" line="114"/>
         <source>Cancel</source>
-        <translation type="unfinished">Avbryt</translation>
+        <translation>Avbryt</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstallReviewDialog.qml" line="120"/>
         <source>Review what this app can access on your phone.</source>
-        <translation type="unfinished"></translation>
+        <translation>Undersök vad den här appen kommer åt på din telefon.</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstallReviewDialog.qml" line="153"/>
         <source>Required by the app</source>
-        <translation type="unfinished"></translation>
+        <translation>Krävs av appen</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstallReviewDialog.qml" line="153"/>
         <source>Optional</source>
-        <translation type="unfinished"></translation>
+        <translation>Valfritt</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstallReviewDialog.qml" line="162"/>
         <source>Allowed automatically</source>
-        <translation type="unfinished"></translation>
+        <translation>Tillåts automatiskt</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstallReviewDialog.qml" line="163"/>
         <source>Choose whether to allow this</source>
-        <translation type="unfinished"></translation>
+        <translation>Välj om du vill tillåta detta</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstallReviewDialog.qml" line="163"/>
         <source>Optional decision</source>
-        <translation type="unfinished"></translation>
+        <translation>Valfritt beslut</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstallReviewDialog.qml" line="172"/>
         <source>Scope: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Omfattning: %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstallReviewDialog.qml" line="186"/>
         <source>Allow</source>
-        <translation type="unfinished"></translation>
+        <translation>Tillåt</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstallReviewDialog.qml" line="194"/>
         <source>Deny</source>
-        <translation type="unfinished"></translation>
+        <translation>Avslå</translation>
     </message>
 </context>
 <context>
@@ -1356,7 +1356,7 @@
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="75"/>
         <source>Permissions</source>
-        <translation type="unfinished"></translation>
+        <translation>Behörigheter</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="80"/>
@@ -1381,12 +1381,12 @@
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="24"/>
         <source>Switch build to %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Byt kompilering till %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="26"/>
         <source>Upgrade from %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Uppgradering från %1</translation>
     </message>
 </context>
 <context>
@@ -1394,7 +1394,7 @@
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="34"/>
         <source>Could not load the store page. Please try again.</source>
-        <translation>Kunde inte läsa in Store-sidan. Försök igen!</translation>
+        <translation>Kunde inte läsa in förrådssidan. Försök igen.</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppsPage.qml" line="62"/>
@@ -2230,12 +2230,12 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="171"/>
         <source>Appstore</source>
-        <translation type="unfinished"></translation>
+        <translation>Appförråd</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="172"/>
         <source>Browse and check for updates in this store.</source>
-        <translation type="unfinished"></translation>
+        <translation>Bläddra och kolla efter uppdateringar i detta förråd.</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="166"/>
@@ -2324,22 +2324,22 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="188"/>
         <source>Core Devices account</source>
-        <translation type="unfinished"></translation>
+        <translation>Kärnenhetskonto</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="228"/>
         <source>Signed in</source>
-        <translation type="unfinished"></translation>
+        <translation>Inloggad</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="230"/>
         <source>Finish signing in in your browser.</source>
-        <translation type="unfinished"></translation>
+        <translation>Slutför inloggning i din webbläsare.</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="264"/>
         <source>Cancel sign-in</source>
-        <translation type="unfinished"></translation>
+        <translation>Avbryt inloggning</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="324"/>
@@ -2409,37 +2409,37 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="45"/>
         <source>Could not finish. Check the locker again.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunde inte slutföra. Kontrollera skåpet igen.</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="57"/>
         <source>Locker updated.</source>
-        <translation type="unfinished"></translation>
+        <translation>Skåpet uppdaterat.</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="63"/>
         <source>No eligible installed apps to add.</source>
-        <translation type="unfinished"></translation>
+        <translation>Inga berättigade installerade appar att lägga till.</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="281"/>
         <source>Adding apps…</source>
-        <translation type="unfinished"></translation>
+        <translation>Lägga till appar…</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="281"/>
         <source>Checking locker…</source>
-        <translation type="unfinished"></translation>
+        <translation>Kontrollera skåpet…</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="282"/>
         <source>Add to %1 (%2)</source>
-        <translation type="unfinished"></translation>
+        <translation>Lägg till i %1 (%2)</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="283"/>
         <source>Check for missing apps</source>
-        <translation type="unfinished"></translation>
+        <translation>Sök efter saknade appar</translation>
     </message>
 </context>
 <context>
