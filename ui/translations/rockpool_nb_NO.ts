@@ -20,32 +20,32 @@
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="109"/>
         <source>Choose a folder for reading and writing</source>
-        <translation type="unfinished"></translation>
+        <translation>Velg en mappe for lesing og skriving</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="109"/>
         <source>Choose a folder for reading</source>
-        <translation type="unfinished"></translation>
+        <translation>Velg en mappe for lesing</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="137"/>
         <source>Could not change the permission.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunne ikke endre tillatelsen.</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="8"/>
         <source>Internet access</source>
-        <translation type="unfinished"></translation>
+        <translation>Internettilgang</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="9"/>
         <source>Internet access to all sites</source>
-        <translation type="unfinished"></translation>
+        <translation>Internettilgang til alle nettsteder</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="10"/>
         <source>Local network access</source>
-        <translation type="unfinished"></translation>
+        <translation>Tilgang til lokalnettverk</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="11"/>
