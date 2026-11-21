@@ -20,52 +20,52 @@
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="109"/>
         <source>Choose a folder for reading and writing</source>
-        <translation type="unfinished"></translation>
+        <translation>Välj en mapp för att läsa och skriva</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="109"/>
         <source>Choose a folder for reading</source>
-        <translation type="unfinished"></translation>
+        <translation>Välj en mapp för läsning</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="137"/>
         <source>Could not change the permission.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunde inte ändra rättigheten.</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="8"/>
         <source>Internet access</source>
-        <translation type="unfinished"></translation>
+        <translation>Internetåtkomst</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="9"/>
         <source>Internet access to all sites</source>
-        <translation type="unfinished"></translation>
+        <translation>Internetåtkomst till alla webbplatser</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="10"/>
         <source>Local network access</source>
-        <translation type="unfinished"></translation>
+        <translation>Lokal nätverksåtkomst</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="11"/>
         <source>Location</source>
-        <translation type="unfinished"></translation>
+        <translation>Plats</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="12"/>
         <source>Watch microphone</source>
-        <translation type="unfinished"></translation>
+        <translation>Klockmikrofon</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="13"/>
         <source>Health data</source>
-        <translation type="unfinished"></translation>
+        <translation>Hälsodata</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="14"/>
         <source>Read notifications</source>
-        <translation type="unfinished"></translation>
+        <translation>Läs meddelanden</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="15"/>
@@ -75,82 +75,82 @@
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="16"/>
         <source>Read calendar events</source>
-        <translation type="unfinished"></translation>
+        <translation>Läs kalenderhändelser</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="17"/>
         <source>Read contacts</source>
-        <translation type="unfinished"></translation>
+        <translation>Läs kontakter</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="18"/>
         <source>Write timeline pins</source>
-        <translation type="unfinished"></translation>
+        <translation>Skriv tidslinjepinnar</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="19"/>
         <source>Read watch settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Läs klockinställningar</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="20"/>
         <source>Change watch settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Ändra klockinställningar</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="21"/>
         <source>Read music playback</source>
-        <translation type="unfinished"></translation>
+        <translation>Läs musikuppspelning</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="22"/>
         <source>Control music playback</source>
-        <translation type="unfinished"></translation>
+        <translation>Kontrollera musikuppspelning</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="23"/>
         <source>List installed apps</source>
-        <translation type="unfinished"></translation>
+        <translation>Lista installerade appar</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="24"/>
         <source>Launch watch apps</source>
-        <translation type="unfinished"></translation>
+        <translation>Starta klockappar</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="25"/>
         <source>Find my phone</source>
-        <translation type="unfinished"></translation>
+        <translation>Hitta min telefon</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="26"/>
         <source>Set Index alarms</source>
-        <translation type="unfinished"></translation>
+        <translation>Ange indexlarm</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="27"/>
         <source>Send messages through Beeper</source>
-        <translation type="unfinished"></translation>
+        <translation>Skicka meddelanden genom Beeper</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="28"/>
         <source>Write Index notes</source>
-        <translation type="unfinished"></translation>
+        <translation>Skriv indexanteckningar</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="29"/>
         <source>Write Index reminders</source>
-        <translation type="unfinished"></translation>
+        <translation>Skriv indexpåminnelser</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="30"/>
         <source>Read files</source>
-        <translation type="unfinished"></translation>
+        <translation>Läs filer</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="31"/>
         <source>Write files</source>
-        <translation type="unfinished"></translation>
+        <translation>Skriv filer</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="32"/>
