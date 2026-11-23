@@ -12,6 +12,17 @@ Page {
     property bool appInstallationAllowed: appMutationsAllowed && pebble && pebble.connected
 
     readonly property bool coreListing: app && app.storeId.indexOf("core:") === 0
+    readonly property string companionMessage: {
+        if (!app) return ""
+        switch (app.companionRequirement) {
+        case AppItem.ClassicAndroid: return appSupportInstalled ? "" : qsTr("Needs Android AppSupport")
+        case AppItem.UnsupportedAndroid: return qsTr("Needs PebbleKit 2")
+        case AppItem.IosOnly: return qsTr("Needs an iOS companion")
+        case AppItem.UnknownCompanion: return qsTr("Companion details unavailable")
+        default: return ""
+        }
+    }
+    readonly property bool companionBlocked: companionMessage.length > 0
     readonly property bool accountAuthenticated: coreListing ? rockPool.coreAccount.signedIn
                                                              : pebble && pebble.accountAuthenticated
     readonly property bool accountBusy: coreListing ? rockPool.coreAccount.busy
@@ -60,9 +71,9 @@ Page {
             MenuItem {
                 id: installMenuItem
 
-                enabled: root.appInstallationAllowed && !installed && !installing && !root.app.companion
+                enabled: root.appInstallationAllowed && !installed && !installing && !root.companionBlocked
                 text: installing && !installed ? qsTr("Installing...")
-                                               : (root.app.companion ? qsTr("Needs Companion")
+                                               : (root.companionBlocked ? root.companionMessage
                                                                      : (installed ? qsTr("Installed") : qsTr("Install")))
                 property bool installing
                 property bool installed: root.pebble.installedApps.containsApp(root.app.storeId, root.app.uuid) || root.pebble.installedWatchfaces.containsApp(root.app.storeId, root.app.uuid)
@@ -115,6 +126,11 @@ Page {
                     source: root.app.icon
                 }
             }
+            WatchCompatibility {
+                width: parent.width
+                app: root.app
+                currentWatch: root.pebble
+            }
             Label {
                 width: parent.width - 2 * Theme.horizontalPageMargin
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -123,6 +139,14 @@ Page {
                 color: Theme.secondaryColor
                 font.pixelSize: Theme.fontSizeSmall
                 horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.Wrap
+            }
+            Label {
+                width: parent.width - 2 * Theme.horizontalPageMargin
+                anchors.horizontalCenter: parent.horizontalCenter
+                visible: root.app && root.app.companionRequirement === AppItem.ClassicAndroid && appSupportInstalled
+                text: qsTr("Install the Android companion app in AppSupport and pair Droidpool in Rockpool Settings.")
+                color: Theme.secondaryColor
                 wrapMode: Text.Wrap
             }
             Label {

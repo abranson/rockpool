@@ -1,3 +1,4 @@
+#include <QFileInfo>
 #include <QtQuick>
 
 #include <sailfishapp.h>
@@ -66,6 +67,13 @@ int main(int argc, char *argv[])
         view->raise();
         view->requestActivate();
     });
+    // Sailjail hides installer executables. The installed runtime unit remains visible
+    // even when the user has stopped AppSupport.
+    const bool appSupportInstalled =
+            QFileInfo::exists(QStringLiteral("/usr/lib/systemd/system/appsupport@.service"))
+            || QFileInfo::exists(QStringLiteral("/usr/lib/systemd/system/aliendalvik.service"))
+            || QFileInfo::exists(QStringLiteral("/usr/bin/apkd-install"));
+    view->rootContext()->setContextProperty("appSupportInstalled", appSupportInstalled);
     view->rootContext()->setContextProperty("uiActivation", &activation);
     view->rootContext()->setContextProperty("version", QStringLiteral(VERSION));
     view->rootContext()->setContextProperty("locale", locale);

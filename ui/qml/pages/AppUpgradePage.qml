@@ -16,8 +16,19 @@ Page {
     readonly property string candidateSource: app ? app.updateStoreSource : ""
     readonly property bool crossStore: installedSource.length > 0 && candidateSource.length > 0
                                        && installedSource !== candidateSource
+    readonly property string companionMessage: {
+        if (!app) return ""
+        switch (app.companionRequirement) {
+        case AppItem.ClassicAndroid: return appSupportInstalled ? "" : qsTr("Needs Android AppSupport")
+        case AppItem.UnsupportedAndroid: return qsTr("Needs PebbleKit 2")
+        case AppItem.IosOnly: return qsTr("Needs an iOS companion")
+        case AppItem.UnknownCompanion: return qsTr("Companion details unavailable")
+        default: return ""
+        }
+    }
+    readonly property bool companionBlocked: companionMessage.length > 0
     readonly property bool switchBuild: crossStore && app.switchAvailable
-    readonly property bool canInstallCandidate: appInstallationAllowed && app !== null && !app.companion
+    readonly property bool canInstallCandidate: appInstallationAllowed && app !== null && !root.companionBlocked
                                                 && installedSource.length > 0 && candidateSource.length > 0
                                                 && candidateSource === rockPool.preferredAppstore
                                                 && app.updateStoreId.length > 0
@@ -175,22 +186,6 @@ Page {
         onHardwarePlatformChanged: root.resolveRequestedApp(true)
     }
     Component.onCompleted: resolveRequestedApp()
-    property var compatibilityPlatforms: [
-        { label: "Classic", key: "aplite" },
-        { label: "Time", key: "basalt" },
-        { label: "Time Round", key: "chalk" },
-        { label: "Pebble 2", key: "diorite" },
-        { label: "Pebble 2 SE", key: "emery" },
-        { label: "Core Time 2", key: "flint" },
-        { label: "Core 2 Duo", key: "gabbro" }
-    ]
-
-    function compatibilityValue(key) {
-        if (!app || !app.compatibility || app.compatibility[key] === undefined)
-            return "-"
-
-        return app.compatibility[key]
-    }
 
     SilicaFlickable {
         anchors.fill: parent
@@ -208,6 +203,11 @@ Page {
                 description: app ? app.vendor : qsTr("Upgrading")
             }
 
+            WatchCompatibility {
+                width: parent.width
+                app: root.app
+                currentWatch: root.pebble
+            }
             Label {
                 width: parent.width - 2 * Theme.horizontalPageMargin
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -226,6 +226,14 @@ Page {
                 color: Theme.secondaryColor
                 font.pixelSize: Theme.fontSizeSmall
                 horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.Wrap
+            }
+            Label {
+                width: parent.width - 2 * Theme.horizontalPageMargin
+                anchors.horizontalCenter: parent.horizontalCenter
+                visible: root.app && root.app.companionRequirement === AppItem.ClassicAndroid && appSupportInstalled
+                text: qsTr("Install the Android companion app in AppSupport and pair Droidpool in Rockpool Settings.")
+                color: Theme.secondaryColor
                 wrapMode: Text.Wrap
             }
 
@@ -309,8 +317,8 @@ Page {
                 text: {
                     if (installing)
                         return switching ? qsTr("Switching build…") : qsTr("Upgrading...")
-                    if (root.app && root.app.companion)
-                        return qsTr("Needs Companion")
+                    if (root.companionBlocked)
+                        return root.companionMessage
                     return root.candidateActionText()
                 }
                 onClicked: {
@@ -328,69 +336,6 @@ Page {
                         candidateVersion: root.app.latest,
                         candidateSourceName: root.storeName(root.candidateSource)
                     })
-                }
-            }
-            Label {
-                text: qsTr("Compatibility")
-            }
-            Row {
-                width: parent.width
-                visible: root.app != null
-                Column {
-                    width: parent.width / 2
-                    Label {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        text: "Android"
-                        font.pixelSize: Theme.fontSizeSmall
-                        font.bold: true
-                    }
-                    Image {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        source: "image://theme/icon-s-"+(app && app.compatibility.android ? "installed" : "high-importance")
-                    }
-                }
-                Column {
-                    width: parent.width / 2
-                    Label {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        text: "iOS"
-                        font.pixelSize: Theme.fontSizeSmall
-                        font.bold: true
-                    }
-                    Image {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        source: "image://theme/icon-s-"+(app && app.compatibility.ios ? "installed" : "high-importance")
-                    }
-                }
-            }
-            Flow {
-                width: parent.width
-                visible: root.app != null
-                spacing: Theme.paddingSmall
-
-                Repeater {
-                    model: root.compatibilityPlatforms
-
-                    delegate: Column {
-                        width: (contentColumn.width - Theme.paddingSmall) / 2
-
-                        Label {
-                            width: parent.width
-                            horizontalAlignment: Text.AlignHCenter
-                            text: modelData.label
-                            font.pixelSize: Theme.fontSizeSmall
-                            font.bold: true
-                            wrapMode: Text.Wrap
-                        }
-
-                        Label {
-                            width: parent.width
-                            horizontalAlignment: Text.AlignHCenter
-                            text: root.compatibilityValue(modelData.key)
-                            font.pixelSize: Theme.fontSizeSmall
-                            font.bold: true
-                        }
-                    }
                 }
             }
             Label {

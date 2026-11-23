@@ -20,6 +20,20 @@
 
 #include <libintl.h>
 
+static QVariantMap supportedPlatforms(const QVariantMap &app)
+{
+    const QVariantMap platforms = app.value("compatibility").toMap();
+    QVariantMap supported;
+    for (auto it = platforms.constBegin(); it != platforms.constEnd(); ++it) {
+        const QVariantMap platform = it.value().toMap();
+        if (platform.value("supported").toBool())
+            supported.insert(it.key(), platform.value("firmware").toMap().value("major", 1));
+    }
+    return supported;
+}
+
+static void setCompanionMetadata(AppItem *item, const QVariant &value);
+
 namespace {
 const QString corePrefix = QStringLiteral("core:");
 
@@ -246,17 +260,9 @@ void AppStoreClient::fetchInstalledListing(AppItem *item, const QString &store, 
             if (openPage) {
                 m_model->insert(parseAppItem(app, source));
             } else if ((update || switchBuild) && !candidateVersion.isEmpty()) {
-                const QVariantMap platforms = app.value("compatibility").toMap();
-                QVariantMap compatibility;
-                for (auto it = platforms.constBegin(); it != platforms.constEnd(); ++it) {
-                    const QVariantMap platform = it.value().toMap();
-                    if (platform.value("supported").toBool())
-                        compatibility.insert(it.key(), platform.value("firmware").toMap().value("major", 1));
-                }
-                installed->setCompatibility(compatibility);
+                installed->setCompatibility(supportedPlatforms(app));
                 installed->setChangeLog(app.value("changelog").toList());
-                const QVariantMap companions = app.value("companions").toMap();
-                installed->setCompanion(!companions.value("android").isNull() || !companions.value("ios").isNull());
+                setCompanionMetadata(installed, app.value("companions"));
                 installed->setUpdateCandidate(candidateId, candidateVersion, switchBuild);
                 const QModelIndex index = model()->index(model()->indexOf(installed));
                 if (index.isValid())
@@ -364,6 +370,8 @@ void AppStoreClient::fetchAppDetails(const QString &appId)
         }
         item->setVendor(replyMap.value("author").toString());
         item->setIsWatchFace(replyMap.value("type").toString() == "watchface");
+        item->setCompatibility(supportedPlatforms(replyMap));
+        setCompanionMetadata(item, replyMap.value("companions"));
     });
 }
 
@@ -427,6 +435,27 @@ void AppStoreClient::search(const QString &searchString, Type type, int page)
     });
 }
 
+static void setCompanionMetadata(AppItem *item, const QVariant &value)
+{
+    if (value.type() == QVariant::String) {
+        // Search results omit required and PebbleKit version. Fetch details before installation.
+        const bool present = value.toString() != QStringLiteral("00") && !value.toString().isEmpty();
+        item->setCompanionRequirement(present, present ? AppItem::UnknownCompanion : AppItem::NoCompanionRequired);
+        return;
+    }
+    const QVariantMap companions = value.toMap();
+    const QVariantMap android = companions.value(QStringLiteral("android")).toMap();
+    const QVariantMap ios = companions.value(QStringLiteral("ios")).toMap();
+    AppItem::CompanionRequirement requirement = AppItem::NoCompanionRequired;
+    if (!android.isEmpty() && android.value(QStringLiteral("required"), true).toBool()) {
+        const QString major = android.value(QStringLiteral("pebblekit_version")).toString().section('.', 0, 0);
+        requirement = major == QStringLiteral("2") ? AppItem::UnsupportedAndroid : AppItem::ClassicAndroid;
+    } else if (android.isEmpty() && !ios.isEmpty() && ios.value(QStringLiteral("required"), true).toBool()) {
+        requirement = AppItem::IosOnly;
+    }
+    item->setCompanionRequirement(!android.isEmpty() || !ios.isEmpty(), requirement);
+}
+
 AppItem* AppStoreClient::parseAppItem(const QVariantMap &map, Source source)
 {
     AppItem *item = new AppItem();
@@ -451,11 +480,8 @@ AppItem* AppStoreClient::parseAppItem(const QVariantMap &map, Source source)
     item->setHearts(map.value("hearts").toInt());
     item->setCategory(map.value("category_name", map.value("category")).toString());
     // The search returns the companions as 00 01 10 11 string instead of a map.
-    if (map.value("companions").type() == QVariant::Type::String) {
-        item->setCompanion(map.value("companions") != "00");
-    } else {
-        item->setCompanion(!map.value("companions").toMap().value("android").isNull() || !map.value("companions").toMap().value("ios").isNull());
-    }
+    item->setCompatibility(supportedPlatforms(map));
+    setCompanionMetadata(item, map.value("companions"));
 
     QVariantList screenshotsList = map.value("screenshot_images").toList();
     // try to get more hardware specific screenshots. The store search keeps them in a subgroup.

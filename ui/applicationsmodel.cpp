@@ -419,6 +419,15 @@ void AppItem::setCompanion(bool companion)
     }
 }
 
+void AppItem::setCompanionRequirement(bool hasCompanion, CompanionRequirement requirement)
+{
+    if (m_companion == hasCompanion && m_companionRequirement == requirement)
+        return;
+    m_companion = hasCompanion;
+    m_companionRequirement = requirement;
+    emit companionChanged();
+}
+
 void AppItem::setCategory(const QString &category)
 {
     m_category = category;

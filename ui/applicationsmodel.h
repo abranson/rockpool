@@ -26,6 +26,7 @@ class AppItem: public QObject
     Q_PROPERTY(bool isSystemApp MEMBER m_isSystemApp CONSTANT)
     Q_PROPERTY(bool hasSettings MEMBER m_hasSettings CONSTANT)
     Q_PROPERTY(bool companion MEMBER m_companion NOTIFY companionChanged)
+    Q_PROPERTY(int companionRequirement READ companionRequirement NOTIFY companionChanged)
 
     Q_PROPERTY(QString groupId READ groupId NOTIFY groupIdChanged)
     Q_PROPERTY(QString groupKind READ groupKind NOTIFY groupKindChanged)
@@ -56,6 +57,9 @@ public:
     bool isSystemApp() const;
     bool hasSettings() const;
     bool companion() const;
+    enum CompanionRequirement { NoCompanionRequired, ClassicAndroid, UnsupportedAndroid, IosOnly, UnknownCompanion };
+    Q_ENUM(CompanionRequirement)
+    int companionRequirement() const { return m_companionRequirement; }
     QString category() const;
     QString collection() const;
 
@@ -83,6 +87,7 @@ public:
     void setIsSystemApp(bool isSystemApp);
     void setHasSettings(bool hasSettings);
     void setCompanion(bool companion);
+    void setCompanionRequirement(bool hasCompanion, CompanionRequirement requirement);
 
     // For grouping in lists, e.g. by collection
     void setGroupId(const QString &groupId, const GroupKind kind = GroupCollection);
@@ -128,6 +133,7 @@ private:
     bool m_isSystemApp = false;
     bool m_hasSettings = false;
     bool m_companion = false;
+    CompanionRequirement m_companionRequirement = NoCompanionRequired;
 
     QHash<GroupKind,QString> m_groupIds;
     GroupKind m_groupKind;

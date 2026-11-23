@@ -152,13 +152,38 @@ jobs:
           github-token: ${{ github.token }}
           run-id: ${{ steps.native-source.outputs.run-id }}
 
+      - uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3
+        with:
+          packages: 'platforms;android-35 build-tools;35.0.0'
+          log-accepted-android-sdk-licenses: false
+
+      - name: Build Droidpool for development
+        if: github.ref_type != 'tag'
+        run: ./droidpool/build-apk.sh
+
+      - name: Sign Droidpool for release
+        if: github.ref_type == 'tag'
+        env:
+          DROIDPOOL_KEYSTORE_BASE64: ${{ secrets.DROIDPOOL_KEYSTORE_BASE64 }}
+          DROIDPOOL_ALIAS: ${{ secrets.DROIDPOOL_ALIAS }}
+          DROIDPOOL_STOREPASS: ${{ secrets.DROIDPOOL_STOREPASS }}
+          DROIDPOOL_KEYPASS: ${{ secrets.DROIDPOOL_KEYPASS }}
+        run: |
+          umask 077
+          export DROIDPOOL_KEYSTORE=$(mktemp "$RUNNER_TEMP/droidpool.XXXXXXXX")
+          trap 'rm -f "$DROIDPOOL_KEYSTORE"' EXIT
+          printf '%s' "${DROIDPOOL_KEYSTORE_BASE64:?Missing Android signing keystore}" | base64 --decode > "$DROIDPOOL_KEYSTORE"
+          unset DROIDPOOL_KEYSTORE_BASE64
+          DROIDPOOL_RELEASE=1 ./droidpool/build-apk.sh
+          chmod 0755 rpm/droidpool
+
       - name: Prepare clean packaging disk and verify inputs
         env:
           NATIVE_SOURCE_SHA: ${{ steps.native-source.outputs.sha }}
         run: |
           test "$RUNNER_ENVIRONMENT" = github-hosted
           df -h /
-          # This job has no Android/JVM work; only the SDK and source are needed.
+          # The verified APK is staged. Only the Sailfish SDK and source are needed.
           sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/local/lib/android
           mkdir -p rpm/native
           tar -xzf ci-artifacts/native-aarch64.tar.gz -C rpm/native

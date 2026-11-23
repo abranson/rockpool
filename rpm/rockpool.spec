@@ -176,6 +176,7 @@ else
     cd %{_builddir}
 fi
 rm -rf %{buildroot}
+install -D -m 0644 rpm/droidpool/Droidpool.apk %{buildroot}%{_datadir}/%{name}/Droidpool.apk
 install -D -m 0755 rpm/native/libpebble3d \
     %{buildroot}%{_libexecdir}/libpebble3d/libpebble3d
 for library in rpm/native/*.so; do
@@ -268,6 +269,7 @@ fi
 %defattr(-,root,root,-)
 %{_bindir}/rockpool
 %{_datadir}/%{name}/qml
+%{_datadir}/%{name}/Droidpool.apk
 %{_datadir}/%{name}/jsm
 %{_datadir}/%{name}/translations
 %{_datadir}/applications/%{name}.desktop

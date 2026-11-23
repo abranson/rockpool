@@ -1,0 +1,4 @@
+plugins { id 'com.android.application' }
+android { namespace 'org.rockpool.droidpool'; compileSdk 35
+ defaultConfig { applicationId 'org.rockpool.droidpool'; minSdk 24; targetSdk 35; versionCode 1; versionName '0.1' }
+}

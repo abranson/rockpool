@@ -5,6 +5,9 @@
 
 package io.rebble.libpebblecommon
 
+import io.rebble.libpebblecommon.rockpool.Droidpool
+import io.rebble.libpebblecommon.permissions.AppPermissions
+import org.koin.dsl.module
 import io.rebble.libpebblecommon.rockpool.SelectedLocker
 import io.rebble.libpebblecommon.ui.RockpoolAppStore
 import co.touchlab.kermit.Logger
@@ -133,6 +136,8 @@ fun main() {
     val timelineWindow = TimelineWindowCoordinator(settings)
     val rfcommSocketFactory = SailfishRfcommSocketFactory()
 
+    val droidpool = Droidpool(settings)
+    lateinit var appPermissions: AppPermissions
     val libPebble = LibPebble3.create(
         // Rockpool's public contract requires concurrent watches.  Its legacy developer API is
         // specifically the unauthenticated local port-9000 server, never the CloudPebble proxy.
@@ -151,6 +156,10 @@ fun main() {
         // Voice dictation via Rebble ASR (subscribers only).
         transcriptionProvider = RebbleTranscriptionProvider(bootConfig),
         platformOverrides = listOf(
+            module {
+                // Both the Android bridge and libpebble3 must use the same permission store.
+                single { AppPermissions(get(), get(), get(), get(), get(), get()).also { appPermissions = it } }
+            },
             platformProviderModule(
                 platformProvider,
                 notificationBackend,
@@ -222,6 +231,7 @@ fun main() {
         },
     )
     libPebble.init()
+    droidpool.start(CoroutineScope(SupervisorJob() + Dispatchers.IO), libPebble, appPermissions)
     // Existing libpebble3 config wins for user preferences except the mandatory multi-watch
     // policy and the compatibility API's fixed local developer transport.  In particular, do
     // not let a mobile-app setting turn legacy SetDevConnEnabled into a cloud connection while
@@ -333,6 +343,7 @@ fun main() {
     val rockpoolUiService = RockpoolUiService(
         storeSelection, webServices,
         coreCredentials,
+        droidpool,
         libPebble,
         bondedWatchImporter,
         bondedWatchForget,

@@ -71,6 +71,15 @@ you can upgrade in place. Cross-store upgrades identify the destination store.
 If both versions are equal, the installed app details offer an explicit build
 switch with confirmation. A store switch alone keeps the installed PBW and its data.
 
+For a classic PebbleKit Android companion, choose **Install Droidpool in AppSupport**
+in the watch's Settings. Turn on **Enable Droidpool** to start the bridge and allow
+AppSupport to start it in the background. Choose **Open Droidpool**, copy the pairing code, then
+paste it in Rockpool and choose **Pair this watch**. Install the Android
+companion separately. Open its watch app and allow **Connect to legacy companion
+apps** if prompted. Turning the switch off stops the bridge and keeps its pairing.
+To remove the helper, open the menu beside **Open Droidpool** and choose
+**Uninstall Droidpool**.
+
 The selected store also supplies the active cloud locker when signed in.
 Locker sync keeps existing installed builds, even if a UUID is missing from
 the selected locker or its saved build comes from another store. In Settings,
@@ -194,6 +203,13 @@ it under `rpm/native/` with a `.build-provenance` manifest. Both output
 directories are generated build inputs, not packages to install on a phone.
 The builder and native dependencies are defined in
 [libpebble3d/Dockerfile](libpebble3d/Dockerfile).
+
+### Build Droidpool
+
+Run `./droidpool/build-apk.sh` with Android SDK platform 35 and build-tools
+35.0.0 installed. It stages the signed APK in `rpm/droidpool/`. Tag builds
+in GitHub Actions use the Droidpool release key. Local release RPMs and source
+archives use the signing environment described in [Droidpool](droidpool/README.md).
 
 ### Build the Sailfish RPM
 

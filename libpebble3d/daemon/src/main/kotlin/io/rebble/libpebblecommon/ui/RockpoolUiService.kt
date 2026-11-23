@@ -39,6 +39,7 @@ import io.rebble.libpebblecommon.linux.weather.OpenMeteoWeatherClient
 import io.rebble.libpebblecommon.locker.AppType
 import io.rebble.libpebblecommon.rockpool.PrivacyQuietTimeCoordinator
 import io.rebble.libpebblecommon.rockpool.QuietTimeSchedules
+import io.rebble.libpebblecommon.rockpool.Droidpool
 import io.rebble.libpebblecommon.rockpool.RockpoolSettings
 import io.rebble.libpebblecommon.rockpool.SendTextConfigurationCoordinator
 import io.rebble.libpebblecommon.util.GeolocationPositionResult
@@ -109,6 +110,7 @@ internal class RockpoolUiService(
     private val appStore: RockpoolAppStore,
     private val selectedLocker: SelectedLocker,
     private val coreCredentials: CoreStoreCredentials,
+    private val droidpool: Droidpool,
     private val libPebble: LibPebble,
     private val importBondedWatches:
         suspend (beginCommit: () -> Boolean) -> BondedWatchImportOutcome,
@@ -325,6 +327,18 @@ internal class RockpoolUiService(
 
         override fun AnswerInstallReview(token: String, decisionsJson: String): Boolean {
             return installReviews.answer(requireRockpoolUi(), token, decisionsJson)
+        }
+
+        override fun GetDroidpoolWatch(): String {
+            requireRockpoolUi()
+            return droidpool.pairedWatch
+        }
+
+        override fun SetDroidpoolPairing(address: String, code: String): Boolean {
+            requireRockpoolUi()
+            if (code.isNotEmpty() && libPebble.watches.value.filterIsInstance<KnownPebbleDevice>()
+                    .none { it.identifier.asString.equals(address, true) }) return false
+            return droidpool.configure(address, code)
         }
 
         override fun GetCoreAccount(): List<String> = coreCredentials.profile()

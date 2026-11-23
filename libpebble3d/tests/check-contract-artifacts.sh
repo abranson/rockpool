@@ -3156,12 +3156,9 @@ require_fixed 'if(cbacc) {' "$installed_apps_page" \
 reject_extended 'if[[:space:]]*\(popup[[:space:]]*&&[[:space:]]*cbacc\)' \
     "$installed_apps_page" 'built-in settings fall-through when no callback exists'
 
-# App-store compatibility is keyed by hardware platform. Keep every model the
-# active UI and backend know about visible on the upgrade page.
-for platform in aplite basalt chalk diorite emery flint gabbro
-do
-    require_fixed "key: \"$platform\"" "$app_upgrade_page" \
-        "$platform app-upgrade compatibility entry"
+# Store compatibility is presented for registered watches in both views.
+for page in "$app_upgrade_page" "$app_store_details_page"; do
+    require_fixed 'WatchCompatibility {' "$page" 'registered-watch compatibility'
 done
 
 # Model refresh can delete the app object before AppUpgrade receives the
@@ -3170,7 +3167,7 @@ require_fixed 'property int app_index: -1' "$app_upgrade_page" \
     'safe app-upgrade index before page parameters arrive'
 require_fixed 'app_model && app_index >= 0 ? app_model.get(app_index) : null' \
     "$app_upgrade_page" 'null-safe app-upgrade model lookup'
-require_fixed 'canInstallCandidate: appInstallationAllowed && app !== null && !app.companion' \
+require_fixed 'canInstallCandidate: appInstallationAllowed && app !== null && !root.companionBlocked' \
     "$app_upgrade_page" 'null-safe install candidate'
 require_fixed 'enabled: root.canInstallCandidate && !installing' \
     "$app_upgrade_page" 'null-safe app-upgrade action'
@@ -3981,13 +3978,13 @@ require_fixed 'enabled: root.appMutationsAllowed' "$installed_apps_page" \
     'application-order commit guard'
 require_fixed 'property bool appInstallationAllowed: appMutationsAllowed && pebble && pebble.connected' \
     "$app_upgrade_page" 'connected-watch application-upgrade gate'
-require_fixed 'canInstallCandidate: appInstallationAllowed && app !== null && !app.companion' \
+require_fixed 'canInstallCandidate: appInstallationAllowed && app !== null && !root.companionBlocked' \
     "$app_upgrade_page" 'null-safe install candidate'
 require_fixed 'enabled: root.canInstallCandidate && !installing' \
     "$app_upgrade_page" 'application-upgrade guard'
 require_fixed 'property bool appInstallationAllowed: appMutationsAllowed && pebble && pebble.connected' \
     "$app_store_details_page" 'connected-watch application-install gate'
-require_fixed 'enabled: root.appInstallationAllowed && !installed && !installing && !root.app.companion' \
+require_fixed 'enabled: root.appInstallationAllowed && !installed && !installing && !root.companionBlocked' \
     "$app_store_details_page" 'application-install guard'
 require_fixed 'property bool appInstallationAllowed: appMutationsAllowed && pebble && pebble.connected' \
     "$import_package_page" 'connected-watch package sideload gate'

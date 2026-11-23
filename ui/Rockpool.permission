@@ -9,6 +9,17 @@ dbus-user.own org.rockpool.UI
 # Read the profile choices shown by Settings.
 dbus-user.call com.nokia.profiled=com.nokia.profiled.get_profiles@/com/nokia/profiled
 
+# Manage Droidpool from Settings using AppSupport’s package and activity APIs.
+dbus-user.call com.jolla.apkd=com.jolla.apkd.launchIntent@/com/jolla/apkd
+dbus-user.call com.jolla.apkd=com.jolla.apkd.getAppSize@/com/jolla/apkd
+dbus-user.call com.jolla.apkd=com.jolla.apkd.queryIntent@/com/jolla/apkd
+dbus-user.call com.jolla.apkd=com.jolla.apkd.getAppStartOnBootup@/com/jolla/apkd
+dbus-user.call com.jolla.apkd=com.jolla.apkd.setAppStartOnBootup@/com/jolla/apkd
+dbus-user.call com.jolla.apkd=com.jolla.apkd.removePackage@/com/jolla/apkd
+dbus-user.broadcast com.jolla.apkd=com.jolla.apkd.removeFileCompleted@/com/jolla/apkd
+dbus-user.broadcast com.jolla.apkd=com.jolla.apkd.installFileCompleted@/com/jolla/apkd
+dbus-user.broadcast com.jolla.apkd=com.jolla.apkd.appStartOnBootupChanged@/com/jolla/apkd
+
 # Android launcher artwork used by the notification application list.
 whitelist ${HOME}/.local/share/apkd-bridge/launcherIcon
 read-only ${HOME}/.local/share/apkd-bridge/launcherIcon

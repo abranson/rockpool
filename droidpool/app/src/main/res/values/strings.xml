@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Droidpool</string>
+    <string name="subtitle">Companion app support for Rockpool</string>
+    <string name="copy_pairing_code">Copy pairing code</string>
+</resources>

@@ -24,3 +24,6 @@ qrc_*.cpp
 *.MD
 !README.MD
 *.markdown
+
+/droidpool/build/
+/rpm/droidpool/

@@ -104,7 +104,10 @@ grep -F -x -- "rockpool_commit=$root_commit" \
 grep -F -x -- "mobileapp_commit=$mobileapp_commit" \
     "$temporary_dir/$archive_prefix/rpm/native/.build-provenance" >/dev/null || \
     fail "archived Native Image input does not match mobileapp HEAD"
-tar -C "$temporary_dir" --sort=name --owner=0 --group=0 --numeric-owner \
+# Build from the captured Android source so the APK and RPM cannot drift.
+DROIDPOOL_RELEASE=1 "$temporary_dir/$archive_prefix/droidpool/build-apk.sh" >&2 || \
+    fail "could not build and sign Droidpool from the release source"
+tar -C "$temporary_dir" --exclude="$archive_prefix/droidpool/build" --sort=name --owner=0 --group=0 --numeric-owner \
     --mode='u+rwX,go+rX,go-w' --mtime="@$source_date_epoch" \
     -cJf "$temporary_archive" -- "$archive_prefix" || \
     fail "cannot compress source archive"

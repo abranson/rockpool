@@ -9,7 +9,7 @@ trap 'rm -rf "$workdir"' EXIT
 
 # No Git metadata or JVM checkout is needed for packaging. Keep rpm/native intact.
 tar -C /source --exclude=./.git --exclude=./ci-artifacts --exclude=./RPMS \
-    --exclude=./.mb2 -cf - . | tar -C "$workdir" -xf -
+    --exclude=./droidpool/build --exclude=./.mb2 -cf - . | tar -C "$workdir" -xf -
 cd "$workdir"
 sh rpm/verify-native-artifacts.sh rpm/native committed
 
@@ -24,6 +24,11 @@ if ((${#rpms[@]} == 0)); then
     echo 'error: SDK did not produce an RPM' >&2
     exit 1
 fi
+for package in "${rpms[@]}"; do
+    if [[ $(rpm -qp --qf '%{NAME}' "$package") == rockpool ]]; then
+        rpm2cpio "$package" | cpio --quiet -i --to-stdout './usr/share/rockpool/Droidpool.apk' | cmp - rpm/droidpool/Droidpool.apk
+    fi
+done
 cp "${rpms[@]}" /output/rpms/
 rpm -qp --qf '%{NAME} %{VERSION}-%{RELEASE} %{ARCH}\n' "${rpms[@]}" \
     > /output/rpm-metadata.log

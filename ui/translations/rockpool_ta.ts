@@ -266,7 +266,7 @@
 <context>
     <name>AppStoreClient</name>
     <message>
-        <location filename="../appstoreclient.cpp" line="572"/>
+        <location filename="../appstoreclient.cpp" line="598"/>
         <source>Could not load or update the vote. Tap to retry.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -274,54 +274,78 @@
 <context>
     <name>AppStoreDetailsPage</name>
     <message>
-        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="214"/>
+        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="238"/>
         <source>Sign in to %1 in Settings to vote.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="310"/>
+        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="334"/>
         <source>Description</source>
         <translation>விவரம்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="333"/>
+        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="357"/>
         <source>Developer</source>
         <translation>உருவாக்குநர்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="338"/>
+        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="362"/>
         <source>Version</source>
         <translation>பதிப்பு</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="66"/>
+        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="77"/>
         <source>Install</source>
         <translation>நிறுவவும்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="64"/>
+        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="18"/>
+        <source>Needs Android AppSupport</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="19"/>
+        <source>Needs PebbleKit 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="20"/>
+        <source>Needs an iOS companion</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="21"/>
+        <source>Companion details unavailable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="75"/>
         <source>Installing...</source>
         <translation>நிறுவுதல் ...</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="122"/>
+        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="138"/>
         <source>App changes are available only when exactly one watch is paired.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="132"/>
+        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="148"/>
+        <source>Install the Android companion app in AppSupport and pair Droidpool in Rockpool Settings.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="156"/>
         <source>Connect the watch to install apps.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="66"/>
+        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="77"/>
         <source>Installed</source>
         <translation>நிறுவப்பட்டது</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppStoreDetailsPage.qml" line="65"/>
         <source>Needs Companion</source>
-        <translation>தோழர் தேவை</translation>
+        <translation type="vanished">தோழர் தேவை</translation>
     </message>
 </context>
 <context>
@@ -385,23 +409,23 @@
 <context>
     <name>AppUpgradePage</name>
     <message>
-        <location filename="../qml/pages/AppUpgradePage.qml" line="207"/>
-        <location filename="../qml/pages/AppUpgradePage.qml" line="208"/>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="202"/>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="203"/>
         <source>Upgrading</source>
         <translation>மேம்படுத்துகிறது</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppUpgradePage.qml" line="253"/>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="261"/>
         <source>Version</source>
         <translation>பதிப்பு</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppUpgradePage.qml" line="42"/>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="53"/>
         <source>Upgrade</source>
         <translation>மேம்படுத்தல்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppUpgradePage.qml" line="311"/>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="319"/>
         <source>Upgrading...</source>
         <translation>மேம்படுத்தல் ...</translation>
     </message>
@@ -416,57 +440,80 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppUpgradePage.qml" line="313"/>
         <source>Needs Companion</source>
-        <translation>தோழர் தேவை</translation>
+        <translation type="vanished">தோழர் தேவை</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppUpgradePage.qml" line="334"/>
         <source>Compatibility</source>
-        <translation>பொருந்தக்கூடிய தன்மை</translation>
+        <translation type="vanished">பொருந்தக்கூடிய தன்மை</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppUpgradePage.qml" line="397"/>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="342"/>
         <source>Change Log</source>
         <translation>பதிவை மாற்றவும்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppUpgradePage.qml" line="39"/>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="50"/>
         <source>Switch build to %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppUpgradePage.qml" line="41"/>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="22"/>
+        <source>Needs Android AppSupport</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="23"/>
+        <source>Needs PebbleKit 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="24"/>
+        <source>Needs an iOS companion</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="25"/>
+        <source>Companion details unavailable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="52"/>
         <source>Upgrade from %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppUpgradePage.qml" line="85"/>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="96"/>
         <source>Switch build</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppUpgradePage.qml" line="90"/>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="101"/>
         <source>Install the %1 build of version %2?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppUpgradePage.qml" line="152"/>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="163"/>
         <source>Could not install the selected build.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppUpgradePage.qml" line="284"/>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="235"/>
+        <source>Install the Android companion app in AppSupport and pair Droidpool in Rockpool Settings.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="292"/>
         <source>Linked to %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppUpgradePage.qml" line="290"/>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="298"/>
         <source>Selected build from %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/AppUpgradePage.qml" line="311"/>
+        <location filename="../qml/pages/AppUpgradePage.qml" line="319"/>
         <source>Switching build…</source>
         <translation type="unfinished"></translation>
     </message>
@@ -736,6 +783,100 @@
         <location filename="../qml/pages/DeveloperToolsPage.qml" line="281"/>
         <source>Cancel</source>
         <translation>ரத்துசெய்</translation>
+    </message>
+</context>
+<context>
+    <name>DroidpoolControls</name>
+    <message>
+        <location filename="../qml/pages/DroidpoolControls.qml" line="37"/>
+        <source>Could not read the AppSupport background setting.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DroidpoolControls.qml" line="41"/>
+        <source>Could not check whether Droidpool is installed.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DroidpoolControls.qml" line="55"/>
+        <source>Could not change the Droidpool setting.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DroidpoolControls.qml" line="62"/>
+        <source>Install the bundled Droidpool update to use this switch.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DroidpoolControls.qml" line="99"/>
+        <source>Droidpool was not uninstalled.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DroidpoolControls.qml" line="115"/>
+        <source>Android companion apps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DroidpoolControls.qml" line="160"/>
+        <source>Paired with this watch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DroidpoolControls.qml" line="174"/>
+        <source>Droidpool options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DroidpoolControls.qml" line="180"/>
+        <source>Install Droidpool update</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DroidpoolControls.qml" line="121"/>
+        <source>Install Droidpool in AppSupport</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DroidpoolControls.qml" line="130"/>
+        <source>Enable Droidpool</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DroidpoolControls.qml" line="131"/>
+        <source>Run the companion bridge now and when AppSupport starts.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DroidpoolControls.qml" line="153"/>
+        <source>Open Droidpool</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DroidpoolControls.qml" line="143"/>
+        <source>Could not open Droidpool.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DroidpoolControls.qml" line="186"/>
+        <source>Forget Droidpool pairing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DroidpoolControls.qml" line="190"/>
+        <location filename="../qml/pages/DroidpoolControls.qml" line="202"/>
+        <source>Uninstall Droidpool</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DroidpoolControls.qml" line="207"/>
+        <source>Removing Droidpool deletes its pairing code. You will need to pair again if you reinstall it.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/DroidpoolControls.qml" line="218"/>
+        <source>Could not uninstall Droidpool.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2196,37 +2337,37 @@
 <context>
     <name>SettingsPage</name>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="171"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="275"/>
         <source>Appstore</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="172"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="276"/>
         <source>Browse and check for updates in this store.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="166"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="190"/>
         <source>Settings</source>
         <translation>அமைப்புகள்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="295"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="194"/>
         <source>General</source>
         <translation>பொது</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="299"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="198"/>
         <source>Distance Units</source>
         <translation>தூர அலகுகள்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="303"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="202"/>
         <source>Metric</source>
         <translation>மெட்ரிக்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="307"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="206"/>
         <source>Imperial</source>
         <translation>ஏகாதிபத்திய</translation>
     </message>
@@ -2235,22 +2376,22 @@
         <translation type="vanished">மொழி</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="371"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="440"/>
         <source>Timeline</source>
         <translation>காலவரிசை</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="376"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="445"/>
         <source>Sync calendar to timeline</source>
         <translation>காலெண்டரை காலவரிசைக்கு ஒத்திசைக்கவும்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="270"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="371"/>
         <source>Sync Apps from Cloud</source>
         <translation>மேகத்திலிருந்து பயன்பாடுகளை ஒத்திசைக்கவும்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="147"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="171"/>
         <source>Reset Timeline</source>
         <translation>காலவரிசையை மீட்டமைக்கவும்</translation>
     </message>
@@ -2275,102 +2416,122 @@
         <translation type="vanished">செயலில் காலவரிசை வெப்சின்க் கணக்கு</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="205"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="305"/>
         <source>Logout</source>
         <translation>வெளியேற்றம்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="152"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="176"/>
         <source>Login</source>
         <translation>புகுபதிவு</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="113"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="102"/>
+        <source>Could not save Droidpool pairing.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="135"/>
         <source>Changing watch language to %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="188"/>
-        <source>Core Devices account</source>
+        <location filename="../qml/pages/SettingsPage.qml" line="415"/>
+        <source>Droidpool pairing code</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="228"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="418"/>
+        <source>Pairing here moves Droidpool to this watch.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="425"/>
+        <source>Pair this watch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="329"/>
         <source>Signed in</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="230"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="331"/>
         <source>Finish signing in in your browser.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="264"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="365"/>
         <source>Cancel sign-in</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="324"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="223"/>
         <source>Low battery warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="330"/>
-        <location filename="../qml/pages/SettingsPage.qml" line="338"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="229"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="237"/>
         <source>Off</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="330"/>
-        <location filename="../qml/pages/SettingsPage.qml" line="338"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="229"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="237"/>
         <source>%1%</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="355"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="254"/>
         <source>Quiet Time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="396"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="465"/>
         <source>Timeline window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="188"/>
-        <source>Rebble account</source>
+        <location filename="../qml/pages/SettingsPage.qml" line="419"/>
+        <source>Open Droidpool, copy its pairing code and paste it here.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="231"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="270"/>
+        <source>Store and Account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="331"/>
         <source>Not signed in</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="412"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="481"/>
         <source>Automatic Profile</source>
         <translation>தானியங்கி சுயவிவரம்</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="416"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="485"/>
         <source>Connected</source>
         <translation>இணைக்கப்பட்டுள்ளது</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="420"/>
-        <location filename="../qml/pages/SettingsPage.qml" line="433"/>
-        <location filename="../qml/pages/SettingsPage.qml" line="441"/>
-        <location filename="../qml/pages/SettingsPage.qml" line="454"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="489"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="502"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="510"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="523"/>
         <source>no change</source>
         <translation>எந்த மாற்றமும் இல்லை</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="437"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="506"/>
         <source>Disconnected</source>
         <translation>துண்டிக்கப்பட்டது</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="457"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="526"/>
         <source>Canned Messages</source>
         <translation>பதிவு செய்யப்பட்ட செய்திகள்</translation>
     </message>
@@ -2390,22 +2551,27 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="281"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="332"/>
+        <source>Account: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="382"/>
         <source>Adding apps…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="281"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="382"/>
         <source>Checking locker…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="282"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="383"/>
         <source>Add to %1 (%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="283"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="384"/>
         <source>Check for missing apps</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2440,6 +2606,29 @@
     <message>
         <location filename="../qml/pages/TimelineSettingsDialog.qml" line="101"/>
         <source>Re-delivery expiration (seconds)</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>WatchCompatibility</name>
+    <message>
+        <location filename="../qml/pages/WatchCompatibility.qml" line="15"/>
+        <source>Compatibility unknown</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WatchCompatibility.qml" line="26"/>
+        <source>Requires firmware %1 or later</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WatchCompatibility.qml" line="27"/>
+        <source>Compatible</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/WatchCompatibility.qml" line="29"/>
+        <source>Incompatible</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

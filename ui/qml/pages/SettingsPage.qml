@@ -88,6 +88,28 @@ Page {
     property var notificationsMap: pebble ? pebble.notificationsFilter:{}
     property var lowBatteryOptions: [0, 5, 10, 15, 20, 25, 30, 40, 50]
 
+    property string droidpoolWatch
+    property string pairingError
+    property bool savingPairing
+
+    function writePairing(code) {
+        if (savingPairing || !pebble) return
+        savingPairing = true
+        pairingError = ""
+        var address = pebble.address
+        function failed() {
+            savingPairing = false
+            pairingError = qsTr("Could not save Droidpool pairing.")
+        }
+        if (!lockerManager.typedCall("SetDroidpoolPairing",
+                [{type: "s", value: address}, {type: "s", value: code}], function(saved) {
+            if (!saved) { failed(); return }
+            savingPairing = false
+            droidpoolWatch = code.length ? address : ""
+            pairingCode.text = ""
+        }, failed)) failed()
+    }
+
     property var pendingLanguage
 
     function signIn() {
@@ -132,6 +154,8 @@ Page {
     }
 
     Component.onCompleted: {
+        if (appSupportInstalled)
+            lockerManager.typedCall("GetDroidpoolWatch", [], function(address) { root.droidpoolWatch = address })
         if (root.pebble) {
             root.pebble.refreshSettingsPage()
             root.pebble.refreshCannedResponses()
@@ -164,131 +188,6 @@ Page {
 
             PageHeader {
                 title: qsTr("Settings")
-            }
-
-            ComboBox {
-                width: parent.width
-                label: qsTr("Appstore")
-                description: qsTr("Browse and check for updates in this store.")
-                enabled: rockPool.preferredAppstore.length > 0 && !rockPool.savingAppstore
-                currentIndex: rockPool.preferredAppstore === "core" ? 1 : (rockPool.preferredAppstore === "rebble" ? 0 : -1)
-                menu: ContextMenu {
-                    MenuItem {
-                        text: "Rebble"
-                        onClicked: rockPool.preferredAppstore = "rebble"
-                    }
-                    MenuItem {
-                        text: "Core Devices"
-                        onClicked: rockPool.preferredAppstore = "core"
-                    }
-                }
-            }
-            SectionHeader {
-                visible: root.accountReady
-                text: root.coreSelected ? qsTr("Core Devices account") : qsTr("Rebble account")
-            }
-            ListItem {
-                id: accountItem
-
-                width: parent.width
-                contentHeight: accountDetails.height + 2 * Theme.paddingMedium
-                visible: root.accountReady
-                enabled: root.accountReady && !root.accountPending
-                onClicked: {
-                    if (root.accountAuthenticated)
-                        showMenu()
-                    else
-                        root.signIn()
-                }
-                menu: ContextMenu {
-                    MenuItem {
-                        text: qsTr("Logout")
-                        visible: root.accountAuthenticated && root.accountReady
-                        onClicked: {
-                            if (root.coreSelected)
-                                rockPool.coreAccount.logout()
-                            else if (root.pebble)
-                                root.pebble.setOAuthToken("")
-                        }
-                    }
-                }
-
-                Column {
-                    id: accountDetails
-
-                    x: Theme.horizontalPageMargin
-                    width: parent.width - 2 * x
-                    y: Theme.paddingMedium
-                    spacing: Theme.paddingSmall
-
-                    Label {
-                        width: parent.width
-                        wrapMode: Text.Wrap
-                        textFormat: Text.PlainText
-                        text: root.accountAuthenticated ? (root.accountName || root.accountEmail || qsTr("Signed in"))
-                                                        : (root.coreSelected && root.accountPending
-                                                           ? qsTr("Finish signing in in your browser.")
-                                                           : qsTr("Not signed in"))
-                        color: accountItem.highlighted ? Theme.highlightColor : Theme.primaryColor
-                    }
-                    Label {
-                        width: parent.width
-                        visible: root.accountAuthenticated && root.accountName.length > 0
-                                 && root.accountEmail.length > 0 && root.accountEmail !== root.accountName
-                        textFormat: Text.PlainText
-                        text: root.accountEmail
-                        color: accountItem.highlighted ? Theme.secondaryHighlightColor : Theme.secondaryColor
-                        font.pixelSize: Theme.fontSizeSmall
-                        wrapMode: Text.Wrap
-                    }
-                }
-            }
-            BusyIndicator {
-                anchors.horizontalCenter: parent.horizontalCenter
-                running: root.accountReady && root.accountPending
-                size: BusyIndicatorSize.Small
-                visible: running
-            }
-            Label {
-                x: Theme.horizontalPageMargin
-                width: parent.width - 2 * x
-                visible: root.accountReady && root.accountError.length > 0
-                text: root.accountError
-                color: Theme.errorColor
-                wrapMode: Text.Wrap
-            }
-
-            Button {
-                anchors.horizontalCenter: parent.horizontalCenter
-                visible: root.coreSelected && rockPool.coreAccount.busy
-                text: qsTr("Cancel sign-in")
-                onClicked: rockPool.coreAccount.cancelLogin()
-            }
-
-            TextSwitch {
-                width: parent.width
-                text: qsTr("Sync Apps from Cloud")
-                enabled: root.settingsReady
-                automaticCheck: false
-                checked: root.pebble ? root.pebble.syncAppsFromCloud : false
-                onClicked: root.pebble.syncAppsFromCloud =
-                           !root.pebble.syncAppsFromCloud
-            }
-            Button {
-                anchors.horizontalCenter: parent.horizontalCenter
-                visible: root.accountReady && root.accountAuthenticated && rockPool.knownPebbleCount === 1
-                enabled: !root.accountPending && !root.lockerBusy
-                text: root.lockerBusy ? (root.lockerPreview.length ? qsTr("Adding apps…") : qsTr("Checking locker…"))
-                                      : root.lockerPreview.length ? qsTr("Add to %1 (%2)").arg(root.coreSelected ? "Core Devices" : "Rebble").arg(root.lockerCount)
-                                                                  : qsTr("Check for missing apps")
-                onClicked: root.checkOrCopyLocker()
-            }
-            Label {
-                x: Theme.horizontalPageMargin
-                width: parent.width - 2 * x
-                visible: root.lockerMessage.length > 0
-                text: root.lockerMessage
-                wrapMode: Text.Wrap
             }
 
             SectionHeader {
@@ -365,6 +264,176 @@ Page {
                     source: "image://theme/icon-m-right"
                     highlighted: quietTimeItem.highlighted
                 }
+            }
+
+            SectionHeader {
+                text: qsTr("Store and Account")
+            }
+
+            ComboBox {
+                width: parent.width
+                label: qsTr("Appstore")
+                description: qsTr("Browse and check for updates in this store.")
+                enabled: rockPool.preferredAppstore.length > 0 && !rockPool.savingAppstore
+                currentIndex: rockPool.preferredAppstore === "core" ? 1 : (rockPool.preferredAppstore === "rebble" ? 0 : -1)
+                menu: ContextMenu {
+                    MenuItem {
+                        text: "Rebble"
+                        onClicked: rockPool.preferredAppstore = "rebble"
+                    }
+                    MenuItem {
+                        text: "Core Devices"
+                        onClicked: rockPool.preferredAppstore = "core"
+                    }
+                }
+            }
+            ListItem {
+                id: accountItem
+
+                width: parent.width
+                contentHeight: accountDetails.height + 2 * Theme.paddingMedium
+                visible: root.accountReady
+                enabled: root.accountReady && !root.accountPending
+                onClicked: {
+                    if (root.accountAuthenticated)
+                        showMenu()
+                    else
+                        root.signIn()
+                }
+                menu: ContextMenu {
+                    MenuItem {
+                        text: qsTr("Logout")
+                        visible: root.accountAuthenticated && root.accountReady
+                        onClicked: {
+                            if (root.coreSelected)
+                                rockPool.coreAccount.logout()
+                            else if (root.pebble)
+                                root.pebble.setOAuthToken("")
+                        }
+                    }
+                }
+
+                Column {
+                    id: accountDetails
+
+                    x: Theme.horizontalPageMargin
+                    width: parent.width - 2 * x
+                    y: Theme.paddingMedium
+                    spacing: Theme.paddingSmall
+
+                    Label {
+                        width: parent.width
+                        wrapMode: Text.Wrap
+                        textFormat: Text.PlainText
+                        property string accountValue: root.accountAuthenticated
+                                ? (root.accountName || root.accountEmail || qsTr("Signed in"))
+                                : (root.coreSelected && root.accountPending
+                                   ? qsTr("Finish signing in in your browser.") : qsTr("Not signed in"))
+                        text: qsTr("Account: %1").arg(accountValue)
+                        color: accountItem.highlighted ? Theme.highlightColor : Theme.primaryColor
+                    }
+                    Label {
+                        width: parent.width
+                        visible: root.accountAuthenticated && root.accountName.length > 0
+                                 && root.accountEmail.length > 0 && root.accountEmail !== root.accountName
+                        textFormat: Text.PlainText
+                        text: root.accountEmail
+                        color: accountItem.highlighted ? Theme.secondaryHighlightColor : Theme.secondaryColor
+                        font.pixelSize: Theme.fontSizeSmall
+                        wrapMode: Text.Wrap
+                    }
+                }
+            }
+            BusyIndicator {
+                anchors.horizontalCenter: parent.horizontalCenter
+                running: root.accountReady && root.accountPending
+                size: BusyIndicatorSize.Small
+                visible: running
+            }
+            Label {
+                x: Theme.horizontalPageMargin
+                width: parent.width - 2 * x
+                visible: root.accountReady && root.accountError.length > 0
+                text: root.accountError
+                color: Theme.errorColor
+                wrapMode: Text.Wrap
+            }
+
+            Button {
+                anchors.horizontalCenter: parent.horizontalCenter
+                visible: root.coreSelected && rockPool.coreAccount.busy
+                text: qsTr("Cancel sign-in")
+                onClicked: rockPool.coreAccount.cancelLogin()
+            }
+
+            TextSwitch {
+                width: parent.width
+                text: qsTr("Sync Apps from Cloud")
+                enabled: root.settingsReady
+                automaticCheck: false
+                checked: root.pebble ? root.pebble.syncAppsFromCloud : false
+                onClicked: root.pebble.syncAppsFromCloud =
+                           !root.pebble.syncAppsFromCloud
+            }
+            Button {
+                anchors.horizontalCenter: parent.horizontalCenter
+                visible: root.accountReady && root.accountAuthenticated && rockPool.knownPebbleCount === 1
+                enabled: !root.accountPending && !root.lockerBusy
+                text: root.lockerBusy ? (root.lockerPreview.length ? qsTr("Adding apps…") : qsTr("Checking locker…"))
+                                      : root.lockerPreview.length ? qsTr("Add to %1 (%2)").arg(root.coreSelected ? "Core Devices" : "Rebble").arg(root.lockerCount)
+                                                                  : qsTr("Check for missing apps")
+                onClicked: root.checkOrCopyLocker()
+            }
+            Label {
+                x: Theme.horizontalPageMargin
+                width: parent.width - 2 * x
+                visible: root.lockerMessage.length > 0
+                text: root.lockerMessage
+                wrapMode: Text.Wrap
+            }
+
+            DroidpoolControls {
+                id: droidpool
+                width: parent.width
+                visible: appSupportInstalled
+                active: appSupportInstalled && root.status === PageStatus.Active && Qt.application.active
+                paired: !!root.pebble && root.droidpoolWatch === root.pebble.address
+                savingPairing: root.savingPairing
+                onForgetPairing: root.writePairing("")
+                onUninstalled: {
+                    if (root.droidpoolWatch.length)
+                        root.writePairing("")
+                }
+            }
+
+            TextField {
+                id: pairingCode
+
+                width: parent.width
+                visible: droidpool.installed && root.pebble && root.droidpoolWatch !== root.pebble.address
+                echoMode: TextInput.Password
+                label: qsTr("Droidpool pairing code")
+                placeholderText: label
+                description: root.droidpoolWatch.length
+                             ? qsTr("Pairing here moves Droidpool to this watch.")
+                             : qsTr("Open Droidpool, copy its pairing code and paste it here.")
+            }
+
+            Button {
+                anchors.horizontalCenter: parent.horizontalCenter
+                visible: droidpool.installed && !!root.pebble && !droidpool.paired
+                text: qsTr("Pair this watch")
+                enabled: !root.savingPairing && /^[A-Za-z0-9_-]{43}$/.test(pairingCode.text.trim())
+                onClicked: root.writePairing(pairingCode.text.trim())
+            }
+
+            Label {
+                x: Theme.horizontalPageMargin
+                width: parent.width - 2 * x
+                visible: root.pairingError.length > 0
+                text: root.pairingError
+                wrapMode: Text.Wrap
+                color: Theme.errorColor
             }
 
             SectionHeader {
