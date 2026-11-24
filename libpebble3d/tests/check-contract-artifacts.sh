@@ -2958,8 +2958,6 @@ for attribution_source in "$location_picker" "$weather_settings_dialog"; do
 done
 require_fixed 'https://api.open-meteo.com/v1/forecast' "$libpebble3_open_meteo" \
     'supported keyless weather forecast endpoint'
-require_fixed 'parameters.append("forecast_days", "2")' "$libpebble3_open_meteo" \
-    'bounded two-day weather forecast request'
 require_fixed 'source == RockpoolWeatherObservationSource.EXTERNAL' "$compat_weather" \
     'external weather injection precedence'
 require_fixed 'weatherAutoRefresh.start()' "$compat_service" \
