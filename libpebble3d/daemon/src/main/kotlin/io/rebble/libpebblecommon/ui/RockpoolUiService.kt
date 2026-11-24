@@ -36,6 +36,7 @@ import io.rebble.libpebblecommon.connection.PebbleBtClassicIdentifier
 import io.rebble.libpebblecommon.connection.PebbleDevice
 import io.rebble.libpebblecommon.database.dao.AppWithCount
 import io.rebble.libpebblecommon.linux.weather.OpenMeteoWeatherClient
+import io.rebble.libpebblecommon.linux.weather.OpenMeteoWeatherPins
 import io.rebble.libpebblecommon.locker.AppType
 import io.rebble.libpebblecommon.rockpool.PrivacyQuietTimeCoordinator
 import io.rebble.libpebblecommon.rockpool.QuietTimeSchedules
@@ -62,6 +63,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
@@ -69,6 +71,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.retryWhen
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
@@ -79,6 +83,8 @@ import org.freedesktop.dbus.messages.DBusSignal
 import org.freedesktop.dbus.types.Variant
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.time.Duration.Companion.seconds
+
+private const val WEATHER_PINS_ENABLED = "timeline.weatherPinsEnabled"
 
 internal data class RockpoolFirmwareStatus(
     val available: Boolean,
@@ -142,6 +148,7 @@ internal class RockpoolUiService(
         { address -> emitSignal(RockpoolPebble.BatteryPercentageChanged("$PATH_PREFIX${address.replace(":", "_")}")) },
         { address -> dismissLowWatchBattery(settings, address) },
     )
+    private val weatherPinsEnabled = MutableStateFlow(settings.getBool(WEATHER_PINS_ENABLED, true))
     private val weatherCoordinator = RockpoolWeatherCoordinator(settings, libPebble)
     private val firmwareNotification = RockpoolFirmwareNotification(settings)
     // libpebble3 keeps health history per account, not per watch. Every exported legacy Pebble
@@ -153,11 +160,12 @@ internal class RockpoolUiService(
         scope = scope,
         coordinator = weatherCoordinator,
         units = { if (healthSettings.currentSuspend().imperialUnits) "e" else "m" },
-        fetch = { _, coordinates, units ->
+        fetch = { target, coordinates, units ->
             weatherClient.fetch(
                 latitude = coordinates.latitude,
                 longitude = coordinates.longitude,
                 imperial = units == "e",
+                includePinDays = target.key == CURRENT_LOCATION_UUID,
             )?.toRockpoolWeatherObservation()
         },
         resolveCurrentLocation = {
@@ -327,6 +335,18 @@ internal class RockpoolUiService(
 
         override fun AnswerInstallReview(token: String, decisionsJson: String): Boolean {
             return installReviews.answer(requireRockpoolUi(), token, decisionsJson)
+        }
+
+        override fun GetWeatherPinsEnabled(): Boolean = weatherPinsEnabled.value
+
+        @Synchronized
+        override fun SetWeatherPinsEnabled(enabled: Boolean): Boolean {
+            requireRockpoolUi()
+            if (weatherPinsEnabled.value == enabled) return true
+            if (!settings.setChecked(WEATHER_PINS_ENABLED, enabled.toString())) return false
+            weatherPinsEnabled.value = enabled
+            if (enabled) weatherAutoRefresh.trigger()
+            return true
         }
 
         override fun GetDroidpoolWatch(): String {
@@ -639,6 +659,24 @@ internal class RockpoolUiService(
             }
         }
         watchScanning()
+        scope.launch {
+            val pins = OpenMeteoWeatherPins()
+            combine(weatherCoordinator.primaryLocation, weatherPinsEnabled) { primary, enabled ->
+                primary.takeIf { enabled }
+            }.distinctUntilChanged().onEach { primary ->
+                val observation = primary?.observation
+                pins.replace(
+                    primary?.name.orEmpty(),
+                    observation?.timestampEpochSeconds ?: 0,
+                    observation?.pinDays.orEmpty(),
+                )
+            }.retryWhen { cause, _ ->
+                if (cause !is Exception || cause is CancellationException) return@retryWhen false
+                logger.w(cause) { "Could not update weather timeline pins" }
+                delay(30.seconds)
+                true
+            }.collect {}
+        }
         weatherAutoRefresh.start()
     }
 

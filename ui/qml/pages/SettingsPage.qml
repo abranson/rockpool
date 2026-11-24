@@ -110,6 +110,45 @@ Page {
         }, failed)) failed()
     }
 
+    property var weatherPinsEnabled
+    property bool weatherPinsBusy
+    property string weatherPinsError
+
+    function loadWeatherPins() {
+        if (weatherPinsBusy)
+            return
+        weatherPinsBusy = true
+        function failed() {
+            weatherPinsEnabled = undefined
+            weatherPinsBusy = false
+            if (!weatherPinsError.length)
+                weatherPinsError = qsTr("Could not read the weather pin setting.")
+        }
+        if (!lockerManager.typedCall("GetWeatherPinsEnabled", [], function(enabled) {
+            if (typeof enabled !== "boolean") { failed(); return }
+            weatherPinsEnabled = enabled
+            weatherPinsBusy = false
+        }, failed)) failed()
+    }
+
+    function toggleWeatherPins() {
+        if (weatherPinsBusy || weatherPinsEnabled === undefined)
+            return
+        var enabled = !weatherPinsEnabled
+        weatherPinsBusy = true
+        weatherPinsError = ""
+        function failed() {
+            weatherPinsBusy = false
+            weatherPinsError = qsTr("Could not change the weather pin setting.")
+            loadWeatherPins()
+        }
+        if (!lockerManager.typedCall("SetWeatherPinsEnabled", [{type: "b", value: enabled}], function(saved) {
+            if (saved !== true) { failed(); return }
+            weatherPinsEnabled = enabled
+            weatherPinsBusy = false
+        }, failed)) failed()
+    }
+
     property var pendingLanguage
 
     function signIn() {
@@ -140,7 +179,13 @@ Page {
         })
     }
 
-    onStatusChanged: if (status === PageStatus.Active) showLanguageRemorse()
+    onStatusChanged: {
+        if (status === PageStatus.Active) {
+            weatherPinsError = ""
+            loadWeatherPins()
+            showLanguageRemorse()
+        }
+    }
 
     RemorsePopup {
         id: languageRemorse
@@ -448,6 +493,15 @@ Page {
                 checked: root.pebble ? root.pebble.calendarSyncEnabled : false
                 onClicked: root.pebble.calendarSyncEnabled =
                            !root.pebble.calendarSyncEnabled
+            }
+            TextSwitch {
+                width: parent.width
+                text: qsTr("Show sunrise and sunset pins")
+                description: root.weatherPinsError
+                enabled: !root.weatherPinsBusy && root.weatherPinsEnabled !== undefined
+                automaticCheck: false
+                checked: root.weatherPinsEnabled === true
+                onClicked: root.toggleWeatherPins()
             }
             BackgroundItem {
                 id: timelineWindowItem

@@ -101,6 +101,7 @@ internal fun OpenMeteoForecast.toRockpoolWeatherObservation() = RockpoolWeatherO
     tomorrowLow = tomorrowLow,
     tomorrowIcon = tomorrowIcon,
     source = RockpoolWeatherObservationSource.AUTOMATIC,
+    pinDays = pinDays,
 )
 
 private val DEFAULT_REFRESH_INTERVAL = 30.minutes

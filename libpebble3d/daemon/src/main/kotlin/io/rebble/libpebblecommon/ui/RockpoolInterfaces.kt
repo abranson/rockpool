@@ -16,6 +16,8 @@ interface RockpoolManager : DBusInterface {
     fun GrantAppFolder(uuid: String, path: String, writable: Boolean): Boolean
     fun RevokeAppFolder(uuid: String, scope: String): Boolean
     fun AnswerInstallReview(token: String, decisionsJson: String): Boolean
+    fun GetWeatherPinsEnabled(): Boolean
+    fun SetWeatherPinsEnabled(enabled: Boolean): Boolean
     fun GetDroidpoolWatch(): String
     fun SetDroidpoolPairing(address: String, code: String): Boolean
     fun GetCoreAccount(): List<String>

@@ -2369,37 +2369,37 @@
 <context>
     <name>SettingsPage</name>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="275"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="320"/>
         <source>Appstore</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="276"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="321"/>
         <source>Browse and check for updates in this store.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="190"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="235"/>
         <source>Settings</source>
         <translation>Inställningar</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="194"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="239"/>
         <source>General</source>
         <translation>Allmänt</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="198"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="243"/>
         <source>Distance Units</source>
         <translation>Avståndsenheter</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="202"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="247"/>
         <source>Metric</source>
         <translation>Meter</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="206"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="251"/>
         <source>Imperial</source>
         <translation>Imperial</translation>
     </message>
@@ -2408,22 +2408,22 @@
         <translation type="vanished">Språk</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="440"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="485"/>
         <source>Timeline</source>
         <translation>Tidslinje</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="445"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="490"/>
         <source>Sync calendar to timeline</source>
         <translation>Synkronisera kalender med tidslinje</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="371"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="416"/>
         <source>Sync Apps from Cloud</source>
         <translation>Synkronisera appar från molnet</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="171"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="216"/>
         <source>Reset Timeline</source>
         <translation>Återställ tidslinjen</translation>
     </message>
@@ -2448,12 +2448,12 @@
         <translation type="vanished">WebSync-konto för aktiv tidslinje</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="305"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="350"/>
         <source>Logout</source>
         <translation>Logga ut</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="176"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="221"/>
         <source>Login</source>
         <translation>Logga in</translation>
     </message>
@@ -2463,64 +2463,64 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="135"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="174"/>
         <source>Changing watch language to %1</source>
         <translation>Ändrar klockspråket till %1</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="415"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="460"/>
         <source>Droidpool pairing code</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="418"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="463"/>
         <source>Pairing here moves Droidpool to this watch.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="425"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="470"/>
         <source>Pair this watch</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="329"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="374"/>
         <source>Signed in</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="331"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="376"/>
         <source>Finish signing in in your browser.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="365"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="410"/>
         <source>Cancel sign-in</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="223"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="268"/>
         <source>Low battery warning</source>
         <translation>Varning för låg batterinivå</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="229"/>
-        <location filename="../qml/pages/SettingsPage.qml" line="237"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="274"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="282"/>
         <source>Off</source>
         <translation>Av</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="229"/>
-        <location filename="../qml/pages/SettingsPage.qml" line="237"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="274"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="282"/>
         <source>%1%</source>
         <translation>%1 %</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="254"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="299"/>
         <source>Quiet Time</source>
         <translation>Tyst tid</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="465"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="519"/>
         <source>Timeline window</source>
         <translation>Tidslinjefönster</translation>
     </message>
@@ -2529,45 +2529,50 @@
         <translation type="vanished">Rebble-konto</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="419"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="464"/>
         <source>Open Droidpool, copy its pairing code and paste it here.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="270"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="315"/>
         <source>Store and Account</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="331"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="376"/>
         <source>Not signed in</source>
         <translation>Inte inloggad</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="481"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="499"/>
+        <source>Show sunrise and sunset pins</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="535"/>
         <source>Automatic Profile</source>
         <translation>Automatisk profil</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="485"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="539"/>
         <source>Connected</source>
         <translation>Ansluten</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="489"/>
-        <location filename="../qml/pages/SettingsPage.qml" line="502"/>
-        <location filename="../qml/pages/SettingsPage.qml" line="510"/>
-        <location filename="../qml/pages/SettingsPage.qml" line="523"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="543"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="556"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="564"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="577"/>
         <source>no change</source>
         <translation>ingen ändring</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="506"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="560"/>
         <source>Disconnected</source>
         <translation>Inte ansluten</translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="526"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="580"/>
         <source>Canned Messages</source>
         <translation>Fördefinierade meddelanden</translation>
     </message>
@@ -2587,27 +2592,37 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="332"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="125"/>
+        <source>Could not read the weather pin setting.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="142"/>
+        <source>Could not change the weather pin setting.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="377"/>
         <source>Account: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="382"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="427"/>
         <source>Adding apps…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="382"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="427"/>
         <source>Checking locker…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="383"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="428"/>
         <source>Add to %1 (%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="384"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="429"/>
         <source>Check for missing apps</source>
         <translation type="unfinished"></translation>
     </message>

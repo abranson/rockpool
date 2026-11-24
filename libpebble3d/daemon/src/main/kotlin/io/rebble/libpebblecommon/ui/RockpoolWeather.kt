@@ -4,9 +4,14 @@
 package io.rebble.libpebblecommon.ui
 
 import io.rebble.libpebblecommon.connection.LibPebble
+import io.rebble.libpebblecommon.linux.weather.OpenMeteoPinDay
 import io.rebble.libpebblecommon.rockpool.RockpoolSettings
 import io.rebble.libpebblecommon.weather.WeatherLocationData
 import io.rebble.libpebblecommon.weather.WeatherType
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.json.Json
 import org.freedesktop.dbus.types.UInt16
 import org.freedesktop.dbus.types.UInt32
 import org.freedesktop.dbus.types.UInt64
@@ -39,6 +44,7 @@ internal data class RockpoolWeatherObservation(
     val tomorrowLow: Short,
     val tomorrowIcon: WeatherType,
     val source: RockpoolWeatherObservationSource = RockpoolWeatherObservationSource.EXTERNAL,
+    val pinDays: List<OpenMeteoPinDay> = emptyList(),
 )
 
 internal enum class RockpoolWeatherObservationSource {
@@ -48,6 +54,8 @@ internal enum class RockpoolWeatherObservationSource {
 
 internal const val ROCKPOOL_WEATHER_SETTINGS_PREFIX = "weather.locations."
 internal const val ROCKPOOL_MAX_WEATHER_LOCATIONS = 6
+
+private val pinDaysSerializer = ListSerializer(OpenMeteoPinDay.serializer())
 
 internal data class RockpoolWeatherFetchTarget(
     val key: Uuid,
@@ -92,6 +100,9 @@ internal class RockpoolWeatherCoordinator(
     private var state: List<RockpoolWeatherLocation> =
         decodeRockpoolWeatherSettings(loadSettings()).getOrDefault(emptyList())
 
+    private val primary = MutableStateFlow(state.firstOrNull())
+    val primaryLocation = primary.asStateFlow()
+
     private var imperialUnits = storedImperialUnits(loadSettings())
 
     private fun storedImperialUnits(values: Map<String, String>): Boolean =
@@ -101,6 +112,11 @@ internal class RockpoolWeatherCoordinator(
     private fun persist(locations: List<RockpoolWeatherLocation>, imperial: Boolean = imperialUnits): Boolean =
         replaceSettings(encodeRockpoolWeatherSettings(locations) +
             ("${ROCKPOOL_WEATHER_SETTINGS_PREFIX}imperialUnits" to imperial.toString()))
+
+    private fun publishWeather() {
+        updateWeatherData(state.toWeatherData())
+        primary.value = state.firstOrNull()
+    }
 
     /** Keep cached observations usable offline when the watch's unit preference changes. */
     @Synchronized
@@ -117,13 +133,14 @@ internal class RockpoolWeatherCoordinator(
                     temperature = convert(it.temperature),
                     todayHigh = convert(it.todayHigh), todayLow = convert(it.todayLow),
                     tomorrowHigh = convert(it.tomorrowHigh), tomorrowLow = convert(it.tomorrowLow),
+                    pinDays = it.pinDays.map { day -> day.copy(high = convert(day.high), low = convert(day.low)) },
                 )
             })
         }
         if (!persist(replacement, imperial)) return false
         state = replacement
         imperialUnits = imperial
-        updateWeatherData(state.toWeatherData())
+        publishWeather()
         return true
     }
 
@@ -131,7 +148,7 @@ internal class RockpoolWeatherCoordinator(
         // RockpoolSettings is the durable compatibility source of truth. Reconcile it with
         // libpebble3 on every daemon start in case the previous asynchronous update was
         // interrupted after the settings commit.
-        updateWeatherData(state.toWeatherData())
+        publishWeather()
     }
 
     @Synchronized
@@ -150,7 +167,7 @@ internal class RockpoolWeatherCoordinator(
         if (persisted == state && persistedUnits == imperialUnits) return Result.success(false)
         state = persisted
         imperialUnits = persistedUnits
-        updateWeatherData(state.toWeatherData())
+        publishWeather()
         return Result.success(true)
     }
 
@@ -169,7 +186,7 @@ internal class RockpoolWeatherCoordinator(
         }
         if (!persist(replacement)) return false
         state = replacement
-        updateWeatherData(state.toWeatherData())
+        publishWeather()
         return true
     }
 
@@ -243,7 +260,7 @@ internal class RockpoolWeatherCoordinator(
         }
         if (!persist(replacement)) return false
         state = replacement
-        updateWeatherData(state.toWeatherData())
+        publishWeather()
         return true
     }
 
@@ -257,7 +274,7 @@ internal class RockpoolWeatherCoordinator(
         }
         if (!persist(replacement)) return false
         state = replacement
-        updateWeatherData(state.toWeatherData())
+        publishWeather()
         return true
     }
 }
@@ -365,6 +382,9 @@ internal fun encodeRockpoolWeatherSettings(
             put("${prefix}tomorrowLow", observation.tomorrowLow.toString())
             put("${prefix}tomorrowIcon", observation.tomorrowIcon.code.toUByte().toString())
             put("${prefix}source", observation.source.name.lowercase())
+            if (observation.pinDays.isNotEmpty()) {
+                put("${prefix}pinDays", Json.encodeToString(pinDaysSerializer, observation.pinDays))
+            }
         }
     }
 }
@@ -397,6 +417,9 @@ internal fun decodeRockpoolWeatherSettings(
                 tomorrowHigh = checkNotNull(values["${prefix}tomorrowHigh"]?.toShortOrNull()),
                 tomorrowLow = checkNotNull(values["${prefix}tomorrowLow"]?.toShortOrNull()),
                 tomorrowIcon = weatherType(checkNotNull(values["${prefix}tomorrowIcon"]?.toIntOrNull())),
+                pinDays = values["${prefix}pinDays"]?.let {
+                    runCatching { Json.decodeFromString(pinDaysSerializer, it) }.getOrNull()
+                }.orEmpty(),
                 source = when (values["${prefix}source"]) {
                     "automatic" -> RockpoolWeatherObservationSource.AUTOMATIC
                     else -> RockpoolWeatherObservationSource.EXTERNAL
@@ -512,4 +535,4 @@ private const val MAX_COORDINATE_BYTES = 64
 private const val MAX_FORECAST_BYTES = 256
 private const val CURRENT_COORDINATE = "n/a"
 private const val DNS_NAMESPACE_UUID = "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
-private val CURRENT_LOCATION_UUID = Uuid.parse("5f63c159-1c67-455f-897e-125d70664c4f")
+internal val CURRENT_LOCATION_UUID = Uuid.parse("5f63c159-1c67-455f-897e-125d70664c4f")

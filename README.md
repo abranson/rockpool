@@ -28,7 +28,7 @@ Available workflows include:
 - Apps and watchfaces, app configuration, and firmware and language installation.
 - Notification forwarding, supported actions and message replies.
 - Call and media controls, contacts, and favorite-contact Send Text actions.
-- Calendar integration, timeline settings and saved-location weather forecasts.
+- Calendar integration, timeline settings and saved-location weather forecasts. The primary weather location supplies sunrise and sunset timeline pins for today and the next two days. These pins are enabled by default and can be switched off in Settings under Timeline.
 - Health history and settings, Quiet Time, profile switching and developer tools.
 
 Availability depends on the watch, transport and healthy platform services.
