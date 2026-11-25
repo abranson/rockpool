@@ -301,22 +301,22 @@
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="18"/>
         <source>Needs Android AppSupport</source>
-        <translation type="unfinished"></translation>
+        <translation>Krever Android AppSupport</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="19"/>
         <source>Needs PebbleKit 2</source>
-        <translation type="unfinished"></translation>
+        <translation>Krever PebbleKit 2</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="20"/>
         <source>Needs an iOS companion</source>
-        <translation type="unfinished"></translation>
+        <translation>Krever en iOS-følgeapp</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="21"/>
         <source>Companion details unavailable</source>
-        <translation type="unfinished"></translation>
+        <translation>Detaljer om følgeappen er utilgjengelige</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="75"/>
@@ -331,7 +331,7 @@
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="148"/>
         <source>Install the Android companion app in AppSupport and pair Droidpool in Rockpool Settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>Installer Android-følgeappen i AppSupport og par Droidpool i innstillingene for Rockpool.</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="156"/>
@@ -460,22 +460,22 @@
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="22"/>
         <source>Needs Android AppSupport</source>
-        <translation type="unfinished"></translation>
+        <translation>Krever Android AppSupport</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="23"/>
         <source>Needs PebbleKit 2</source>
-        <translation type="unfinished"></translation>
+        <translation>Krever PebbleKit 2</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="24"/>
         <source>Needs an iOS companion</source>
-        <translation type="unfinished"></translation>
+        <translation>Krever en iOS-følgeapp</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="25"/>
         <source>Companion details unavailable</source>
-        <translation type="unfinished"></translation>
+        <translation>Detaljer om følgeappen er utilgjengelige</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="52"/>
@@ -500,7 +500,7 @@
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="235"/>
         <source>Install the Android companion app in AppSupport and pair Droidpool in Rockpool Settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>Installer Android-følgeappen i AppSupport og par Droidpool i innstillingene for Rockpool.</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="292"/>
@@ -794,7 +794,7 @@
     <message>
         <location filename="../qml/pages/DroidpoolControls.qml" line="37"/>
         <source>Could not read the AppSupport background setting.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunne ikke lese bakgrunnsinnstillingen for AppSupport.</translation>
     </message>
     <message>
         <location filename="../qml/pages/DroidpoolControls.qml" line="41"/>
@@ -2536,7 +2536,7 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="315"/>
         <source>Store and Account</source>
-        <translation type="unfinished"></translation>
+        <translation>App Store og konto</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="376"/>
@@ -2604,7 +2604,7 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="377"/>
         <source>Account: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Konto: %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="427"/>
@@ -2670,7 +2670,7 @@
     <message>
         <location filename="../qml/pages/WatchCompatibility.qml" line="26"/>
         <source>Requires firmware %1 or later</source>
-        <translation type="unfinished"></translation>
+        <translation>Krever fastvare %1 eller senere</translation>
     </message>
     <message>
         <location filename="../qml/pages/WatchCompatibility.qml" line="27"/>
