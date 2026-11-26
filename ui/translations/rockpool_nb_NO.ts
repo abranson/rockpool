@@ -799,88 +799,88 @@
     <message>
         <location filename="../qml/pages/DroidpoolControls.qml" line="41"/>
         <source>Could not check whether Droidpool is installed.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunne ikke kontrollere om Droidpool er installert.</translation>
     </message>
     <message>
         <location filename="../qml/pages/DroidpoolControls.qml" line="55"/>
         <source>Could not change the Droidpool setting.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunne ikke endre innstillingen for Droidpool.</translation>
     </message>
     <message>
         <location filename="../qml/pages/DroidpoolControls.qml" line="62"/>
         <source>Install the bundled Droidpool update to use this switch.</source>
-        <translation type="unfinished"></translation>
+        <translation>Installer den medfølgende Droidpool-oppdateringen for å bruke denne bryteren.</translation>
     </message>
     <message>
         <location filename="../qml/pages/DroidpoolControls.qml" line="99"/>
         <source>Droidpool was not uninstalled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Droidpool ble ikke avinstallert.</translation>
     </message>
     <message>
         <location filename="../qml/pages/DroidpoolControls.qml" line="115"/>
         <source>Android companion apps</source>
-        <translation type="unfinished"></translation>
+        <translation>Android-følgeapper</translation>
     </message>
     <message>
         <location filename="../qml/pages/DroidpoolControls.qml" line="160"/>
         <source>Paired with this watch</source>
-        <translation type="unfinished"></translation>
+        <translation>Koblet sammen med denne klokken</translation>
     </message>
     <message>
         <location filename="../qml/pages/DroidpoolControls.qml" line="174"/>
         <source>Droidpool options</source>
-        <translation type="unfinished"></translation>
+        <translation>Innstillinger for Droidpool</translation>
     </message>
     <message>
         <location filename="../qml/pages/DroidpoolControls.qml" line="180"/>
         <source>Install Droidpool update</source>
-        <translation type="unfinished"></translation>
+        <translation>Installer Droidpool-oppdatering</translation>
     </message>
     <message>
         <location filename="../qml/pages/DroidpoolControls.qml" line="121"/>
         <source>Install Droidpool in AppSupport</source>
-        <translation type="unfinished"></translation>
+        <translation>Installer Droidpool i AppSupport</translation>
     </message>
     <message>
         <location filename="../qml/pages/DroidpoolControls.qml" line="130"/>
         <source>Enable Droidpool</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktiver Droidpool</translation>
     </message>
     <message>
         <location filename="../qml/pages/DroidpoolControls.qml" line="131"/>
         <source>Run the companion bridge now and when AppSupport starts.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kjør følgeappbroen nå og når AppSupport starter.</translation>
     </message>
     <message>
         <location filename="../qml/pages/DroidpoolControls.qml" line="153"/>
         <source>Open Droidpool</source>
-        <translation type="unfinished"></translation>
+        <translation>Åpne Droidpool</translation>
     </message>
     <message>
         <location filename="../qml/pages/DroidpoolControls.qml" line="143"/>
         <source>Could not open Droidpool.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunne ikke åpne Droidpool.</translation>
     </message>
     <message>
         <location filename="../qml/pages/DroidpoolControls.qml" line="186"/>
         <source>Forget Droidpool pairing</source>
-        <translation type="unfinished"></translation>
+        <translation>Glem Droidpool-tilkobling</translation>
     </message>
     <message>
         <location filename="../qml/pages/DroidpoolControls.qml" line="190"/>
         <location filename="../qml/pages/DroidpoolControls.qml" line="202"/>
         <source>Uninstall Droidpool</source>
-        <translation type="unfinished"></translation>
+        <translation>Avinstallere Droidpool</translation>
     </message>
     <message>
         <location filename="../qml/pages/DroidpoolControls.qml" line="207"/>
         <source>Removing Droidpool deletes its pairing code. You will need to pair again if you reinstall it.</source>
-        <translation type="unfinished"></translation>
+        <translation>Hvis du fjerner Droidpool, slettes sammenkoblingskoden. Du må koble sammen på nytt ved eventuell reinstallering.</translation>
     </message>
     <message>
         <location filename="../qml/pages/DroidpoolControls.qml" line="218"/>
         <source>Could not uninstall Droidpool.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunne ikke avinstallere Droidpool.</translation>
     </message>
 </context>
 <context>
@@ -2460,7 +2460,7 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="102"/>
         <source>Could not save Droidpool pairing.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunne ikke lagre Droidpool-sammenkoblingen.</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="174"/>
@@ -2470,17 +2470,17 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="460"/>
         <source>Droidpool pairing code</source>
-        <translation type="unfinished"></translation>
+        <translation>Droidpool-sammenkoblingskode</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="463"/>
         <source>Pairing here moves Droidpool to this watch.</source>
-        <translation type="unfinished"></translation>
+        <translation>Sammenkobling her flytter Droidpool til denne klokken.</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="470"/>
         <source>Pair this watch</source>
-        <translation type="unfinished"></translation>
+        <translation>Koble til denne klokken</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="374"/>
@@ -2531,7 +2531,7 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="464"/>
         <source>Open Droidpool, copy its pairing code and paste it here.</source>
-        <translation type="unfinished"></translation>
+        <translation>Åpne Droidpool, kopier sammenkoblingskoden, og lim den inn her.</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="315"/>
@@ -2546,7 +2546,7 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="499"/>
         <source>Show sunrise and sunset pins</source>
-        <translation type="unfinished"></translation>
+        <translation>Vis markører for soloppgang og solnedgang</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="535"/>
@@ -2594,12 +2594,12 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="125"/>
         <source>Could not read the weather pin setting.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunne ikke lese værmarkørinnstillingen.</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="142"/>
         <source>Could not change the weather pin setting.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunne ikke endre værmarkørinnstillingen.</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="377"/>
@@ -2665,7 +2665,7 @@
     <message>
         <location filename="../qml/pages/WatchCompatibility.qml" line="15"/>
         <source>Compatibility unknown</source>
-        <translation type="unfinished"></translation>
+        <translation>Ukjent kompatibilitet</translation>
     </message>
     <message>
         <location filename="../qml/pages/WatchCompatibility.qml" line="26"/>
@@ -2675,12 +2675,12 @@
     <message>
         <location filename="../qml/pages/WatchCompatibility.qml" line="27"/>
         <source>Compatible</source>
-        <translation type="unfinished"></translation>
+        <translation>Kompatibel</translation>
     </message>
     <message>
         <location filename="../qml/pages/WatchCompatibility.qml" line="29"/>
         <source>Incompatible</source>
-        <translation type="unfinished"></translation>
+        <translation>Ikke kompatibel</translation>
     </message>
 </context>
 <context>
