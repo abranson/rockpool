@@ -20,239 +20,239 @@
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="109"/>
         <source>Choose a folder for reading and writing</source>
-        <translation type="unfinished"></translation>
+        <translation>Velg en mappe for lesing og skriving</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="109"/>
         <source>Choose a folder for reading</source>
-        <translation type="unfinished"></translation>
+        <translation>Velg en mappe for lesing</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="137"/>
         <source>Could not change the permission.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunne ikke endre tillatelsen.</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="8"/>
         <source>Internet access</source>
-        <translation type="unfinished"></translation>
+        <translation>Internettilgang</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="9"/>
         <source>Internet access to all sites</source>
-        <translation type="unfinished"></translation>
+        <translation>Internettilgang til alle nettsteder</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="10"/>
         <source>Local network access</source>
-        <translation type="unfinished"></translation>
+        <translation>Tilgang til lokalnettverk</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="11"/>
         <source>Location</source>
-        <translation type="unfinished"></translation>
+        <translation>Sted</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="12"/>
         <source>Watch microphone</source>
-        <translation type="unfinished"></translation>
+        <translation>Klokkemikrofon</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="13"/>
         <source>Health data</source>
-        <translation type="unfinished"></translation>
+        <translation>Helsedata</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="14"/>
         <source>Read notifications</source>
-        <translation type="unfinished"></translation>
+        <translation>Les varsler</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="15"/>
         <source>Show notifications</source>
-        <translation type="unfinished">Vis varsler</translation>
+        <translation>Vis varsler</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="16"/>
         <source>Read calendar events</source>
-        <translation type="unfinished"></translation>
+        <translation>Les kalenderhendelser</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="17"/>
         <source>Read contacts</source>
-        <translation type="unfinished"></translation>
+        <translation>les kontakter</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="18"/>
         <source>Write timeline pins</source>
-        <translation type="unfinished"></translation>
+        <translation>Skriv til tidslinje</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="19"/>
         <source>Read watch settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Les klokkens innstillinger</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="20"/>
         <source>Change watch settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Endre klokkens innstillinger</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="21"/>
         <source>Read music playback</source>
-        <translation type="unfinished"></translation>
+        <translation>Les musikkavspilling</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="22"/>
         <source>Control music playback</source>
-        <translation type="unfinished"></translation>
+        <translation>Styr musikkavspilling</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="23"/>
         <source>List installed apps</source>
-        <translation type="unfinished"></translation>
+        <translation>Vis installerte apper</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="24"/>
         <source>Launch watch apps</source>
-        <translation type="unfinished"></translation>
+        <translation>Start klokkeapper</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="25"/>
         <source>Find my phone</source>
-        <translation type="unfinished"></translation>
+        <translation>Finn min telefon</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="26"/>
         <source>Set Index alarms</source>
-        <translation type="unfinished"></translation>
+        <translation>Sett indeksalarmer</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="27"/>
         <source>Send messages through Beeper</source>
-        <translation type="unfinished"></translation>
+        <translation>Send meldinger via Beeper</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="28"/>
         <source>Write Index notes</source>
-        <translation type="unfinished"></translation>
+        <translation>Skriv indeksnotater</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="29"/>
         <source>Write Index reminders</source>
-        <translation type="unfinished"></translation>
+        <translation>Skriv indekspåminnelser</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="30"/>
         <source>Read files</source>
-        <translation type="unfinished"></translation>
+        <translation>Les filer</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="31"/>
         <source>Write files</source>
-        <translation type="unfinished"></translation>
+        <translation>Skriv filer</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="32"/>
         <source>Connect to legacy companion apps</source>
-        <translation type="unfinished"></translation>
+        <translation>Koble til eldre følgeapper</translation>
     </message>
     <message>
         <location filename="../qml/pages/PermissionLabels.js" line="33"/>
         <source>Connect to companion apps</source>
-        <translation type="unfinished"></translation>
+        <translation>Koble til følgeapper</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="156"/>
         <location filename="../qml/pages/InstallReviewDialog.qml" line="160"/>
         <source>Allowed</source>
-        <translation type="unfinished"></translation>
+        <translation>Tillatt</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="157"/>
         <location filename="../qml/pages/InstallReviewDialog.qml" line="161"/>
         <source>Denied</source>
-        <translation type="unfinished"></translation>
+        <translation>Avslått</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="158"/>
         <source>Allowed automatically</source>
-        <translation type="unfinished"></translation>
+        <translation>Tillatt automatisk</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="159"/>
         <source>Awaiting a decision</source>
-        <translation type="unfinished"></translation>
+        <translation>Venter på avgjørelse</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="160"/>
         <source>Status unavailable</source>
-        <translation type="unfinished"></translation>
+        <translation>Status utilgjengelig</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="177"/>
         <source>App permissions</source>
-        <translation type="unfinished"></translation>
+        <translation>App tillatelser</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="195"/>
         <source>Permission changes apply to this app on all watches.</source>
-        <translation type="unfinished"></translation>
+        <translation>Endringer i tillatelser gjelder for denne appen på alle klokker.</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="222"/>
         <source>Could not load permissions.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunne ikke laste inn tillatelser.</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="224"/>
         <source>Permission information is unavailable for this app.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ingen tillatelsesinformasjon tilgjengelig for denne appen.</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="226"/>
         <source>This app has no permissions to review.</source>
-        <translation type="unfinished"></translation>
+        <translation>Denne appen har ingen tillatelser til gjennomgang.</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="233"/>
         <source>Retry</source>
-        <translation type="unfinished"></translation>
+        <translation>Prøv på nytt</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="268"/>
         <source>Unavailable folder</source>
-        <translation type="unfinished"></translation>
+        <translation>Mappen er ikke tilgjengelig</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="286"/>
         <source>Required by the app</source>
-        <translation type="unfinished"></translation>
+        <translation>Påkrevd av appen</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="287"/>
         <source>Optional</source>
-        <translation type="unfinished"></translation>
+        <translation>Valgfritt</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="304"/>
         <source>Choose folder</source>
-        <translation type="unfinished"></translation>
+        <translation>Velg mappe</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="328"/>
         <source>Allow</source>
-        <translation type="unfinished"></translation>
+        <translation>Tillat</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="343"/>
         <source>Deny</source>
-        <translation type="unfinished"></translation>
+        <translation>Avslå</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppPermissionsPage.qml" line="357"/>
         <source>Remove folder access</source>
-        <translation type="unfinished"></translation>
+        <translation>Fjern mappetilgang</translation>
     </message>
 </context>
 <context>
@@ -268,7 +268,7 @@
     <message>
         <location filename="../appstoreclient.cpp" line="598"/>
         <source>Could not load or update the vote. Tap to retry.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunne ikke laste eller oppdatere stemmen. Trykk for å prøve på nytt.</translation>
     </message>
 </context>
 <context>
@@ -276,7 +276,7 @@
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="238"/>
         <source>Sign in to %1 in Settings to vote.</source>
-        <translation type="unfinished"></translation>
+        <translation>Logg inn på %1 i Innstillinger for å stemme.</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="334"/>
@@ -301,22 +301,22 @@
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="18"/>
         <source>Needs Android AppSupport</source>
-        <translation type="unfinished"></translation>
+        <translation>Krever Android AppSupport</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="19"/>
         <source>Needs PebbleKit 2</source>
-        <translation type="unfinished"></translation>
+        <translation>Krever PebbleKit 2</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="20"/>
         <source>Needs an iOS companion</source>
-        <translation type="unfinished"></translation>
+        <translation>Krever en iOS-følgeapp</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="21"/>
         <source>Companion details unavailable</source>
-        <translation type="unfinished"></translation>
+        <translation>Detaljer om følgeappen er utilgjengelige</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="75"/>
@@ -331,7 +331,7 @@
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="148"/>
         <source>Install the Android companion app in AppSupport and pair Droidpool in Rockpool Settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>Installer Android-følgeappen i AppSupport og par Droidpool i innstillingene for Rockpool.</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStoreDetailsPage.qml" line="156"/>
@@ -393,7 +393,7 @@
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="214"/>
         <source>Needs companion</source>
-        <translation>Behøver kompanjong</translation>
+        <translation>Trenger følgeapp</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppStorePage.qml" line="241"/>
@@ -455,67 +455,67 @@
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="50"/>
         <source>Switch build to %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Skift build til %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="22"/>
         <source>Needs Android AppSupport</source>
-        <translation type="unfinished"></translation>
+        <translation>Krever Android AppSupport</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="23"/>
         <source>Needs PebbleKit 2</source>
-        <translation type="unfinished"></translation>
+        <translation>Krever PebbleKit 2</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="24"/>
         <source>Needs an iOS companion</source>
-        <translation type="unfinished"></translation>
+        <translation>Krever en iOS-følgeapp</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="25"/>
         <source>Companion details unavailable</source>
-        <translation type="unfinished"></translation>
+        <translation>Detaljer om følgeappen er utilgjengelige</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="52"/>
         <source>Upgrade from %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Oppgraderingen fra %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="96"/>
         <source>Switch build</source>
-        <translation type="unfinished"></translation>
+        <translation>Bytt build</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="101"/>
         <source>Install the %1 build of version %2?</source>
-        <translation type="unfinished"></translation>
+        <translation>Installere %1-build av versjon %2?</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="163"/>
         <source>Could not install the selected build.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunne installere den valgte builden.</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="235"/>
         <source>Install the Android companion app in AppSupport and pair Droidpool in Rockpool Settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>Installer Android-følgeappen i AppSupport og par Droidpool i innstillingene for Rockpool.</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="292"/>
         <source>Linked to %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Lenket til %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="298"/>
         <source>Selected build from %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Valgte build fra %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/AppUpgradePage.qml" line="319"/>
         <source>Switching build…</source>
-        <translation type="unfinished"></translation>
+        <translation>Bytter build…</translation>
     </message>
 </context>
 <context>
@@ -534,70 +534,70 @@
     <message>
         <location filename="../corestoreaccount.cpp" line="124"/>
         <source>Core Devices sign-in timed out.</source>
-        <translation type="unfinished"></translation>
+        <translation>Påloggingen til Core Devices tok for lang tid.</translation>
     </message>
     <message>
         <location filename="../corestoreaccount.cpp" line="149"/>
         <location filename="../corestoreaccount.cpp" line="230"/>
         <source>The Rockpool daemon is unavailable.</source>
-        <translation type="unfinished"></translation>
+        <translation>Rockpool-bakgrunnstjenesten er ikke tilgjengelig.</translation>
     </message>
     <message>
         <location filename="../corestoreaccount.cpp" line="156"/>
         <location filename="../corestoreaccount.cpp" line="193"/>
         <source>Could not start Core Devices sign-in.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunne ikke starte påloggingen for Core Devices.</translation>
     </message>
     <message>
         <location filename="../corestoreaccount.cpp" line="220"/>
         <source>Could not open the browser for Core Devices sign-in.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunne ikke åpne nettleseren for pålogging til Core Devices.</translation>
     </message>
     <message>
         <location filename="../corestoreaccount.cpp" line="238"/>
         <source>Could not remove the saved Core Devices account.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunne ikke fjerne den lagrede Core Devices-kontoen.</translation>
     </message>
     <message>
         <location filename="../corestoreaccount.cpp" line="312"/>
         <source>Sign-in was not completed. Return to Rockpool.</source>
-        <translation type="unfinished"></translation>
+        <translation>Påloggingen ble ikke fullført. Gå tilbake til Rockpool.</translation>
     </message>
     <message>
         <location filename="../corestoreaccount.cpp" line="313"/>
         <source>Core Devices sign-in was declined or failed.</source>
-        <translation type="unfinished"></translation>
+        <translation>Innlogging til Core Devices ble avslått eller mislyktes.</translation>
     </message>
     <message>
         <location filename="../corestoreaccount.cpp" line="315"/>
         <source>Return to Rockpool to finish signing in.</source>
-        <translation type="unfinished"></translation>
+        <translation>Gå tilbake til Rockpool for å fullføre påloggingen.</translation>
     </message>
     <message>
         <location filename="../corestoreaccount.cpp" line="347"/>
         <location filename="../corestoreaccount.cpp" line="364"/>
         <source>Could not complete Core Devices sign-in.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunne ikke fullføre innloggingen til Core Devices.</translation>
     </message>
     <message>
         <location filename="../corestoreaccount.cpp" line="378"/>
         <source>Could not verify the Core Devices account profile.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunne ikke bekrefte kontoprofilen for Core Devices.</translation>
     </message>
     <message>
         <location filename="../corestoreaccount.cpp" line="384"/>
         <source>Could not verify the Core Devices appstore account.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunne ikke bekrefte appbutikkontoen for Core Devices.</translation>
     </message>
     <message>
         <location filename="../corestoreaccount.cpp" line="392"/>
         <source>Could not save the Core Devices account.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunne ikke lagre Core Devices-kontoen.</translation>
     </message>
     <message>
         <location filename="../corestoreaccount.cpp" line="440"/>
         <source>The Rockpool daemon disconnected during Core Devices sign-in.</source>
-        <translation type="unfinished"></translation>
+        <translation>Rockpool-bakgrunnstjenesten koblet fra under innlogging til Core Devices.</translation>
     </message>
 </context>
 <context>
@@ -794,7 +794,7 @@
     <message>
         <location filename="../qml/pages/DroidpoolControls.qml" line="37"/>
         <source>Could not read the AppSupport background setting.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunne ikke lese bakgrunnsinnstillingen for AppSupport.</translation>
     </message>
     <message>
         <location filename="../qml/pages/DroidpoolControls.qml" line="41"/>
@@ -892,7 +892,7 @@
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="19"/>
         <source>Check for updates</source>
-        <translation type="unfinished"></translation>
+        <translation>Se etter oppdateringer</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="24"/>
@@ -907,7 +907,7 @@
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="57"/>
         <source>Could not check for firmware updates</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunne ikke se etter fastvareoppdateringer</translation>
     </message>
     <message>
         <location filename="../qml/pages/FirmwareUpgradePage.qml" line="58"/>
@@ -1404,67 +1404,67 @@
     <message>
         <location filename="../qml/pages/InstallReviewDialog.qml" line="112"/>
         <source>Install %1?</source>
-        <translation type="unfinished"></translation>
+        <translation>Installer %1?</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstallReviewDialog.qml" line="112"/>
         <source>app</source>
-        <translation type="unfinished"></translation>
+        <translation>app</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstallReviewDialog.qml" line="113"/>
         <source>Install</source>
-        <translation type="unfinished">Installer</translation>
+        <translation>Installer</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstallReviewDialog.qml" line="114"/>
         <source>Cancel</source>
-        <translation type="unfinished">Avbryt</translation>
+        <translation>Avbryt</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstallReviewDialog.qml" line="120"/>
         <source>Review what this app can access on your phone.</source>
-        <translation type="unfinished"></translation>
+        <translation>Se hva denne appen har tilgang til på telefonen din.</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstallReviewDialog.qml" line="153"/>
         <source>Required by the app</source>
-        <translation type="unfinished"></translation>
+        <translation>Kreves av appen</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstallReviewDialog.qml" line="153"/>
         <source>Optional</source>
-        <translation type="unfinished"></translation>
+        <translation>Valgfritt</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstallReviewDialog.qml" line="162"/>
         <source>Allowed automatically</source>
-        <translation type="unfinished"></translation>
+        <translation>Tillatt automatisk</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstallReviewDialog.qml" line="163"/>
         <source>Choose whether to allow this</source>
-        <translation type="unfinished"></translation>
+        <translation>Velg om du vil tillate dette</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstallReviewDialog.qml" line="163"/>
         <source>Optional decision</source>
-        <translation type="unfinished"></translation>
+        <translation>Valgfritt valg</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstallReviewDialog.qml" line="172"/>
         <source>Scope: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Omfang: %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstallReviewDialog.qml" line="186"/>
         <source>Allow</source>
-        <translation type="unfinished"></translation>
+        <translation>Tillat</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstallReviewDialog.qml" line="194"/>
         <source>Deny</source>
-        <translation type="unfinished"></translation>
+        <translation>Avslå</translation>
     </message>
 </context>
 <context>
@@ -1497,7 +1497,7 @@
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="75"/>
         <source>Permissions</source>
-        <translation type="unfinished"></translation>
+        <translation>Tillatelser</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="80"/>
@@ -1522,12 +1522,12 @@
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="24"/>
         <source>Switch build to %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Bytt build til %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/InstalledAppDelegate.qml" line="26"/>
         <source>Upgrade from %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Oppgrader fra %1</translation>
     </message>
 </context>
 <context>
@@ -1609,7 +1609,7 @@
     <message>
         <location filename="../qml/pages/LocationPicker.qml" line="33"/>
         <source>Select Location</source>
-        <translation>Velg plassering</translation>
+        <translation>Velg sted</translation>
     </message>
     <message>
         <location filename="../qml/pages/LocationPicker.qml" line="35"/>
@@ -1619,17 +1619,17 @@
     <message>
         <location filename="../qml/pages/LocationPicker.qml" line="39"/>
         <source>Location Name</source>
-        <translation>Plasseringsnavn</translation>
+        <translation>Stedsnavn</translation>
     </message>
     <message>
         <location filename="../qml/pages/LocationPicker.qml" line="40"/>
         <source>Type in location name</source>
-        <translation>Skriv inn plasseringsnavn</translation>
+        <translation>Skriv inn stedsnavn</translation>
     </message>
     <message>
         <location filename="../qml/pages/LocationPicker.qml" line="55"/>
         <source>Matching locations will be appearing as you type</source>
-        <translation>Samsvarende plasseringer vil vises mens du skriver</translation>
+        <translation>Samsvarende steder vil vises mens du skriver</translation>
     </message>
     <message>
         <location filename="../qml/pages/LocationPicker.qml" line="110"/>
@@ -2371,12 +2371,12 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="320"/>
         <source>Appstore</source>
-        <translation type="unfinished"></translation>
+        <translation>Appbutikk</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="321"/>
         <source>Browse and check for updates in this store.</source>
-        <translation type="unfinished"></translation>
+        <translation>Utforsk og se etter oppdateringer i denne appbutikken.</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="235"/>
@@ -2485,17 +2485,17 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="374"/>
         <source>Signed in</source>
-        <translation type="unfinished"></translation>
+        <translation>Pålogget</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="376"/>
         <source>Finish signing in in your browser.</source>
-        <translation type="unfinished"></translation>
+        <translation>Fullfør påloggingen i nettleseren.</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="410"/>
         <source>Cancel sign-in</source>
-        <translation type="unfinished"></translation>
+        <translation>Avbryt pålogging</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="268"/>
@@ -2536,7 +2536,7 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="315"/>
         <source>Store and Account</source>
-        <translation type="unfinished"></translation>
+        <translation>App Store og konto</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="376"/>
@@ -2579,17 +2579,17 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="45"/>
         <source>Could not finish. Check the locker again.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunne ikke fullføre. Sjekk skapet på nytt.</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="57"/>
         <source>Locker updated.</source>
-        <translation type="unfinished"></translation>
+        <translation>Skap oppdatert.</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="63"/>
         <source>No eligible installed apps to add.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ingen aktuelle installerte apper å legge til.</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="125"/>
@@ -2604,27 +2604,27 @@
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="377"/>
         <source>Account: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Konto: %1</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="427"/>
         <source>Adding apps…</source>
-        <translation type="unfinished"></translation>
+        <translation>Legger til apper…</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="427"/>
         <source>Checking locker…</source>
-        <translation type="unfinished"></translation>
+        <translation>Sjekker skap…</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="428"/>
         <source>Add to %1 (%2)</source>
-        <translation type="unfinished"></translation>
+        <translation>Legg til i %1 (%2)</translation>
     </message>
     <message>
         <location filename="../qml/pages/SettingsPage.qml" line="429"/>
         <source>Check for missing apps</source>
-        <translation type="unfinished"></translation>
+        <translation>Se etter manglende apper</translation>
     </message>
 </context>
 <context>
@@ -2670,7 +2670,7 @@
     <message>
         <location filename="../qml/pages/WatchCompatibility.qml" line="26"/>
         <source>Requires firmware %1 or later</source>
-        <translation type="unfinished"></translation>
+        <translation>Krever fastvare %1 eller senere</translation>
     </message>
     <message>
         <location filename="../qml/pages/WatchCompatibility.qml" line="27"/>
@@ -2743,12 +2743,12 @@
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="31"/>
         <source>Locations</source>
-        <translation>Plasseringer</translation>
+        <translation>Steder</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="56"/>
         <source>Location Name</source>
-        <translation>Plasseringsnavn</translation>
+        <translation>Stedsnavn</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="68"/>
@@ -2788,12 +2788,12 @@
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="174"/>
         <source>Add Location</source>
-        <translation>Legg til plassering</translation>
+        <translation>Legg til sted</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="184"/>
         <source>Current Location</source>
-        <translation>Nåværende plassering</translation>
+        <translation>Nåværende sted</translation>
     </message>
     <message>
         <location filename="../qml/pages/WeatherSettingsDialog.qml" line="216"/>
